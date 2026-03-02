@@ -27,15 +27,8 @@
             --radius: 16px;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
 
         body {
             font-family: 'DM Sans', sans-serif;
@@ -44,7 +37,6 @@
             overflow-x: hidden;
         }
 
-        /* === GRAIN OVERLAY === */
         body::before {
             content: '';
             position: fixed;
@@ -58,8 +50,7 @@
         /* === NAV === */
         nav {
             position: fixed;
-            top: 0;
-            width: 100%;
+            top: 0; width: 100%;
             padding: 20px 40px;
             display: flex;
             justify-content: space-between;
@@ -84,8 +75,7 @@
 
         .nav-logo .seed {
             display: inline-block;
-            width: 28px;
-            height: 28px;
+            width: 28px; height: 28px;
             background: var(--green-mid);
             border-radius: 50% 50% 50% 0;
             transform: rotate(-45deg);
@@ -95,11 +85,9 @@
         .nav-logo .seed::after {
             content: '';
             position: absolute;
-            width: 2px;
-            height: 10px;
+            width: 2px; height: 10px;
             background: var(--green-pale);
-            top: 6px;
-            left: 13px;
+            top: 6px; left: 13px;
             border-radius: 2px;
         }
 
@@ -118,9 +106,7 @@
             transition: color 0.2s;
         }
 
-        .nav-links a:hover {
-            color: var(--green-mid);
-        }
+        .nav-links a:hover { color: var(--green-mid); }
 
         /* === HERO === */
         .hero {
@@ -138,10 +124,8 @@
         .hero::before {
             content: '';
             position: absolute;
-            top: -200px;
-            right: -200px;
-            width: 600px;
-            height: 600px;
+            top: -200px; right: -200px;
+            width: 600px; height: 600px;
             background: radial-gradient(circle, rgba(77, 124, 77, 0.08) 0%, transparent 70%);
             border-radius: 50%;
         }
@@ -149,10 +133,8 @@
         .hero::after {
             content: '';
             position: absolute;
-            bottom: -100px;
-            left: -150px;
-            width: 400px;
-            height: 400px;
+            bottom: -100px; left: -150px;
+            width: 400px; height: 400px;
             background: radial-gradient(circle, rgba(232, 116, 59, 0.06) 0%, transparent 70%);
             border-radius: 50%;
         }
@@ -174,8 +156,7 @@
         }
 
         .hero-badge .dot {
-            width: 6px;
-            height: 6px;
+            width: 6px; height: 6px;
             background: var(--green-light);
             border-radius: 50%;
             animation: pulse 2s infinite;
@@ -220,8 +201,7 @@
         }
 
         .hero-scroll .line {
-            width: 1px;
-            height: 40px;
+            width: 1px; height: 40px;
             background: var(--green-mid);
             animation: scrollLine 2s ease infinite;
         }
@@ -233,9 +213,7 @@
             margin: 0 auto;
         }
 
-        .section-header {
-            margin-bottom: 60px;
-        }
+        .section-header { margin-bottom: 60px; }
 
         .section-label {
             font-size: 0.75rem;
@@ -272,15 +250,14 @@
             text-decoration: none;
             color: inherit;
             display: block;
+            cursor: pointer;
         }
 
         .app-card::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
+            top: 0; left: 0;
+            width: 100%; height: 3px;
             background: linear-gradient(90deg, var(--green-mid), var(--orange-accent));
             opacity: 0;
             transition: opacity 0.3s ease;
@@ -292,20 +269,16 @@
             border-color: transparent;
         }
 
-        .app-card:hover::before {
-            opacity: 1;
-        }
+        .app-card:hover::before { opacity: 1; }
 
         .app-icon {
-            width: 56px;
-            height: 56px;
+            width: 56px; height: 56px;
             border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.5rem;
             margin-bottom: 20px;
-            position: relative;
         }
 
         .app-card-category {
@@ -350,10 +323,8 @@
 
         .app-card-arrow {
             position: absolute;
-            top: 36px;
-            right: 36px;
-            width: 32px;
-            height: 32px;
+            top: 36px; right: 36px;
+            width: 32px; height: 32px;
             border-radius: 50%;
             background: rgba(26, 46, 26, 0.04);
             display: flex;
@@ -368,14 +339,43 @@
         }
 
         .app-card-arrow svg {
-            width: 14px;
-            height: 14px;
+            width: 14px; height: 14px;
             transition: transform 0.3s ease;
         }
 
         .app-card:hover .app-card-arrow svg {
             transform: translate(2px, -2px);
         }
+
+        /* === STATUS BADGE ON CARD === */
+        .app-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 20px;
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 0.78rem;
+            font-weight: 500;
+        }
+
+        .app-status-badge.available {
+            background: rgba(77, 124, 77, 0.1);
+            color: var(--green-dark);
+        }
+
+        .app-status-badge.coming-soon {
+            background: rgba(26, 46, 26, 0.06);
+            color: var(--text-light);
+        }
+
+        .app-status-badge .status-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+        }
+
+        .app-status-badge.available .status-dot { background: var(--green-mid); }
+        .app-status-badge.coming-soon .status-dot { background: var(--text-light); }
 
         /* === DOWNLOAD BUTTON === */
         .app-download-btn {
@@ -401,21 +401,13 @@
             box-shadow: 0 4px 12px rgba(26, 46, 26, 0.2);
         }
 
-        .app-download-btn svg {
-            width: 16px;
-            height: 16px;
-        }
+        .app-download-btn svg { width: 16px; height: 16px; }
 
         .app-download-btn.coming-soon {
             background: rgba(26, 46, 26, 0.08);
             color: var(--text-light);
             cursor: default;
             pointer-events: none;
-        }
-
-        .app-download-btn.coming-soon:hover {
-            transform: none;
-            box-shadow: none;
         }
 
         /* === ABOUT SECTION === */
@@ -435,17 +427,13 @@
         .about-section::before {
             content: '';
             position: absolute;
-            top: -100px;
-            right: -100px;
-            width: 300px;
-            height: 300px;
+            top: -100px; right: -100px;
+            width: 300px; height: 300px;
             background: radial-gradient(circle, rgba(125, 184, 125, 0.15) 0%, transparent 70%);
             border-radius: 50%;
         }
 
-        .about-section .section-label {
-            color: var(--green-light);
-        }
+        .about-section .section-label { color: var(--green-light); }
 
         .about-section .section-title {
             color: white;
@@ -469,9 +457,209 @@
             font-size: 0.85rem;
         }
 
-        footer a {
+        footer a { color: var(--green-mid); text-decoration: none; }
+
+        /* === MODAL / DETAIL VIEW === */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(26, 46, 26, 0.5);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal {
+            background: var(--cream-light);
+            border-radius: 24px;
+            max-width: 720px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            transform: translateY(30px) scale(0.97);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal::-webkit-scrollbar { width: 6px; }
+        .modal::-webkit-scrollbar-track { background: transparent; }
+        .modal::-webkit-scrollbar-thumb {
+            background: var(--green-pale);
+            border-radius: 3px;
+        }
+
+        .modal-header {
+            padding: 40px 40px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .modal-icon {
+            width: 72px; height: 72px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .modal-header-text { flex: 1; }
+        .modal-header-text .app-card-category { margin-bottom: 4px; }
+
+        .modal-header-text h2 {
+            font-family: 'Fraunces', serif;
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: var(--green-deep);
+            line-height: 1.15;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px; right: 20px;
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: rgba(26, 46, 26, 0.06);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            color: var(--text-mid);
+            font-size: 1.2rem;
+        }
+
+        .modal-close:hover {
+            background: rgba(26, 46, 26, 0.12);
+            color: var(--text-dark);
+        }
+
+        .modal-body { padding: 32px 40px 40px; }
+
+        .modal-description {
+            font-size: 1rem;
+            color: var(--text-mid);
+            line-height: 1.75;
+            font-weight: 300;
+            margin-bottom: 32px;
+        }
+
+        .modal-section-title {
+            font-family: 'Fraunces', serif;
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: var(--green-deep);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modal-section-title .icon { font-size: 1.1rem; }
+
+        .features-list {
+            list-style: none;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .features-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: var(--text-mid);
+            line-height: 1.5;
+            font-weight: 400;
+        }
+
+        .features-list li .check {
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            background: rgba(77, 124, 77, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
             color: var(--green-mid);
+            font-size: 0.7rem;
+        }
+
+        .modal-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 32px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(26, 46, 26, 0.08);
+        }
+
+        .modal-download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 28px;
+            background: var(--green-deep);
+            color: white;
+            border-radius: 100px;
+            font-size: 0.9rem;
+            font-weight: 500;
             text-decoration: none;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .modal-download-btn:hover {
+            background: var(--green-mid);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(26, 46, 26, 0.25);
+        }
+
+        .modal-download-btn svg { width: 18px; height: 18px; }
+
+        .modal-download-btn.disabled {
+            background: rgba(26, 46, 26, 0.08);
+            color: var(--text-light);
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .modal-info-note {
+            margin-top: 24px;
+            padding: 16px 20px;
+            background: rgba(77, 124, 77, 0.06);
+            border-radius: 12px;
+            font-size: 0.82rem;
+            color: var(--text-mid);
+            line-height: 1.6;
+            border-left: 3px solid var(--green-mid);
         }
 
         /* === ANIMATIONS === */
@@ -505,62 +693,46 @@
 
         /* === RESPONSIVE === */
         @media (max-width: 768px) {
-            nav {
-                padding: 16px 20px;
-            }
-
-            .nav-links {
-                gap: 20px;
-            }
-
-            .hero {
-                padding: 100px 24px 80px;
-            }
-
-            .section {
-                padding: 60px 24px;
-            }
-
+            nav { padding: 16px 20px; }
+            .nav-links { gap: 20px; }
+            .hero { padding: 100px 24px 80px; }
+            .section { padding: 60px 24px; }
             .apps-grid {
                 grid-template-columns: 1fr;
                 gap: 20px;
             }
-
             .about-section {
                 margin: 0 20px 60px;
                 padding: 48px 32px;
                 border-radius: 20px;
             }
-
-            .app-card {
-                padding: 28px;
-            }
+            .app-card { padding: 28px; }
+            .modal-header { padding: 32px 24px 0; flex-wrap: wrap; }
+            .modal-body { padding: 24px 24px 32px; }
+            .features-list { grid-template-columns: 1fr; }
+            .modal { border-radius: 20px; }
+            .modal-header-text h2 { font-size: 1.5rem; }
         }
 
         @media (max-width: 480px) {
             .nav-links { display: none; }
-
-            .hero h1 {
-                font-size: 2.8rem;
-            }
+            .hero h1 { font-size: 2.8rem; }
+            .modal-overlay { padding: 12px; }
+            .modal-actions { flex-direction: column; }
         }
 
-        /* === EMPTY STATE === */
         .empty-state {
             text-align: center;
             padding: 80px 40px;
             color: var(--text-light);
         }
+        .empty-state .seedling { font-size: 3rem; margin-bottom: 20px; }
 
-        .empty-state .seedling {
-            font-size: 3rem;
-            margin-bottom: 20px;
-        }
+        body.modal-open { overflow: hidden; }
     </style>
 </head>
 <body>
 
-    <!-- NAV -->
     <nav>
         <a href="#" class="nav-logo">
             <span class="seed"></span>
@@ -572,7 +744,6 @@
         </ul>
     </nav>
 
-    <!-- HERO -->
     <section class="hero">
         <div class="hero-badge">
             <span class="dot"></span>
@@ -586,18 +757,14 @@
         </div>
     </section>
 
-    <!-- APPS -->
     <section class="section" id="apps">
         <div class="section-header fade-in">
             <div class="section-label">Colheita</div>
             <h2 class="section-title">Apps cultivados</h2>
         </div>
-        <div class="apps-grid" id="appsGrid">
-            <!-- Apps are rendered dynamically from JS -->
-        </div>
+        <div class="apps-grid" id="appsGrid"></div>
     </section>
 
-    <!-- ABOUT -->
     <section class="about-section fade-in" id="about">
         <div class="section-label">Sobre</div>
         <h2 class="section-title">Cada app começa como uma semente de ideia.</h2>
@@ -608,75 +775,169 @@
         </p>
     </section>
 
-    <!-- FOOTER -->
     <footer>
-        <p>© 2025 App Farm · Cultivado com ☕ e código · Android APKs disponíveis para download</p>
+        <p>&copy; 2025 App Farm &middot; Cultivado com &#9749; e código &middot; Android APKs disponíveis para download</p>
     </footer>
+
+    <!-- MODAL -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modalContent"></div>
+    </div>
 
     <script>
         // ==========================================
-        // APP DATA - Edite aqui para adicionar apps!
+        // APP DATA
         // ==========================================
         const apps = [
             {
                 name: "Clínica Fácil",
                 description: "Sistema de gestão clínica para psicólogos com prontuário eletrônico, agendamento, testes psicológicos e controle financeiro.",
                 category: "Saúde",
-                icon: "🧠",
+                icon: "\u{1F9E0}",
                 iconBg: "#ede7f6",
                 tags: ["Psicologia", "Gestão Clínica", "Android"],
                 apk: "apks/ClinicaFacil.apk",
-                available: true
+                available: true,
+                longDescription: "O Clínica Fácil é um sistema completo de gestão clínica desenvolvido especificamente para psicólogos. Ele reúne em um único app tudo o que o profissional precisa para organizar seu consultório: desde o cadastro e acompanhamento de pacientes até o controle financeiro das sessões. O app funciona 100% offline, garantindo a privacidade dos dados clínicos.",
+                features: [
+                    "Prontuário eletrônico completo com histórico de sessões",
+                    "Agendamento com visualização em calendário",
+                    "Testes psicológicos integrados (BDI, BAI, PHQ-9, GAD-7)",
+                    "Controle financeiro com relatórios por período",
+                    "Cadastro detalhado de pacientes com anamnese",
+                    "Exportação e backup de dados",
+                    "Funciona 100% offline — dados no dispositivo",
+                    "Interface intuitiva e organizada"
+                ],
+                note: "Desenvolvido para psicólogos clínicos que buscam uma solução prática e segura para gerenciar sua rotina profissional."
+            },
+            {
+                name: "Consulta de Interações Medicamentosas",
+                description: "Análise de interações medicamentosas com IA, com explicações acessíveis para pacientes e profissionais de saúde.",
+                category: "Saúde",
+                icon: "\u{2695}\u{FE0F}",
+                iconBg: "#fff3e0",
+                tags: ["Medicamentos", "IA", "Android"],
+                apk: "apks/PsychMedInteracoes.apk",
+                available: true,
+                longDescription: "Este app utiliza inteligência artificial para analisar interações entre medicamentos, fornecendo explicações claras tanto para profissionais de saúde quanto para pacientes. Ideal para psiquiatras, clínicos gerais e qualquer profissional que precise verificar rapidamente se há riscos na combinação de medicamentos de um paciente.",
+                features: [
+                    "Análise de interações entre múltiplos medicamentos",
+                    "Explicações em linguagem acessível para pacientes",
+                    "Detalhamento técnico para profissionais",
+                    "Classificação de gravidade das interações",
+                    "Sugestões de alternativas quando há risco",
+                    "Interface simples de busca e consulta",
+                    "Foco em medicamentos psiquiátricos",
+                    "Powered by IA para respostas contextualizadas"
+                ],
+                note: "Ferramenta de apoio à decisão clínica. Sempre consulte fontes oficiais e o farmacêutico para confirmar interações críticas."
+            },
+            {
+                name: "StoryTracker",
+                description: "Agregador de notícias inteligente com múltiplas fontes e categorização automática de artigos.",
+                category: "Notícias",
+                icon: "\u{1F4F0}",
+                iconBg: "#e8eaf6",
+                tags: ["Notícias", "Agregador", "RSS"],
+                apk: "apks/StoryTracker-Intel.apk",
+                available: true,
+                longDescription: "O StoryTracker é um agregador de notícias que reúne matérias de múltiplas fontes em um único lugar, com categorização automática por temas. Permite acompanhar o que está acontecendo no mundo de forma organizada, filtrando por categorias de interesse e acompanhando as histórias que mais importam para você.",
+                features: [
+                    "Agregação de múltiplas fontes de notícias",
+                    "Categorização automática de artigos por tema",
+                    "Filtro por categorias de interesse",
+                    "Leitura limpa e sem distrações",
+                    "Acompanhamento de histórias em desenvolvimento",
+                    "Fontes configuráveis pelo usuário",
+                    "Interface leve e rápida",
+                    "Navegação por gestos e favoritos"
+                ],
+                note: "Mantenha-se informado sem precisar navegar por dezenas de sites diferentes."
             },
             {
                 name: "Prescripta",
-                description: "Ferramenta para psiquiatras acompanharem a cobertura de prescrições e evitarem lacunas na medicação dos pacientes.",
+                description: "Ferramenta para psiquiatras acompanharem a cobertura de prescrições e evitarem lacunas na medicação.",
                 category: "Saúde",
-                icon: "💊",
+                icon: "\u{1F48A}",
                 iconBg: "#e8f5e9",
                 tags: ["Psiquiatria", "Prescrições", "Android"],
                 apk: "apks/Prescripta.apk",
-                available: false
-            },
-            {
-                name: "Consulta de Interações Medicamentosas com AI",
-                description: "Análise de interações medicamentosas com explicações acessíveis para pacientes e profissionais de saúde.",
-                category: "Saúde",
-                icon: "⚕️",
-                iconBg: "#fff3e0",
-                tags: ["Medicamentos", "IA", "Android"],
-                apk: "apks/PsychMedInteractions.apk",
-                available: false
+                available: false,
+                longDescription: "O Prescripta foi desenvolvido para psiquiatras que precisam monitorar se seus pacientes têm cobertura contínua de medicação. O app calcula automaticamente quando cada prescrição expira e alerta sobre lacunas iminentes, ajudando a prevenir interrupções no tratamento que poderiam comprometer o bem-estar do paciente.",
+                features: [
+                    "Cálculo automático de cobertura de prescrição",
+                    "Alertas de expiração e lacunas na medicação",
+                    "Visualização em timeline da cobertura",
+                    "Cadastro de múltiplos pacientes e medicamentos",
+                    "Histórico completo de prescrições",
+                    "Identificação rápida de pacientes em risco"
+                ],
+                note: "Em desenvolvimento. O app ajudará psiquiatras a garantir a continuidade do tratamento medicamentoso."
             },
             {
                 name: "Orçamento Simples",
                 description: "App de controle financeiro minimalista com exportação e importação de dados para backup fácil.",
                 category: "Finanças",
-                icon: "📊",
+                icon: "\u{1F4CA}",
                 iconBg: "#e3f2fd",
                 tags: ["Finanças", "Minimalista", "Android"],
                 apk: "apks/BudgetMinimalist.apk",
-                available: true
+                available: true,
+                longDescription: "O Orçamento Simples é um app de controle financeiro que faz exatamente o que o nome diz: simplifica o gerenciamento das suas finanças. Sem funcionalidades desnecessárias — apenas registre receitas e despesas, organize por categorias e acompanhe seu saldo. Exportação e importação de dados permitem backup fácil e migração entre dispositivos.",
+                features: [
+                    "Registro rápido de receitas e despesas",
+                    "Categorias personalizáveis",
+                    "Visualização de saldo e histórico",
+                    "Exportação de dados para backup (CSV)",
+                    "Importação para restaurar ou migrar dados",
+                    "Interface minimalista e sem distrações",
+                    "Funciona 100% offline",
+                    "Zero permissões desnecessárias"
+                ],
+                note: "Para quem quer controle financeiro sem a complexidade de apps bancários. Simples, rápido e direto ao ponto."
             },
             {
-                name: "Teste de Inglês: Proficiência em Vocabulário",
+                name: "Teste de Inglês: Vocabulário",
                 description: "Teste de vocabulário em inglês com aprendizado adaptativo que se ajusta ao seu nível.",
                 category: "Educação",
-                icon: "📚",
+                icon: "\u{1F4DA}",
                 iconBg: "#fce4ec",
                 tags: ["Inglês", "Vocabulário", "Adaptativo"],
                 apk: "apks/VocabBuilder.apk",
-                available: true
+                available: true,
+                longDescription: "Este app avalia e desenvolve seu vocabulário em inglês através de um sistema adaptativo. O teste se ajusta automaticamente ao seu nível de conhecimento: se você acerta, as palavras ficam mais difíceis; se erra, o nível se recalibra. Ao final, você recebe uma estimativa do seu nível de proficiência e pode acompanhar sua evolução ao longo do tempo.",
+                features: [
+                    "Algoritmo adaptativo que ajusta dificuldade em tempo real",
+                    "Estimativa de nível de proficiência (A1 a C2)",
+                    "Banco de palavras organizado por frequência de uso",
+                    "Acompanhamento de progresso e evolução",
+                    "Diferentes modos de teste (definição, contexto, sinônimos)",
+                    "Histórico de desempenho com gráficos",
+                    "Interface limpa focada no aprendizado",
+                    "Sem anúncios, sem distrações"
+                ],
+                note: "Ideal para estudantes de inglês que querem medir e expandir seu vocabulário de forma científica."
             },
             {
                 name: "Eliminador de Vícios",
-                description: "Acompanhamento de cessação com estatísticas motivacionais para quem está em processo de mudança de hábitos.",
+                description: "Acompanhamento de cessação com estatísticas motivacionais para quem está mudando hábitos.",
                 category: "Bem-estar",
-                icon: "🌱",
+                icon: "\u{1F331}",
                 iconBg: "#f1f8e9",
                 tags: ["Bem-estar", "Tracking", "Motivação"],
                 apk: "apks/QuitTracker.apk",
-                available: false
+                available: false,
+                longDescription: "O Eliminador de Vícios é um app de acompanhamento para quem decidiu largar um hábito prejudicial. Ele mostra estatísticas motivacionais como tempo livre do vício, economia financeira e marcos de recuperação baseados em evidências científicas. O app funciona como um companheiro silencioso na jornada de mudança.",
+                features: [
+                    "Contador de tempo desde a cessação",
+                    "Cálculo de economia financeira acumulada",
+                    "Marcos de recuperação baseados em evidências",
+                    "Diário para registrar gatilhos e estratégias",
+                    "Estatísticas motivacionais e gráficos de progresso",
+                    "Notificações de conquistas e marcos alcançados"
+                ],
+                note: "Em desenvolvimento. Será um companheiro para quem está no processo de parar com nicotina, cannabis ou outros hábitos."
             }
         ];
 
@@ -685,19 +946,18 @@
         // ==========================================
         function renderApps() {
             const grid = document.getElementById('appsGrid');
-
             if (apps.length === 0) {
-                grid.innerHTML = `
-                    <div class="empty-state">
-                        <div class="seedling">🌱</div>
-                        <p>Sementes plantadas... apps em breve!</p>
-                    </div>
-                `;
+                grid.innerHTML = '<div class="empty-state"><div class="seedling">\u{1F331}</div><p>Sementes plantadas... apps em breve!</p></div>';
                 return;
             }
 
             grid.innerHTML = apps.map((app, i) => `
-                <div class="app-card fade-in" style="animation-delay: ${i * 0.1}s">
+                <div class="app-card fade-in" style="animation-delay: ${i * 0.1}s" onclick="openModal(${i})">
+                    <div class="app-card-arrow">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M7 17L17 7M17 7H7M17 7v10"/>
+                        </svg>
+                    </div>
                     <div class="app-icon" style="background: ${app.iconBg}">
                         ${app.icon}
                     </div>
@@ -707,40 +967,98 @@
                     <div class="app-card-tags">
                         ${app.tags.map(tag => `<span class="app-tag">${tag}</span>`).join('')}
                     </div>
-                    ${app.available ? `
-                    <a href="${app.apk}" class="app-download-btn" download>
-                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                            <polyline points="7 10 12 15 17 10"/>
-                            <line x1="12" y1="15" x2="12" y2="3"/>
-                        </svg>
-                        Baixar APK
-                    </a>
-                    ` : `
-                    <span class="app-download-btn coming-soon">
-                        Em breve
-                    </span>
-                    `}
+                    <div class="app-status-badge ${app.available ? 'available' : 'coming-soon'}">
+                        <span class="status-dot"></span>
+                        ${app.available ? 'Disponível' : 'Em breve'}
+                    </div>
                 </div>
             `).join('');
         }
 
-        renderApps();
+        // ==========================================
+        // MODAL
+        // ==========================================
+        function openModal(index) {
+            const app = apps[index];
+            const overlay = document.getElementById('modalOverlay');
+            const content = document.getElementById('modalContent');
+
+            content.innerHTML = `
+                <button class="modal-close" onclick="closeModal()" aria-label="Fechar">\u2715</button>
+                <div class="modal-header">
+                    <div class="modal-icon" style="background: ${app.iconBg}">${app.icon}</div>
+                    <div class="modal-header-text">
+                        <div class="app-card-category">${app.category}</div>
+                        <h2>${app.name}</h2>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <p class="modal-description">${app.longDescription}</p>
+
+                    <div class="modal-section-title">
+                        <span class="icon">\u2726</span> Funcionalidades
+                    </div>
+                    <ul class="features-list">
+                        ${app.features.map(f => `
+                            <li>
+                                <span class="check">\u2713</span>
+                                <span>${f}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+
+                    <div class="modal-tags">
+                        ${app.tags.map(tag => `<span class="app-tag">${tag}</span>`).join('')}
+                    </div>
+
+                    <div class="modal-actions">
+                        ${app.available ? `
+                        <a href="${app.apk}" class="modal-download-btn" download>
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/>
+                                <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            Baixar APK
+                        </a>
+                        ` : `
+                        <span class="modal-download-btn disabled">Em breve</span>
+                        `}
+                    </div>
+
+                    ${app.note ? `<div class="modal-info-note">${app.note}</div>` : ''}
+                </div>
+            `;
+
+            overlay.classList.add('active');
+            document.body.classList.add('modal-open');
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            document.body.classList.remove('modal-open');
+        }
+
+        document.getElementById('modalOverlay').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeModal();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
 
         // ==========================================
-        // SCROLL ANIMATIONS
+        // INIT
         // ==========================================
+        renderApps();
+
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
+                if (entry.isIntersecting) entry.target.classList.add('visible');
             });
         }, { threshold: 0.1 });
 
         document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
-
-        // Re-observe dynamically created cards
         setTimeout(() => {
             document.querySelectorAll('.app-card.fade-in').forEach(el => observer.observe(el));
         }, 100);

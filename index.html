@@ -3,736 +3,682 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App Farm — Cultivando Apps</title>
+    <title>App Farm — Cultivando Apps para Saúde, Educação e Produtividade</title>
+    
+    <!-- SEO -->
+    <meta name="description" content="App Farm — Coleção de aplicativos Android para profissionais de saúde mental, educação e produtividade. Apps para psicólogos, psiquiatras e uso pessoal. Download gratuito.">
+    <meta name="keywords" content="app psicologia, app psiquiatria, gestão clínica, interações medicamentosas, prescrição médica, apps Android Brasil, saúde mental, produtividade">
+    <meta name="author" content="André Fiker">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://appfarm.app.br/">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="App Farm — Cultivando Apps">
+    <meta property="og:description" content="Aplicativos para profissionais de saúde mental, educação e produtividade. Download gratuito de APKs Android.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://appfarm.app.br/">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:site_name" content="App Farm">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="App Farm — Cultivando Apps">
+    <meta name="twitter:description" content="Apps para profissionais de saúde mental, educação e produtividade.">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "App Farm",
+        "description": "Coleção de aplicativos Android para profissionais de saúde mental, educação e produtividade.",
+        "url": "https://appfarm.app.br",
+        "applicationCategory": "HealthApplication",
+        "operatingSystem": "Android",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "BRL" },
+        "author": { "@type": "Person", "name": "André Fiker" }
+    }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,700;9..144,900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
         :root {
-            --green-deep: #1a2e1a;
-            --green-dark: #2d4a2d;
-            --green-mid: #4a7c4a;
-            --green-light: #7db87d;
-            --green-pale: #c8e6c8;
-            --cream: #f5f0e8;
-            --cream-light: #faf7f2;
-            --orange-accent: #e8743b;
-            --orange-warm: #f09060;
-            --brown: #5c4033;
-            --text-dark: #1a1a1a;
-            --text-mid: #4a4a4a;
-            --text-light: #7a7a7a;
-            --shadow-soft: 0 4px 20px rgba(26, 46, 26, 0.08);
-            --shadow-hover: 0 12px 40px rgba(26, 46, 26, 0.15);
-            --radius: 16px;
+            --bg-deep: #0a0c10;
+            --bg-card: #12151c;
+            --bg-card-hover: #181c25;
+            --bg-surface: #1a1e28;
+            --border: #222839;
+            --border-hover: #2d3548;
+            --text-primary: #e8eaf0;
+            --text-secondary: #8b92a8;
+            --text-muted: #5a6178;
+            --accent: #6b8f5e;
+            --accent-glow: #6b8f5e33;
+            --accent-light: #8ab87a;
+            --green: #4a7a3f;
+            --green-soft: #3a5e3220;
+            --amber: #c4954a;
+            --coral: #c46b5a;
+            --blue: #5a7ec4;
+            --purple: #8b6bc4;
+            --teal: #5ab8b0;
+            --radius: 12px;
+            --radius-lg: 20px;
+            --font-display: 'DM Serif Display', Georgia, serif;
+            --font-body: 'Outfit', system-ui, sans-serif;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
 
         body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--cream);
-            color: var(--text-dark);
+            font-family: var(--font-body);
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            line-height: 1.6;
             overflow-x: hidden;
         }
 
+        /* Noise texture */
         body::before {
             content: '';
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            inset: 0;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
             pointer-events: none;
-            z-index: 9999;
+            z-index: 0;
         }
 
-        /* === NAV === */
+        /* ===== NAV ===== */
         nav {
             position: fixed;
             top: 0; width: 100%;
-            padding: 20px 40px;
+            padding: 18px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 100;
-            backdrop-filter: blur(20px);
-            background: rgba(245, 240, 232, 0.8);
-            border-bottom: 1px solid rgba(26, 46, 26, 0.06);
-            transition: all 0.3s ease;
+            backdrop-filter: blur(24px) saturate(1.2);
+            background: rgba(10, 12, 16, 0.75);
+            border-bottom: 1px solid var(--border);
         }
 
         .nav-logo {
-            font-family: 'Fraunces', serif;
-            font-weight: 900;
-            font-size: 1.4rem;
-            color: var(--green-deep);
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            color: var(--text-primary);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             text-decoration: none;
         }
 
         .nav-logo .seed {
             display: inline-block;
-            width: 28px; height: 28px;
-            background: var(--green-mid);
+            width: 26px; height: 26px;
+            background: var(--accent);
             border-radius: 50% 50% 50% 0;
             transform: rotate(-45deg);
             position: relative;
+            box-shadow: 0 0 16px var(--accent-glow);
         }
 
         .nav-logo .seed::after {
             content: '';
             position: absolute;
-            width: 2px; height: 10px;
-            background: var(--green-pale);
-            top: 6px; left: 13px;
+            width: 2px; height: 9px;
+            background: rgba(255,255,255,0.5);
+            top: 6px; left: 12px;
             border-radius: 2px;
         }
 
         .nav-links {
             display: flex;
-            gap: 32px;
+            gap: 28px;
             list-style: none;
         }
 
         .nav-links a {
+            color: var(--text-secondary);
             text-decoration: none;
-            color: var(--text-mid);
+            font-weight: 400;
             font-size: 0.9rem;
-            font-weight: 500;
             letter-spacing: 0.02em;
             transition: color 0.2s;
         }
 
-        .nav-links a:hover { color: var(--green-mid); }
+        .nav-links a:hover { color: var(--accent-light); }
 
-        /* === HERO === */
+        /* ===== HERO ===== */
         .hero {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            padding: 160px 40px 100px;
             text-align: center;
-            padding: 120px 40px 80px;
             position: relative;
-            overflow: hidden;
         }
 
         .hero::before {
             content: '';
             position: absolute;
-            top: -200px; right: -200px;
+            top: 0; left: 50%;
+            transform: translateX(-50%);
             width: 600px; height: 600px;
-            background: radial-gradient(circle, rgba(77, 124, 77, 0.08) 0%, transparent 70%);
-            border-radius: 50%;
-        }
-
-        .hero::after {
-            content: '';
-            position: absolute;
-            bottom: -100px; left: -150px;
-            width: 400px; height: 400px;
-            background: radial-gradient(circle, rgba(232, 116, 59, 0.06) 0%, transparent 70%);
-            border-radius: 50%;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: -1;
         }
 
         .hero-badge {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 20px;
-            background: var(--green-deep);
-            color: var(--green-pale);
+            padding: 6px 16px;
+            background: var(--green-soft);
+            border: 1px solid rgba(107, 143, 94, 0.2);
             border-radius: 100px;
             font-size: 0.8rem;
-            font-weight: 500;
-            letter-spacing: 0.05em;
+            color: var(--accent-light);
+            margin-bottom: 28px;
+            letter-spacing: 0.04em;
             text-transform: uppercase;
-            margin-bottom: 32px;
-            animation: fadeUp 0.8s ease both;
+            font-weight: 500;
         }
 
         .hero-badge .dot {
             width: 6px; height: 6px;
-            background: var(--green-light);
+            background: var(--accent);
             border-radius: 50%;
-            animation: pulse 2s infinite;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.4); }
         }
 
         .hero h1 {
-            font-family: 'Fraunces', serif;
-            font-weight: 900;
-            font-size: clamp(3rem, 8vw, 7rem);
-            line-height: 0.95;
-            color: var(--green-deep);
-            margin-bottom: 24px;
-            animation: fadeUp 0.8s ease 0.1s both;
+            font-family: var(--font-display);
+            font-size: clamp(2.8rem, 6vw, 4.5rem);
+            line-height: 1.1;
+            margin-bottom: 20px;
+            font-weight: 400;
         }
 
-        .hero h1 .accent {
-            color: var(--orange-accent);
+        .hero h1 em {
             font-style: italic;
+            color: var(--accent-light);
         }
 
-        .hero-sub {
-            font-size: clamp(1rem, 2vw, 1.3rem);
-            color: var(--text-mid);
-            max-width: 500px;
-            line-height: 1.6;
+        .hero p {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            max-width: 520px;
+            margin: 0 auto 40px;
             font-weight: 300;
-            animation: fadeUp 0.8s ease 0.2s both;
+            line-height: 1.7;
         }
 
-        .hero-scroll {
-            position: absolute;
-            bottom: 40px;
+        .hero-stats {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-light);
-            font-size: 0.75rem;
-            letter-spacing: 0.1em;
+            justify-content: center;
+            gap: 48px;
+            margin-top: 48px;
+        }
+
+        .hero-stat {
+            text-align: center;
+        }
+
+        .hero-stat .number {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            color: var(--text-primary);
+        }
+
+        .hero-stat .label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
             text-transform: uppercase;
-            animation: fadeUp 0.8s ease 0.4s both;
+            letter-spacing: 0.06em;
+            margin-top: 4px;
         }
 
-        .hero-scroll .line {
-            width: 1px; height: 40px;
-            background: var(--green-mid);
-            animation: scrollLine 2s ease infinite;
+        /* ===== CATEGORIES ===== */
+        .categories {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            padding: 0 40px 60px;
+            flex-wrap: wrap;
         }
 
-        /* === APPS SECTION === */
-        .section {
-            padding: 100px 40px;
+        .cat-btn {
+            padding: 8px 20px;
+            border-radius: 100px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: var(--font-body);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .cat-btn:hover, .cat-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        /* ===== APP GRID ===== */
+        #apps {
+            padding: 0 40px 80px;
             max-width: 1200px;
             margin: 0 auto;
         }
 
-        .section-header { margin-bottom: 60px; }
-
-        .section-label {
-            font-size: 0.75rem;
-            font-weight: 600;
-            letter-spacing: 0.15em;
-            text-transform: uppercase;
-            color: var(--orange-accent);
-            margin-bottom: 12px;
-        }
-
-        .section-title {
-            font-family: 'Fraunces', serif;
-            font-weight: 700;
-            font-size: clamp(2rem, 4vw, 3rem);
-            color: var(--green-deep);
-            line-height: 1.1;
-        }
-
-        /* === APP GRID === */
         .apps-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 28px;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
         }
 
         .app-card {
-            background: var(--cream-light);
-            border-radius: var(--radius);
-            padding: 36px;
-            border: 1px solid rgba(26, 46, 26, 0.06);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 28px;
+            cursor: pointer;
+            transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
-            text-decoration: none;
-            color: inherit;
-            display: block;
-            cursor: pointer;
+            opacity: 0;
+            transform: translateY(20px);
         }
 
-        .app-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 3px;
-            background: linear-gradient(90deg, var(--green-mid), var(--orange-accent));
-            opacity: 0;
-            transition: opacity 0.3s ease;
+        .app-card.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .app-card:hover {
-            transform: translateY(-6px);
-            box-shadow: var(--shadow-hover);
-            border-color: transparent;
+            background: var(--bg-card-hover);
+            border-color: var(--border-hover);
+            transform: translateY(-4px);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.3);
         }
 
-        .app-card:hover::before { opacity: 1; }
+        .app-card-arrow {
+            position: absolute;
+            top: 24px; right: 24px;
+            width: 28px; height: 28px;
+            opacity: 0;
+            transition: all 0.3s;
+            color: var(--text-muted);
+        }
+
+        .app-card:hover .app-card-arrow {
+            opacity: 1;
+            transform: translate(2px, -2px);
+        }
+
+        .app-card-arrow svg { width: 100%; height: 100%; }
 
         .app-icon {
-            width: 56px; height: 56px;
+            width: 52px; height: 52px;
             border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.5rem;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .app-card-category {
-            font-size: 0.7rem;
-            font-weight: 600;
-            letter-spacing: 0.1em;
+            font-size: 0.72rem;
             text-transform: uppercase;
-            color: var(--text-light);
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
             margin-bottom: 8px;
+            font-weight: 500;
         }
 
         .app-card h3 {
-            font-family: 'Fraunces', serif;
-            font-weight: 700;
-            font-size: 1.35rem;
-            color: var(--green-deep);
-            margin-bottom: 10px;
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            margin-bottom: 8px;
+            font-weight: 400;
         }
 
         .app-card p {
-            font-size: 0.92rem;
-            color: var(--text-mid);
+            font-size: 0.88rem;
+            color: var(--text-secondary);
             line-height: 1.6;
+            margin-bottom: 16px;
             font-weight: 300;
         }
 
         .app-card-tags {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 20px;
+            gap: 6px;
+            margin-bottom: 16px;
         }
 
         .app-tag {
-            padding: 4px 12px;
-            background: rgba(77, 124, 77, 0.08);
-            color: var(--green-dark);
+            padding: 3px 10px;
             border-radius: 100px;
-            font-size: 0.75rem;
-            font-weight: 500;
+            font-size: 0.7rem;
+            background: rgba(107, 143, 94, 0.1);
+            color: var(--accent-light);
+            border: 1px solid rgba(107, 143, 94, 0.15);
+            letter-spacing: 0.02em;
         }
 
-        .app-card-arrow {
-            position: absolute;
-            top: 36px; right: 36px;
-            width: 32px; height: 32px;
-            border-radius: 50%;
-            background: rgba(26, 46, 26, 0.04);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-
-        .app-card:hover .app-card-arrow {
-            background: var(--green-deep);
-            color: white;
-        }
-
-        .app-card-arrow svg {
-            width: 14px; height: 14px;
-            transition: transform 0.3s ease;
-        }
-
-        .app-card:hover .app-card-arrow svg {
-            transform: translate(2px, -2px);
-        }
-
-        /* === STATUS BADGE ON CARD === */
         .app-status-badge {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            margin-top: 20px;
-            padding: 6px 14px;
-            border-radius: 100px;
-            font-size: 0.78rem;
-            font-weight: 500;
+            font-size: 0.75rem;
+            color: var(--text-muted);
         }
 
-        .app-status-badge.available {
-            background: rgba(77, 124, 77, 0.1);
-            color: var(--green-dark);
-        }
-
-        .app-status-badge.coming-soon {
-            background: rgba(26, 46, 26, 0.06);
-            color: var(--text-light);
-        }
-
-        .app-status-badge .status-dot {
+        .status-dot {
             width: 6px; height: 6px;
             border-radius: 50%;
+            background: var(--text-muted);
         }
 
-        .app-status-badge.available .status-dot { background: var(--green-mid); }
-        .app-status-badge.coming-soon .status-dot { background: var(--text-light); }
-
-        /* === DOWNLOAD BUTTON === */
-        .app-download-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background: var(--green-deep);
-            color: white;
-            border-radius: 100px;
-            font-size: 0.82rem;
-            font-weight: 500;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
+        .app-status-badge.available .status-dot {
+            background: var(--accent);
+            box-shadow: 0 0 8px var(--accent-glow);
         }
 
-        .app-download-btn:hover {
-            background: var(--green-mid);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(26, 46, 26, 0.2);
-        }
+        .app-status-badge.available { color: var(--accent-light); }
 
-        .app-download-btn svg { width: 16px; height: 16px; }
-
-        .app-download-btn.coming-soon {
-            background: rgba(26, 46, 26, 0.08);
-            color: var(--text-light);
-            cursor: default;
-            pointer-events: none;
-        }
-
-        /* === ABOUT SECTION === */
-        .about-section {
-            background: var(--green-deep);
-            border-radius: 24px;
-            padding: 80px 60px;
-            color: white;
-            position: relative;
-            overflow: hidden;
-            margin: 0 40px 100px;
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .about-section::before {
-            content: '';
-            position: absolute;
-            top: -100px; right: -100px;
-            width: 300px; height: 300px;
-            background: radial-gradient(circle, rgba(125, 184, 125, 0.15) 0%, transparent 70%);
-            border-radius: 50%;
-        }
-
-        .about-section .section-label { color: var(--green-light); }
-
-        .about-section .section-title {
-            color: white;
-            max-width: 600px;
-            margin-bottom: 24px;
-        }
-
-        .about-text {
-            font-size: 1.05rem;
-            color: rgba(255,255,255,0.7);
-            line-height: 1.8;
-            max-width: 600px;
-            font-weight: 300;
-        }
-
-        /* === FOOTER === */
-        footer {
-            padding: 40px;
-            text-align: center;
-            color: var(--text-light);
-            font-size: 0.85rem;
-        }
-
-        footer a { color: var(--green-mid); text-decoration: none; }
-
-        /* === MODAL / DETAIL VIEW === */
+        /* ===== MODAL ===== */
         .modal-overlay {
+            display: none;
             position: fixed;
             inset: 0;
-            background: rgba(26, 46, 26, 0.5);
+            background: rgba(0,0,0,0.7);
             backdrop-filter: blur(8px);
-            z-index: 1000;
-            display: flex;
+            z-index: 200;
             align-items: center;
             justify-content: center;
-            padding: 24px;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.35s ease;
+            padding: 20px;
         }
 
-        .modal-overlay.active {
-            opacity: 1;
-            pointer-events: all;
-        }
+        .modal-overlay.active { display: flex; }
 
-        .modal {
-            background: var(--cream-light);
-            border-radius: 24px;
-            max-width: 720px;
+        .modal-content {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            max-width: 600px;
             width: 100%;
-            max-height: 90vh;
+            max-height: 85vh;
             overflow-y: auto;
+            padding: 36px;
             position: relative;
-            transform: translateY(30px) scale(0.97);
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: modalIn 0.3s ease;
         }
 
-        .modal-overlay.active .modal {
-            transform: translateY(0) scale(1);
-        }
-
-        .modal::-webkit-scrollbar { width: 6px; }
-        .modal::-webkit-scrollbar-track { background: transparent; }
-        .modal::-webkit-scrollbar-thumb {
-            background: var(--green-pale);
-            border-radius: 3px;
-        }
-
-        .modal-header {
-            padding: 40px 40px 0;
-            display: flex;
-            align-items: flex-start;
-            gap: 20px;
-        }
-
-        .modal-icon {
-            width: 72px; height: 72px;
-            border-radius: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            flex-shrink: 0;
-        }
-
-        .modal-header-text { flex: 1; }
-        .modal-header-text .app-card-category { margin-bottom: 4px; }
-
-        .modal-header-text h2 {
-            font-family: 'Fraunces', serif;
-            font-weight: 700;
-            font-size: 1.8rem;
-            color: var(--green-deep);
-            line-height: 1.15;
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
         .modal-close {
             position: absolute;
-            top: 20px; right: 20px;
-            width: 40px; height: 40px;
+            top: 16px; right: 16px;
+            width: 32px; height: 32px;
+            border: 1px solid var(--border);
             border-radius: 50%;
-            background: rgba(26, 46, 26, 0.06);
-            border: none;
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
-            color: var(--text-mid);
-            font-size: 1.2rem;
         }
 
         .modal-close:hover {
-            background: rgba(26, 46, 26, 0.12);
-            color: var(--text-dark);
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
         }
 
-        .modal-body { padding: 32px 40px 40px; }
+        .modal-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .modal-icon {
+            width: 56px; height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            flex-shrink: 0;
+        }
+
+        .modal-header-text h2 {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            font-weight: 400;
+        }
+
+        .modal-body { color: var(--text-secondary); }
 
         .modal-description {
-            font-size: 1rem;
-            color: var(--text-mid);
-            line-height: 1.75;
+            font-size: 0.92rem;
+            line-height: 1.7;
+            margin-bottom: 24px;
             font-weight: 300;
-            margin-bottom: 32px;
         }
 
         .modal-section-title {
-            font-family: 'Fraunces', serif;
-            font-weight: 700;
-            font-size: 1.15rem;
-            color: var(--green-deep);
-            margin-bottom: 16px;
             display: flex;
             align-items: center;
             gap: 8px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+            font-weight: 500;
         }
-
-        .modal-section-title .icon { font-size: 1.1rem; }
 
         .features-list {
             list-style: none;
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 32px;
+            gap: 10px;
+            margin-bottom: 24px;
         }
 
         .features-list li {
             display: flex;
-            align-items: flex-start;
             gap: 10px;
-            font-size: 0.9rem;
-            color: var(--text-mid);
+            font-size: 0.88rem;
             line-height: 1.5;
-            font-weight: 400;
+            color: var(--text-secondary);
         }
 
-        .features-list li .check {
-            width: 20px; height: 20px;
-            border-radius: 50%;
-            background: rgba(77, 124, 77, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .features-list .check {
+            color: var(--accent);
+            font-weight: 600;
             flex-shrink: 0;
             margin-top: 1px;
-            color: var(--green-mid);
-            font-size: 0.7rem;
         }
 
         .modal-tags {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 32px;
+            gap: 6px;
+            margin-bottom: 24px;
         }
 
         .modal-actions {
             display: flex;
             gap: 12px;
-            padding-top: 24px;
-            border-top: 1px solid rgba(26, 46, 26, 0.08);
+            margin-bottom: 16px;
         }
 
         .modal-download-btn {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            padding: 14px 28px;
-            background: var(--green-deep);
-            color: white;
+            gap: 8px;
+            padding: 12px 28px;
+            background: var(--accent);
+            color: #fff;
             border-radius: 100px;
-            font-size: 0.9rem;
-            font-weight: 500;
             text-decoration: none;
-            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s;
             border: none;
             cursor: pointer;
         }
 
         .modal-download-btn:hover {
-            background: var(--green-mid);
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(26, 46, 26, 0.25);
+            background: var(--accent-light);
+            box-shadow: 0 4px 20px var(--accent-glow);
         }
 
-        .modal-download-btn svg { width: 18px; height: 18px; }
+        .modal-download-btn svg {
+            width: 18px; height: 18px;
+        }
 
         .modal-download-btn.disabled {
-            background: rgba(26, 46, 26, 0.08);
-            color: var(--text-light);
-            cursor: default;
-            pointer-events: none;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            cursor: not-allowed;
         }
 
         .modal-info-note {
-            margin-top: 24px;
-            padding: 16px 20px;
-            background: rgba(77, 124, 77, 0.06);
-            border-radius: 12px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-style: italic;
+            padding: 12px 16px;
+            background: rgba(107, 143, 94, 0.06);
+            border-left: 2px solid var(--accent);
+            border-radius: 0 8px 8px 0;
+        }
+
+        body.modal-open { overflow: hidden; }
+
+        /* ===== CONTACT ===== */
+        #contact {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 80px 40px;
+            text-align: center;
+        }
+
+        #contact h2 {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            margin-bottom: 12px;
+            font-weight: 400;
+        }
+
+        #contact p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 300;
+            margin-bottom: 28px;
+        }
+
+        .cta-whatsapp {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 32px;
+            background: #25d366;
+            color: #fff;
+            border-radius: 100px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .cta-whatsapp:hover {
+            background: #20bd5a;
+            box-shadow: 0 4px 20px rgba(37, 211, 102, 0.3);
+        }
+
+        .cta-whatsapp svg { width: 20px; height: 20px; }
+
+        /* ===== FOOTER ===== */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 40px;
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 16px;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
             font-size: 0.82rem;
-            color: var(--text-mid);
-            line-height: 1.6;
-            border-left: 3px solid var(--green-mid);
+            transition: color 0.2s;
         }
 
-        /* === ANIMATIONS === */
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+        .footer-links a:hover { color: var(--accent-light); }
+
+        .footer-copy {
+            font-size: 0.75rem;
+            color: var(--text-muted);
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
-        }
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-deep); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
 
-        @keyframes scrollLine {
-            0% { transform: scaleY(0); transform-origin: top; }
-            50% { transform: scaleY(1); transform-origin: top; }
-            51% { transform-origin: bottom; }
-            100% { transform: scaleY(0); transform-origin: bottom; }
-        }
-
-        .fade-in {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.6s ease, transform 0.6s ease;
-        }
-
-        .fade-in.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* === RESPONSIVE === */
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
-            nav { padding: 16px 20px; }
-            .nav-links { gap: 20px; }
-            .hero { padding: 100px 24px 80px; }
-            .section { padding: 60px 24px; }
-            .apps-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-            .about-section {
-                margin: 0 20px 60px;
-                padding: 48px 32px;
-                border-radius: 20px;
-            }
-            .app-card { padding: 28px; }
-            .modal-header { padding: 32px 24px 0; flex-wrap: wrap; }
-            .modal-body { padding: 24px 24px 32px; }
-            .features-list { grid-template-columns: 1fr; }
-            .modal { border-radius: 20px; }
-            .modal-header-text h2 { font-size: 1.5rem; }
+            nav { padding: 14px 20px; }
+            .nav-links { gap: 16px; }
+            .nav-links a { font-size: 0.8rem; }
+            .hero { padding: 120px 20px 60px; }
+            .hero-stats { gap: 28px; }
+            #apps { padding: 0 20px 60px; }
+            .apps-grid { grid-template-columns: 1fr; }
+            .categories { padding: 0 20px 40px; }
+            #contact { padding: 60px 20px; }
+            footer { padding: 30px 20px; }
+            .footer-links { flex-wrap: wrap; gap: 16px; }
         }
 
         @media (max-width: 480px) {
-            .nav-links { display: none; }
-            .hero h1 { font-size: 2.8rem; }
-            .modal-overlay { padding: 12px; }
-            .modal-actions { flex-direction: column; }
+            .hero h1 { font-size: 2rem; }
+            .hero-stats { flex-direction: column; gap: 16px; }
+            .modal-content { padding: 24px; }
+            .nav-logo { font-size: 1.2rem; }
         }
-
-        .empty-state {
-            text-align: center;
-            padding: 80px 40px;
-            color: var(--text-light);
-        }
-        .empty-state .seedling { font-size: 3rem; margin-bottom: 20px; }
-
-        body.modal-open { overflow: hidden; }
     </style>
 </head>
 <body>
-
+    <!-- NAV -->
     <nav>
         <a href="#" class="nav-logo">
             <span class="seed"></span>
@@ -740,328 +686,381 @@
         </a>
         <ul class="nav-links">
             <li><a href="#apps">Apps</a></li>
-            <li><a href="#about">Sobre</a></li>
+            <li><a href="#contact">Contato</a></li>
+            <li><a href="https://github.com/andrefiker/appfarm" target="_blank" rel="noopener">GitHub</a></li>
         </ul>
     </nav>
 
+    <!-- HERO -->
     <section class="hero">
         <div class="hero-badge">
             <span class="dot"></span>
-            Colheita digital
+            Todos gratuitos · Sem anúncios
         </div>
-        <h1>App <span class="accent">Farm</span></h1>
-        <p class="hero-sub">Onde ideias são plantadas e apps são colhidos. Uma coleção de ferramentas úteis, cultivadas com cuidado.</p>
-        <div class="hero-scroll">
-            <span>Explorar</span>
-            <div class="line"></div>
+        <h1>Cultivando <em>Apps</em><br>que fazem a diferença</h1>
+        <p>Ferramentas para profissionais de saúde mental, educação e produtividade. Feitas com cuidado, distribuídas de graça.</p>
+        <div class="hero-stats">
+            <div class="hero-stat">
+                <div class="number" id="appCount">8</div>
+                <div class="label">Apps</div>
+            </div>
+            <div class="hero-stat">
+                <div class="number">100%</div>
+                <div class="label">Gratuitos</div>
+            </div>
+            <div class="hero-stat">
+                <div class="number">0</div>
+                <div class="label">Anúncios</div>
+            </div>
         </div>
     </section>
 
-    <section class="section" id="apps">
-        <div class="section-header fade-in">
-            <div class="section-label">Colheita</div>
-            <h2 class="section-title">Apps cultivados</h2>
-        </div>
+    <!-- CATEGORY FILTER -->
+    <div class="categories">
+        <button class="cat-btn active" onclick="filterApps('all')">Todos</button>
+        <button class="cat-btn" onclick="filterApps('Saúde')">Saúde</button>
+        <button class="cat-btn" onclick="filterApps('Bem-estar')">Bem-estar</button>
+        <button class="cat-btn" onclick="filterApps('Finanças')">Finanças</button>
+        <button class="cat-btn" onclick="filterApps('Educação')">Educação</button>
+        <button class="cat-btn" onclick="filterApps('Notícias')">Notícias</button>
+    </div>
+
+    <!-- APPS GRID -->
+    <section id="apps">
         <div class="apps-grid" id="appsGrid"></div>
     </section>
 
-    <section class="about-section fade-in" id="about">
-        <div class="section-label">Sobre</div>
-        <h2 class="section-title">Cada app começa como uma semente de ideia.</h2>
-        <p class="about-text">
-            App Farm é meu espaço para compartilhar ferramentas que crio para resolver problemas reais. 
-            Cada aplicativo é desenvolvido com atenção aos detalhes, pensando na experiência de quem vai usar. 
-            De apps para saúde a ferramentas de produtividade — aqui você encontra soluções práticas e bem feitas.
-        </p>
-    </section>
-
-    <footer>
-        <p>&copy; 2025 App Farm &middot; Cultivado com &#9749; e código &middot; Android APKs disponíveis para download</p>
-    </footer>
-
     <!-- MODAL -->
     <div class="modal-overlay" id="modalOverlay">
-        <div class="modal" id="modalContent"></div>
+        <div class="modal-content" id="modalContent"></div>
     </div>
 
+    <!-- CONTACT -->
+    <section id="contact">
+        <h2>Fale comigo</h2>
+        <p>Sugestões, bugs, ideias para novos apps? Ou simplesmente diga oi.</p>
+        <a href="https://wa.me/5511999999999?text=Oi!%20Vi%20o%20App%20Farm%20e%20gostaria%20de%20saber%20mais." class="cta-whatsapp" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            Conversar no WhatsApp
+        </a>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-links">
+            <a href="#apps">Apps</a>
+            <a href="privacy.html">Privacidade</a>
+            <a href="#contact">Contato</a>
+            <a href="https://github.com/andrefiker/appfarm" target="_blank" rel="noopener">GitHub</a>
+        </div>
+        <div class="footer-copy">© 2025 App Farm · Cultivado com ☕ e código · Todos os apps são gratuitos e sem anúncios</div>
+    </footer>
+
     <script>
-        // ==========================================
-        // APP DATA
-        // ==========================================
-        const apps = [
-            {
-                name: "Clínica Fácil",
-                description: "Sistema de gestão clínica para psicólogos com prontuário eletrônico, agendamento, testes psicológicos e controle financeiro.",
-                category: "Saúde",
-                icon: "\u{1F9E0}",
-                iconBg: "#ede7f6",
-                tags: ["Psicologia", "Gestão Clínica", "Android"],
-                apk: "apks/ClinicaFacil.apk",
-                available: true,
-                longDescription: "O Clínica Fácil é um sistema completo de gestão clínica desenvolvido especificamente para psicólogos. Ele reúne em um único app tudo o que o profissional precisa para organizar seu consultório: desde o cadastro e acompanhamento de pacientes até o controle financeiro das sessões. O app funciona 100% offline, garantindo a privacidade dos dados clínicos.",
-                features: [
-                    "Prontuário eletrônico completo com histórico de sessões",
-                    "Agendamento com visualização em calendário",
-                    "Testes psicológicos integrados (BDI, BAI, PHQ-9, GAD-7)",
-                    "Controle financeiro com relatórios por período",
-                    "Cadastro detalhado de pacientes com anamnese",
-                    "Exportação e backup de dados",
-                    "Funciona 100% offline — dados no dispositivo",
-                    "Interface intuitiva e organizada"
-                ],
-                note: "Desenvolvido para psicólogos clínicos que buscam uma solução prática e segura para gerenciar sua rotina profissional."
-            },
-            {
-                name: "Consulta de Interações Medicamentosas",
-                description: "Análise de interações medicamentosas com IA, com explicações acessíveis para pacientes e profissionais de saúde.",
-                category: "Saúde",
-                icon: "\u{2695}\u{FE0F}",
-                iconBg: "#fff3e0",
-                tags: ["Medicamentos", "IA", "Android"],
-                apk: "apks/PsychMedInteracoes.apk",
-                available: true,
-                longDescription: "Este app utiliza inteligência artificial para analisar interações entre medicamentos, fornecendo explicações claras tanto para profissionais de saúde quanto para pacientes. Ideal para psiquiatras, clínicos gerais e qualquer profissional que precise verificar rapidamente se há riscos na combinação de medicamentos de um paciente.",
-                features: [
-                    "Análise de interações entre múltiplos medicamentos",
-                    "Explicações em linguagem acessível para pacientes",
-                    "Detalhamento técnico para profissionais",
-                    "Classificação de gravidade das interações",
-                    "Sugestões de alternativas quando há risco",
-                    "Interface simples de busca e consulta",
-                    "Foco em medicamentos psiquiátricos",
-                    "Powered by IA para respostas contextualizadas"
-                ],
-                note: "Ferramenta de apoio à decisão clínica. Sempre consulte fontes oficiais e o farmacêutico para confirmar interações críticas."
-            },
-            {
-                name: "StoryTracker",
-                description: "Agregador de notícias inteligente com múltiplas fontes e categorização automática de artigos.",
-                category: "Notícias",
-                icon: "\u{1F4F0}",
-                iconBg: "#e8eaf6",
-                tags: ["Notícias", "Agregador", "RSS"],
-                apk: "apks/StoryTracker-Intel.apk",
-                available: true,
-                longDescription: "O StoryTracker é um agregador de notícias que reúne matérias de múltiplas fontes em um único lugar, com categorização automática por temas. Permite acompanhar o que está acontecendo no mundo de forma organizada, filtrando por categorias de interesse e acompanhando as histórias que mais importam para você.",
-                features: [
-                    "Agregação de múltiplas fontes de notícias",
-                    "Categorização automática de artigos por tema",
-                    "Filtro por categorias de interesse",
-                    "Leitura limpa e sem distrações",
-                    "Acompanhamento de histórias em desenvolvimento",
-                    "Fontes configuráveis pelo usuário",
-                    "Interface leve e rápida",
-                    "Navegação por gestos e favoritos"
-                ],
-                note: "Mantenha-se informado sem precisar navegar por dezenas de sites diferentes."
-            },
-            {
-                name: "Prescripta",
-                description: "Ferramenta para psiquiatras acompanharem a cobertura de prescrições e evitarem lacunas na medicação.",
-                category: "Saúde",
-                icon: "\u{1F48A}",
-                iconBg: "#e8f5e9",
-                tags: ["Psiquiatria", "Prescrições", "Android"],
-                apk: "apks/Prescripta.apk",
-                available: true,
-                longDescription: "O Prescripta foi desenvolvido para psiquiatras que precisam monitorar se seus pacientes têm cobertura contínua de medicação. O app calcula automaticamente quando cada prescrição expira e alerta sobre lacunas iminentes, ajudando a prevenir interrupções no tratamento que poderiam comprometer o bem-estar do paciente.",
-                features: [
-                    "Cálculo automático de cobertura de prescrição",
-                    "Alertas de expiração e lacunas na medicação",
-                    "Visualização em timeline da cobertura",
-                    "Cadastro de múltiplos pacientes e medicamentos",
-                    "Histórico completo de prescrições",
-                    "Identificação rápida de pacientes em risco"
-                ],
-                note: "Em desenvolvimento. O app ajudará psiquiatras a garantir a continuidade do tratamento medicamentoso."
-            },
-            {
-                name: "Orçamento Simples",
-                description: "App de controle financeiro minimalista com exportação e importação de dados para backup fácil.",
-                category: "Finanças",
-                icon: "\u{1F4CA}",
-                iconBg: "#e3f2fd",
-                tags: ["Finanças", "Minimalista", "Android"],
-                apk: "apks/BudgetMinimalist.apk",
-                available: true,
-                longDescription: "O Orçamento Simples é um app de controle financeiro que faz exatamente o que o nome diz: simplifica o gerenciamento das suas finanças. Sem funcionalidades desnecessárias — apenas registre receitas e despesas, organize por categorias e acompanhe seu saldo. Exportação e importação de dados permitem backup fácil e migração entre dispositivos.",
-                features: [
-                    "Registro rápido de receitas e despesas",
-                    "Categorias personalizáveis",
-                    "Visualização de saldo e histórico",
-                    "Exportação de dados para backup (CSV)",
-                    "Importação para restaurar ou migrar dados",
-                    "Interface minimalista e sem distrações",
-                    "Funciona 100% offline",
-                    "Zero permissões desnecessárias"
-                ],
-                note: "Para quem quer controle financeiro sem a complexidade de apps bancários. Simples, rápido e direto ao ponto."
-            },
-            {
-                name: "Teste de Inglês: Vocabulário",
-                description: "Teste de vocabulário em inglês com aprendizado adaptativo que se ajusta ao seu nível.",
-                category: "Educação",
-                icon: "\u{1F4DA}",
-                iconBg: "#fce4ec",
-                tags: ["Inglês", "Vocabulário", "Adaptativo"],
-                apk: "apks/VocabBuilder.apk",
-                available: true,
-                longDescription: "Este app avalia e desenvolve seu vocabulário em inglês através de um sistema adaptativo. O teste se ajusta automaticamente ao seu nível de conhecimento: se você acerta, as palavras ficam mais difíceis; se erra, o nível se recalibra. Ao final, você recebe uma estimativa do seu nível de proficiência e pode acompanhar sua evolução ao longo do tempo.",
-                features: [
-                    "Algoritmo adaptativo que ajusta dificuldade em tempo real",
-                    "Estimativa de nível de proficiência (A1 a C2)",
-                    "Banco de palavras organizado por frequência de uso",
-                    "Acompanhamento de progresso e evolução",
-                    "Diferentes modos de teste (definição, contexto, sinônimos)",
-                    "Histórico de desempenho com gráficos",
-                    "Interface limpa focada no aprendizado",
-                    "Sem anúncios, sem distrações"
-                ],
-                note: "Ideal para estudantes de inglês que querem medir e expandir seu vocabulário de forma científica."
-            },
-            {
-                name: "Eliminador de Vícios",
-                description: "Acompanhamento de cessação com estatísticas motivacionais para quem está mudando hábitos.",
-                category: "Bem-estar",
-                icon: "\u{1F331}",
-                iconBg: "#f1f8e9",
-                tags: ["Bem-estar", "Tracking", "Motivação"],
-                apk: "apks/QuitTracker.apk",
-                available: true,
-                longDescription: "O Eliminador de Vícios é um app de acompanhamento para quem decidiu largar um hábito prejudicial. Ele mostra estatísticas motivacionais como tempo livre do vício, economia financeira e marcos de recuperação baseados em evidências científicas. O app funciona como um companheiro silencioso na jornada de mudança.",
-                features: [
-                    "Contador de tempo desde a cessação",
-                    "Cálculo de economia financeira acumulada",
-                    "Marcos de recuperação baseados em evidências",
-                    "Diário para registrar gatilhos e estratégias",
-                    "Estatísticas motivacionais e gráficos de progresso",
-                    "Notificações de conquistas e marcos alcançados"
-                ],
-                note: "Em desenvolvimento. Será um companheiro para quem está no processo de parar com nicotina, cannabis ou outros hábitos."
-            }
-        ];
-
-        // ==========================================
-        // RENDER APPS
-        // ==========================================
-        function renderApps() {
-            const grid = document.getElementById('appsGrid');
-            if (apps.length === 0) {
-                grid.innerHTML = '<div class="empty-state"><div class="seedling">\u{1F331}</div><p>Sementes plantadas... apps em breve!</p></div>';
-                return;
-            }
-
-            grid.innerHTML = apps.map((app, i) => `
-                <div class="app-card fade-in" style="animation-delay: ${i * 0.1}s" onclick="openModal(${i})">
-                    <div class="app-card-arrow">
-                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path d="M7 17L17 7M17 7H7M17 7v10"/>
-                        </svg>
-                    </div>
-                    <div class="app-icon" style="background: ${app.iconBg}">
-                        ${app.icon}
-                    </div>
-                    <div class="app-card-category">${app.category}</div>
-                    <h3>${app.name}</h3>
-                    <p>${app.description}</p>
-                    <div class="app-card-tags">
-                        ${app.tags.map(tag => `<span class="app-tag">${tag}</span>`).join('')}
-                    </div>
-                    <div class="app-status-badge ${app.available ? 'available' : 'coming-soon'}">
-                        <span class="status-dot"></span>
-                        ${app.available ? 'Disponível' : 'Em breve'}
-                    </div>
-                </div>
-            `).join('');
+    const apps = [
+        {
+            name: "Clínica Fácil",
+            description: "Sistema de gestão clínica para psicólogos com prontuário eletrônico, agendamento, testes psicológicos e controle financeiro.",
+            category: "Saúde",
+            icon: "🧠",
+            iconBg: "#1e1535",
+            tags: ["Psicologia", "Gestão Clínica", "Android"],
+            apk: "apks/ClinicaFacil.apk",
+            available: true,
+            longDescription: "O Clínica Fácil é um sistema completo de gestão clínica desenvolvido especificamente para psicólogos. Reúne em um único app tudo o que o profissional precisa para organizar seu consultório: cadastro e acompanhamento de pacientes, controle financeiro das sessões, e bateria de testes psicológicos. Funciona 100% offline, garantindo a privacidade dos dados clínicos.",
+            features: [
+                "Prontuário eletrônico completo com histórico de sessões",
+                "Agendamento com visualização em calendário",
+                "Testes psicológicos integrados (BDI, BAI, PHQ-9, GAD-7)",
+                "Controle financeiro com relatórios por período",
+                "Cadastro detalhado de pacientes com anamnese",
+                "Exportação e backup de dados",
+                "Funciona 100% offline — dados no dispositivo",
+                "Interface intuitiva e organizada"
+            ],
+            note: "Desenvolvido para psicólogos clínicos que buscam uma solução prática e segura para gerenciar sua rotina profissional."
+        },
+        {
+            name: "Consulta de Interações Medicamentosas",
+            description: "Análise de interações medicamentosas com IA, com explicações acessíveis para pacientes e profissionais de saúde.",
+            category: "Saúde",
+            icon: "⚕️",
+            iconBg: "#1a2418",
+            tags: ["Medicamentos", "IA", "Android"],
+            apk: "apks/PsychMedInteracoes.apk",
+            available: true,
+            longDescription: "Este app utiliza inteligência artificial para analisar interações entre medicamentos, fornecendo explicações claras tanto para profissionais de saúde quanto para pacientes. Ideal para psiquiatras, clínicos gerais e qualquer profissional que precise verificar rapidamente se há riscos na combinação de medicamentos de um paciente.",
+            features: [
+                "Análise de interações entre múltiplos medicamentos",
+                "Explicações em linguagem acessível para pacientes",
+                "Detalhamento técnico para profissionais",
+                "Classificação de gravidade das interações",
+                "Sugestões de alternativas quando há risco",
+                "Interface simples de busca e consulta",
+                "Foco em medicamentos psiquiátricos",
+                "Powered by IA para respostas contextualizadas"
+            ],
+            note: "Ferramenta de apoio à decisão clínica. Sempre consulte fontes oficiais e o farmacêutico para confirmar interações críticas."
+        },
+        {
+            name: "Prescripta",
+            description: "Ferramenta para psiquiatras acompanharem a cobertura de prescrições e evitarem lacunas na medicação.",
+            category: "Saúde",
+            icon: "💊",
+            iconBg: "#141e14",
+            tags: ["Psiquiatria", "Prescrições", "Android"],
+            apk: "apks/Prescripta.apk",
+            available: true,
+            longDescription: "O Prescripta foi desenvolvido para psiquiatras que precisam monitorar se seus pacientes têm cobertura contínua de medicação. O app calcula automaticamente quando cada prescrição expira e alerta sobre lacunas iminentes, ajudando a prevenir interrupções no tratamento que poderiam comprometer o bem-estar do paciente.",
+            features: [
+                "Cálculo automático de cobertura de prescrição",
+                "Alertas de expiração e lacunas na medicação",
+                "Visualização em timeline da cobertura",
+                "Cadastro de múltiplos pacientes e medicamentos",
+                "Histórico completo de prescrições",
+                "Identificação rápida de pacientes em risco"
+            ],
+            note: "O app ajuda psiquiatras a garantir a continuidade do tratamento medicamentoso."
+        },
+        {
+            name: "Eliminador de Vícios",
+            description: "Acompanhamento de cessação com estatísticas motivacionais para quem está mudando hábitos.",
+            category: "Bem-estar",
+            icon: "🌱",
+            iconBg: "#1a2418",
+            tags: ["Bem-estar", "Tracking", "Motivação"],
+            apk: "apks/QuitTracker.apk",
+            available: true,
+            longDescription: "O Eliminador de Vícios é um app de acompanhamento para quem decidiu largar um hábito prejudicial. Ele mostra estatísticas motivacionais como tempo livre do vício, economia financeira e marcos de recuperação baseados em evidências científicas. O app funciona como um companheiro silencioso na jornada de mudança.",
+            features: [
+                "Contador de tempo desde a cessação",
+                "Cálculo de economia financeira acumulada",
+                "Marcos de recuperação baseados em evidências",
+                "Diário para registrar gatilhos e estratégias",
+                "Estatísticas motivacionais e gráficos de progresso",
+                "Notificações de conquistas e marcos alcançados"
+            ],
+            note: "Um companheiro para quem está no processo de parar com nicotina, cannabis ou outros hábitos."
+        },
+        {
+            name: "Pare de Fumar",
+            description: "Acompanhamento focado em cessação do tabagismo com marcos de saúde e economia acumulada.",
+            category: "Bem-estar",
+            icon: "🚭",
+            iconBg: "#1e1818",
+            tags: ["Cessação", "Tabagismo", "Android"],
+            apk: "apks/PareDeFumar.apk",
+            available: true,
+            longDescription: "O Pare de Fumar é um app dedicado ao acompanhamento da cessação do tabagismo. Ele registra seu progresso diário, calcula a economia financeira desde que você parou, e apresenta marcos de recuperação da saúde baseados em evidências médicas — como melhora na circulação, capacidade pulmonar e redução de riscos cardiovasculares.",
+            features: [
+                "Contador preciso de tempo sem fumar",
+                "Cálculo de economia financeira acumulada",
+                "Marcos de recuperação da saúde (circulação, pulmão, coração)",
+                "Registro de cigarros evitados",
+                "Estatísticas motivacionais e progresso visual",
+                "Interface simples e focada na motivação"
+            ],
+            note: "Cada dia conta. Este app ajuda você a visualizar os ganhos reais de parar de fumar."
+        },
+        {
+            name: "Orçamento Simples",
+            description: "App de controle financeiro minimalista com exportação e importação de dados para backup fácil.",
+            category: "Finanças",
+            icon: "📊",
+            iconBg: "#141820",
+            tags: ["Finanças", "Minimalista", "Android"],
+            apk: "apks/BudgetMinimalist.apk",
+            available: true,
+            longDescription: "O Orçamento Simples é um app de controle financeiro que faz exatamente o que o nome diz: simplifica o gerenciamento das suas finanças. Sem funcionalidades desnecessárias — apenas registre receitas e despesas, organize por categorias e acompanhe seu saldo. Exportação e importação de dados permitem backup fácil e migração entre dispositivos.",
+            features: [
+                "Registro rápido de receitas e despesas",
+                "Categorias personalizáveis",
+                "Visualização de saldo e histórico",
+                "Exportação de dados para backup (CSV)",
+                "Importação para restaurar ou migrar dados",
+                "Interface minimalista e sem distrações",
+                "Funciona 100% offline",
+                "Zero permissões desnecessárias"
+            ],
+            note: "Para quem quer controle financeiro sem a complexidade de apps bancários. Simples, rápido e direto ao ponto."
+        },
+        {
+            name: "Teste de Inglês: Vocabulário",
+            description: "Teste de vocabulário em inglês com aprendizado adaptativo que se ajusta ao seu nível.",
+            category: "Educação",
+            icon: "📚",
+            iconBg: "#1e1420",
+            tags: ["Inglês", "Vocabulário", "Adaptativo"],
+            apk: "apks/VocabBuilder.apk",
+            available: true,
+            longDescription: "Este app avalia e desenvolve seu vocabulário em inglês através de um sistema adaptativo. O teste se ajusta automaticamente ao seu nível de conhecimento: se você acerta, as palavras ficam mais difíceis; se erra, o nível se recalibra. Ao final, você recebe uma estimativa do seu nível de proficiência e pode acompanhar sua evolução ao longo do tempo.",
+            features: [
+                "Algoritmo adaptativo que ajusta dificuldade em tempo real",
+                "Estimativa de nível de proficiência (A1 a C2)",
+                "Banco de palavras organizado por frequência de uso",
+                "Acompanhamento de progresso e evolução",
+                "Diferentes modos de teste (definição, contexto, sinônimos)",
+                "Histórico de desempenho com gráficos",
+                "Interface limpa focada no aprendizado",
+                "Sem anúncios, sem distrações"
+            ],
+            note: "Ideal para estudantes de inglês que querem medir e expandir seu vocabulário de forma científica."
+        },
+        {
+            name: "StoryTracker",
+            description: "Agregador de notícias inteligente com múltiplas fontes e categorização automática de artigos.",
+            category: "Notícias",
+            icon: "📰",
+            iconBg: "#181820",
+            tags: ["Notícias", "Agregador", "RSS"],
+            apk: "apks/StoryTracker-Intel.apk",
+            available: true,
+            longDescription: "O StoryTracker é um agregador de notícias que reúne matérias de múltiplas fontes em um único lugar, com categorização automática por temas. Permite acompanhar o que está acontecendo no mundo de forma organizada, filtrando por categorias de interesse e acompanhando as histórias que mais importam para você.",
+            features: [
+                "Agregação de múltiplas fontes de notícias",
+                "Categorização automática de artigos por tema",
+                "Filtro por categorias de interesse",
+                "Leitura limpa e sem distrações",
+                "Acompanhamento de histórias em desenvolvimento",
+                "Fontes configuráveis pelo usuário",
+                "Interface leve e rápida",
+                "Navegação por gestos e favoritos"
+            ],
+            note: "Mantenha-se informado sem precisar navegar por dezenas de sites diferentes."
         }
+    ];
 
-        // ==========================================
-        // MODAL
-        // ==========================================
-        function openModal(index) {
-            const app = apps[index];
-            const overlay = document.getElementById('modalOverlay');
-            const content = document.getElementById('modalContent');
+    // ===== FILTER =====
+    let currentFilter = 'all';
 
-            content.innerHTML = `
-                <button class="modal-close" onclick="closeModal()" aria-label="Fechar">\u2715</button>
-                <div class="modal-header">
-                    <div class="modal-icon" style="background: ${app.iconBg}">${app.icon}</div>
-                    <div class="modal-header-text">
-                        <div class="app-card-category">${app.category}</div>
-                        <h2>${app.name}</h2>
-                    </div>
-                </div>
-                <div class="modal-body">
-                    <p class="modal-description">${app.longDescription}</p>
-
-                    <div class="modal-section-title">
-                        <span class="icon">\u2726</span> Funcionalidades
-                    </div>
-                    <ul class="features-list">
-                        ${app.features.map(f => `
-                            <li>
-                                <span class="check">\u2713</span>
-                                <span>${f}</span>
-                            </li>
-                        `).join('')}
-                    </ul>
-
-                    <div class="modal-tags">
-                        ${app.tags.map(tag => `<span class="app-tag">${tag}</span>`).join('')}
-                    </div>
-
-                    <div class="modal-actions">
-                        ${app.available ? `
-                        <a href="${app.apk}" class="modal-download-btn" download>
-                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                <polyline points="7 10 12 15 17 10"/>
-                                <line x1="12" y1="15" x2="12" y2="3"/>
-                            </svg>
-                            Baixar APK
-                        </a>
-                        ` : `
-                        <span class="modal-download-btn disabled">Em breve</span>
-                        `}
-                    </div>
-
-                    ${app.note ? `<div class="modal-info-note">${app.note}</div>` : ''}
-                </div>
-            `;
-
-            overlay.classList.add('active');
-            document.body.classList.add('modal-open');
-        }
-
-        function closeModal() {
-            document.getElementById('modalOverlay').classList.remove('active');
-            document.body.classList.remove('modal-open');
-        }
-
-        document.getElementById('modalOverlay').addEventListener('click', (e) => {
-            if (e.target === e.currentTarget) closeModal();
+    function filterApps(category) {
+        currentFilter = category;
+        document.querySelectorAll('.cat-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.textContent.trim() === (category === 'all' ? 'Todos' : category));
         });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeModal();
-        });
-
-        // ==========================================
-        // INIT
-        // ==========================================
         renderApps();
+    }
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) entry.target.classList.add('visible');
-            });
-        }, { threshold: 0.1 });
+    // ===== RENDER =====
+    function renderApps() {
+        const grid = document.getElementById('appsGrid');
+        const filtered = currentFilter === 'all' ? apps : apps.filter(a => a.category === currentFilter);
 
-        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+        if (filtered.length === 0) {
+            grid.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--text-muted);grid-column:1/-1"><p style="font-size:1.1rem">Nenhum app nessa categoria ainda 🌾</p></div>';
+            return;
+        }
+
+        grid.innerHTML = filtered.map((app, i) => {
+            const realIndex = apps.indexOf(app);
+            return `
+            <div class="app-card" style="transition-delay: ${i * 0.06}s" onclick="openModal(${realIndex})">
+                <div class="app-card-arrow">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M7 17L17 7M17 7H7M17 7v10"/>
+                    </svg>
+                </div>
+                <div class="app-icon" style="background: ${app.iconBg}">
+                    ${app.icon}
+                </div>
+                <div class="app-card-category">${app.category}</div>
+                <h3>${app.name}</h3>
+                <p>${app.description}</p>
+                <div class="app-card-tags">
+                    ${app.tags.map(tag => `<span class="app-tag">${tag}</span>`).join('')}
+                </div>
+                <div class="app-status-badge ${app.available ? 'available' : 'coming-soon'}">
+                    <span class="status-dot"></span>
+                    ${app.available ? 'Disponível' : 'Em breve'}
+                </div>
+            </div>`;
+        }).join('');
+
+        // Re-observe for scroll animation
         setTimeout(() => {
-            document.querySelectorAll('.app-card.fade-in').forEach(el => observer.observe(el));
-        }, 100);
+            document.querySelectorAll('.app-card').forEach(el => observer.observe(el));
+        }, 50);
+    }
+
+    // ===== MODAL =====
+    function openModal(index) {
+        const app = apps[index];
+        const overlay = document.getElementById('modalOverlay');
+        const content = document.getElementById('modalContent');
+
+        content.innerHTML = `
+            <button class="modal-close" onclick="closeModal()" aria-label="Fechar">✕</button>
+            <div class="modal-header">
+                <div class="modal-icon" style="background: ${app.iconBg}">${app.icon}</div>
+                <div class="modal-header-text">
+                    <div class="app-card-category">${app.category}</div>
+                    <h2>${app.name}</h2>
+                </div>
+            </div>
+            <div class="modal-body">
+                <p class="modal-description">${app.longDescription}</p>
+
+                <div class="modal-section-title">
+                    <span class="icon">✦</span> Funcionalidades
+                </div>
+                <ul class="features-list">
+                    ${app.features.map(f => `
+                        <li>
+                            <span class="check">✓</span>
+                            <span>${f}</span>
+                        </li>
+                    `).join('')}
+                </ul>
+
+                <div class="modal-tags">
+                    ${app.tags.map(tag => `<span class="app-tag">${tag}</span>`).join('')}
+                </div>
+
+                <div class="modal-actions">
+                    ${app.available ? `
+                    <a href="${app.apk}" class="modal-download-btn" download>
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Baixar APK
+                    </a>
+                    ` : `
+                    <span class="modal-download-btn disabled">Em breve</span>
+                    `}
+                </div>
+
+                ${app.note ? `<div class="modal-info-note">${app.note}</div>` : ''}
+            </div>
+        `;
+
+        overlay.classList.add('active');
+        document.body.classList.add('modal-open');
+    }
+
+    function closeModal() {
+        document.getElementById('modalOverlay').classList.remove('active');
+        document.body.classList.remove('modal-open');
+    }
+
+    document.getElementById('modalOverlay').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModal();
+    });
+
+    // ===== SCROLL OBSERVER =====
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) entry.target.classList.add('visible');
+        });
+    }, { threshold: 0.1 });
+
+    // ===== INIT =====
+    renderApps();
     </script>
 </body>
 </html>

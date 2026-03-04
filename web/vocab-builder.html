@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Inglês: Vocabulário — App Farm</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{--bg:#0a0c10;--card:#12151c;--card2:#181c25;--border:#222839;--text:#e8eaf0;--text2:#8b92a8;--text3:#5a6178;--accent:#6b8f5e;--accent-l:#8ab87a;--red:#c46b5a;--blue:#5a7ec4;--radius:12px;--font-d:'DM Serif Display',Georgia,serif;--font:'Outfit',system-ui,sans-serif}
+        body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+        .topbar{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+        .topbar a{color:var(--text3);text-decoration:none;font-size:.85rem}
+        .topbar h1{font-family:var(--font-d);font-size:1.2rem;font-weight:400}
+        .container{max-width:480px;margin:0 auto;padding:20px}
+        .welcome{text-align:center;padding:40px 0}
+        .welcome h2{font-family:var(--font-d);font-size:1.8rem;font-weight:400;margin-bottom:12px}
+        .welcome p{color:var(--text2);font-size:.9rem;margin-bottom:28px;font-weight:300;line-height:1.7}
+        .start-btn{padding:14px 40px;background:var(--accent);color:#fff;border:none;border-radius:100px;font-family:var(--font);font-size:.95rem;font-weight:500;cursor:pointer}
+        .start-btn:hover{background:var(--accent-l)}
+        .quiz{display:none}
+        .progress-bar{height:4px;background:var(--card2);border-radius:2px;margin-bottom:24px;overflow:hidden}
+        .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-l));transition:width .3s}
+        .q-counter{font-size:.8rem;color:var(--text3);text-align:center;margin-bottom:16px}
+        .level-badge{display:inline-block;padding:4px 12px;border-radius:100px;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;margin-left:8px;font-weight:500}
+        .q-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;text-align:center;margin-bottom:20px;min-height:140px;display:flex;flex-direction:column;justify-content:center}
+        .q-word{font-family:var(--font-d);font-size:2rem;margin-bottom:8px}
+        .q-hint{font-size:.82rem;color:var(--text3);font-style:italic}
+        .options{display:grid;gap:10px;margin-bottom:20px}
+        .opt-btn{padding:14px 20px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:.9rem;cursor:pointer;text-align:left;transition:all .2s}
+        .opt-btn:hover{background:var(--card2);border-color:var(--border)}
+        .opt-btn.correct{background:rgba(107,143,94,.15);border-color:var(--accent);color:var(--accent-l)}
+        .opt-btn.wrong{background:rgba(196,107,90,.15);border-color:var(--red);color:var(--red)}
+        .opt-btn.disabled{pointer-events:none}
+        .results{display:none;text-align:center}
+        .results h2{font-family:var(--font-d);font-size:1.8rem;font-weight:400;margin-bottom:8px}
+        .result-level{font-family:var(--font-d);font-size:3rem;color:var(--accent-l);margin:20px 0}
+        .result-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:24px 0}
+        .r-stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
+        .r-stat .v{font-family:var(--font-d);font-size:1.4rem}
+        .r-stat .l{font-size:.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+        .result-desc{color:var(--text2);font-size:.9rem;margin:16px 0 28px;line-height:1.7;font-weight:300}
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <a href="../">← App Farm</a>
+        <h1>📚 Teste de Vocabulário</h1>
+        <div></div>
+    </div>
+    <div class="container">
+        <div class="welcome" id="welcome">
+            <h2>Qual é o seu nível?</h2>
+            <p>Teste seu vocabulário em inglês com um quiz adaptativo. As perguntas se ajustam ao seu nível — quanto mais você acerta, mais difícil fica.</p>
+            <button class="start-btn" onclick="startQuiz()">Começar teste</button>
+        </div>
+        <div class="quiz" id="quiz">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <div class="q-counter" id="qCounter"></div>
+            <div class="q-card"><div class="q-word" id="qWord"></div><div class="q-hint" id="qHint"></div></div>
+            <div class="options" id="options"></div>
+        </div>
+        <div class="results" id="results">
+            <h2>Resultado</h2>
+            <div class="result-level" id="resultLevel"></div>
+            <div class="result-stats">
+                <div class="r-stat"><div class="v" id="rCorrect">0</div><div class="l">Corretas</div></div>
+                <div class="r-stat"><div class="v" id="rTotal">0</div><div class="l">Perguntas</div></div>
+                <div class="r-stat"><div class="v" id="rPct">0%</div><div class="l">Acurácia</div></div>
+            </div>
+            <div class="result-desc" id="resultDesc"></div>
+            <button class="start-btn" onclick="startQuiz()">Tentar novamente</button>
+        </div>
+    </div>
+    <script>
+        const words = [
+            // A1 - Basic
+            {word:"happy",correct:"feliz",wrong:["triste","cansado","faminto"],level:1},
+            {word:"house",correct:"casa",wrong:["carro","escola","hospital"],level:1},
+            {word:"water",correct:"água",wrong:["fogo","terra","ar"],level:1},
+            {word:"friend",correct:"amigo",wrong:["inimigo","irmão","professor"],level:1},
+            {word:"eat",correct:"comer",wrong:["beber","dormir","correr"],level:1},
+            // A2
+            {word:"believe",correct:"acreditar",wrong:["esquecer","lembrar","imaginar"],level:2},
+            {word:"strong",correct:"forte",wrong:["fraco","alto","bonito"],level:2},
+            {word:"reach",correct:"alcançar",wrong:["perder","encontrar","esconder"],level:2},
+            {word:"safe",correct:"seguro",wrong:["perigoso","rápido","lento"],level:2},
+            {word:"choice",correct:"escolha",wrong:["chance","mudança","sorte"],level:2},
+            // B1
+            {word:"achieve",correct:"conquistar",wrong:["abandonar","destruir","ignorar"],level:3},
+            {word:"threat",correct:"ameaça",wrong:["promessa","esperança","verdade"],level:3},
+            {word:"behavior",correct:"comportamento",wrong:["pensamento","sentimento","movimento"],level:3},
+            {word:"struggle",correct:"luta/esforço",wrong:["descanso","paz","prazer"],level:3},
+            {word:"purpose",correct:"propósito",wrong:["acidente","surpresa","pergunta"],level:3},
+            // B2
+            {word:"thorough",correct:"minucioso",wrong:["superficial","rápido","descuidado"],level:4},
+            {word:"reluctant",correct:"relutante",wrong:["entusiasmado","ansioso","decidido"],level:4},
+            {word:"outcome",correct:"resultado",wrong:["processo","início","tentativa"],level:4},
+            {word:"subtle",correct:"sutil",wrong:["óbvio","claro","direto"],level:4},
+            {word:"gather",correct:"reunir",wrong:["dispersar","separar","dividir"],level:4},
+            // C1
+            {word:"ubiquitous",correct:"onipresente",wrong:["raro","escasso","limitado"],level:5},
+            {word:"dwindle",correct:"diminuir gradualmente",wrong:["aumentar","explodir","expandir"],level:5},
+            {word:"eloquent",correct:"eloquente",wrong:["tímido","hesitante","confuso"],level:5},
+            {word:"scrutinize",correct:"examinar minuciosamente",wrong:["ignorar","aceitar","simplificar"],level:5},
+            {word:"cumbersome",correct:"incômodo/desajeitado",wrong:["leve","simples","elegante"],level:5},
+            // C2
+            {word:"surreptitious",correct:"furtivo/secreto",wrong:["público","evidente","transparente"],level:6},
+            {word:"perfunctory",correct:"superficial/mecânico",wrong:["detalhado","apaixonado","cuidadoso"],level:6},
+            {word:"obsequious",correct:"servil/bajulador",wrong:["rebelde","independente","arrogante"],level:6},
+            {word:"perspicacious",correct:"perspicaz",wrong:["ingênuo","confuso","desatento"],level:6},
+            {word:"ephemeral",correct:"efêmero",wrong:["eterno","permanente","duradouro"],level:6},
+        ];
+
+        const levels = {1:"A1",2:"A2",3:"B1",4:"B2",5:"C1",6:"C2"};
+        const levelColors = {1:"#5ab8b0",2:"#5a7ec4",3:"#8b6bc4",4:"#c4954a",5:"#c46b5a",6:"#c45a8b"};
+        const levelDescs = {
+            "A1":"Nível iniciante — você conhece palavras básicas do dia a dia. Continue praticando!",
+            "A2":"Nível elementar — você entende vocabulário simples e frases comuns.",
+            "B1":"Nível intermediário — você consegue se comunicar em situações cotidianas.",
+            "B2":"Nível intermediário-avançado — seu vocabulário é sólido para contextos profissionais.",
+            "C1":"Nível avançado — vocabulário amplo e sofisticado. Excelente!",
+            "C2":"Nível fluente — domínio excepcional do vocabulário. Parabéns!"
+        };
+
+        let currentLevel = 2;
+        let questionIndex = 0;
+        let correct = 0;
+        let total = 20;
+        let usedWords = [];
+        let currentQuestion = null;
+
+        function startQuiz() {
+            currentLevel = 2;
+            questionIndex = 0;
+            correct = 0;
+            usedWords = [];
+            document.getElementById('welcome').style.display = 'none';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('quiz').style.display = 'block';
+            nextQuestion();
+        }
+
+        function getQuestion() {
+            // Get words near current level
+            const pool = words.filter(w => Math.abs(w.level - currentLevel) <= 1 && !usedWords.includes(w.word));
+            if (pool.length === 0) {
+                const any = words.filter(w => !usedWords.includes(w.word));
+                if (any.length === 0) return null;
+                return any[Math.floor(Math.random() * any.length)];
+            }
+            // Prefer current level
+            const exact = pool.filter(w => w.level === Math.round(currentLevel));
+            const pick = exact.length > 0 ? exact : pool;
+            return pick[Math.floor(Math.random() * pick.length)];
+        }
+
+        function nextQuestion() {
+            if (questionIndex >= total) { showResults(); return; }
+            currentQuestion = getQuestion();
+            if (!currentQuestion) { showResults(); return; }
+            usedWords.push(currentQuestion.word);
+            questionIndex++;
+
+            document.getElementById('progressFill').style.width = (questionIndex / total * 100) + '%';
+            const lvl = levels[Math.round(currentLevel)] || 'B1';
+            document.getElementById('qCounter').innerHTML = `Pergunta ${questionIndex}/${total} <span class="level-badge" style="background:${levelColors[Math.round(currentLevel)] || '#5a7ec4'}22;color:${levelColors[Math.round(currentLevel)] || '#5a7ec4'}">${lvl}</span>`;
+            document.getElementById('qWord').textContent = currentQuestion.word;
+            document.getElementById('qHint').textContent = 'Qual é a tradução?';
+
+            const allOptions = [currentQuestion.correct, ...currentQuestion.wrong].sort(() => Math.random() - 0.5);
+            document.getElementById('options').innerHTML = allOptions.map(opt => 
+                `<button class="opt-btn" onclick="answer(this,'${opt.replace(/'/g, "\\'")}')">${opt}</button>`
+            ).join('');
+        }
+
+        function answer(btn, chosen) {
+            const isCorrect = chosen === currentQuestion.correct;
+            document.querySelectorAll('.opt-btn').forEach(b => {
+                b.classList.add('disabled');
+                if (b.textContent === currentQuestion.correct) b.classList.add('correct');
+            });
+            if (!isCorrect) btn.classList.add('wrong');
+            if (isCorrect) {
+                correct++;
+                currentLevel = Math.min(6, currentLevel + 0.4);
+            } else {
+                currentLevel = Math.max(1, currentLevel - 0.3);
+            }
+            setTimeout(nextQuestion, isCorrect ? 600 : 1200);
+        }
+
+        function showResults() {
+            document.getElementById('quiz').style.display = 'none';
+            document.getElementById('results').style.display = 'block';
+            const pct = Math.round(correct / questionIndex * 100);
+            const finalLevel = levels[Math.round(currentLevel)] || 'B1';
+            document.getElementById('resultLevel').textContent = finalLevel;
+            document.getElementById('rCorrect').textContent = correct;
+            document.getElementById('rTotal').textContent = questionIndex;
+            document.getElementById('rPct').textContent = pct + '%';
+            document.getElementById('resultDesc').textContent = levelDescs[finalLevel];
+        }
+    </script>
+</body>
+</html>

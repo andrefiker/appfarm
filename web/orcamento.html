@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orçamento Simples — App Farm</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{--bg:#0a0c10;--card:#12151c;--card2:#181c25;--border:#222839;--text:#e8eaf0;--text2:#8b92a8;--text3:#5a6178;--accent:#6b8f5e;--accent-l:#8ab87a;--green:#4a7a3f;--red:#c46b5a;--radius:12px;--font-d:'DM Serif Display',Georgia,serif;--font:'Outfit',system-ui,sans-serif}
+        body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+        .topbar{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+        .topbar a{color:var(--text3);text-decoration:none;font-size:.85rem}
+        .topbar h1{font-family:var(--font-d);font-size:1.2rem;font-weight:400}
+        .container{max-width:480px;margin:0 auto;padding:20px}
+        .balance-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;text-align:center;margin-bottom:24px}
+        .balance-label{font-size:.8rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+        .balance-amount{font-family:var(--font-d);font-size:2.4rem;transition:color .3s}
+        .balance-positive{color:var(--accent-l)}
+        .balance-negative{color:var(--red)}
+        .summary{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+        .summary-item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
+        .summary-item .label{font-size:.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+        .summary-item .value{font-family:var(--font-d);font-size:1.3rem}
+        .income-val{color:var(--accent-l)}
+        .expense-val{color:var(--red)}
+        .add-form{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:24px}
+        .form-row{display:flex;gap:10px;margin-bottom:12px}
+        .form-row:last-child{margin-bottom:0}
+        input,select{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--font);font-size:.9rem;flex:1;outline:none}
+        input:focus,select:focus{border-color:var(--accent)}
+        select{cursor:pointer}
+        .type-toggle{display:flex;gap:8px}
+        .type-btn{flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text3);font-family:var(--font);font-size:.85rem;cursor:pointer;transition:all .2s}
+        .type-btn.active-income{background:rgba(107,143,94,.15);border-color:var(--accent);color:var(--accent-l)}
+        .type-btn.active-expense{background:rgba(196,107,90,.15);border-color:var(--red);color:var(--red)}
+        .add-btn{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:100px;font-family:var(--font);font-size:.9rem;font-weight:500;cursor:pointer;transition:background .2s}
+        .add-btn:hover{background:var(--accent-l)}
+        .section-title{font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;padding:0 4px}
+        .transaction-list{display:flex;flex-direction:column;gap:8px}
+        .tx{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;transition:background .2s}
+        .tx:hover{background:var(--card2)}
+        .tx-left{display:flex;flex-direction:column;gap:2px}
+        .tx-desc{font-size:.9rem}
+        .tx-cat{font-size:.72rem;color:var(--text3)}
+        .tx-amount{font-family:var(--font-d);font-size:1.05rem}
+        .tx-positive{color:var(--accent-l)}
+        .tx-negative{color:var(--red)}
+        .tx-delete{background:none;border:none;color:var(--text3);cursor:pointer;font-size:1rem;padding:4px 8px;border-radius:4px;transition:color .2s}
+        .tx-delete:hover{color:var(--red)}
+        .tx-right{display:flex;align-items:center;gap:10px}
+        .empty{text-align:center;padding:40px;color:var(--text3);font-size:.9rem}
+        .export-row{display:flex;gap:8px;margin-top:24px}
+        .export-btn{flex:1;padding:10px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-family:var(--font);font-size:.8rem;cursor:pointer;transition:all .2s;text-align:center}
+        .export-btn:hover{border-color:var(--accent);color:var(--accent-l)}
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <a href="../">← App Farm</a>
+        <h1>📊 Orçamento Simples</h1>
+        <div></div>
+    </div>
+    <div class="container">
+        <div class="balance-card">
+            <div class="balance-label">Saldo Atual</div>
+            <div class="balance-amount" id="balance">R$ 0,00</div>
+        </div>
+        <div class="summary">
+            <div class="summary-item">
+                <div class="label">Receitas</div>
+                <div class="value income-val" id="totalIncome">R$ 0,00</div>
+            </div>
+            <div class="summary-item">
+                <div class="label">Despesas</div>
+                <div class="value expense-val" id="totalExpense">R$ 0,00</div>
+            </div>
+        </div>
+        <div class="add-form">
+            <div class="type-toggle" id="typeToggle">
+                <button class="type-btn active-income" data-type="income" onclick="setType('income')">+ Receita</button>
+                <button class="type-btn" data-type="expense" onclick="setType('expense')">− Despesa</button>
+            </div>
+            <div class="form-row" style="margin-top:12px">
+                <input type="text" id="desc" placeholder="Descrição">
+            </div>
+            <div class="form-row">
+                <input type="number" id="amount" placeholder="Valor (R$)" step="0.01" min="0">
+                <select id="category">
+                    <option value="Geral">Geral</option>
+                    <option value="Alimentação">Alimentação</option>
+                    <option value="Transporte">Transporte</option>
+                    <option value="Moradia">Moradia</option>
+                    <option value="Saúde">Saúde</option>
+                    <option value="Lazer">Lazer</option>
+                    <option value="Salário">Salário</option>
+                    <option value="Freelance">Freelance</option>
+                    <option value="Outro">Outro</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <button class="add-btn" onclick="addTransaction()">Adicionar</button>
+            </div>
+        </div>
+        <div class="section-title">Transações</div>
+        <div class="transaction-list" id="txList">
+            <div class="empty">Nenhuma transação ainda</div>
+        </div>
+        <div class="export-row">
+            <button class="export-btn" onclick="exportCSV()">Exportar CSV</button>
+            <button class="export-btn" onclick="clearAll()">Limpar Tudo</button>
+        </div>
+    </div>
+    <script>
+        let transactions = [];
+        let currentType = 'income';
+
+        function setType(type) {
+            currentType = type;
+            document.querySelectorAll('.type-btn').forEach(b => {
+                b.className = 'type-btn';
+                if (b.dataset.type === type) b.classList.add(type === 'income' ? 'active-income' : 'active-expense');
+            });
+        }
+
+        function fmt(v) { return 'R$ ' + v.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+
+        function addTransaction() {
+            const desc = document.getElementById('desc').value.trim();
+            const amount = parseFloat(document.getElementById('amount').value);
+            const cat = document.getElementById('category').value;
+            if (!desc || !amount || amount <= 0) return;
+            transactions.unshift({ desc, amount, category: cat, type: currentType, date: new Date().toLocaleDateString('pt-BR') });
+            document.getElementById('desc').value = '';
+            document.getElementById('amount').value = '';
+            render();
+        }
+
+        function deleteTransaction(i) { transactions.splice(i, 1); render(); }
+
+        function render() {
+            const income = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+            const expense = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+            const balance = income - expense;
+            document.getElementById('balance').textContent = fmt(balance);
+            document.getElementById('balance').className = 'balance-amount ' + (balance >= 0 ? 'balance-positive' : 'balance-negative');
+            document.getElementById('totalIncome').textContent = fmt(income);
+            document.getElementById('totalExpense').textContent = fmt(expense);
+            const list = document.getElementById('txList');
+            if (transactions.length === 0) { list.innerHTML = '<div class="empty">Nenhuma transação ainda</div>'; return; }
+            list.innerHTML = transactions.map((t, i) => `
+                <div class="tx">
+                    <div class="tx-left">
+                        <span class="tx-desc">${t.desc}</span>
+                        <span class="tx-cat">${t.category} · ${t.date}</span>
+                    </div>
+                    <div class="tx-right">
+                        <span class="tx-amount ${t.type === 'income' ? 'tx-positive' : 'tx-negative'}">${t.type === 'income' ? '+' : '−'} ${fmt(t.amount)}</span>
+                        <button class="tx-delete" onclick="deleteTransaction(${i})">×</button>
+                    </div>
+                </div>`).join('');
+        }
+
+        function exportCSV() {
+            if (transactions.length === 0) return;
+            let csv = 'Data,Tipo,Descrição,Categoria,Valor\n';
+            transactions.forEach(t => { csv += `${t.date},${t.type === 'income' ? 'Receita' : 'Despesa'},${t.desc},${t.category},${t.amount.toFixed(2)}\n`; });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'orcamento.csv'; a.click();
+        }
+
+        function clearAll() { if (confirm('Limpar todas as transações?')) { transactions = []; render(); } }
+
+        document.getElementById('amount').addEventListener('keydown', e => { if (e.key === 'Enter') addTransaction(); });
+        render();
+    </script>
+</body>
+</html>

@@ -766,6 +766,7 @@
             iconBg: "#1e1535",
             tags: ["Psicologia", "Gestão Clínica", "Android"],
             apk: "apks/ClinicaFacil.apk",
+            web: "web/clinica-facil.html",
             available: true,
             longDescription: "O Clínica Fácil é um sistema completo de gestão clínica desenvolvido especificamente para psicólogos. Reúne em um único app tudo o que o profissional precisa para organizar seu consultório: cadastro e acompanhamento de pacientes, controle financeiro das sessões, e bateria de testes psicológicos. Funciona 100% offline, garantindo a privacidade dos dados clínicos.",
             features: [
@@ -788,6 +789,7 @@
             iconBg: "#1a2418",
             tags: ["Medicamentos", "IA", "Android"],
             apk: "apks/PsychMedInteracoes.apk",
+            web: "web/interacoes.html",
             available: true,
             longDescription: "Este app utiliza inteligência artificial para analisar interações entre medicamentos, fornecendo explicações claras tanto para profissionais de saúde quanto para pacientes. Ideal para psiquiatras, clínicos gerais e qualquer profissional que precise verificar rapidamente se há riscos na combinação de medicamentos de um paciente.",
             features: [
@@ -810,6 +812,7 @@
             iconBg: "#141e14",
             tags: ["Psiquiatria", "Prescrições", "Android"],
             apk: "apks/Prescripta.apk",
+            web: "web/prescripta.html",
             available: true,
             longDescription: "O Prescripta foi desenvolvido para psiquiatras que precisam monitorar se seus pacientes têm cobertura contínua de medicação. O app calcula automaticamente quando cada prescrição expira e alerta sobre lacunas iminentes, ajudando a prevenir interrupções no tratamento que poderiam comprometer o bem-estar do paciente.",
             features: [
@@ -830,6 +833,7 @@
             iconBg: "#1a2418",
             tags: ["Bem-estar", "Tracking", "Motivação"],
             apk: "apks/QuitTracker.apk",
+            web: "web/quit-tracker.html",
             available: true,
             longDescription: "O Eliminador de Vícios é um app de acompanhamento para quem decidiu largar um hábito prejudicial. Ele mostra estatísticas motivacionais como tempo livre do vício, economia financeira e marcos de recuperação baseados em evidências científicas. O app funciona como um companheiro silencioso na jornada de mudança.",
             features: [
@@ -850,6 +854,7 @@
             iconBg: "#1e1818",
             tags: ["Cessação", "Tabagismo", "Android"],
             apk: "apks/PareDeFumar.apk",
+            web: "web/pare-de-fumar.html",
             available: true,
             longDescription: "O Pare de Fumar é um app dedicado ao acompanhamento da cessação do tabagismo. Ele registra seu progresso diário, calcula a economia financeira desde que você parou, e apresenta marcos de recuperação da saúde baseados em evidências médicas — como melhora na circulação, capacidade pulmonar e redução de riscos cardiovasculares.",
             features: [
@@ -870,6 +875,7 @@
             iconBg: "#141820",
             tags: ["Finanças", "Minimalista", "Android"],
             apk: "apks/BudgetMinimalist.apk",
+            web: "web/orcamento.html",
             available: true,
             longDescription: "O Orçamento Simples é um app de controle financeiro que faz exatamente o que o nome diz: simplifica o gerenciamento das suas finanças. Sem funcionalidades desnecessárias — apenas registre receitas e despesas, organize por categorias e acompanhe seu saldo. Exportação e importação de dados permitem backup fácil e migração entre dispositivos.",
             features: [
@@ -892,6 +898,7 @@
             iconBg: "#1e1420",
             tags: ["Inglês", "Vocabulário", "Adaptativo"],
             apk: "apks/VocabBuilder.apk",
+            web: "web/vocab-builder.html",
             available: true,
             longDescription: "Este app avalia e desenvolve seu vocabulário em inglês através de um sistema adaptativo. O teste se ajusta automaticamente ao seu nível de conhecimento: se você acerta, as palavras ficam mais difíceis; se erra, o nível se recalibra. Ao final, você recebe uma estimativa do seu nível de proficiência e pode acompanhar sua evolução ao longo do tempo.",
             features: [
@@ -914,6 +921,7 @@
             iconBg: "#181820",
             tags: ["Notícias", "Agregador", "RSS"],
             apk: "apks/StoryTracker-Intel.apk",
+            web: "web/story-tracker.html",
             available: true,
             longDescription: "O StoryTracker é um agregador de notícias que reúne matérias de múltiplas fontes em um único lugar, com categorização automática por temas. Permite acompanhar o que está acontecendo no mundo de forma organizada, filtrando por categorias de interesse e acompanhando as histórias que mais importam para você.",
             features: [
@@ -1026,6 +1034,12 @@
                         </svg>
                         Baixar APK
                     </a>
+                    ${app.web ? `<a href="${app.web}" class="modal-download-btn" style="background:var(--blue)" target="_blank">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                        </svg>
+                        Usar no navegador
+                    </a>` : ''}
                     ` : `
                     <span class="modal-download-btn disabled">Em breve</span>
                     `}

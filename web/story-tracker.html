@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StoryTracker — App Farm</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{--bg:#0a0c10;--card:#12151c;--card2:#181c25;--border:#222839;--text:#e8eaf0;--text2:#8b92a8;--text3:#5a6178;--accent:#6b8f5e;--accent-l:#8ab87a;--red:#c46b5a;--blue:#5a7ec4;--radius:12px;--font-d:'DM Serif Display',Georgia,serif;--font:'Outfit',system-ui,sans-serif}
+        body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+        .topbar{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+        .topbar a{color:var(--text3);text-decoration:none;font-size:.85rem}
+        .topbar h1{font-family:var(--font-d);font-size:1.2rem;font-weight:400}
+        .container{max-width:640px;margin:0 auto;padding:20px}
+        .intro{text-align:center;margin-bottom:24px}
+        .intro h2{font-family:var(--font-d);font-size:1.5rem;font-weight:400;margin-bottom:8px}
+        .intro p{color:var(--text2);font-size:.88rem;font-weight:300}
+        .add-feed{display:flex;gap:8px;margin-bottom:20px}
+        .add-feed input{flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:var(--font);font-size:.88rem;outline:none}
+        .add-feed input:focus{border-color:var(--accent)}
+        .add-feed button{padding:12px 20px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-family:var(--font);font-size:.85rem;font-weight:500;cursor:pointer;white-space:nowrap}
+        .add-feed button:hover{background:var(--accent-l)}
+        .feeds-row{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+        .feed-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:var(--card);border:1px solid var(--border);border-radius:100px;font-size:.78rem;color:var(--text2);cursor:pointer;transition:all .2s}
+        .feed-chip:hover{border-color:var(--accent)}
+        .feed-chip.active{background:rgba(107,143,94,.12);border-color:rgba(107,143,94,.3);color:var(--accent-l)}
+        .feed-chip button{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.85rem}
+        .feed-chip button:hover{color:var(--red)}
+        .articles{display:flex;flex-direction:column;gap:12px}
+        .article{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;transition:all .2s;cursor:pointer;text-decoration:none;color:inherit;display:block}
+        .article:hover{background:var(--card2);border-color:var(--border);transform:translateY(-1px)}
+        .article-source{font-size:.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+        .article-source .dot{width:4px;height:4px;border-radius:50%;background:var(--accent)}
+        .article h3{font-family:var(--font-d);font-size:1.05rem;font-weight:400;margin-bottom:6px;line-height:1.4}
+        .article p{font-size:.82rem;color:var(--text2);line-height:1.6;font-weight:300}
+        .article-meta{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:.72rem;color:var(--text3)}
+        .loading{text-align:center;padding:40px;color:var(--text3)}
+        .loading .spinner{display:inline-block;width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin-bottom:12px}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .empty{text-align:center;padding:40px;color:var(--text3)}
+        .refresh-btn{display:block;margin:20px auto 0;padding:10px 24px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-family:var(--font);font-size:.82rem;cursor:pointer}
+        .refresh-btn:hover{border-color:var(--accent);color:var(--accent-l)}
+        .presets{margin-bottom:16px}
+        .presets-title{font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+        .preset-btn{padding:6px 14px;background:var(--card2);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:var(--font);font-size:.78rem;cursor:pointer;margin:0 4px 6px 0;display:inline-block;transition:all .2s}
+        .preset-btn:hover{border-color:var(--accent);color:var(--accent-l)}
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <a href="../">← App Farm</a>
+        <h1>📰 StoryTracker</h1>
+        <div></div>
+    </div>
+    <div class="container">
+        <div class="intro">
+            <h2>Suas notícias, organizadas</h2>
+            <p>Adicione feeds RSS para acompanhar suas fontes favoritas.</p>
+        </div>
+        <div class="presets">
+            <div class="presets-title">Fontes sugeridas</div>
+            <button class="preset-btn" onclick="addPreset('BBC News','https://feeds.bbci.co.uk/news/rss.xml')">BBC News</button>
+            <button class="preset-btn" onclick="addPreset('Reuters','https://feeds.reuters.com/reuters/topNews')">Reuters</button>
+            <button class="preset-btn" onclick="addPreset('TechCrunch','https://techcrunch.com/feed/')">TechCrunch</button>
+            <button class="preset-btn" onclick="addPreset('Hacker News','https://hnrss.org/frontpage')">Hacker News</button>
+            <button class="preset-btn" onclick="addPreset('G1','https://g1.globo.com/rss/g1/')">G1</button>
+            <button class="preset-btn" onclick="addPreset('Folha','https://feeds.folha.uol.com.br/emcimadahora/rss091.xml')">Folha</button>
+        </div>
+        <div class="add-feed">
+            <input type="text" id="feedUrl" placeholder="URL do feed RSS...">
+            <button onclick="addCustomFeed()">Adicionar</button>
+        </div>
+        <div class="feeds-row" id="feedsRow"></div>
+        <div class="articles" id="articles">
+            <div class="empty">Adicione um feed RSS para começar a ver notícias</div>
+        </div>
+        <button class="refresh-btn" onclick="refreshAll()" id="refreshBtn" style="display:none">↻ Atualizar</button>
+    </div>
+    <script>
+        let feeds = [];
+        let allArticles = [];
+        const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+
+        function addPreset(name, url) {
+            if (feeds.find(f => f.url === url)) return;
+            feeds.push({name, url, active: true});
+            renderFeeds();
+            fetchFeed(feeds[feeds.length - 1]);
+        }
+
+        function addCustomFeed() {
+            const url = document.getElementById('feedUrl').value.trim();
+            if (!url) return;
+            const name = new URL(url).hostname.replace('www.', '').replace('feeds.', '').split('.')[0];
+            if (feeds.find(f => f.url === url)) return;
+            feeds.push({name, url, active: true});
+            document.getElementById('feedUrl').value = '';
+            renderFeeds();
+            fetchFeed(feeds[feeds.length - 1]);
+        }
+
+        function removeFeed(i) {
+            const url = feeds[i].url;
+            feeds.splice(i, 1);
+            allArticles = allArticles.filter(a => a.feedUrl !== url);
+            renderFeeds();
+            renderArticles();
+        }
+
+        function toggleFeed(i) {
+            feeds[i].active = !feeds[i].active;
+            renderFeeds();
+            renderArticles();
+        }
+
+        function renderFeeds() {
+            document.getElementById('feedsRow').innerHTML = feeds.map((f, i) =>
+                `<span class="feed-chip ${f.active ? 'active' : ''}" onclick="toggleFeed(${i})">
+                    ${f.name}
+                    <button onclick="event.stopPropagation();removeFeed(${i})">×</button>
+                </span>`
+            ).join('');
+            document.getElementById('refreshBtn').style.display = feeds.length > 0 ? 'block' : 'none';
+        }
+
+        async function fetchFeed(feed) {
+            document.getElementById('articles').innerHTML = '<div class="loading"><div class="spinner"></div><div>Carregando...</div></div>';
+            try {
+                const resp = await fetch(CORS_PROXY + encodeURIComponent(feed.url));
+                const text = await resp.text();
+                const parser = new DOMParser();
+                const xml = parser.parseFromString(text, 'text/xml');
+                const items = xml.querySelectorAll('item, entry');
+                items.forEach(item => {
+                    const title = item.querySelector('title')?.textContent || '';
+                    const link = item.querySelector('link')?.textContent || item.querySelector('link')?.getAttribute('href') || '';
+                    const desc = item.querySelector('description, summary, content')?.textContent || '';
+                    const date = item.querySelector('pubDate, published, updated')?.textContent || '';
+                    const cleanDesc = desc.replace(/<[^>]+>/g, '').slice(0, 200);
+                    if (title && !allArticles.find(a => a.title === title)) {
+                        allArticles.push({title, link, desc: cleanDesc, date: date ? new Date(date) : new Date(), source: feed.name, feedUrl: feed.url});
+                    }
+                });
+                allArticles.sort((a, b) => b.date - a.date);
+                renderArticles();
+            } catch (e) {
+                console.error('Feed error:', e);
+                renderArticles();
+            }
+        }
+
+        function renderArticles() {
+            const activeUrls = feeds.filter(f => f.active).map(f => f.url);
+            const visible = allArticles.filter(a => activeUrls.includes(a.feedUrl));
+            if (visible.length === 0) {
+                document.getElementById('articles').innerHTML = '<div class="empty">Nenhum artigo para exibir</div>';
+                return;
+            }
+            document.getElementById('articles').innerHTML = visible.slice(0, 50).map(a => `
+                <a class="article" href="${a.link}" target="_blank" rel="noopener">
+                    <div class="article-source"><span class="dot"></span>${a.source}</div>
+                    <h3>${a.title}</h3>
+                    ${a.desc ? `<p>${a.desc}...</p>` : ''}
+                    <div class="article-meta">
+                        <span>${formatDate(a.date)}</span>
+                        <span>↗ Abrir</span>
+                    </div>
+                </a>
+            `).join('');
+        }
+
+        function formatDate(d) {
+            const now = new Date();
+            const diff = (now - d) / 60000;
+            if (diff < 60) return Math.floor(diff) + ' min atrás';
+            if (diff < 1440) return Math.floor(diff / 60) + 'h atrás';
+            return d.toLocaleDateString('pt-BR');
+        }
+
+        function refreshAll() {
+            allArticles = [];
+            feeds.forEach(f => fetchFeed(f));
+        }
+    </script>
+</body>
+</html>

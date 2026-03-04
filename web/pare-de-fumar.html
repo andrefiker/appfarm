@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pare de Fumar — App Farm</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{--bg:#0a0c10;--card:#12151c;--card2:#181c25;--border:#222839;--text:#e8eaf0;--text2:#8b92a8;--text3:#5a6178;--accent:#6b8f5e;--accent-l:#8ab87a;--radius:12px;--font-d:'DM Serif Display',Georgia,serif;--font:'Outfit',system-ui,sans-serif}
+        body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+        .topbar{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+        .topbar a{color:var(--text3);text-decoration:none;font-size:.85rem}
+        .topbar h1{font-family:var(--font-d);font-size:1.2rem;font-weight:400}
+        .container{max-width:480px;margin:0 auto;padding:20px}
+        .setup{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;text-align:center}
+        .setup h2{font-family:var(--font-d);font-size:1.5rem;font-weight:400;margin-bottom:8px}
+        .setup p{color:var(--text2);font-size:.9rem;margin-bottom:20px;font-weight:300}
+        .setup input{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-family:var(--font);font-size:.9rem;margin-bottom:12px;outline:none}
+        .setup input:focus{border-color:var(--accent)}
+        .start-btn{width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:100px;font-family:var(--font);font-size:.95rem;font-weight:500;cursor:pointer}
+        .start-btn:hover{background:var(--accent-l)}
+        .tracker{display:none}
+        .hero-counter{background:linear-gradient(135deg,#12151c,#1a2418);border:1px solid var(--border);border-radius:20px;padding:36px 28px;text-align:center;margin-bottom:20px}
+        .smoke-free{font-size:.8rem;color:var(--accent-l);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px}
+        .smoke-free::before,.smoke-free::after{content:'';width:24px;height:1px;background:var(--accent)}
+        .time-big{font-family:var(--font-d);font-size:3rem;color:var(--text);margin-bottom:4px}
+        .time-detail{font-size:.85rem;color:var(--text3)}
+        .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:20px 0}
+        .stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
+        .stat .v{font-family:var(--font-d);font-size:1.3rem}
+        .stat .l{font-size:.7rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+        .stat .v.green{color:var(--accent-l)}
+        .health-section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:20px}
+        .health-section h3{font-family:var(--font-d);font-size:1rem;font-weight:400;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+        .health-item{margin-bottom:14px}
+        .health-item:last-child{margin-bottom:0}
+        .health-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+        .health-name{font-size:.85rem}
+        .health-pct{font-size:.8rem;color:var(--accent-l);font-weight:500}
+        .health-bar{height:6px;background:var(--card2);border-radius:3px;overflow:hidden}
+        .health-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-l));border-radius:3px;transition:width 1s ease}
+        .health-time{font-size:.7rem;color:var(--text3);margin-top:4px}
+        .motivation{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;text-align:center;margin-bottom:20px}
+        .motivation .quote{font-family:var(--font-d);font-size:1.1rem;font-style:italic;margin-bottom:8px;line-height:1.5}
+        .motivation .attr{font-size:.75rem;color:var(--text3)}
+        .reset-btn{width:100%;padding:10px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text3);font-family:var(--font);font-size:.8rem;cursor:pointer}
+        .reset-btn:hover{border-color:#c46b5a;color:#c46b5a}
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <a href="../">← App Farm</a>
+        <h1>🚭 Pare de Fumar</h1>
+        <div></div>
+    </div>
+    <div class="container">
+        <div class="setup" id="setup">
+            <h2>Quando foi seu último cigarro?</h2>
+            <p>Registre o momento e veja sua saúde melhorar em tempo real.</p>
+            <input type="datetime-local" id="quitDate">
+            <input type="number" id="perDay" placeholder="Cigarros por dia" min="1" value="20">
+            <input type="number" id="packPrice" placeholder="Preço do maço (R$)" step="0.01" value="12">
+            <button class="start-btn" onclick="start()">Começar minha jornada</button>
+        </div>
+        <div class="tracker" id="tracker">
+            <div class="hero-counter">
+                <div class="smoke-free">Livre do cigarro</div>
+                <div class="time-big" id="timeBig">0 dias</div>
+                <div class="time-detail" id="timeDetail"></div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat"><div class="v green" id="cigs">0</div><div class="l">Cigarros evitados</div></div>
+                <div class="stat"><div class="v green" id="money">R$ 0</div><div class="l">Economizados</div></div>
+                <div class="stat"><div class="v" id="life">0h</div><div class="l">Vida recuperada</div></div>
+                <div class="stat"><div class="v" id="tar">0g</div><div class="l">Alcatrão evitado</div></div>
+            </div>
+            <div class="health-section" id="health">
+                <h3>❤️ Recuperação da saúde</h3>
+            </div>
+            <div class="motivation" id="motivation"></div>
+            <button class="reset-btn" onclick="if(confirm('Reiniciar?')){location.reload()}">Reiniciar</button>
+        </div>
+    </div>
+    <script>
+        const healthMilestones = [
+            {hours:0.33,name:"Pressão arterial normaliza",max:0.33},
+            {hours:8,name:"Nível de oxigênio no sangue normaliza",max:8},
+            {hours:24,name:"Risco de ataque cardíaco começa a diminuir",max:24},
+            {hours:48,name:"Olfato e paladar começam a melhorar",max:48},
+            {hours:72,name:"Bronquíolos relaxam, respiração melhora",max:72},
+            {hours:336,name:"Circulação sanguínea melhora significativamente",max:336},
+            {hours:2160,name:"Função pulmonar aumenta até 30%",max:2160},
+            {hours:8760,name:"Risco de doença coronária cai pela metade",max:8760},
+            {hours:43800,name:"Risco de câncer de pulmão cai pela metade",max:43800},
+            {hours:87600,name:"Risco cardiovascular igual ao de não fumante",max:87600}
+        ];
+
+        const quotes = [
+            {text:"A melhor hora para parar foi ontem. A segunda melhor é agora.",attr:"Provérbio"},
+            {text:"Você é mais forte do que o vício que tenta te controlar.",attr:""},
+            {text:"Cada cigarro não fumado é uma vitória silenciosa.",attr:""},
+            {text:"Respire fundo — seus pulmões agradecem.",attr:""},
+            {text:"A liberdade começa quando você decide que já basta.",attr:""},
+        ];
+
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('quitDate').value = now.toISOString().slice(0, 16);
+
+        function start() {
+            const quitDate = new Date(document.getElementById('quitDate').value).getTime();
+            const perDay = parseInt(document.getElementById('perDay').value) || 20;
+            const packPrice = parseFloat(document.getElementById('packPrice').value) || 12;
+            const pricePerCig = packPrice / 20;
+
+            document.getElementById('setup').style.display = 'none';
+            document.getElementById('tracker').style.display = 'block';
+
+            // Random motivation
+            const q = quotes[Math.floor(Math.random() * quotes.length)];
+            document.getElementById('motivation').innerHTML = `<div class="quote">"${q.text}"</div><div class="attr">${q.attr}</div>`;
+
+            function update() {
+                const elapsed = Date.now() - quitDate;
+                const hours = elapsed / 3600000;
+                const days = Math.floor(hours / 24);
+                const h = Math.floor(hours % 24);
+                const m = Math.floor((elapsed % 3600000) / 60000);
+                const s = Math.floor((elapsed % 60000) / 1000);
+
+                document.getElementById('timeBig').textContent = days > 0 ? days + (days === 1 ? ' dia' : ' dias') : Math.floor(hours) + 'h';
+                document.getElementById('timeDetail').textContent = `${days}d ${h}h ${m}m ${s}s`;
+
+                const cigsAvoided = Math.floor(hours / 24 * perDay + (hours % 24) / 24 * perDay);
+                const moneySaved = cigsAvoided * pricePerCig;
+                const lifeHours = Math.floor(cigsAvoided * 11 / 60); // 11 min per cig
+                const tarGrams = (cigsAvoided * 0.012).toFixed(1); // ~12mg per cig
+
+                document.getElementById('cigs').textContent = cigsAvoided.toLocaleString('pt-BR');
+                document.getElementById('money').textContent = 'R$ ' + moneySaved.toFixed(2).replace('.', ',');
+                document.getElementById('life').textContent = lifeHours + 'h';
+                document.getElementById('tar').textContent = tarGrams + 'g';
+
+                // Health bars
+                const healthEl = document.getElementById('health');
+                healthEl.innerHTML = '<h3>❤️ Recuperação da saúde</h3>' + healthMilestones.map(m => {
+                    const pct = Math.min(100, (hours / m.max) * 100);
+                    return `<div class="health-item">
+                        <div class="health-top">
+                            <span class="health-name">${m.name}</span>
+                            <span class="health-pct">${Math.floor(pct)}%</span>
+                        </div>
+                        <div class="health-bar"><div class="health-fill" style="width:${pct}%"></div></div>
+                        <div class="health-time">${formatTime(m.hours)}</div>
+                    </div>`;
+                }).join('');
+            }
+
+            update();
+            setInterval(update, 1000);
+        }
+
+        function formatTime(h) {
+            if (h < 1) return Math.round(h * 60) + ' minutos';
+            if (h < 24) return h + ' horas';
+            const d = Math.floor(h / 24);
+            if (d < 30) return d + ' dias';
+            const mo = Math.floor(d / 30);
+            if (mo < 12) return mo + (mo === 1 ? ' mês' : ' meses');
+            return Math.floor(mo / 12) + ' anos';
+        }
+    </script>
+</body>
+</html>

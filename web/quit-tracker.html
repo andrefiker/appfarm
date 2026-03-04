@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eliminador de Vícios — App Farm</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{--bg:#0a0c10;--card:#12151c;--card2:#181c25;--border:#222839;--text:#e8eaf0;--text2:#8b92a8;--text3:#5a6178;--accent:#6b8f5e;--accent-l:#8ab87a;--radius:12px;--font-d:'DM Serif Display',Georgia,serif;--font:'Outfit',system-ui,sans-serif}
+        body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+        .topbar{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+        .topbar a{color:var(--text3);text-decoration:none;font-size:.85rem}
+        .topbar h1{font-family:var(--font-d);font-size:1.2rem;font-weight:400}
+        .container{max-width:480px;margin:0 auto;padding:20px}
+        .setup{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;text-align:center}
+        .setup h2{font-family:var(--font-d);font-size:1.5rem;font-weight:400;margin-bottom:8px}
+        .setup p{color:var(--text2);font-size:.9rem;margin-bottom:20px;font-weight:300}
+        .setup input,.setup select{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--text);font-family:var(--font);font-size:.9rem;margin-bottom:12px;outline:none}
+        .setup input:focus{border-color:var(--accent)}
+        .start-btn{width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:100px;font-family:var(--font);font-size:.95rem;font-weight:500;cursor:pointer;transition:background .2s}
+        .start-btn:hover{background:var(--accent-l)}
+        .tracker{display:none}
+        .hero-counter{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:36px 28px;text-align:center;margin-bottom:20px;position:relative;overflow:hidden}
+        .hero-counter::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,rgba(107,143,94,.1),transparent 70%);pointer-events:none}
+        .habit-name{font-size:.8rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px}
+        .time-display{font-family:var(--font-d);font-size:2.8rem;margin-bottom:4px;color:var(--accent-l)}
+        .time-sub{font-size:.85rem;color:var(--text3);margin-bottom:20px}
+        .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+        .stat-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
+        .stat-box .val{font-family:var(--font-d);font-size:1.4rem;color:var(--text)}
+        .stat-box .lbl{font-size:.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+        .milestones{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:20px}
+        .milestones h3{font-family:var(--font-d);font-size:1rem;font-weight:400;margin-bottom:14px}
+        .milestone{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(34,40,57,.5)}
+        .milestone:last-child{border:none}
+        .milestone-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+        .milestone-done{background:rgba(107,143,94,.2)}
+        .milestone-pending{background:rgba(90,97,120,.15)}
+        .milestone-text{flex:1}
+        .milestone-text .name{font-size:.88rem}
+        .milestone-text .time{font-size:.72rem;color:var(--text3)}
+        .milestone-check{color:var(--accent-l);font-size:1rem}
+        .milestone-lock{color:var(--text3);font-size:.8rem}
+        .savings-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;text-align:center;margin-bottom:20px}
+        .savings-card .lbl{font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+        .savings-card .val{font-family:var(--font-d);font-size:1.8rem;color:var(--accent-l)}
+        .reset-btn{width:100%;padding:10px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text3);font-family:var(--font);font-size:.8rem;cursor:pointer;transition:all .2s}
+        .reset-btn:hover{border-color:#c46b5a;color:#c46b5a}
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <a href="../">← App Farm</a>
+        <h1>🌱 Eliminador de Vícios</h1>
+        <div></div>
+    </div>
+    <div class="container">
+        <div class="setup" id="setup">
+            <h2>Comece sua jornada</h2>
+            <p>Escolha o hábito que você quer eliminar e quando parou.</p>
+            <select id="habitSelect">
+                <option value="Cigarro">🚬 Cigarro</option>
+                <option value="Álcool">🍺 Álcool</option>
+                <option value="Cannabis">🌿 Cannabis</option>
+                <option value="Redes Sociais">📱 Redes Sociais</option>
+                <option value="Açúcar">🍬 Açúcar</option>
+                <option value="Café">☕ Café</option>
+                <option value="Outro">✨ Outro</option>
+            </select>
+            <input type="text" id="customHabit" placeholder="Nome do hábito (se Outro)" style="display:none">
+            <input type="datetime-local" id="quitDate">
+            <input type="number" id="dailyCost" placeholder="Gasto diário com o hábito (R$)" step="0.01" min="0">
+            <button class="start-btn" onclick="startTracking()">Começar a contar</button>
+        </div>
+        <div class="tracker" id="tracker">
+            <div class="hero-counter">
+                <div class="habit-name" id="habitLabel"></div>
+                <div class="time-display" id="timeDisplay">0 dias</div>
+                <div class="time-sub" id="timeSub"></div>
+            </div>
+            <div class="stats-row">
+                <div class="stat-box"><div class="val" id="statDays">0</div><div class="lbl">Dias</div></div>
+                <div class="stat-box"><div class="val" id="statHours">0</div><div class="lbl">Horas</div></div>
+                <div class="stat-box"><div class="val" id="statMins">0</div><div class="lbl">Minutos</div></div>
+            </div>
+            <div class="savings-card">
+                <div class="lbl">Economia estimada</div>
+                <div class="val" id="savings">R$ 0,00</div>
+            </div>
+            <div class="milestones" id="milestones"></div>
+            <button class="reset-btn" onclick="resetTracker()">Reiniciar</button>
+        </div>
+    </div>
+    <script>
+        const milestoneData = [
+            {hours:1,name:"1 hora livre",icon:"⏰"},
+            {hours:24,name:"1 dia completo",icon:"🌅"},
+            {hours:72,name:"3 dias — pico de abstinência superado",icon:"💪"},
+            {hours:168,name:"1 semana — corpo se ajustando",icon:"🌿"},
+            {hours:336,name:"2 semanas — novos padrões formando",icon:"🧠"},
+            {hours:720,name:"1 mês — hábito enfraquecendo",icon:"🎯"},
+            {hours:2160,name:"3 meses — novo normal",icon:"🌟"},
+            {hours:4320,name:"6 meses — liberdade consolidada",icon:"🏆"},
+            {hours:8760,name:"1 ano — vitória completa",icon:"👑"}
+        ];
+
+        let data = null;
+
+        document.getElementById('habitSelect').addEventListener('change', function() {
+            document.getElementById('customHabit').style.display = this.value === 'Outro' ? 'block' : 'none';
+        });
+
+        // Set default datetime to now
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('quitDate').value = now.toISOString().slice(0, 16);
+
+        function startTracking() {
+            const habit = document.getElementById('habitSelect').value === 'Outro'
+                ? document.getElementById('customHabit').value || 'Meu hábito'
+                : document.getElementById('habitSelect').value;
+            const quitDate = document.getElementById('quitDate').value;
+            const dailyCost = parseFloat(document.getElementById('dailyCost').value) || 0;
+            if (!quitDate) return;
+            data = { habit, quitDate: new Date(quitDate).getTime(), dailyCost };
+            document.getElementById('setup').style.display = 'none';
+            document.getElementById('tracker').style.display = 'block';
+            document.getElementById('habitLabel').textContent = 'Livre de: ' + habit;
+            updateTracker();
+            setInterval(updateTracker, 1000);
+        }
+
+        function updateTracker() {
+            const elapsed = Date.now() - data.quitDate;
+            const secs = Math.floor(elapsed / 1000);
+            const mins = Math.floor(secs / 60);
+            const hours = Math.floor(mins / 60);
+            const days = Math.floor(hours / 24);
+
+            if (days > 0) {
+                document.getElementById('timeDisplay').textContent = days + (days === 1 ? ' dia' : ' dias');
+                document.getElementById('timeSub').textContent = `${hours % 24}h ${mins % 60}m ${secs % 60}s`;
+            } else if (hours > 0) {
+                document.getElementById('timeDisplay').textContent = hours + (hours === 1 ? ' hora' : ' horas');
+                document.getElementById('timeSub').textContent = `${mins % 60}m ${secs % 60}s`;
+            } else {
+                document.getElementById('timeDisplay').textContent = mins + ' min';
+                document.getElementById('timeSub').textContent = `${secs % 60}s`;
+            }
+
+            document.getElementById('statDays').textContent = days;
+            document.getElementById('statHours').textContent = hours % 24;
+            document.getElementById('statMins').textContent = mins % 60;
+
+            const savedAmount = (data.dailyCost * days) + (data.dailyCost / 24 * (hours % 24));
+            document.getElementById('savings').textContent = 'R$ ' + savedAmount.toFixed(2).replace('.', ',');
+
+            // Milestones
+            const ml = document.getElementById('milestones');
+            ml.innerHTML = '<h3>Marcos de recuperação</h3>' + milestoneData.map(m => {
+                const done = hours >= m.hours;
+                return `<div class="milestone">
+                    <div class="milestone-icon ${done ? 'milestone-done' : 'milestone-pending'}">${m.icon}</div>
+                    <div class="milestone-text">
+                        <div class="name">${m.name}</div>
+                        <div class="time">${formatMilestoneTime(m.hours)}</div>
+                    </div>
+                    <div>${done ? '<span class="milestone-check">✓</span>' : '<span class="milestone-lock">○</span>'}</div>
+                </div>`;
+            }).join('');
+        }
+
+        function formatMilestoneTime(h) {
+            if (h < 24) return h + 'h';
+            const d = Math.floor(h / 24);
+            return d + (d === 1 ? ' dia' : ' dias');
+        }
+
+        function resetTracker() {
+            if (confirm('Reiniciar o contador?')) {
+                data = null;
+                document.getElementById('setup').style.display = 'block';
+                document.getElementById('tracker').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

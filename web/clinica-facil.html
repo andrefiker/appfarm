@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clínica Fácil — App Farm</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{--bg:#0a0c10;--card:#12151c;--card2:#181c25;--border:#222839;--text:#e8eaf0;--text2:#8b92a8;--text3:#5a6178;--accent:#6b8f5e;--accent-l:#8ab87a;--red:#c46b5a;--blue:#5a7ec4;--purple:#8b6bc4;--amber:#c4954a;--radius:12px;--font-d:'DM Serif Display',Georgia,serif;--font:'Outfit',system-ui,sans-serif}
+        body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+        .topbar{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+        .topbar a{color:var(--text3);text-decoration:none;font-size:.85rem}
+        .topbar h1{font-family:var(--font-d);font-size:1.2rem;font-weight:400}
+        .container{max-width:600px;margin:0 auto;padding:20px}
+        .tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--card);border-radius:10px;padding:4px;border:1px solid var(--border)}
+        .tab{flex:1;padding:10px;text-align:center;border-radius:8px;font-size:.82rem;cursor:pointer;color:var(--text3);transition:all .2s;border:none;background:none;font-family:var(--font)}
+        .tab.active{background:var(--accent);color:#fff}
+        .panel{display:none}.panel.active{display:block}
+        .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+        .stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center}
+        .stat .v{font-family:var(--font-d);font-size:1.4rem;color:var(--accent-l)}
+        .stat .l{font-size:.68rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+        .add-form{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:20px}
+        .form-title{font-size:.85rem;font-weight:500;margin-bottom:12px;color:var(--text2)}
+        input,select,textarea{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:var(--font);font-size:.85rem;outline:none;margin-bottom:8px;resize:vertical}
+        input:focus,textarea:focus{border-color:var(--accent)}
+        .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+        .btn{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:100px;font-family:var(--font);font-size:.9rem;font-weight:500;cursor:pointer}
+        .btn:hover{background:var(--accent-l)}
+        .btn-sm{padding:6px 14px;border-radius:6px;font-size:.78rem;border:1px solid var(--border);background:var(--card2);color:var(--text2);cursor:pointer;font-family:var(--font)}
+        .btn-sm:hover{border-color:var(--accent);color:var(--accent-l)}
+        .btn-sm.del:hover{border-color:var(--red);color:var(--red)}
+        .list{display:flex;flex-direction:column;gap:8px}
+        .item{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+        .item-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+        .item h3{font-family:var(--font-d);font-size:1rem;font-weight:400}
+        .item .meta{font-size:.75rem;color:var(--text3)}
+        .item .notes{font-size:.83rem;color:var(--text2);margin-top:6px;line-height:1.5}
+        .item-actions{display:flex;gap:6px;margin-top:8px}
+        .badge{padding:3px 8px;border-radius:100px;font-size:.68rem;font-weight:500;letter-spacing:.04em}
+        .badge-upcoming{background:rgba(90,126,196,.15);color:var(--blue)}
+        .badge-done{background:rgba(107,143,94,.15);color:var(--accent-l)}
+        .empty{text-align:center;padding:30px;color:var(--text3);font-size:.9rem}
+        .test-section{margin-top:20px}
+        .test-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;cursor:pointer;transition:all .2s}
+        .test-card:hover{border-color:var(--accent);background:var(--card2)}
+        .test-card h4{font-size:.9rem;margin-bottom:4px}
+        .test-card p{font-size:.78rem;color:var(--text3)}
+        .test-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);z-index:200;align-items:center;justify-content:center;padding:20px}
+        .test-modal.active{display:flex}
+        .test-content{background:var(--card);border:1px solid var(--border);border-radius:16px;max-width:500px;width:100%;max-height:80vh;overflow-y:auto;padding:28px}
+        .test-q{font-size:.9rem;margin-bottom:12px;line-height:1.6}
+        .test-opt{display:grid;gap:8px;margin-bottom:16px}
+        .test-opt label{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--card2);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:.85rem;transition:all .2s}
+        .test-opt label:hover{border-color:var(--accent)}
+        .test-opt input{accent-color:var(--accent)}
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <a href="../">← App Farm</a>
+        <h1>🧠 Clínica Fácil</h1>
+        <div></div>
+    </div>
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('patients')">Pacientes</button>
+            <button class="tab" onclick="showTab('schedule')">Agenda</button>
+            <button class="tab" onclick="showTab('finance')">Financeiro</button>
+            <button class="tab" onclick="showTab('tests')">Testes</button>
+        </div>
+        <div class="stat-row" id="stats"></div>
+
+        <!-- PATIENTS -->
+        <div class="panel active" id="panel-patients">
+            <div class="add-form">
+                <div class="form-title">Novo Paciente</div>
+                <input id="pName" placeholder="Nome completo">
+                <div class="row2">
+                    <input id="pPhone" placeholder="Telefone">
+                    <input type="date" id="pBirth" placeholder="Nascimento">
+                </div>
+                <textarea id="pNotes" placeholder="Observações / anamnese" rows="2"></textarea>
+                <button class="btn" onclick="addPatient()">Cadastrar paciente</button>
+            </div>
+            <div class="list" id="patientList"></div>
+        </div>
+
+        <!-- SCHEDULE -->
+        <div class="panel" id="panel-schedule">
+            <div class="add-form">
+                <div class="form-title">Nova Sessão</div>
+                <select id="sPatient"><option value="">Selecione o paciente</option></select>
+                <div class="row2">
+                    <input type="date" id="sDate">
+                    <input type="time" id="sTime" value="14:00">
+                </div>
+                <textarea id="sNotes" placeholder="Notas da sessão" rows="2"></textarea>
+                <button class="btn" onclick="addSession()">Agendar</button>
+            </div>
+            <div class="list" id="sessionList"></div>
+        </div>
+
+        <!-- FINANCE -->
+        <div class="panel" id="panel-finance">
+            <div class="add-form">
+                <div class="form-title">Registrar Pagamento</div>
+                <select id="fPatient"><option value="">Selecione o paciente</option></select>
+                <div class="row2">
+                    <input type="number" id="fAmount" placeholder="Valor (R$)" value="200" step="10">
+                    <input type="date" id="fDate">
+                </div>
+                <button class="btn" onclick="addPayment()">Registrar</button>
+            </div>
+            <div class="list" id="financeList"></div>
+        </div>
+
+        <!-- TESTS -->
+        <div class="panel" id="panel-tests">
+            <p style="color:var(--text2);font-size:.9rem;margin-bottom:16px">Selecione um teste psicológico para aplicar:</p>
+            <div class="test-card" onclick="openTest('phq9')">
+                <h4>PHQ-9 — Depressão</h4>
+                <p>Patient Health Questionnaire · 9 itens</p>
+            </div>
+            <div class="test-card" onclick="openTest('gad7')">
+                <h4>GAD-7 — Ansiedade</h4>
+                <p>Generalized Anxiety Disorder · 7 itens</p>
+            </div>
+            <div class="test-card" onclick="openTest('bdi')">
+                <h4>BDI-II — Depressão (Beck)</h4>
+                <p>Beck Depression Inventory · 21 itens</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-modal" id="testModal">
+        <div class="test-content" id="testContent"></div>
+    </div>
+
+    <script>
+        let patients=[],sessions=[],payments=[];
+        document.getElementById('sDate').valueAsDate = new Date();
+        document.getElementById('fDate').valueAsDate = new Date();
+
+        function showTab(name) {
+            document.querySelectorAll('.tab').forEach((t,i) => {
+                const tabs = ['patients','schedule','finance','tests'];
+                t.classList.toggle('active', tabs[i] === name);
+            });
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('panel-' + name).classList.add('active');
+        }
+
+        function updateStats() {
+            const thisMonth = payments.filter(p => {
+                const d = new Date(p.date);
+                const now = new Date();
+                return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+            });
+            const total = thisMonth.reduce((s, p) => s + p.amount, 0);
+            document.getElementById('stats').innerHTML = `
+                <div class="stat"><div class="v">${patients.length}</div><div class="l">Pacientes</div></div>
+                <div class="stat"><div class="v">${sessions.length}</div><div class="l">Sessões</div></div>
+                <div class="stat"><div class="v">R$ ${total.toFixed(0)}</div><div class="l">Este mês</div></div>`;
+        }
+
+        function updateSelects() {
+            const opts = '<option value="">Selecione</option>' + patients.map((p,i) => `<option value="${i}">${p.name}</option>`).join('');
+            document.getElementById('sPatient').innerHTML = opts;
+            document.getElementById('fPatient').innerHTML = opts;
+        }
+
+        function addPatient() {
+            const name = document.getElementById('pName').value.trim();
+            if (!name) return;
+            patients.push({name, phone: document.getElementById('pPhone').value, birth: document.getElementById('pBirth').value, notes: document.getElementById('pNotes').value});
+            document.getElementById('pName').value = '';
+            document.getElementById('pPhone').value = '';
+            document.getElementById('pNotes').value = '';
+            render();
+        }
+
+        function addSession() {
+            const pi = document.getElementById('sPatient').value;
+            if (pi === '') return;
+            sessions.unshift({patient: patients[pi].name, date: document.getElementById('sDate').value, time: document.getElementById('sTime').value, notes: document.getElementById('sNotes').value});
+            document.getElementById('sNotes').value = '';
+            render();
+        }
+
+        function addPayment() {
+            const pi = document.getElementById('fPatient').value;
+            if (pi === '') return;
+            const amount = parseFloat(document.getElementById('fAmount').value);
+            payments.unshift({patient: patients[pi].name, amount, date: document.getElementById('fDate').value});
+            render();
+        }
+
+        function deletePatient(i) { patients.splice(i, 1); render(); }
+        function deleteSession(i) { sessions.splice(i, 1); render(); }
+
+        function render() {
+            updateStats();
+            updateSelects();
+            document.getElementById('patientList').innerHTML = patients.length === 0 ? '<div class="empty">Nenhum paciente</div>' :
+                patients.map((p, i) => `<div class="item">
+                    <div class="item-top"><h3>${p.name}</h3><span class="meta">${p.phone || ''}</span></div>
+                    ${p.notes ? `<div class="notes">${p.notes}</div>` : ''}
+                    <div class="item-actions"><button class="btn-sm del" onclick="deletePatient(${i})">Remover</button></div>
+                </div>`).join('');
+
+            document.getElementById('sessionList').innerHTML = sessions.length === 0 ? '<div class="empty">Nenhuma sessão</div>' :
+                sessions.map((s, i) => {
+                    const isPast = new Date(s.date) < new Date();
+                    return `<div class="item">
+                    <div class="item-top"><h3>${s.patient}</h3><span class="badge ${isPast ? 'badge-done' : 'badge-upcoming'}">${isPast ? 'Realizada' : 'Agendada'}</span></div>
+                    <div class="meta">${new Date(s.date).toLocaleDateString('pt-BR')} às ${s.time}</div>
+                    ${s.notes ? `<div class="notes">${s.notes}</div>` : ''}
+                    <div class="item-actions"><button class="btn-sm del" onclick="deleteSession(${i})">Remover</button></div>
+                </div>`;}).join('');
+
+            document.getElementById('financeList').innerHTML = payments.length === 0 ? '<div class="empty">Nenhum pagamento</div>' :
+                payments.map(p => `<div class="item">
+                    <div class="item-top"><h3>R$ ${p.amount.toFixed(2).replace('.',',')}</h3><span class="meta">${new Date(p.date).toLocaleDateString('pt-BR')}</span></div>
+                    <div class="meta">${p.patient}</div>
+                </div>`).join('');
+        }
+
+        // === TESTS ===
+        const testData = {
+            phq9: {
+                title: "PHQ-9 — Rastreamento de Depressão",
+                instructions: "Nas últimas 2 semanas, com que frequência você foi incomodado(a) por cada um dos problemas a seguir?",
+                options: ["Nenhuma vez","Vários dias","Mais da metade dos dias","Quase todos os dias"],
+                questions: ["Pouco interesse ou prazer em fazer as coisas","Sentir-se para baixo, deprimido(a) ou sem esperança","Dificuldade para pegar no sono ou permanecer dormindo, ou dormir demais","Sentir-se cansado(a) ou com pouca energia","Apetite diminuído ou comer demais","Sentir-se mal consigo mesmo(a), sentir que é um fracasso ou que decepcionou a família","Dificuldade para se concentrar nas coisas","Mover-se ou falar tão devagar que outras pessoas perceberem, ou o oposto","Pensar que seria melhor estar morto(a) ou se machucar de alguma forma"],
+                scoring: s => s <= 4 ? "Mínimo" : s <= 9 ? "Leve" : s <= 14 ? "Moderado" : s <= 19 ? "Moderadamente grave" : "Grave"
+            },
+            gad7: {
+                title: "GAD-7 — Rastreamento de Ansiedade",
+                instructions: "Nas últimas 2 semanas, com que frequência você foi incomodado(a) pelos problemas a seguir?",
+                options: ["Nenhuma vez","Vários dias","Mais da metade dos dias","Quase todos os dias"],
+                questions: ["Sentir-se nervoso(a), ansioso(a) ou no limite","Não ser capaz de impedir ou controlar as preocupações","Preocupar-se demais com diversas coisas","Dificuldade para relaxar","Ficar tão inquieto(a) que é difícil ficar sentado(a)","Ficar facilmente aborrecido(a) ou irritado(a)","Sentir medo como se algo terrível pudesse acontecer"],
+                scoring: s => s <= 4 ? "Mínimo" : s <= 9 ? "Leve" : s <= 14 ? "Moderado" : "Grave"
+            },
+            bdi: {
+                title: "BDI-II (Simplificado)",
+                instructions: "Escolha a afirmação que melhor descreve como você se sentiu nas últimas duas semanas.",
+                options: ["Nada","Um pouco","Moderadamente","Muito"],
+                questions: ["Tristeza","Pessimismo","Fracasso passado","Perda de prazer","Sentimentos de culpa","Sentimento de punição","Auto-aversão","Autocrítica","Pensamentos suicidas","Choro","Agitação","Perda de interesse","Indecisão","Desvalorização","Falta de energia","Alteração no sono","Irritabilidade","Alteração no apetite","Dificuldade de concentração","Cansaço","Perda de interesse sexual"],
+                scoring: s => s <= 13 ? "Mínimo" : s <= 19 ? "Leve" : s <= 28 ? "Moderado" : "Grave"
+            }
+        };
+
+        function openTest(id) {
+            const test = testData[id];
+            const modal = document.getElementById('testModal');
+            const content = document.getElementById('testContent');
+            content.innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+                    <h3 style="font-family:var(--font-d);font-weight:400">${test.title}</h3>
+                    <button onclick="closeTest()" style="background:none;border:none;color:var(--text3);font-size:1.2rem;cursor:pointer">✕</button>
+                </div>
+                <p style="font-size:.85rem;color:var(--text2);margin-bottom:20px">${test.instructions}</p>
+                ${test.questions.map((q, qi) => `
+                    <div class="test-q"><strong>${qi + 1}.</strong> ${q}</div>
+                    <div class="test-opt">
+                        ${test.options.map((o, oi) => `<label><input type="radio" name="q${qi}" value="${oi}"> ${o} (${oi})</label>`).join('')}
+                    </div>
+                `).join('')}
+                <button class="btn" onclick="scoreTest('${id}')" style="margin-top:12px">Calcular resultado</button>
+                <div id="testResult" style="margin-top:16px"></div>`;
+            modal.classList.add('active');
+        }
+
+        function closeTest() { document.getElementById('testModal').classList.remove('active'); }
+        document.getElementById('testModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeTest(); });
+
+        function scoreTest(id) {
+            const test = testData[id];
+            let total = 0, answered = 0;
+            test.questions.forEach((_, qi) => {
+                const sel = document.querySelector(`input[name="q${qi}"]:checked`);
+                if (sel) { total += parseInt(sel.value); answered++; }
+            });
+            if (answered < test.questions.length) {
+                document.getElementById('testResult').innerHTML = `<p style="color:var(--amber)">Responda todas as questões (${answered}/${test.questions.length})</p>`;
+                return;
+            }
+            const level = test.scoring(total);
+            document.getElementById('testResult').innerHTML = `
+                <div style="background:var(--card2);border-radius:12px;padding:20px;text-align:center">
+                    <div style="font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Resultado</div>
+                    <div style="font-family:var(--font-d);font-size:1.8rem;margin-bottom:4px">${total} pontos</div>
+                    <div style="font-size:.95rem;color:var(--accent-l)">${level}</div>
+                </div>`;
+        }
+
+        render();
+    </script>
+</body>
+</html>

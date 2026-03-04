@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Interações Medicamentosas — App Farm</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{--bg:#0a0c10;--card:#12151c;--card2:#181c25;--border:#222839;--text:#e8eaf0;--text2:#8b92a8;--text3:#5a6178;--accent:#6b8f5e;--accent-l:#8ab87a;--red:#c46b5a;--amber:#c4954a;--blue:#5a7ec4;--radius:12px;--font-d:'DM Serif Display',Georgia,serif;--font:'Outfit',system-ui,sans-serif}
+        body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+        .topbar{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+        .topbar a{color:var(--text3);text-decoration:none;font-size:.85rem}
+        .topbar h1{font-family:var(--font-d);font-size:1.1rem;font-weight:400}
+        .container{max-width:560px;margin:0 auto;padding:20px}
+        .intro{text-align:center;margin-bottom:24px}
+        .intro h2{font-family:var(--font-d);font-size:1.6rem;font-weight:400;margin-bottom:8px}
+        .intro p{color:var(--text2);font-size:.88rem;font-weight:300}
+        .search-box{position:relative;margin-bottom:12px}
+        .search-box input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px 14px 44px;color:var(--text);font-family:var(--font);font-size:.95rem;outline:none}
+        .search-box input:focus{border-color:var(--accent)}
+        .search-box .icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:1.1rem}
+        .suggestions{background:var(--card);border:1px solid var(--border);border-radius:10px;max-height:200px;overflow-y:auto;display:none;position:absolute;width:100%;z-index:10;top:100%;margin-top:4px}
+        .suggestion{padding:10px 16px;cursor:pointer;font-size:.88rem;transition:background .1s;border-bottom:1px solid rgba(34,40,57,.5)}
+        .suggestion:hover{background:var(--card2)}
+        .suggestion:last-child{border:none}
+        .selected-meds{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;min-height:36px}
+        .med-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:rgba(107,143,94,.12);border:1px solid rgba(107,143,94,.2);border-radius:100px;font-size:.82rem;color:var(--accent-l)}
+        .med-chip button{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.9rem;line-height:1}
+        .med-chip button:hover{color:var(--red)}
+        .check-btn{width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:100px;font-family:var(--font);font-size:.95rem;font-weight:500;cursor:pointer;margin-bottom:24px}
+        .check-btn:hover{background:var(--accent-l)}
+        .check-btn:disabled{background:var(--card2);color:var(--text3);cursor:not-allowed}
+        .results{display:none}
+        .result-header{font-family:var(--font-d);font-size:1.2rem;font-weight:400;margin-bottom:16px}
+        .interaction{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+        .inter-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+        .inter-pair{font-size:.9rem;font-weight:500}
+        .severity{padding:4px 10px;border-radius:100px;font-size:.68rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+        .sev-high{background:rgba(196,107,90,.15);color:var(--red)}
+        .sev-moderate{background:rgba(196,149,74,.15);color:var(--amber)}
+        .sev-low{background:rgba(90,126,196,.15);color:var(--blue)}
+        .sev-none{background:rgba(107,143,94,.15);color:var(--accent-l)}
+        .inter-desc{font-size:.85rem;color:var(--text2);line-height:1.6;margin-bottom:8px}
+        .inter-mechanism{font-size:.78rem;color:var(--text3);padding:10px 12px;background:var(--card2);border-radius:8px;line-height:1.5}
+        .no-inter{text-align:center;padding:28px;color:var(--accent-l);font-size:.95rem}
+        .disclaimer{font-size:.75rem;color:var(--text3);font-style:italic;text-align:center;margin-top:20px;padding:16px;border-top:1px solid var(--border);line-height:1.6}
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <a href="../">← App Farm</a>
+        <h1>⚕️ Interações Medicamentosas</h1>
+        <div></div>
+    </div>
+    <div class="container">
+        <div class="intro">
+            <h2>Verifique interações</h2>
+            <p>Adicione 2 ou mais medicamentos para verificar possíveis interações.</p>
+        </div>
+        <div class="search-box">
+            <span class="icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Buscar medicamento..." oninput="onSearch()" onfocus="onSearch()">
+            <div class="suggestions" id="suggestions"></div>
+        </div>
+        <div class="selected-meds" id="selectedMeds"></div>
+        <button class="check-btn" id="checkBtn" onclick="checkInteractions()" disabled>Verificar interações</button>
+        <div class="results" id="results"></div>
+        <div class="disclaimer">⚠️ Esta ferramenta é apenas para referência. Sempre consulte fontes oficiais e farmacêuticos para decisões clínicas.</div>
+    </div>
+    <script>
+        const medications = [
+            "Fluoxetina","Sertralina","Paroxetina","Citalopram","Escitalopram","Venlafaxina","Desvenlafaxina","Duloxetina",
+            "Amitriptilina","Nortriptilina","Clomipramina","Imipramina","Bupropiona","Mirtazapina","Trazodona",
+            "Clonazepam","Diazepam","Alprazolam","Lorazepam","Bromazepam",
+            "Quetiapina","Risperidona","Olanzapina","Aripiprazol","Haloperidol","Clorpromazina",
+            "Lítio","Ácido Valproico","Carbamazepina","Lamotrigina","Topiramato",
+            "Metilfenidato","Lisdexanfetamina","Atomoxetina",
+            "Zolpidem","Ramelteon",
+            "Paracetamol","Ibuprofeno","Omeprazol","Metformina","Losartana","Atenolol","Sinvastatina","Varfarina"
+        ];
+
+        const interactionDB = [
+            {pair:["Fluoxetina","Sertralina"],severity:"high",desc:"ISRS combinados aumentam significativamente o risco de Síndrome Serotoninérgica.",mech:"Ambos inibem a recaptação de serotonina. O uso conjunto causa acúmulo excessivo de serotonina nas sinapses, podendo levar a tremor, agitação, hipertermia e risco de vida."},
+            {pair:["Fluoxetina","Paroxetina"],severity:"high",desc:"Combinação de ISRS — risco elevado de toxicidade serotoninérgica.",mech:"Mecanismo similar: dupla inibição da recaptação de serotonina. Fluoxetina também inibe CYP2D6, elevando níveis de paroxetina."},
+            {pair:["Fluoxetina","Clomipramina"],severity:"high",desc:"Risco grave de Síndrome Serotoninérgica. Fluoxetina inibe CYP2D6, aumentando níveis de clomipramina.",mech:"Clomipramina é um potente inibidor da recaptação de serotonina entre os tricíclicos. A inibição do CYP2D6 pela fluoxetina reduz o metabolismo da clomipramina, elevando seus níveis plasmáticos perigosamente."},
+            {pair:["Fluoxetina","Varfarina"],severity:"moderate",desc:"Fluoxetina pode aumentar o efeito anticoagulante da varfarina.",mech:"Fluoxetina inibe CYP2C9, que é responsável pelo metabolismo da varfarina. Isso pode elevar os níveis de varfarina e aumentar o risco de sangramento."},
+            {pair:["Sertralina","Varfarina"],severity:"moderate",desc:"Sertralina pode potencializar o efeito da varfarina.",mech:"ISRS inibem a agregação plaquetária e podem afetar o metabolismo da varfarina via CYP2C9/CYP3A4."},
+            {pair:["Lítio","Ibuprofeno"],severity:"high",desc:"AINEs como ibuprofeno reduzem a excreção renal de lítio, podendo causar toxicidade.",mech:"Ibuprofeno diminui a taxa de filtração glomerular e aumenta a reabsorção de lítio nos túbulos renais, elevando perigosamente os níveis séricos de lítio."},
+            {pair:["Lítio","Losartana"],severity:"moderate",desc:"Losartana pode aumentar níveis séricos de lítio.",mech:"Antagonistas de receptores de angiotensina podem reduzir a depuração renal do lítio."},
+            {pair:["Carbamazepina","Lamotrigina"],severity:"moderate",desc:"Carbamazepina reduz significativamente os níveis de lamotrigina.",mech:"Carbamazepina é forte indutor do CYP3A4 e da glucuronidação, acelerando o metabolismo da lamotrigina. Pode ser necessário aumentar a dose de lamotrigina."},
+            {pair:["Carbamazepina","Quetiapina"],severity:"moderate",desc:"Carbamazepina pode reduzir drasticamente os níveis de quetiapina.",mech:"Indução do CYP3A4 pela carbamazepina acelera o metabolismo da quetiapina, podendo reduzir sua eficácia em até 80%."},
+            {pair:["Ácido Valproico","Lamotrigina"],severity:"moderate",desc:"Valproato duplica os níveis de lamotrigina e aumenta risco de reações cutâneas.",mech:"Valproato inibe a glucuronidação da lamotrigina, dobrando sua meia-vida. A titulação da lamotrigina deve ser mais lenta quando combinada com valproato."},
+            {pair:["Fluoxetina","Metilfenidato"],severity:"low",desc:"Interação geralmente leve. Fluoxetina pode aumentar discretamente os níveis de metilfenidato.",mech:"Inibição leve do metabolismo. Na prática clínica, a combinação é frequentemente utilizada com monitoramento."},
+            {pair:["Clonazepam","Quetiapina"],severity:"moderate",desc:"Potencialização da sedação e risco de depressão respiratória.",mech:"Ambos possuem efeitos sedativos. A combinação pode causar sonolência excessiva, comprometimento cognitivo e, em doses altas, depressão respiratória."},
+            {pair:["Omeprazol","Citalopram"],severity:"moderate",desc:"Omeprazol pode aumentar os níveis de citalopram.",mech:"Omeprazol inibe CYP2C19, que é uma via importante do metabolismo do citalopram e escitalopram. Monitorar prolongamento do QTc."},
+            {pair:["Omeprazol","Escitalopram"],severity:"moderate",desc:"Omeprazol pode elevar níveis de escitalopram via inibição do CYP2C19.",mech:"Escitalopram é metabolizado primariamente pelo CYP2C19. Co-administração com omeprazol pode requerer ajuste de dose."},
+            {pair:["Haloperidol","Lítio"],severity:"moderate",desc:"Combinação pode raramente causar encefalopatia e síndrome neuroléptica.",mech:"Mecanismo não totalmente compreendido. Casos raros de neurotoxicidade foram reportados, especialmente com doses altas de ambos."},
+            {pair:["Diazepam","Omeprazol"],severity:"low",desc:"Omeprazol pode aumentar levemente os níveis de diazepam.",mech:"Inibição do CYP2C19, que participa do metabolismo do diazepam. Efeito clínico geralmente modesto."},
+            {pair:["Bupropiona","Metilfenidato"],severity:"low",desc:"Ambos podem reduzir limiar convulsivo. Monitorar.",mech:"A combinação pode ter efeito aditivo na redução do limiar convulsivo, embora seja utilizada clinicamente com precaução."},
+            {pair:["Sinvastatina","Amitriptilina"],severity:"low",desc:"Possível aumento leve dos níveis de amitriptilina.",mech:"Competição por vias metabólicas do CYP3A4. Efeito clínico geralmente menor."},
+        ];
+
+        let selected = [];
+
+        function onSearch() {
+            const val = document.getElementById('searchInput').value.toLowerCase().trim();
+            const sug = document.getElementById('suggestions');
+            if (!val) { sug.style.display = 'none'; return; }
+            const matches = medications.filter(m => m.toLowerCase().includes(val) && !selected.includes(m)).slice(0, 8);
+            if (matches.length === 0) { sug.style.display = 'none'; return; }
+            sug.innerHTML = matches.map(m => `<div class="suggestion" onclick="selectMed('${m}')">${m}</div>`).join('');
+            sug.style.display = 'block';
+        }
+
+        function selectMed(name) {
+            if (!selected.includes(name)) selected.push(name);
+            document.getElementById('searchInput').value = '';
+            document.getElementById('suggestions').style.display = 'none';
+            renderSelected();
+        }
+
+        function removeMed(name) {
+            selected = selected.filter(m => m !== name);
+            renderSelected();
+            document.getElementById('results').style.display = 'none';
+        }
+
+        function renderSelected() {
+            document.getElementById('selectedMeds').innerHTML = selected.map(m =>
+                `<span class="med-chip">${m}<button onclick="removeMed('${m}')">×</button></span>`
+            ).join('');
+            document.getElementById('checkBtn').disabled = selected.length < 2;
+        }
+
+        function checkInteractions() {
+            const found = [];
+            for (let i = 0; i < selected.length; i++) {
+                for (let j = i + 1; j < selected.length; j++) {
+                    const inter = interactionDB.find(x =>
+                        (x.pair.includes(selected[i]) && x.pair.includes(selected[j]))
+                    );
+                    if (inter) found.push({...inter, med1: selected[i], med2: selected[j]});
+                }
+            }
+
+            const res = document.getElementById('results');
+            res.style.display = 'block';
+
+            if (found.length === 0) {
+                res.innerHTML = '<div class="no-inter">✅ Nenhuma interação conhecida encontrada entre os medicamentos selecionados.</div>';
+                return;
+            }
+
+            found.sort((a, b) => {
+                const order = {high: 0, moderate: 1, low: 2};
+                return order[a.severity] - order[b.severity];
+            });
+
+            const sevLabels = {high: "Alta", moderate: "Moderada", low: "Baixa"};
+
+            res.innerHTML = `<div class="result-header">${found.length} interação(ões) encontrada(s)</div>` +
+                found.map(f => `<div class="interaction">
+                    <div class="inter-top">
+                        <span class="inter-pair">${f.med1} + ${f.med2}</span>
+                        <span class="severity sev-${f.severity}">${sevLabels[f.severity]}</span>
+                    </div>
+                    <div class="inter-desc">${f.desc}</div>
+                    <div class="inter-mechanism"><strong>Mecanismo:</strong> ${f.mech}</div>
+                </div>`).join('');
+        }
+
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.search-box')) document.getElementById('suggestions').style.display = 'none';
+        });
+    </script>
+</body>
+</html>

@@ -950,7 +950,7 @@
             <p class="hero-desc">Ferramentas para profissionais de saúde mental, educação e produtividade. Feitas por quem vive a clínica.</p>
             <div class="hero-stats">
                 <div class="hero-stat">
-                    <div class="number" id="appCount">9</div>
+                    <div class="number" id="appCount">10</div>
                     <div class="label">Apps</div>
                 </div>
                 <div class="hero-stat">
@@ -980,13 +980,13 @@
         <div class="bundle-card">
             <div>
                 <div class="bundle-badge">🔥 Melhor valor</div>
-                <h3>Pacote Completo — Todos os 9 apps</h3>
-                <div class="bundle-desc">Acesse todo o ecossistema App Farm: ferramentas clínicas, financeiras, educacionais e de bem-estar. APK + Web App inclusos.</div>
+                <h3>Pacote Completo — Todos os 10 apps</h3>
+                <div class="bundle-desc">Acesse todo o ecossistema App Farm: 10 ferramentas clínicas, financeiras, educacionais e de bem-estar. APK + Web App inclusos.</div>
             </div>
             <div class="bundle-pricing">
-                <div class="bundle-old-price">De R$ 90,00</div>
+                <div class="bundle-old-price">De R$ 100,00</div>
                 <div class="bundle-new-price">R$ 50,00</div>
-                <div class="bundle-save">Economize R$ 40,00</div>
+                <div class="bundle-save">Economize R$ 50,00</div>
                 <a href="comprar.html?app=bundle" class="bundle-btn">Comprar pacote</a>
             </div>
         </div>
@@ -997,7 +997,7 @@
         <div class="tier-header">
             <div class="tier-icon" style="background: rgba(107, 143, 94, 0.12)">🏥</div>
             <h2>Para Profissionais de Saúde Mental</h2>
-            <span class="tier-count">4 apps</span>
+            <span class="tier-count">5 apps</span>
         </div>
         <p class="tier-desc">Prontuário, agenda, testes, prescrições, interações e farmacologia — tudo que o psicólogo e psiquiatra precisam no consultório.</p>
         <div class="apps-grid" id="appsGridClinical"></div>
@@ -1243,6 +1243,34 @@
             note: "A referência que todo psiquiatra queria ter no bolso. 56 medicamentos, zero enrolação, consulta em 3 toques."
         },
         {
+            name: "Autismo Fácil",
+            description: "Guia completo sobre TEA com ferramentas práticas: perfil sensorial, bateria social, rotina visual, scripts sociais, kit de crise, testes de rastreamento e direitos com passo a passo.",
+            category: "Saúde",
+            icon: "🧩",
+            iconBg: "#1a1814",
+            tags: ["Autismo", "TEA", "Android", "Web App"],
+            price: "R$ 10,00",
+            slug: "autismo-facil",
+            available: true,
+            longDescription: "Recebeu o diagnóstico e não sabe por onde começar? Ou é profissional e precisa de uma referência rápida sobre TEA? O Autismo Fácil reúne tudo em um único app: guia completo sobre autismo (sensibilidade sensorial, masking, funções executivas, meltdown, stimming, comorbidades), ferramentas práticas do dia a dia (perfil sensorial personalizado, bateria social, rotina visual, scripts sociais prontos, diário de stims, card de identificação), testes de rastreamento (AQ-10, RAADS-14), kit de crise para meltdown/shutdown, e um diretório completo de direitos — CIPTEA, BPC-LOAS, cotas PcD, meia-entrada, passe livre e mais, com passo a passo de como solicitar cada um. Inclui textos prontos para compartilhar via WhatsApp com pais, avós, colegas de trabalho e parceiros. 100% offline.",
+            features: [
+                "Guia completo sobre TEA — sensibilidade sensorial, masking, funções executivas, comunicação social, stimming e mais",
+                "Perfil Sensorial personalizado — mapeie hiper/hipossensibilidades em 7 canais sensoriais",
+                "Bateria Social — monitore seu nível de energia social e saiba quando parar",
+                "Rotina Visual — crie e organize sua rotina diária com suporte visual",
+                "Scripts Sociais prontos — frases para situações comuns que você pode adaptar e usar",
+                "Kit de Crise — protocolo passo a passo para meltdown e shutdown",
+                "Testes de rastreamento (AQ-10, RAADS-14) — com apuração automática",
+                "Card de Identificação — gere um card digital com suas necessidades para mostrar quando precisar",
+                "Diário de Stims — registre e entenda seus padrões de autorregulação",
+                "Direitos completos com passo a passo — CIPTEA, BPC-LOAS, cotas, meia-entrada, passe livre",
+                "Textos prontos para família — compartilhe via WhatsApp com pais, avós, parceiros e colegas",
+                "Quebrando mitos — respostas baseadas em ciência para os equívocos mais comuns sobre autismo",
+                "100% offline — seus dados nunca saem do dispositivo"
+            ],
+            note: "Feito para pessoas autistas, familiares e profissionais. Informação acessível, ferramentas práticas, direitos claros — tudo no bolso."
+        },
+        {
             name: "StoryTracker",
             description: "Todas as suas fontes de notícia em um lugar só. Agregador RSS leve com categorização automática, favoritos e leitura sem distrações.",
             category: "Notícias",
@@ -1268,7 +1296,7 @@
     ];
 
     // ===== TIER CLASSIFICATION =====
-    const clinicalSlugs = ['clinica-facil', 'interacoes', 'prescripta', 'guia-psicofarm'];
+    const clinicalSlugs = ['clinica-facil', 'interacoes', 'prescripta', 'guia-psicofarm', 'autismo-facil'];
 
     // ===== RENDER =====
     function renderApps() {

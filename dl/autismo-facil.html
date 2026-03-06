@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Autismo Fácil</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+--bg:#F5F0EB;--surface:#FFFDF9;--card:#FFFDF9;--surfaceAlt:#F0EDE8;
+--primary:#4B87A5;--primaryDark:#3A6D87;--primaryLight:#E3EFF5;--primaryFaded:rgba(75,135,165,.1);
+--accent:#D4956A;--accentLight:#FFF0E3;
+--text:#2C3E40;--textMuted:#6B7F82;--textLight:#9AADAF;
+--border:#DDD5CC;--borderLight:#EBE5DE;
+--red:#C25B56;--redBg:#FDF0EF;--green:#6B9E78;--greenBg:#EFF7F0;
+--yellow:#C4963A;--yellowBg:#FEF8EC;--blue:#4B87A5;--blueBg:#E3EFF5;
+--purple:#8B6BAE;--purpleBg:#F3EEF8;
+--radius:16px;--radiusSm:10px;
+--shadow:0 2px 8px rgba(44,62,64,.06);
+--font:'Segoe UI',system-ui,-apple-system,sans-serif;
+}
+html,body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;min-height:100vh;overflow-x:hidden}
+.shell{max-width:520px;margin:0 auto;padding-bottom:72px}
+/* TOPBAR */
+.topbar{background:var(--primary);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100}
+.topbar h1{font-size:16px;font-weight:700;flex:1}
+.topbar .back{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;display:none;padding:4px 8px 4px 0}
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1.5px solid var(--border);display:flex;z-index:100;max-width:520px;margin:0 auto}
+.bnav-item{flex:1;padding:6px 2px 8px;text-align:center;cursor:pointer;color:var(--textLight);transition:.2s}
+.bnav-item.active{color:var(--primary)}
+.bnav-item .bi{font-size:20px;display:block}.bnav-item .bl{font-size:9.5px;font-weight:700;margin-top:1px;display:block;letter-spacing:.3px}
+/* PAGES */
+.pg{display:none}.pg.active{display:block}
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--borderLight);border-radius:var(--radius);padding:16px;margin:0 16px 10px;box-shadow:var(--shadow)}
+.card-t{font-size:14px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.card-p{font-size:13.5px;color:var(--textMuted);line-height:1.6}
+/* SECTION HEADERS */
+.sh{padding:16px 16px 8px;font-size:13px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.8px}
+/* EXPANDABLE */
+.exp{background:var(--card);border:1px solid var(--borderLight);border-radius:var(--radius);margin:0 16px 8px;box-shadow:var(--shadow);overflow:hidden}
+.exp-h{padding:14px 16px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.exp-h .ei{font-size:20px;flex-shrink:0}.exp-h .et{font-size:14px;font-weight:600;flex:1}.exp-h .ea{color:var(--textLight);font-size:14px;transition:.2s}
+.exp.open .ea{transform:rotate(180deg)}
+.exp-b{display:none;padding:0 16px 16px;font-size:13.5px;color:var(--textMuted);line-height:1.7}
+.exp.open .exp-b{display:block}
+/* TAGS */
+.tag{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;margin:2px}
+.tag-r{background:var(--redBg);color:var(--red)}.tag-g{background:var(--greenBg);color:var(--green)}
+.tag-y{background:var(--yellowBg);color:var(--yellow)}.tag-b{background:var(--blueBg);color:var(--blue)}
+.tag-p{background:var(--purpleBg);color:var(--purple)}
+/* BUTTONS */
+.btn{padding:10px 20px;border-radius:var(--radiusSm);border:none;font-family:var(--font);font-weight:600;font-size:14px;cursor:pointer;transition:.2s}
+.btn-p{background:var(--primary);color:#fff}.btn-p:active{opacity:.85}
+.btn-o{background:var(--surface);border:1.5px solid var(--border);color:var(--text)}
+.btn-s{padding:6px 14px;font-size:12px}
+.btn-full{width:100%;display:block;text-align:center}
+/* GRID */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+/* QUICK ACCESS */
+.qa{background:var(--card);border:1px solid var(--borderLight);border-radius:var(--radius);padding:14px 12px;text-align:center;cursor:pointer;box-shadow:var(--shadow);transition:.15s}
+.qa:active{transform:scale(.97)}.qa .qi{font-size:28px;display:block;margin-bottom:6px}.qa .ql{font-size:11.5px;font-weight:600;color:var(--text);line-height:1.3}
+/* QUIZ */
+.quiz-q{background:var(--card);border:1px solid var(--borderLight);border-radius:var(--radius);padding:16px;margin:0 16px 8px}
+.quiz-q .qq{font-size:14px;font-weight:600;margin-bottom:12px}
+.quiz-opt{display:flex;flex-direction:column;gap:6px}
+.quiz-opt label{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radiusSm);border:1.5px solid var(--borderLight);cursor:pointer;font-size:13.5px;transition:.15s}
+.quiz-opt label:has(input:checked){border-color:var(--primary);background:var(--primaryLight)}
+.quiz-opt input{accent-color:var(--primary)}
+/* PROGRESS */
+.pbar{height:8px;background:var(--surfaceAlt);border-radius:4px;overflow:hidden;margin:8px 0}
+.pbar .fill{height:100%;border-radius:4px;transition:width .3s}
+/* SHARE BTN */
+.share-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:20px;background:#25D366;color:#fff;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)}
+/* SENSORY */
+.sens-item{display:flex;align-items:center;gap:12px;padding:12px;border-radius:var(--radiusSm);background:var(--surfaceAlt);margin-bottom:6px}
+.sens-item .si{font-size:22px;flex-shrink:0}.sens-item .sl{font-size:13px;font-weight:600;flex:1}
+.sens-item select{padding:6px 8px;border-radius:6px;border:1.5px solid var(--border);font-size:12px;background:var(--surface);color:var(--text);font-family:var(--font)}
+/* BATTERY */
+.bat{height:40px;background:var(--surfaceAlt);border-radius:var(--radiusSm);overflow:hidden;position:relative;border:2px solid var(--border)}
+.bat .bf{height:100%;transition:width .4s;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff}
+/* CRISIS */
+.crisis-screen{position:fixed;top:0;left:0;right:0;bottom:0;background:#1a2a30;color:#fff;z-index:500;display:none;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center}
+.crisis-screen.show{display:flex}
+.crisis-screen h2{font-size:24px;margin-bottom:20px}.crisis-screen p{font-size:18px;line-height:1.8;max-width:360px}
+.crisis-close{position:absolute;top:20px;right:20px;background:rgba(255,255,255,.15);border:none;color:#fff;width:44px;height:44px;border-radius:50%;font-size:20px;cursor:pointer}
+/* BREATHING */
+.breath-circle{width:160px;height:160px;border-radius:50%;background:rgba(75,135,165,.3);display:flex;align-items:center;justify-content:center;margin:30px auto;transition:transform 4s ease-in-out;font-size:20px;font-weight:700}
+.breath-circle.inhale{transform:scale(1.4);background:rgba(75,135,165,.5)}
+/* ROUTINE */
+.rout-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--card);border:1px solid var(--borderLight);border-radius:var(--radiusSm);margin-bottom:6px;cursor:pointer}
+.rout-item.done{opacity:.5;text-decoration:line-through}
+.rout-item .ri{font-size:20px}.rout-item .rt{flex:1;font-size:13.5px;font-weight:500}.rout-item .rc{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--green)}
+.rout-item.done .rc{background:var(--green);border-color:var(--green);color:#fff}
+/* SCRIPTS */
+.script-card{background:var(--card);border:1px solid var(--borderLight);border-radius:var(--radius);padding:16px;margin:0 16px 10px}
+.script-card .sit{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--primary);font-weight:700;margin-bottom:6px}
+.script-card .stxt{font-size:14px;background:var(--surfaceAlt);padding:12px;border-radius:var(--radiusSm);border-left:3px solid var(--primary);line-height:1.6;margin:8px 0}
+.script-card .svar{font-size:12.5px;color:var(--textMuted);margin-top:8px}
+/* ID CARD */
+.id-card{background:linear-gradient(135deg,#4B87A5,#3A6D87);color:#fff;border-radius:var(--radius);padding:20px;margin:0 16px;box-shadow:0 4px 20px rgba(75,135,165,.3)}
+.id-card h3{font-size:16px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.id-card .id-field{background:rgba(255,255,255,.15);border-radius:var(--radiusSm);padding:10px 12px;margin-bottom:8px;font-size:13px}
+.id-card .id-label{font-size:10px;text-transform:uppercase;letter-spacing:.5px;opacity:.7;margin-bottom:2px}
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;opacity:0;transition:.3s;z-index:200;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+/* DISCLAIMER */
+.disc{margin:12px 16px;padding:12px;background:var(--yellowBg);border:1px solid var(--yellow);border-radius:var(--radiusSm);font-size:11.5px;color:#8B6F30;line-height:1.5}
+/* ANIM */
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}.anim{animation:fadeIn .25s ease-out}
+/* RESPONSIVE */
+@media(max-width:360px){.grid2{grid-template-columns:1fr}.grid3{grid-template-columns:1fr 1fr}}
+/* SUB-PAGE WITHIN TAB */
+.subpage{display:none}.subpage.active{display:block}
+/* RIGHT INFO */
+.right-step{counter-increment:step;padding:14px;background:var(--card);border:1px solid var(--borderLight);border-radius:var(--radiusSm);margin-bottom:8px;position:relative;padding-left:48px}
+.right-step::before{content:counter(step);position:absolute;left:14px;top:14px;width:24px;height:24px;background:var(--primary);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.right-step h4{font-size:13px;font-weight:700;margin-bottom:4px}.right-step p{font-size:12.5px;color:var(--textMuted);line-height:1.5}
+.rights-list{counter-reset:step;padding:0 16px}
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="topbar">
+<button class="back" id="backBtn" onclick="goBack()">←</button>
+<span style="font-size:20px">♾️</span>
+<h1 id="topTitle">Autismo Fácil</h1>
+</div>
+
+<!-- ============ HOME ============ -->
+<div id="pgHome" class="pg active">
+<div style="padding:16px;text-align:center">
+<div style="font-size:40px;margin-bottom:8px">♾️</div>
+<h2 style="font-size:18px;font-weight:700;color:var(--primary)">Autismo Fácil</h2>
+<p style="font-size:13px;color:var(--textMuted);margin-top:4px">Guia completo, ferramentas e direitos — tudo offline</p>
+</div>
+<div class="grid3" style="padding:0 16px 12px">
+<div class="qa" onclick="openSub('crisis')"><span class="qi">🆘</span><span class="ql">Kit de Crise</span></div>
+<div class="qa" onclick="goTab('tools');openTool('battery')"><span class="qi">🔋</span><span class="ql">Bateria Social</span></div>
+<div class="qa" onclick="goTab('tools');openTool('sensory')"><span class="qi">🌈</span><span class="ql">Perfil Sensorial</span></div>
+<div class="qa" onclick="goTab('tools');openTool('idcard')"><span class="qi">🪪</span><span class="ql">Meu Card</span></div>
+<div class="qa" onclick="goTab('tools');openTool('routine')"><span class="qi">📋</span><span class="ql">Rotina Visual</span></div>
+<div class="qa" onclick="goTab('tests')"><span class="qi">📝</span><span class="ql">Testes</span></div>
+</div>
+<div class="sh">Acesso Rápido</div>
+<div class="card" onclick="goTab('guide');openGuide('sensorial')" style="cursor:pointer">
+<div class="card-t">🎧 Sensibilidade Sensorial</div>
+<div class="card-p">Entenda por que certos estímulos causam desconforto e como manejar.</div>
+</div>
+<div class="card" onclick="goTab('rights')" style="cursor:pointer">
+<div class="card-t">⚖️ Meus Direitos</div>
+<div class="card-p">Lei Berenice Piana, CIPTEA, BPC, meia-entrada e mais — com passo a passo.</div>
+</div>
+<div class="card" onclick="goTab('guide');openGuide('familia')" style="cursor:pointer">
+<div class="card-t">👨‍👩‍👧 Explicar para a Família</div>
+<div class="card-p">Textos prontos para compartilhar via WhatsApp com quem precisa entender.</div>
+</div>
+<div class="disc">♾️ Este app é informativo e não substitui avaliação profissional. O diagnóstico de autismo deve ser feito por equipe multidisciplinar qualificada.</div>
+</div>
+
+<!-- ============ GUIDE ============ -->
+<div id="pgGuide" class="pg">
+<div id="guideMain" class="subpage active">
+<div class="sh">📖 Guia Completo</div>
+
+<div class="exp" onclick="openGuide('oquee')"><div class="exp-h"><span class="ei">🧩</span><span class="et">O que é Autismo?</span><span class="ea">→</span></div></div>
+<div class="exp" onclick="openGuide('sensorial')"><div class="exp-h"><span class="ei">🎧</span><span class="et">Sensibilidade Sensorial</span><span class="ea">→</span></div></div>
+<div class="exp" onclick="openGuide('sobrecarga')"><div class="exp-h"><span class="ei">⚡</span><span class="et">Sobrecarga, Meltdown e Shutdown</span><span class="ea">→</span></div></div>
+<div class="exp" onclick="openGuide('masking')"><div class="exp-h"><span class="ei">🎭</span><span class="et">Masking (Camuflagem)</span><span class="ea">→</span></div></div>
+<div class="exp" onclick="openGuide('funcexec')"><div class="exp-h"><span class="ei">🧠</span><span class="et">Funções Executivas</span><span class="ea">→</span></div></div>
+<div class="exp" onclick="openGuide('comunic')"><div class="exp-h"><span class="ei">💬</span><span class="et">Comunicação Social</span><span class="ea">→</span></div></div>
+<div class="exp" onclick="openGuide('rotina')"><div class="exp-h"><span class="ei">🔄</span><span class="et">Rotina, Rigidez e Transições</span><span class="ea">→</span></div></div>
+<div class="exp" onclick="openGuide('interesses')"><div class="exp-h"><span class="ei">⭐</span><span class="et">Interesses Intensos (Hiperfoco)</span><span class="ea">→</span></div></div>
+<div class="exp" onclick="openGuide('comorbid')"><div class="exp-h"><span class="ei">🔗</span><span class="et">Comorbidades Comuns</span><span class="ea">→</span></div></div>
+<div class="exp" onclick="openGuide('stims')"><div class="exp-h"><span class="ei">🌀</span><span class="et">Stimming e Autorregulação</span><span class="ea">→</span></div></div>
+
+<div class="sh" style="margin-top:12px">👨‍👩‍👧 Para a Família</div>
+<div class="exp" onclick="openGuide('familia')"><div class="exp-h"><span class="ei">💌</span><span class="et">Textos para Compartilhar</span><span class="ea">→</span></div></div>
+
+<div class="sh" style="margin-top:12px">❌ Mitos vs Realidade</div>
+<div class="exp" onclick="openGuide('mitos')"><div class="exp-h"><span class="ei">🔍</span><span class="et">Quebrando Mitos Comuns</span><span class="ea">→</span></div></div>
+
+<div class="sh" style="margin-top:12px">👩‍⚕️ Profissionais</div>
+<div class="exp" onclick="openGuide('profissionais')"><div class="exp-h"><span class="ei">🏥</span><span class="et">Diretório de Profissionais</span><span class="ea">→</span></div></div>
+</div>
+
+<!-- GUIDE SUB-PAGES -->
+<div id="guideSub" class="subpage"></div>
+</div>
+
+<!-- ============ RIGHTS ============ -->
+<div id="pgRights" class="pg">
+<div id="rightsMain" class="subpage active">
+<div class="sh">⚖️ Meus Direitos</div>
+<div class="disc">Todos os direitos abaixo se aplicam a pessoas com TEA (Transtorno do Espectro Autista) com laudo diagnóstico. Muitos podem ser obtidos via CIPTEA.</div>
+<div id="rightsList"></div>
+</div>
+<div id="rightsSub" class="subpage"></div>
+</div>
+
+<!-- ============ TOOLS ============ -->
+<div id="pgTools" class="pg">
+<div id="toolsMain" class="subpage active">
+<div class="sh">🧰 Ferramentas</div>
+<div class="grid2" style="padding:0 16px">
+<div class="qa" onclick="openTool('sensory')"><span class="qi">🌈</span><span class="ql">Perfil Sensorial</span></div>
+<div class="qa" onclick="openTool('battery')"><span class="qi">🔋</span><span class="ql">Bateria Social</span></div>
+<div class="qa" onclick="openTool('routine')"><span class="qi">📋</span><span class="ql">Rotina Visual</span></div>
+<div class="qa" onclick="openTool('scripts')"><span class="qi">💬</span><span class="ql">Scripts Sociais</span></div>
+<div class="qa" onclick="openTool('stimdiary')"><span class="qi">🌀</span><span class="ql">Diário de Stims</span></div>
+<div class="qa" onclick="openTool('idcard')"><span class="qi">🪪</span><span class="ql">Card de Identificação</span></div>
+</div>
+<div style="padding:16px 16px 8px">
+<button class="btn btn-p btn-full" onclick="openSub('crisis')">🆘 Kit de Crise / Meltdown</button>
+</div>
+</div>
+<div id="toolsSub" class="subpage"></div>
+</div>
+
+<!-- ============ TESTS ============ -->
+<div id="pgTests" class="pg">
+<div id="testsMain" class="subpage active">
+<div class="sh">📋 Testes de Screening</div>
+<div class="disc">⚠️ Estes testes são instrumentos de RASTREAMENTO (screening), não de diagnóstico. Resultados sugestivos indicam a necessidade de avaliação profissional aprofundada. Nenhum teste substitui a avaliação clínica.</div>
+<div id="testsList"></div>
+</div>
+<div id="testsSub" class="subpage"></div>
+</div>
+
+</div><!-- shell -->
+
+<!-- CRISIS OVERLAY -->
+<div class="crisis-screen" id="crisisScreen">
+<button class="crisis-close" onclick="closeCrisis()">✕</button>
+<div id="crisisContent"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bnav">
+<div class="bnav-item active" data-tab="home" onclick="goTab('home')"><span class="bi">🏠</span><span class="bl">Início</span></div>
+<div class="bnav-item" data-tab="guide" onclick="goTab('guide')"><span class="bi">📖</span><span class="bl">Guia</span></div>
+<div class="bnav-item" data-tab="rights" onclick="goTab('rights')"><span class="bi">⚖️</span><span class="bl">Direitos</span></div>
+<div class="bnav-item" data-tab="tools" onclick="goTab('tools')"><span class="bi">🧰</span><span class="bl">Ferramentas</span></div>
+<div class="bnav-item" data-tab="tests" onclick="goTab('tests')"><span class="bi">📝</span><span class="bl">Testes</span></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================
+// STATE
+// ============================
+var curTab='home',subStack=[];
+var D={sensory:{},battery:[],routine:[],stims:[],idcard:{nome:'',contato:'',notas:''}};
+var SK='autismo_facil_v1';
+function save(){try{localStorage.setItem(SK,JSON.stringify(D))}catch(e){}}
+function load(){try{var s=localStorage.getItem(SK);if(s)D=Object.assign(D,JSON.parse(s))}catch(e){}}
+load();
+
+function toast(m){var e=document.getElementById('toast');e.textContent=m;e.classList.add('show');setTimeout(function(){e.classList.remove('show')},2200)}
+
+// ============================
+// NAVIGATION
+// ============================
+function goTab(t){
+curTab=t;subStack=[];
+document.querySelectorAll('.pg').forEach(function(e){e.classList.remove('active')});
+document.getElementById('pg'+t.charAt(0).toUpperCase()+t.slice(1)).classList.add('active');
+document.querySelectorAll('.bnav-item').forEach(function(e){e.classList.toggle('active',e.getAttribute('data-tab')===t)});
+// Reset subpages
+['guideMain','guideSub','rightsMain','rightsSub','toolsMain','toolsSub','testsMain','testsSub'].forEach(function(id){
+var el=document.getElementById(id);if(el){el.classList.toggle('active',id.indexOf('Main')!==-1)}});
+document.getElementById('backBtn').style.display='none';
+document.getElementById('topTitle').textContent='Autismo Fácil';
+window.scrollTo(0,0);
+}
+
+function showSub(mainId,subId,title){
+document.getElementById(mainId).classList.remove('active');
+document.getElementById(subId).classList.add('active');
+document.getElementById('backBtn').style.display='block';
+document.getElementById('topTitle').textContent=title||'';
+subStack.push({main:mainId,sub:subId});
+window.scrollTo(0,0);
+}
+
+function goBack(){
+if(subStack.length>0){var s=subStack.pop();
+document.getElementById(s.sub).classList.remove('active');
+document.getElementById(s.main).classList.add('active');
+if(subStack.length===0){document.getElementById('backBtn').style.display='none';document.getElementById('topTitle').textContent='Autismo Fácil';}
+else{document.getElementById('topTitle').textContent=subStack[subStack.length-1].title||'';}
+window.scrollTo(0,0);
+}}
+
+// ============================
+// GUIDE CONTENT DATABASE
+// ============================
+var GUIDE={
+oquee:{title:'🧩 O que é Autismo?',html:'<div class="card"><div class="card-t">Definição</div><div class="card-p">O <strong>Transtorno do Espectro Autista (TEA)</strong> é uma condição do neurodesenvolvimento que afeta como a pessoa percebe o mundo, se comunica, interage socialmente e processa informações sensoriais.<br><br>Não é uma doença — é uma forma diferente de funcionamento neurológico. O termo "espectro" reflete a enorme diversidade: cada pessoa autista é única, com diferentes combinações de características e níveis de necessidade de suporte.<br><br><strong>Prevalência:</strong> Estima-se que 1 em cada 36 pessoas esteja no espectro (CDC, 2023). No Brasil, isso representa aproximadamente 6 milhões de pessoas.</div></div><div class="card"><div class="card-t">Níveis de Suporte (DSM-5)</div><div class="card-p"><span class="tag tag-g">Nível 1</span> Necessita suporte — dificuldades na comunicação social; inflexibilidade comportamental causa prejuízo funcional. Anteriormente chamado "Asperger".<br><br><span class="tag tag-y">Nível 2</span> Necessita suporte substancial — déficits marcados na comunicação verbal e não-verbal; inflexibilidade e dificuldade com mudanças evidentes.<br><br><span class="tag tag-r">Nível 3</span> Necessita suporte muito substancial — déficits graves na comunicação; inflexibilidade extrema; grande dificuldade com mudanças.</div></div><div class="card"><div class="card-t">Características Principais</div><div class="card-p">• <strong>Comunicação social:</strong> Dificuldade com linguagem não-verbal, reciprocidade emocional, e manutenção de relações sociais<br>• <strong>Padrões restritos e repetitivos:</strong> Interesses intensos, necessidade de rotina, estereotipias motoras (stims), hipo/hipersensibilidade sensorial<br>• <strong>Presentes desde a infância:</strong> Mesmo que o diagnóstico seja tardio, as características existem desde cedo — muitas vezes mascaradas (especialmente em mulheres e pessoas AFAB)</div></div><div class="card"><div class="card-t">Diagnóstico Tardio</div><div class="card-p">Muitas pessoas são diagnosticadas na vida adulta, especialmente:<br>• <strong>Mulheres e pessoas AFAB:</strong> Tendem a camuflar mais, mascarando as características<br>• <strong>Pessoas com alto QI:</strong> Compensam dificuldades com estratégias intelectuais<br>• <strong>Nível 1:</strong> Passam por "estranhas" ou "tímidas" por anos antes do diagnóstico<br><br>O diagnóstico tardio costuma trazer alívio ("finalmente entendo por que sempre me senti diferente") mas também luto pelo tempo perdido sem suporte adequado.</div></div>'},
+
+sensorial:{title:'🎧 Sensibilidade Sensorial',html:'<div class="card"><div class="card-t">O que acontece?</div><div class="card-p">O cérebro autista processa estímulos sensoriais de forma diferente. Isso pode significar <strong>hipersensibilidade</strong> (sentir demais), <strong>hipossensibilidade</strong> (sentir de menos), ou ambos em canais diferentes — e isso pode variar conforme o dia, o nível de estresse e a carga acumulada.<br><br>Não é "frescura" — é neurológico. O sistema nervoso está genuinamente processando o estímulo de forma mais intensa ou diferente.</div></div><div class="card"><div class="card-t">🔊 Audição</div><div class="card-p"><strong>Hipersensibilidade:</strong> Sons que outros ignoram (ar-condicionado, lâmpada fluorescente, mastigação, trânsito) podem ser insuportáveis. Ambientes barulhentos (shopping, festas, restaurantes) causam sobrecarga rápida.<br><br><strong>Manejo:</strong><br>• Fones com cancelamento de ruído (investimento essencial)<br>• Protetores auriculares em ambientes barulhentos<br>• Avisar com antecedência sobre ambientes ruidosos<br>• Permitir pausas de silêncio<br>• Evitar falar ao mesmo tempo que TV/música</div></div><div class="card"><div class="card-t">👁️ Visão</div><div class="card-p"><strong>Hipersensibilidade:</strong> Luz fluorescente, luz forte, telas brilhantes, padrões visuais complexos, ambientes visualmente "poluídos".<br><br><strong>Manejo:</strong><br>• Óculos com lentes filtro azul ou lentes escuras<br>• Preferir iluminação indireta, quente<br>• Reduzir brilho de telas<br>• Ambientes com decoração minimalista ajudam<br>• Evitar estímulos visuais em movimento rápido</div></div><div class="card"><div class="card-t">🤚 Tato</div><div class="card-p"><strong>Hipersensibilidade:</strong> Etiquetas de roupas, costuras, tecidos sintéticos, toque leve/inesperado, abraços não solicitados, certas texturas de alimentos na boca.<br><br><strong>Hipossensibilidade:</strong> Busca por pressão profunda (cobertores pesados, abraços apertados, apertar objetos).<br><br><strong>Manejo:</strong><br>• Cortar etiquetas, preferir roupas de algodão sem costura<br>• Cobertor ponderado (5-10% do peso corporal)<br>• Respeitar quando a pessoa não quer ser tocada<br>• Avisar antes de tocar<br>• Objetos de textura agradável para manipular (stim toys)</div></div><div class="card"><div class="card-t">👃 Olfato e 👅 Paladar</div><div class="card-p"><strong>Olfato hiper:</strong> Perfumes, produtos de limpeza, comida com cheiro forte, transporte público — podem causar náusea e desconforto intenso.<br><br><strong>Paladar hiper:</strong> Seletividade alimentar é extremamente comum (não é "frescura"). Texturas, temperaturas e sabores específicos podem ser insuportáveis.<br><br><strong>Manejo:</strong><br>• Não forçar alimentos — expandir repertório gradualmente com ajuda profissional<br>• Evitar perfumes e produtos com fragrância forte no convívio<br>• Respeitar a seletividade alimentar como característica neurológica<br>• Garantir nutrição adequada mesmo com repertório limitado</div></div><div class="card"><div class="card-t">⚡ A Soma dos Estímulos</div><div class="card-p">O mais importante: <strong>os estímulos se acumulam</strong>. Um ruído sozinho pode ser tolerável. Ruído + luz forte + cheiro forte + multidão + pressão social = sobrecarga (meltdown ou shutdown).<br><br>Por isso, a pessoa pode tolerar algo num dia e não tolerar no outro — depende da carga sensorial acumulada ao longo do dia.<br><br>Isso não é inconsistência — é funcionamento do sistema nervoso sob carga.</div></div>'},
+
+sobrecarga:{title:'⚡ Sobrecarga, Meltdown e Shutdown',html:'<div class="card"><div class="card-t">O que é Sobrecarga Sensorial?</div><div class="card-p">Quando o cérebro recebe mais estímulos do que consegue processar, entra em <strong>sobrecarga</strong>. É como um circuito elétrico sobrecarregado — eventualmente, algo "queima".<br><br><strong>Sinais de alerta (antes da crise):</strong><br>• Irritabilidade crescente<br>• Dificuldade de concentração<br>• Aumento de stims (balançar, esfregar mãos)<br>• Fala acelerada ou, ao contrário, parar de falar<br>• Cobrir ouvidos, apertar os olhos<br>• Expressar desconforto repetidamente<br>• Rigidez corporal</div></div><div class="card" style="border-left:4px solid var(--red)"><div class="card-t">🌋 Meltdown</div><div class="card-p">Resposta <strong>externalizante</strong> à sobrecarga. NÃO é birra, não é "descontrole" por escolha — é uma descarga involuntária do sistema nervoso sobrecarregado.<br><br><strong>Pode incluir:</strong> choro intenso, gritos, jogar objetos, bater em si mesmo, fala agressiva, incapacidade de parar.<br><br><strong>O que fazer:</strong><br>✅ Reduzir estímulos imediatamente (luzes, sons, pessoas)<br>✅ Não tocar sem permissão<br>✅ Falar pouco, em tom calmo e baixo<br>✅ Oferecer espaço seguro<br>✅ Esperar passar — dura de minutos a horas<br>✅ Após: oferecer água, cobertor, silêncio<br><br><strong>O que NÃO fazer:</strong><br>❌ Não gritar de volta<br>❌ Não imobilizar (exceto risco real de vida)<br>❌ Não julgar, repreender ou punir<br>❌ Não filmar<br>❌ Não aglomerar pessoas ao redor</div></div><div class="card" style="border-left:4px solid var(--blue)"><div class="card-t">🧊 Shutdown</div><div class="card-p">Resposta <strong>internalizante</strong> à sobrecarga. A pessoa "desliga" — como se o sistema operacional travasse.<br><br><strong>Pode incluir:</strong> parar de falar (mutismo), olhar vazio, não responder a perguntas, incapacidade de se mover, dissociação, parecer "desligado do mundo".<br><br><strong>O que fazer:</strong><br>✅ Ambiente silencioso e escuro se possível<br>✅ Não forçar interação ou conversa<br>✅ Ficar por perto em silêncio (se a pessoa quiser)<br>✅ Oferecer cobertor ou objeto de conforto<br>✅ Dar tempo — pode durar horas<br>✅ Após: não cobrar explicação imediata</div></div><div class="card"><div class="card-t">🔋 Burnout Autista</div><div class="card-p">Diferente de meltdown/shutdown (agudos), o <strong>burnout autista</strong> é crônico — resultado de meses/anos de sobrecarga, masking e falta de suporte.<br><br><strong>Sintomas:</strong> perda de habilidades antes dominadas, exaustão profunda que descanso não resolve, aumento de sensibilidade sensorial, dificuldade com tarefas antes simples, isolamento.<br><br><strong>Recuperação:</strong> requer redução significativa de demandas, eliminação de masking, aumento de tempo de regulação, e pode levar meses.</div></div>'},
+
+masking:{title:'🎭 Masking (Camuflagem)',html:'<div class="card"><div class="card-t">O que é Masking?</div><div class="card-p"><strong>Masking</strong> (ou camuflagem) é o esforço consciente ou inconsciente que pessoas autistas fazem para parecer neurotípicas em situações sociais.<br><br><strong>Inclui:</strong><br>• Forçar contato visual<br>• Copiar expressões faciais de outros<br>• Reprimir stims (não balançar, não bater mãos)<br>• Ensaiar mentalmente falas e respostas<br>• Rir quando outros riem (mesmo sem entender por quê)<br>• Suportar estímulos sensoriais dolorosos sem reagir<br>• Manter "scripts sociais" decorados<br><br>É como atuar o dia inteiro sem roteiro definido.</div></div><div class="card"><div class="card-t">O Custo do Masking</div><div class="card-p">Masking é <strong>extremamente exaustivo</strong> e tem consequências sérias:<br><br>• Exaustão profunda ao final do dia<br>• Meltdowns "tardios" em casa (parece bem no trabalho, desmorona ao chegar)<br>• Perda de identidade ("quem sou eu de verdade?")<br>• Depressão e ansiedade<br>• Burnout autista<br>• Atraso no diagnóstico (especialmente mulheres)<br><br>Muitas pessoas mascararam tão bem que nem a família percebe — o que não significa que não sofrem.</div></div><div class="card"><div class="card-t">Desmascaramento (Unmasking)</div><div class="card-p">Após o diagnóstico, muitas pessoas começam o processo de <strong>unmasking</strong> — permitir-se ser autista abertamente.<br><br>Isso pode incluir:<br>• Permitir-se stimar em público<br>• Parar de forçar contato visual<br>• Dizer "não" a eventos sociais que drenam<br>• Usar proteção sensorial sem vergonha<br>• Comunicar necessidades explicitamente<br><br>É um processo gradual e pode ser assustador, mas reduz significativamente burnout e melhora qualidade de vida.</div></div>'},
+
+funcexec:{title:'🧠 Funções Executivas',html:'<div class="card"><div class="card-t">O que são?</div><div class="card-p"><strong>Funções executivas</strong> são habilidades cognitivas que nos permitem planejar, organizar, iniciar tarefas, manter foco, alternar entre atividades, e regular emoções. No autismo, essas funções frequentemente operam de forma diferente.<br><br><strong>Dificuldades comuns:</strong><br>• <strong>Iniciar tarefas:</strong> Saber o que precisa fazer mas não conseguir começar ("paralisia de tarefa")<br>• <strong>Transições:</strong> Dificuldade de parar uma atividade e iniciar outra<br>• <strong>Planejamento:</strong> Dificuldade em quebrar tarefas grandes em passos menores<br>• <strong>Memória de trabalho:</strong> Esquecer instruções verbais longas<br>• <strong>Regulação emocional:</strong> Reações emocionais intensas e difíceis de modular<br>• <strong>Flexibilidade cognitiva:</strong> Dificuldade quando planos mudam</div></div><div class="card"><div class="card-t">Estratégias Práticas</div><div class="card-p">• <strong>Listas visuais:</strong> Quebre tudo em passos pequenos e concretos<br>• <strong>Timers:</strong> Use cronômetros para transições (ex: "em 5 minutos vamos trocar de atividade")<br>• <strong>Rotinas:</strong> Quanto mais previsível o dia, menos demanda executiva<br>• <strong>Dupla-tarefa de corpo:</strong> Exercício físico antes de tarefas mentais melhora o foco<br>• <strong>Externalizar:</strong> Calendários visíveis, post-its, alarmes — tudo que tire da cabeça e ponha no mundo<br>• <strong>Permitir hiperfoco:</strong> Quando o fluxo vier, aproveite — tente agendar tarefas difíceis para momentos de alto foco</div></div>'},
+
+comunic:{title:'💬 Comunicação Social',html:'<div class="card"><div class="card-t">Diferenças na Comunicação</div><div class="card-p">Pessoas autistas não são "ruins" em comunicação — comunicam-se de forma <strong>diferente</strong>. Pesquisas mostram que autistas se comunicam muito bem entre si (o "problema de dupla empatia").<br><br><strong>Características comuns:</strong><br>• <strong>Linguagem literal:</strong> Dificuldade com sarcasmo, ironia, expressões idiomáticas<br>• <strong>Processamento mais lento:</strong> Pode precisar de mais tempo para formular respostas<br>• <strong>Contato visual desconfortável:</strong> Forçar contato visual pode impedir a compreensão<br>• <strong>Dificuldade com "small talk":</strong> Preferência por conversas profundas e diretas<br>• <strong>Tom monotônico:</strong> Não significa falta de emoção<br>• <strong>Info-dumping:</strong> Compartilhar extensamente sobre interesse especial (é forma de conexão)</div></div><div class="card"><div class="card-t">Comunicação Não-Verbal</div><div class="card-p">Muitas dificuldades sociais autistas vêm da <strong>comunicação não-verbal</strong>:<br><br>• Dificuldade em ler expressões faciais sutis<br>• Não perceber "dicas" sociais implícitas<br>• Expressão facial que não corresponde à emoção interna<br>• Linguagem corporal atípica<br><br><strong>Isso NÃO significa falta de empatia.</strong> Pesquisas mostram que autistas frequentemente sentem empatia intensa — a dificuldade está na leitura dos sinais, não no sentimento.</div></div>'},
+
+rotina:{title:'🔄 Rotina, Rigidez e Transições',html:'<div class="card"><div class="card-t">Por que Rotina é Importante?</div><div class="card-p">Para o cérebro autista, o mundo é menos previsível — cada situação demanda mais processamento. <strong>Rotina reduz a carga cognitiva</strong> ao tornar partes do dia automáticas.<br><br>Não é "mania" — é uma necessidade neurológica de previsibilidade para funcionar bem. Quando a rotina é quebrada sem aviso, a pessoa perde a estrutura que permite funcionar, causando ansiedade, irritabilidade ou meltdown.</div></div><div class="card"><div class="card-t">Transições</div><div class="card-p"><strong>Transições</strong> (mudar de uma atividade para outra) são frequentemente o momento mais difícil do dia.<br><br><strong>Estratégias:</strong><br>• Avisar com antecedência: "em 10 minutos vamos sair"<br>• Usar timers visuais<br>• Criar rituais de transição (ex: uma música específica antes de sair)<br>• Não interromper hiperfoco abruptamente<br>• Manter a sequência de atividades previsível</div></div>'},
+
+interesses:{title:'⭐ Interesses Intensos (Hiperfoco)',html:'<div class="card"><div class="card-t">Recurso, não Sintoma</div><div class="card-p"><strong>Interesses intensos</strong> (special interests) são uma das características mais positivas do autismo. A pessoa desenvolve conhecimento profundo e paixão genuína por temas específicos.<br><br><strong>Por que são valiosos:</strong><br>• Fonte de regulação emocional e prazer<br>• Podem virar carreira, hobby, ou expertise<br>• Proporcionam "recarga" de energia social<br>• Facilitam conexão com pessoas com interesses similares<br>• São fonte de identidade e autoestima<br><br><strong>O que a família deve fazer:</strong><br>✅ Encorajar e se interessar<br>✅ Usar como ponte para outras habilidades<br>✅ Respeitar como forma legítima de lazer<br>❌ Nunca usar como punição ("se não fizer X, tiro seu tempo de Y")</div></div>'},
+
+comorbid:{title:'🔗 Comorbidades Comuns',html:'<div class="card"><div class="card-t">Condições Coocorrentes</div><div class="card-p">Autismo frequentemente coexiste com outras condições. Isso não são "problemas separados" — são manifestações de como o mesmo cérebro funciona:<br><br><span class="tag tag-p">Ansiedade (40-70%)</span> Muito comum. A imprevisibilidade social e sensorial gera ansiedade crônica.<br><br><span class="tag tag-b">TDAH (30-50%)</span> Sobreposição significativa. Pode dificultar o diagnóstico de ambos.<br><br><span class="tag tag-y">Depressão (20-40%)</span> Frequentemente resultado de isolamento social, masking crônico e falta de suporte.<br><br><span class="tag tag-r">Alexitimia (~50%)</span> Dificuldade em identificar e nomear as próprias emoções.<br><br><span class="tag tag-g">Insônia</span> Dificuldade com sono é extremamente comum (melatonina pode ajudar).<br><br><span class="tag tag-p">Dificuldades alimentares</span> Seletividade alimentar, ARFID (transtorno alimentar restritivo).<br><br><span class="tag tag-b">Hipermobilidade articular</span> Síndrome de Ehlers-Danlos e hipermobilidade são surpreendentemente comuns em autistas.</div></div>'},
+
+stims:{title:'🌀 Stimming e Autorregulação',html:'<div class="card"><div class="card-t">O que é Stimming?</div><div class="card-p"><strong>Stimming</strong> (comportamento auto-estimulatório) são movimentos, sons ou ações repetitivas que ajudam a pessoa autista a <strong>regular o sistema nervoso</strong>.<br><br><strong>Exemplos comuns:</strong><br>• Balançar o corpo (rocking)<br>• Bater palmas ou agitar mãos (flapping)<br>• Girar objetos ou o próprio corpo<br>• Morder/mastigar objetos<br>• Ecoar palavras ou sons (ecolalia)<br>• Andar de um lado para o outro (pacing)<br>• Tocar texturas repetidamente<br>• Hums ou sons vocais repetitivos</div></div><div class="card"><div class="card-t">Stimming é Saudável</div><div class="card-p">Stimming <strong>NÃO deve ser reprimido</strong> (exceto se causar autolesão significativa). É uma ferramenta de regulação tão legítima quanto um neurotípico mascar chiclete, roer unhas ou balançar a perna.<br><br><strong>Funções do stimming:</strong><br>• Regulação sensorial (acalmar ou alertar o sistema)<br>• Expressão emocional (alegria, ansiedade, excitação)<br>• Processamento de informações<br>• Auto-conforto em momentos de estresse<br><br><strong>Para famílias:</strong> Suprimir stims aumenta o masking, que aumenta o burnout. Redirecionar (não suprimir) só é necessário se houver risco real de lesão.</div></div>'},
+
+familia:{title:'👨‍👩‍👧 Textos para a Família',html:'<div class="card"><div class="card-t">💌 Para os Pais</div><div class="card-p" style="font-style:italic">"Seu filho/filha não é &#39;doente&#39;. O cérebro dele(a) funciona de forma diferente — não errada, diferente. Ele(a) sente o mundo com mais intensidade: sons são mais altos, luzes mais fortes, emoções mais profundas. Quando parece que está &#39;fazendo birra&#39;, na verdade o sistema nervoso está sobrecarregado. Quando parece &#39;antissocial&#39;, está conservando energia que gasta 10x mais que outros em cada interação. O melhor que vocês podem fazer é: aprender sobre autismo, respeitar os limites dele(a), e nunca, nunca tratar suas características como defeitos a serem consertados."</div><br><button class="share-btn" onclick="shareText(&quot;pais&quot;)">📲 Compartilhar via WhatsApp</button></div><div class="card"><div class="card-t">💌 Para Avós que Duvidam</div><div class="card-p" style="font-style:italic">"Eu sei que na sua época não se falava em autismo, e entendo que pode parecer &#39;invenção&#39;. Mas a ciência avançou muito. Autismo não é falta de educação, não é frescura, não é culpa dos pais. É uma diferença neurológica — o cérebro é conectado de forma diferente desde o nascimento. Quando seu neto(a) evita abraços, não é rejeição. Quando não come certos alimentos, não é manha. Quando precisa de rotina, não é &#39;frescura&#39;. A melhor forma de ajudar é: aceitar, respeitar os limites, e amar sem tentar &#39;consertar&#39;."</div><br><button class="share-btn" onclick="shareText(&quot;avos&quot;)">📲 Compartilhar via WhatsApp</button></div><div class="card"><div class="card-t">💌 Para Colegas de Trabalho</div><div class="card-p" style="font-style:italic">"Sou autista. Isso significa que: posso precisar de mais tempo para processar informações verbais — me mande por escrito quando possível. Ambientes barulhentos me afetam mais — posso usar fones. Prefiro comunicação direta e clara — não precisa &#39;dourar a pílula&#39;. Posso não participar de happy hours — não é antipatia, é autopreservação. Sou extremamente focado(a) e detalhista no que faço — é um superpoder do meu cérebro. Me trate com respeito e clareza, e serei um(a) ótimo(a) colega."</div><br><button class="share-btn" onclick="shareText(&quot;trabalho&quot;)">📲 Compartilhar via WhatsApp</button></div><div class="card"><div class="card-t">💌 Para o(a) Parceiro(a)</div><div class="card-p" style="font-style:italic">"Quando eu fico em silêncio, não estou com raiva — posso estar em shutdown ou processando emoções. Quando peço para ficar sozinho(a), não é rejeição — preciso recarregar. Quando falo muito sobre meu interesse especial, é minha forma de compartilhar algo que amo com você. Quando tenho dificuldade de expressar afeto da forma &#39;esperada&#39;, não significa que não sinto — sinto demais, às vezes. Me diga claramente o que precisa de mim — eu quero te fazer feliz, mas não leio nas entrelinhas."</div><br><button class="share-btn" onclick="shareText(&quot;parceiro&quot;)">📲 Compartilhar via WhatsApp</button></div>'},
+
+mitos:{title:'🔍 Mitos vs Realidade',html:'<div class="card" style="border-left:4px solid var(--red)"><div class="card-t">❌ "Autista não tem empatia"</div><div class="card-p"><strong>Realidade:</strong> Muitas pessoas autistas têm empatia INTENSA (hiperempatia). A dificuldade é com a <strong>teoria da mente</strong> — ler estados mentais dos outros — não com sentir emoções. Quando sabem que alguém sofre, frequentemente se importam profundamente.</div></div><div class="card" style="border-left:4px solid var(--red)"><div class="card-t">❌ "Autismo é causado por vacinas"</div><div class="card-p"><strong>Realidade:</strong> ZERO evidência científica. O estudo original (Wakefield, 1998) foi retratado por fraude. Dezenas de estudos com milhões de crianças confirmam: vacinas não causam autismo. Não vacinar coloca a criança em risco.</div></div><div class="card" style="border-left:4px solid var(--red)"><div class="card-t">❌ "Autista não pode trabalhar/namorar/ter filhos"</div><div class="card-p"><strong>Realidade:</strong> Muitas pessoas autistas têm carreiras de sucesso, relacionamentos saudáveis e famílias. Com suporte adequado e ambiente acessível, autistas contribuem significativamente em qualquer área.</div></div><div class="card" style="border-left:4px solid var(--red)"><div class="card-t">❌ "Só criança é autista / autismo tem cura"</div><div class="card-p"><strong>Realidade:</strong> Autismo é para toda a vida — não é uma fase e não tem "cura" (nem precisa). Adultos autistas existem. O diagnóstico tardio é cada vez mais comum, especialmente em mulheres.</div></div><div class="card" style="border-left:4px solid var(--red)"><div class="card-t">❌ "Todo autista é gênio/savant"</div><div class="card-p"><strong>Realidade:</strong> Savantismo ocorre em menos de 10% dos autistas. A maioria tem inteligência na faixa média, com pontos fortes e fracos como qualquer pessoa. Essa expectativa cria pressão injusta.</div></div><div class="card" style="border-left:4px solid var(--red)"><div class="card-t">❌ "Autismo é causado por má criação"</div><div class="card-p"><strong>Realidade:</strong> Autismo tem base genética e neurológica. Não é causado por pais "frios", excesso de tela, ou falta de socialização. A teoria da "mãe geladeira" foi desmentida há décadas e causou dano imenso.</div></div>'},
+
+profissionais:{title:'🏥 Diretório de Profissionais',html:'<div class="card"><div class="card-t">🧠 Neuropsicólogo(a)</div><div class="card-p"><strong>O que faz:</strong> Avaliação cognitiva e neuropsicológica. Aplica testes padronizados (ADOS-2, WISC, etc.).<br><strong>Quando procurar:</strong> Para avaliação diagnóstica formal e laudo.<br><strong>Red flags:</strong> ❌ Diagnostica em 1 sessão, ❌ Não usa instrumentos padronizados.</div></div><div class="card"><div class="card-t">🗣️ Fonoaudiólogo(a)</div><div class="card-p"><strong>O que faz:</strong> Trabalha comunicação, linguagem, pragmática social, processamento auditivo.<br><strong>Quando procurar:</strong> Dificuldades de comunicação, processamento de linguagem, alimentação/seletividade alimentar.<br><strong>Red flags:</strong> ❌ Foca só em "fala" sem entender pragmática social.</div></div><div class="card"><div class="card-t">🤸 Terapeuta Ocupacional (TO)</div><div class="card-p"><strong>O que faz:</strong> Integração sensorial, regulação, atividades de vida diária, adaptações ambientais.<br><strong>Quando procurar:</strong> Dificuldades sensoriais, motoras, de autonomia, ou regulação.<br><strong>Buscar:</strong> TO com formação em Integração Sensorial (certificação ASI).</div></div><div class="card"><div class="card-t">💊 Psiquiatra</div><div class="card-p"><strong>O que faz:</strong> Avaliação diagnóstica, manejo de comorbidades (ansiedade, TDAH, depressão, insônia).<br><strong>Quando procurar:</strong> Quando há sofrimento significativo que psicoterapia sozinha não resolve.<br><strong>Red flags:</strong> ❌ Quer medicar o autismo em si (não existe medicação para autismo), ❌ Não conhece perfil farmacológico em autistas.</div></div><div class="card"><div class="card-t">🧩 Psicólogo(a)</div><div class="card-p"><strong>O que faz:</strong> Psicoterapia, desenvolvimento de habilidades, manejo de ansiedade, autoconhecimento.<br><strong>Abordagens indicadas:</strong> TCC adaptada para autismo, ACT (Terapia de Aceitação e Compromisso), ABA para crianças (controversa em adultos).<br><strong>Red flags:</strong> ❌ Quer "normalizar" comportamentos autistas, ❌ Não adapta a terapia para necessidades sensoriais, ❌ Pune stims.</div></div>'}
+};
+
+function openGuide(key){
+var g=GUIDE[key];if(!g)return;
+document.getElementById('guideSub').innerHTML='<div style="padding:0 0 20px">'+g.html+'</div>';
+showSub('guideMain','guideSub',g.title);
+}
+
+// ============================
+// RIGHTS
+// ============================
+var RIGHTS=[
+{title:'📋 CIPTEA (Carteira de Identificação)',desc:'Carteira oficial que identifica a pessoa com TEA para acesso a direitos.',who:'Toda pessoa com diagnóstico de TEA.',law:'Lei 13.977/2020 (Lei Romeo Mion)',steps:['Obtenha laudo médico com CID (F84.0) — psiquiatra ou neurologista','Acesse o site/app do Governo Federal ou da Secretaria de Saúde/Assistência Social do seu estado','Preencha o formulário com dados pessoais e do responsável (se menor)','Anexe: RG, CPF, foto 3x4, comprovante de residência, laudo médico','Aguarde análise e emissão (prazo varia por estado)','A CIPTEA tem validade de 5 anos e é GRATUITA']},
+{title:'💰 BPC-LOAS (Benefício Assistencial)',desc:'Salário mínimo mensal para pessoas com deficiência em situação de baixa renda.',who:'Pessoa com TEA + renda familiar per capita ≤ 1/4 do salário mínimo.',law:'Lei 8.742/1993 + Lei 12.764/2012',steps:['Reúna: RG, CPF, comprovante de residência, laudo médico atualizado','Atualize o CadÚnico no CRAS do seu município','Agende perícia no INSS (telefone 135 ou app Meu INSS)','Compareça à perícia médica e avaliação social do INSS','Se aprovado, benefício inicia na data do requerimento','Se negado: recurso administrativo (30 dias) ou ação judicial via Defensoria']},
+{title:'🏥 Plano de Saúde (Cobertura Obrigatória)',desc:'Planos são obrigados a cobrir tratamentos para TEA sem limite de sessões.',who:'Todo beneficiário de plano de saúde com diagnóstico de TEA.',law:'Lei 14.454/2022 + Resolução ANS',steps:['Obtenha laudo e prescrição do médico/terapeuta especificando os tratamentos','Solicite ao plano: ABA, fonoaudiologia, TO, psicologia, psiquiatria','O plano tem 10 dias úteis para responder','Se negarem: registre reclamação na ANS (0800-701-9656) e no Procon','Ação judicial via Defensoria Pública é frequentemente necessária e tem alto índice de sucesso','Jurisprudência: STJ já decidiu que planos não podem limitar sessões de ABA/terapias']},
+{title:'🎫 Meia-Entrada',desc:'50% de desconto em eventos culturais, esportivos e de lazer.',who:'Pessoa com TEA portando CIPTEA ou laudo.',law:'Lei 12.933/2013 + Lei 12.764/2012',steps:['Obtenha a CIPTEA ou tenha laudo médico em mãos','Apresente no momento da compra do ingresso','Aplica-se a: cinema, teatro, shows, museus, parques, eventos esportivos','Se negarem: registre reclamação no Procon e tire foto/print como prova']},
+{title:'🚶 Fila Preferencial',desc:'Prioridade em filas de bancos, comércios, serviços públicos e aeroportos.',who:'Pessoa com TEA (com CIPTEA ou laudo).',law:'Lei 10.048/2000 + Lei 12.764/2012',steps:['Apresente a CIPTEA ou laudo ao estabelecimento','Se negarem: registre reclamação no Procon','Aplica-se também a embarque prioritário em voos','Supermercados, bancos, lotéricas, hospitais — todos devem respeitar']},
+{title:'🚗 Isenção IPI/ICMS (Veículo)',desc:'Desconto significativo na compra de carro novo (pode chegar a 30%).',who:'Pessoa com TEA ou responsável legal.',law:'Lei 8.989/1995 + instruções da Receita Federal',steps:['Obtenha laudo de 2 médicos (um especialista) atestando a deficiência','Solicite a isenção de IPI pelo site da Receita Federal (e-CAC)','Para ICMS: solicite na Secretaria da Fazenda do estado','Documentos: laudo, RG, CPF, CNH (se habilitado), comprovante de residência','Prazo: veículo deve ser mantido por no mínimo 4 anos','Pode ser exercido a cada 4 anos para novo veículo']},
+{title:'🚌 Passe Livre Interestadual',desc:'Gratuidade em transporte coletivo interestadual (ônibus, trem, barco).',who:'Pessoa com TEA de baixa renda (renda ≤ 1 salário mínimo).',law:'Lei 8.899/1994',steps:['Preencha o formulário no site do Ministério dos Transportes','Anexe: RG, CPF, laudo médico, comprovante de renda','Envie pelos Correios ou entregue presencialmente','Cartão do Passe Livre é enviado para o endereço cadastrado','Apresente o cartão na rodoviária para emissão da passagem gratuita','2 assentos por veículo são reservados para o Passe Livre']},
+{title:'🏫 Acompanhante Terapêutico Escolar',desc:'Direito a profissional de apoio em sala de aula.',who:'Aluno com TEA matriculado em escola regular.',law:'Lei 12.764/2012, art. 3°, parágrafo único',steps:['Solicite formalmente à escola (protocole por escrito)','A escola é obrigada a providenciar, SEM custo para a família','Se escola particular recusar: denuncie ao MEC e ao Procon','Se escola pública recusar: procure a Secretaria de Educação e Ministério Público','O acompanhante pode ser AT (acompanhante terapêutico), mediador ou auxiliar','A recusa é punida como crime (discriminação, pena de 1 a 3 anos de reclusão)']},
+{title:'💼 Cotas para Pessoas com Deficiência',desc:'Reserva de vagas em empresas com 100+ funcionários.',who:'Pessoa com TEA com laudo.',law:'Lei 8.213/1991, art. 93',steps:['Tenha laudo atualizado e CIPTEA','Empresas com 100+ funcionários são obrigadas a reservar 2-5% das vagas','Cadastre-se em sites de emprego inclusivo (Vagas PcD, Catho PcD)','No serviço público: 5% das vagas em concursos são reservadas','Apresente laudo no ato da inscrição do concurso/contratação','Demissão sem justa causa só pode ocorrer se outro PcD for contratado']}
+];
+
+function renderRights(){
+var h='';
+RIGHTS.forEach(function(r,i){
+h+='<div class="exp" onclick="openRight('+i+')"><div class="exp-h"><span class="et">'+r.title+'</span><span class="ea">→</span></div></div>';
+});
+document.getElementById('rightsList').innerHTML=h;
+}
+
+function openRight(i){
+var r=RIGHTS[i];
+var h='<div class="card"><div class="card-t">'+r.title+'</div><div class="card-p">'+r.desc+'</div></div>';
+h+='<div class="card"><div class="card-t">Quem tem direito?</div><div class="card-p">'+r.who+'</div></div>';
+h+='<div class="card"><div class="card-t">Base Legal</div><div class="card-p"><span class="tag tag-b">'+r.law+'</span></div></div>';
+h+='<div class="sh">Passo a Passo</div><div class="rights-list">';
+r.steps.forEach(function(s){h+='<div class="right-step"><p>'+s+'</p></div>'});
+h+='</div>';
+document.getElementById('rightsSub').innerHTML=h;
+showSub('rightsMain','rightsSub',r.title);
+}
+
+// ============================
+// TOOLS
+// ============================
+function openTool(key){
+var h='';
+if(key==='sensory')h=renderSensoryTool();
+else if(key==='battery')h=renderBatteryTool();
+else if(key==='routine')h=renderRoutineTool();
+else if(key==='scripts')h=renderScriptsTool();
+else if(key==='stimdiary')h=renderStimDiary();
+else if(key==='idcard')h=renderIdCard();
+document.getElementById('toolsSub').innerHTML=h;
+var titles={sensory:'🌈 Perfil Sensorial',battery:'🔋 Bateria Social',routine:'📋 Rotina Visual',scripts:'💬 Scripts Sociais',stimdiary:'🌀 Diário de Stims',idcard:'🪪 Meu Card'};
+showSub('toolsMain','toolsSub',titles[key]||'');
+}
+
+// SENSORY PROFILE
+var SENSES=[{k:'auditivo',i:'🔊',l:'Audição'},{k:'visual',i:'👁️',l:'Visão'},{k:'tatil',i:'🤚',l:'Tato'},{k:'olfato',i:'👃',l:'Olfato'},{k:'paladar',i:'👅',l:'Paladar'},{k:'vestibular',i:'🌀',l:'Vestibular (movimento)'},{k:'proprioceptivo',i:'💪',l:'Proprioceptivo (corpo no espaço)'}];
+function renderSensoryTool(){
+var h='<div class="card"><div class="card-t">Mapeie seu Perfil Sensorial</div><div class="card-p">Para cada sentido, indique como você geralmente experimenta estímulos.</div></div>';
+SENSES.forEach(function(s){
+var v=D.sensory[s.k]||'normal';
+h+='<div class="sens-item"><span class="si">'+s.i+'</span><span class="sl">'+s.l+'</span><select onchange="setSensory(\''+s.k+'\',this.value)">';
+h+='<option value="hiper"'+(v==='hiper'?' selected':'')+'>🔴 Hiper</option>';
+h+='<option value="normal"'+(v==='normal'?' selected':'')+'>🟢 Normal</option>';
+h+='<option value="hipo"'+(v==='hipo'?' selected':'')+'>🔵 Hipo</option>';
+h+='<option value="misto"'+(v==='misto'?' selected':'')+'>🟡 Misto</option>';
+h+='</select></div>';
+});
+h+='<div style="padding:12px 16px"><button class="btn btn-p btn-full" onclick="generatePassport()">Gerar Passaporte Sensorial</button></div>';
+h+='<div id="passportArea"></div>';
+return h;
+}
+function setSensory(k,v){D.sensory[k]=v;save();toast('Perfil atualizado')}
+function generatePassport(){
+var h='<div class="id-card" style="margin:0 16px 16px"><h3>🌈 Passaporte Sensorial</h3>';
+SENSES.forEach(function(s){
+var v=D.sensory[s.k]||'normal';
+var labels={hiper:'🔴 Hipersensível',normal:'🟢 Típico',hipo:'🔵 Hipossensível',misto:'🟡 Misto (varia)'};
+h+='<div class="id-field"><div class="id-label">'+s.i+' '+s.l+'</div>'+labels[v]+'</div>';
+});
+h+='<div style="margin-top:12px;font-size:11px;opacity:.7;text-align:center">Gerado pelo app Autismo Fácil</div></div>';
+document.getElementById('passportArea').innerHTML=h;
+toast('Passaporte gerado!');
+}
+
+// BATTERY
+function renderBatteryTool(){
+var today=new Date().toISOString().split('T')[0];
+var todayEntries=D.battery.filter(function(e){return e.date===today});
+var energy=100;
+todayEntries.forEach(function(e){energy+=e.val});
+energy=Math.max(0,Math.min(100,energy));
+var color=energy>60?'var(--green)':energy>30?'var(--yellow)':'var(--red)';
+var h='<div class="card"><div class="card-t">🔋 Energia Social Hoje</div>';
+h+='<div class="bat"><div class="bf" style="width:'+energy+'%;background:'+color+'">'+energy+'%</div></div>';
+h+='<div style="margin-top:12px;font-size:12px;color:var(--textMuted)">Registre o que drena e o que recarrega sua energia ao longo do dia.</div></div>';
+h+='<div style="padding:0 16px"><div class="grid2">';
+h+='<button class="btn btn-o" onclick="addBattery(-15,\'Reunião/socialização\')">😓 Socialização (-15)</button>';
+h+='<button class="btn btn-o" onclick="addBattery(-20,\'Ambiente barulhento\')">🔊 Ruído (-20)</button>';
+h+='<button class="btn btn-o" onclick="addBattery(-10,\'Masking\')">🎭 Masking (-10)</button>';
+h+='<button class="btn btn-o" onclick="addBattery(-25,\'Mudança inesperada\')">⚡ Imprevisto (-25)</button>';
+h+='<button class="btn btn-o" onclick="addBattery(20,\'Interesse especial\')">⭐ Hiperfoco (+20)</button>';
+h+='<button class="btn btn-o" onclick="addBattery(15,\'Silêncio / sozinho\')">🤫 Silêncio (+15)</button>';
+h+='<button class="btn btn-o" onclick="addBattery(10,\'Stim / regulação\')">🌀 Stim (+10)</button>';
+h+='<button class="btn btn-o" onclick="addBattery(15,\'Natureza / ar livre\')">🌿 Natureza (+15)</button>';
+h+='</div></div>';
+if(todayEntries.length){h+='<div class="sh">Registros de Hoje</div>';
+todayEntries.forEach(function(e){
+h+='<div class="card" style="padding:10px 16px;display:flex;justify-content:space-between"><span style="font-size:13px">'+e.label+'</span><span style="font-size:13px;font-weight:700;color:'+(e.val>0?'var(--green)':'var(--red)')+'">'+
+(e.val>0?'+':'')+e.val+'</span></div>';
+})}
+return h;
+}
+function addBattery(val,label){
+var today=new Date().toISOString().split('T')[0];
+D.battery.push({date:today,val:val,label:label,time:new Date().toTimeString().substring(0,5)});
+save();openTool('battery');toast((val>0?'+':'')+val+' energia');
+}
+
+// ROUTINE
+function renderRoutineTool(){
+if(!D.routine.length)D.routine=[{id:1,text:'☀️ Acordar',done:false},{id:2,text:'🪥 Higiene',done:false},{id:3,text:'🍳 Café da manhã',done:false},{id:4,text:'💊 Medicação',done:false},{id:5,text:'💼 Trabalho/Estudo',done:false},{id:6,text:'🍽️ Almoço',done:false},{id:7,text:'☕ Pausa / Regulação',done:false},{id:8,text:'📚 Atividade da tarde',done:false},{id:9,text:'🌀 Tempo de interesse especial',done:false},{id:10,text:'🍽️ Jantar',done:false},{id:11,text:'🛁 Rotina noturna',done:false},{id:12,text:'🌙 Dormir',done:false}];
+var h='<div class="card"><div class="card-t">Rotina do Dia</div><div class="card-p">Toque para marcar como concluído. Personalize sua rotina.</div></div>';
+D.routine.forEach(function(r,i){
+h+='<div class="rout-item'+(r.done?' done':'')+'" style="margin:0 16px 6px" onclick="toggleRoutine('+i+')"><span class="ri">'+
+(r.text.match(/^[\u{1F000}-\u{1FFFF}]/u)?'':'📌')+'</span><span class="rt">'+r.text+'</span><span class="rc">'+(r.done?'✓':'')+'</span></div>';
+});
+h+='<div style="padding:12px 16px"><button class="btn btn-o btn-full" onclick="resetRoutine()">🔄 Resetar dia</button></div>';
+return h;
+}
+function toggleRoutine(i){D.routine[i].done=!D.routine[i].done;save();openTool('routine')}
+function resetRoutine(){D.routine.forEach(function(r){r.done=false});save();openTool('routine');toast('Rotina resetada')}
+
+// SCRIPTS
+var SCRIPTS=[
+{sit:'📞 Ligar para marcar consulta',txt:'"Olá, boa tarde. Meu nome é [nome]. Gostaria de agendar uma consulta com [especialidade]. Tenho preferência por [dia/horário]. Pode verificar a disponibilidade?"',var:'Se pedir mais info: "Meu convênio é [nome] / vou particular. Meu telefone é [número]."',tip:'Anote antes: nome do médico, especialidade, convênio, telefone, horários disponíveis.'},
+{sit:'🛒 Pedir ajuda no supermercado',txt:'"Com licença, você poderia me dizer onde fica [produto]?"',var:'Se não souber: "Tudo bem, obrigado(a)." e procure outro funcionário.',tip:'Funcionários com crachá geralmente são mais solícitos.'},
+{sit:'💼 Pedir pausa no trabalho',txt:'"Preciso de alguns minutos para me reorganizar. Volto em [tempo]. Posso?"',var:'Se questionarem: "Estou com sobrecarga sensorial e preciso de um momento para recuperar minha produtividade."',tip:'Ter um local silencioso mapeado previamente ajuda.'},
+{sit:'🙅 Recusar convite social',txt:'"Obrigado(a) pelo convite! Infelizmente não vou conseguir ir dessa vez. Espero que seja ótimo!"',var:'Se insistirem: "Agradeço a insistência, mas realmente preciso desse tempo para mim. Quem sabe na próxima?"',tip:'Não é necessário dar justificativa detalhada. "Não vou conseguir" é suficiente.'},
+{sit:'🍽️ Explicar seletividade alimentar',txt:'"Tenho restrições alimentares sensoriais — alguns alimentos causam desconforto real para mim. Não é frescura, é neurológico. Vou comer o que consigo."',var:'Em restaurante: "Vocês têm o cardápio? Preciso de um momento para escolher."',tip:'Pesquisar o cardápio online antes de ir ao restaurante reduz ansiedade.'},
+{sit:'🏥 Explicar necessidades ao médico',txt:'"Sou autista e tenho algumas necessidades: [iluminação forte me incomoda / preciso de mais tempo para processar perguntas / toque sem aviso me assusta]. Podemos adaptar a consulta?"',var:'Leve por escrito se a comunicação verbal for difícil no momento.',tip:'Levar uma lista escrita de sintomas/queixas é sempre mais eficiente.'}
+];
+function renderScriptsTool(){
+var h='<div class="card"><div class="card-t">Scripts Sociais</div><div class="card-p">Situações comuns com frases prontas que você pode adaptar. Pense neles como "cola social".</div></div>';
+SCRIPTS.forEach(function(s){
+h+='<div class="script-card"><div class="sit">'+s.sit+'</div><div class="stxt">'+s.txt+'</div><div class="svar"><strong>Variação:</strong> '+s.var+'</div><div style="margin-top:8px;font-size:12px;color:var(--primary)"><strong>💡 Dica:</strong> '+s.tip+'</div></div>';
+});
+return h;
+}
+
+// STIM DIARY
+function renderStimDiary(){
+var h='<div class="card"><div class="card-t">🌀 Diário de Stims</div><div class="card-p">Registre seus stims para entender quais te ajudam em cada situação. Stimming é regulação — conhecer seus padrões é autoconhecimento.</div></div>';
+h+='<div style="padding:0 16px"><button class="btn btn-p btn-full" onclick="addStimEntry()">+ Registrar Stim</button></div>';
+if(D.stims.length){h+='<div class="sh">Registros Recentes</div>';
+D.stims.slice(-10).reverse().forEach(function(s){
+h+='<div class="card" style="padding:12px"><div style="display:flex;justify-content:space-between"><strong style="font-size:13px">'+s.stim+'</strong><span style="font-size:11px;color:var(--textLight)">'+s.date+'</span></div>';
+h+='<div style="font-size:12px;color:var(--textMuted);margin-top:4px">Contexto: '+s.context+' | Efeito: <span class="tag tag-'+(s.effect==='bom'?'g':s.effect==='neutro'?'y':'r')+'">'+s.effect+'</span></div></div>';
+})}
+return h;
+}
+function addStimEntry(){
+var stim=prompt('Qual stim? (ex: flapping, rocking, pacing, ecolalia)');if(!stim)return;
+var context=prompt('Contexto? (ex: ansiedade, alegria, sobrecarga, tédio)');if(!context)return;
+var effect=prompt('Efeito? (bom / neutro / ruim)');if(!effect)return;
+var today=new Date().toISOString().split('T')[0];
+D.stims.push({stim:stim,context:context,effect:effect.toLowerCase(),date:today});
+save();openTool('stimdiary');toast('Stim registrado');
+}
+
+// ID CARD
+function renderIdCard(){
+var h='<div class="card"><div class="card-t">🪪 Card de Identificação</div><div class="card-p">Um card digital para mostrar quando precisar comunicar suas necessidades rapidamente.</div></div>';
+h+='<div style="padding:0 16px 12px"><input type="text" placeholder="Seu nome" value="'+(D.idcard.nome||'')+'" onchange="D.idcard.nome=this.value;save()" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:var(--radiusSm);font-size:14px;font-family:var(--font);margin-bottom:8px;background:var(--surface);color:var(--text)">';
+h+='<input type="text" placeholder="Contato de emergência" value="'+(D.idcard.contato||'')+'" onchange="D.idcard.contato=this.value;save()" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:var(--radiusSm);font-size:14px;font-family:var(--font);margin-bottom:8px;background:var(--surface);color:var(--text)">';
+h+='<textarea placeholder="Necessidades específicas (ex: sensibilidade a ruído, preciso de mais tempo...)" onchange="D.idcard.notas=this.value;save()" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:var(--radiusSm);font-size:14px;font-family:var(--font);min-height:80px;resize:vertical;background:var(--surface);color:var(--text)">'+(D.idcard.notas||'')+'</textarea></div>';
+h+='<div class="id-card"><h3>♾️ Sou Autista</h3>';
+h+='<div class="id-field"><div class="id-label">Nome</div>'+(D.idcard.nome||'[Preencha acima]')+'</div>';
+h+='<div class="id-field"><div class="id-label">Contato de Emergência</div>'+(D.idcard.contato||'[Preencha acima]')+'</div>';
+h+='<div class="id-field"><div class="id-label">Minhas Necessidades</div>'+(D.idcard.notas||'Posso precisar de mais tempo para processar informações. Ambientes barulhentos me afetam. Obrigado pela compreensão.')+'</div>';
+h+='<div style="margin-top:12px;text-align:center;font-size:10px;opacity:.6">Autismo Fácil — appfarm.app.br</div></div>';
+return h;
+}
+
+// ============================
+// CRISIS KIT
+// ============================
+var crisisMode=0,breathInterval=null;
+function openSub(key){
+if(key==='crisis'){document.getElementById('crisisScreen').classList.add('show');crisisMode=0;renderCrisis()}
+}
+function closeCrisis(){document.getElementById('crisisScreen').classList.remove('show');if(breathInterval)clearInterval(breathInterval)}
+function renderCrisis(){
+var el=document.getElementById('crisisContent');
+if(crisisMode===0){
+el.innerHTML='<h2>🆘 Kit de Crise</h2><p style="margin-bottom:30px">O que está acontecendo?</p>'+
+'<button class="btn" style="background:rgba(255,255,255,.15);color:#fff;margin:8px;padding:16px 32px;font-size:16px;border-radius:12px;display:block;width:280px" onclick="crisisMode=1;renderCrisis()">😰 Estou em sobrecarga</button>'+
+'<button class="btn" style="background:rgba(255,255,255,.15);color:#fff;margin:8px;padding:16px 32px;font-size:16px;border-radius:12px;display:block;width:280px" onclick="crisisMode=2;renderCrisis()">👥 Alguém perto precisa de ajuda</button>';
+} else if(crisisMode===1){
+el.innerHTML='<h2 style="font-size:20px">Você está seguro(a).</h2><p style="font-size:16px;margin:20px 0">Isso vai passar. Vamos respirar juntos.</p>'+
+'<div class="breath-circle" id="breathCircle">Inspire</div>'+
+'<p style="font-size:14px;margin-top:20px;opacity:.7">Se puder: tire fones, vá para lugar silencioso, segure algo familiar.</p>'+
+'<div style="margin-top:30px"><button class="btn" style="background:rgba(255,255,255,.15);color:#fff;margin:6px;padding:10px 20px;border-radius:10px" onclick="crisisMode=3;renderCrisis()">📝 Grounding 5-4-3-2-1</button></div>';
+startBreathing();
+} else if(crisisMode===2){
+el.innerHTML='<h2 style="font-size:20px">Como Ajudar</h2>'+
+'<div style="text-align:left;max-width:340px;margin:20px auto;font-size:16px;line-height:2">'+
+'<div>✅ Reduza estímulos (luz, som, pessoas)</div>'+
+'<div>✅ Fale pouco, tom calmo e baixo</div>'+
+'<div>✅ Não toque sem permissão</div>'+
+'<div>✅ Ofereça espaço seguro</div>'+
+'<div>✅ Espere — vai passar</div>'+
+'<div style="margin-top:16px">❌ Não grite de volta</div>'+
+'<div>❌ Não imobilize</div>'+
+'<div>❌ Não julgue ou repreenda</div>'+
+'<div>❌ Não aglomere pessoas</div></div>';
+} else if(crisisMode===3){
+el.innerHTML='<h2 style="font-size:20px">Grounding 5-4-3-2-1</h2>'+
+'<div style="text-align:left;max-width:340px;margin:20px auto;font-size:18px;line-height:2.2">'+
+'<div>👁️ <strong>5</strong> coisas que você VÊ</div>'+
+'<div>🤚 <strong>4</strong> coisas que você TOCA</div>'+
+'<div>🔊 <strong>3</strong> coisas que você OUVE</div>'+
+'<div>👃 <strong>2</strong> coisas que você CHEIRA</div>'+
+'<div>👅 <strong>1</strong> coisa que você PROVA</div></div>'+
+'<p style="margin-top:20px;font-size:14px;opacity:.7">Vá devagar. Não tem pressa.</p>';
+}}
+function startBreathing(){
+if(breathInterval)clearInterval(breathInterval);
+var bc=document.getElementById('breathCircle');if(!bc)return;
+var phase=0;
+function tick(){
+if(phase===0){bc.textContent='Inspire';bc.classList.add('inhale');phase=1}
+else if(phase===1){bc.textContent='Segure';phase=2}
+else{bc.textContent='Expire';bc.classList.remove('inhale');phase=0}
+}
+tick();breathInterval=setInterval(tick,4000);
+}
+
+// ============================
+// TESTS
+// ============================
+var TESTS=[
+{id:'aq10',title:'AQ-10',desc:'Quociente de Autismo (versão curta)',time:'2 min',items:10,
+questions:[
+{q:'Frequentemente noto pequenos sons que outros não percebem.',r:1},
+{q:'Costumo me concentrar mais no todo do que em pequenos detalhes.',r:0},
+{q:'Acho fácil fazer mais de uma coisa ao mesmo tempo.',r:0},
+{q:'Se há uma interrupção, consigo voltar ao que estava fazendo rapidamente.',r:0},
+{q:'Acho fácil "ler nas entrelinhas" quando alguém fala comigo.',r:0},
+{q:'Sei quando a pessoa com quem estou conversando está ficando entediada.',r:0},
+{q:'Quando estou lendo uma história, acho difícil imaginar a aparência dos personagens.',r:1},
+{q:'Coleciono informações sobre categorias de coisas (tipos de carros, pássaros, plantas).',r:1},
+{q:'Acho fácil descobrir o que uma pessoa está pensando ou sentindo pelo rosto.',r:0},
+{q:'Acho difícil imaginar como seria ser outra pessoa.',r:1}
+],scoring:{min:0,max:10,cutoff:6,labels:[{min:0,max:2,text:'Baixa probabilidade de TEA',color:'green'},{min:3,max:5,text:'Probabilidade intermediária',color:'yellow'},{min:6,max:10,text:'Probabilidade elevada — recomendada avaliação',color:'red'}]}},
+
+{id:'raads14',title:'RAADS-14',desc:'Screening para adultos (Ritvo)',time:'5 min',items:14,
+questions:[
+{q:'É difícil para mim entender como me comportar em situações sociais.',r:1},
+{q:'Acho difícil entender o que outros esperam de mim.',r:1},
+{q:'Quando converso com alguém, tenho dificuldade em saber quando é minha vez de falar.',r:1},
+{q:'Acho difícil fazer amigos.',r:1},
+{q:'Não sei como me comportar quando estou perto de outras pessoas.',r:1},
+{q:'Posso conversar com pessoas de maneira educada e formal, mas acho difícil manter conversas casuais.',r:1},
+{q:'Para mim, sempre é difícil manter contato visual.',r:1},
+{q:'Tenho sido acusado(a) de ser insensível, embora eu não entenda por quê.',r:1},
+{q:'Pessoas me dizem que sou diferente ou estranho(a).',r:1},
+{q:'Certas texturas de roupas me incomodam terrivelmente.',r:1},
+{q:'Às vezes tenho que cobrir os ouvidos para bloquear sons desagradáveis.',r:1},
+{q:'Quando converso, tenho dificuldade em saber quando a outra pessoa está brincando.',r:1},
+{q:'Acho muito difícil e estressante lidar com mudanças na minha rotina.',r:1},
+{q:'Concentro-me em um assunto de cada vez, frequentemente de forma intensa.',r:1}
+],scoring:{min:0,max:42,cutoff:14,labels:[{min:0,max:13,text:'Abaixo do ponto de corte',color:'green'},{min:14,max:42,text:'Acima do ponto de corte — recomendada avaliação',color:'red'}]}},
+
+{id:'catq',title:'CAT-Q',desc:'Questionário de Camuflagem (Masking)',time:'5 min',items:12,
+questions:[
+{q:'Forço contato visual durante conversas.',r:1},
+{q:'Copio os gestos ou expressões de outras pessoas.',r:1},
+{q:'Preparo mentalmente frases antes de entrar em situações sociais.',r:1},
+{q:'Monitoro minha linguagem corporal e expressões faciais o tempo todo.',r:1},
+{q:'Observo outras pessoas e copio a forma como socializam.',r:1},
+{q:'Uso "scripts" memorizados em conversas casuais.',r:1},
+{q:'Reprimo meus stims (movimentos repetitivos) em público.',r:1},
+{q:'Me esforço para parecer "normal" em situações sociais.',r:1},
+{q:'Fico exausto(a) depois de interações sociais por causa do esforço de "atuar".',r:1},
+{q:'Sinto que as pessoas não conhecem quem eu realmente sou.',r:1},
+{q:'Tenho meltdowns ou shutdowns quando chego em casa após socializar.',r:1},
+{q:'Sinto que uso uma "máscara" na maior parte do tempo.',r:1}
+],scoring:{min:0,max:36,cutoff:18,labels:[{min:0,max:11,text:'Baixo nível de camuflagem',color:'green'},{min:12,max:17,text:'Nível moderado de camuflagem',color:'yellow'},{min:18,max:36,text:'Alto nível de camuflagem',color:'red'}]}},
+
+{id:'sensorial',title:'Perfil Sensorial',desc:'Rastreamento de sensibilidades sensoriais',time:'4 min',items:14,
+questions:[
+{q:'Sons do dia a dia (ar-condicionado, trânsito, mastigação) me incomodam significativamente.',r:1},
+{q:'Luzes fortes ou fluorescentes me causam desconforto.',r:1},
+{q:'Etiquetas de roupas, costuras ou certos tecidos me incomodam muito.',r:1},
+{q:'Cheiros que outros mal percebem me causam desconforto ou náusea.',r:1},
+{q:'Sou muito seletivo(a) com alimentos por causa de textura, temperatura ou sabor.',r:1},
+{q:'Ambientes lotados (shopping, festas) me esgotam rapidamente.',r:1},
+{q:'Busco pressão profunda (cobertores pesados, abraços apertados) para me acalmar.',r:1},
+{q:'Movimento repetitivo (balançar, andar) me ajuda a me regular.',r:1},
+{q:'Mudanças bruscas de temperatura me afetam mais do que parece afetar outros.',r:1},
+{q:'Tenho dificuldade em filtrar ruído de fundo durante conversas.',r:1},
+{q:'Certas texturas de alimentos são insuportáveis para mim.',r:1},
+{q:'Me sinto sobrecarregado(a) quando há muitos estímulos visuais ao mesmo tempo.',r:1},
+{q:'Tenho dificuldade em identificar de onde vem um som em ambientes barulhentos.',r:1},
+{q:'Preciso de mais tempo que outros para me adaptar a mudanças ambientais.',r:1}
+],scoring:{min:0,max:42,cutoff:21,labels:[{min:0,max:13,text:'Sensibilidade sensorial típica',color:'green'},{min:14,max:20,text:'Sensibilidade moderada',color:'yellow'},{min:21,max:42,text:'Sensibilidade elevada — considere avaliação com TO',color:'red'}]}},
+
+{id:'funcexec',title:'Funções Executivas',desc:'Rastreamento de dificuldades executivas',time:'4 min',items:12,
+questions:[
+{q:'Tenho dificuldade em iniciar tarefas, mesmo sabendo que preciso fazê-las.',r:1},
+{q:'Frequentemente perco a noção do tempo.',r:1},
+{q:'Tenho dificuldade em organizar meus pertences e meu espaço.',r:1},
+{q:'Acho muito difícil mudar de uma atividade para outra.',r:1},
+{q:'Esqueço compromissos ou instruções verbais com frequência.',r:1},
+{q:'Tenho dificuldade em dividir tarefas grandes em passos menores.',r:1},
+{q:'Minha regulação emocional é difícil — reações intensas a situações cotidianas.',r:1},
+{q:'Procrastino mesmo em coisas importantes.',r:1},
+{q:'Tenho dificuldade em priorizar — tudo parece igualmente urgente.',r:1},
+{q:'Quando começo algo interessante, é muito difícil parar (hiperfoco).',r:1},
+{q:'Mudanças de planos me causam ansiedade ou irritabilidade significativas.',r:1},
+{q:'Preciso de listas, alarmes e lembretes para funcionar no dia a dia.',r:1}
+],scoring:{min:0,max:36,cutoff:18,labels:[{min:0,max:11,text:'Funcionamento executivo típico',color:'green'},{min:12,max:17,text:'Dificuldades moderadas',color:'yellow'},{min:18,max:36,text:'Dificuldades significativas — considere avaliação',color:'red'}]}},
+
+{id:'burnout',title:'Burnout Autista',desc:'Rastreamento de burnout/esgotamento',time:'3 min',items:10,
+questions:[
+{q:'Sinto uma exaustão que descanso não resolve.',r:1},
+{q:'Habilidades que antes eu dominava estão mais difíceis agora.',r:1},
+{q:'Minha sensibilidade sensorial aumentou nos últimos meses.',r:1},
+{q:'Preciso de muito mais tempo sozinho(a) do que antes.',r:1},
+{q:'Sinto que não consigo mais mascarar/camuflar como antes.',r:1},
+{q:'Tarefas cotidianas (cozinhar, limpar, responder mensagens) parecem montanhas.',r:1},
+{q:'Meus meltdowns ou shutdowns estão mais frequentes ou intensos.',r:1},
+{q:'Sinto vontade de me isolar completamente.',r:1},
+{q:'Perdi interesse em coisas que normalmente me trazem prazer.',r:1},
+{q:'Sinto que estou funcionando no "modo automático" sem energia real.',r:1}
+],scoring:{min:0,max:30,cutoff:15,labels:[{min:0,max:9,text:'Sem sinais significativos de burnout',color:'green'},{min:10,max:14,text:'Sinais moderados — atenção',color:'yellow'},{min:15,max:30,text:'Sinais elevados de burnout — busque suporte',color:'red'}]}}
+];
+
+var curTest=null,curAnswers={};
+function renderTestsList(){
+var h='';
+TESTS.forEach(function(t){
+h+='<div class="card" onclick="startTest(\''+t.id+'\')" style="cursor:pointer"><div class="card-t">📝 '+t.title+'</div><div class="card-p">'+t.desc+'<br><span class="tag tag-b">'+t.items+' itens</span> <span class="tag tag-y">~'+t.time+'</span></div></div>';
+});
+document.getElementById('testsList').innerHTML=h;
+}
+
+function startTest(id){
+curTest=TESTS.find(function(t){return t.id===id});
+curAnswers={};
+renderTestView();
+showSub('testsMain','testsSub','📝 '+curTest.title);
+}
+
+function renderTestView(){
+var t=curTest;
+var h='<div class="card"><div class="card-t">'+t.title+' — '+t.desc+'</div><div class="card-p">Responda cada item indicando o quanto se aplica a você.</div></div>';
+t.questions.forEach(function(q,i){
+h+='<div class="quiz-q"><div class="qq">'+(i+1)+'. '+q.q+'</div><div class="quiz-opt">';
+var opts=['Não se aplica','Às vezes','Frequentemente'];
+opts.forEach(function(o,j){
+var checked=curAnswers[i]===j?' checked':'';
+h+='<label><input type="radio" name="q'+i+'" value="'+j+'"'+checked+' onchange="curAnswers['+i+']='+j+'"> '+o+'</label>';
+});
+h+='</div></div>';
+});
+h+='<div style="padding:0 16px 20px"><button class="btn btn-p btn-full" onclick="scoreTest()">Ver Resultado</button></div>';
+h+='<div id="testResult"></div>';
+document.getElementById('testsSub').innerHTML=h;
+}
+
+function scoreTest(){
+var t=curTest;var total=0;
+t.questions.forEach(function(q,i){
+if(curAnswers[i]!==undefined){
+if(q.r===1)total+=curAnswers[i];
+else total+=(2-curAnswers[i]);
+}
+});
+var label='',color='';
+t.scoring.labels.forEach(function(l){if(total>=l.min&&total<=l.max){label=l.text;color=l.color}});
+var pct=Math.round((total/t.scoring.max)*100);
+var barColor=color==='green'?'var(--green)':color==='yellow'?'var(--yellow)':'var(--red)';
+var h='<div class="card" style="border-left:4px solid '+barColor+'"><div class="card-t">Resultado: '+total+'/'+t.scoring.max+'</div>';
+h+='<div class="pbar"><div class="fill" style="width:'+pct+'%;background:'+barColor+'"></div></div>';
+h+='<div class="card-p" style="margin-top:8px"><span class="tag tag-'+color.charAt(0)+'">'+label+'</span></div>';
+h+='<div class="card-p" style="margin-top:12px;font-size:12px">⚠️ Este é um instrumento de rastreamento, não de diagnóstico. Resultados sugestivos indicam necessidade de avaliação profissional. Procure um neuropsicólogo ou psiquiatra especializado em TEA para avaliação completa.</div></div>';
+document.getElementById('testResult').innerHTML=h;
+document.getElementById('testResult').scrollIntoView({behavior:'smooth'});
+}
+
+// ============================
+// WHATSAPP SHARING
+// ============================
+var SHARE_TEXTS={
+pais:'*Para os Pais de Pessoa Autista* ♾️\n\nSeu filho(a) não é "doente". O cérebro dele(a) funciona de forma diferente — não errada, diferente.\n\nEle(a) sente o mundo com mais intensidade: sons são mais altos, luzes mais fortes, emoções mais profundas.\n\nQuando parece "birra", é sobrecarga do sistema nervoso. Quando parece "antissocial", está conservando energia.\n\nO melhor que vocês podem fazer: aprender sobre autismo, respeitar os limites, e nunca tratar suas características como defeitos.\n\n_Enviado pelo app Autismo Fácil_',
+avos:'*Carta ao Avô/Avó* ♾️\n\nEu sei que na sua época não se falava em autismo, e entendo que pode parecer "invenção". Mas a ciência avançou muito.\n\nAutismo NÃO é falta de educação, NÃO é frescura, NÃO é culpa dos pais. É uma diferença neurológica — o cérebro é conectado diferente desde o nascimento.\n\nQuando seu neto(a) evita abraços: não é rejeição.\nQuando não come certos alimentos: não é manha.\nQuando precisa de rotina: não é frescura.\n\nA melhor forma de ajudar: aceitar, respeitar os limites, e amar sem tentar "consertar".\n\n_Enviado pelo app Autismo Fácil_',
+trabalho:'*Sou Autista — O que isso significa no trabalho* ♾️\n\n• Posso precisar de mais tempo para processar informações verbais — me mande por escrito\n• Ambientes barulhentos me afetam — posso usar fones\n• Prefiro comunicação direta e clara\n• Posso não participar de happy hours — não é antipatia, é autopreservação\n• Sou extremamente focado(a) e detalhista\n\nMe trate com respeito e clareza, e serei um(a) ótimo(a) colega.\n\n_Enviado pelo app Autismo Fácil_',
+parceiro:'*Para meu(minha) Parceiro(a)* ♾️\n\nQuando fico em silêncio: não estou com raiva — posso estar processando.\nQuando peço para ficar sozinho(a): não é rejeição — preciso recarregar.\nQuando falo muito sobre meu interesse especial: é minha forma de compartilhar amor.\n\nMe diga claramente o que precisa — eu quero te fazer feliz, mas não leio nas entrelinhas.\n\n_Enviado pelo app Autismo Fácil_'
+};
+function shareText(key){
+var text=SHARE_TEXTS[key];
+if(window.Android&&Android.openExternal){try{Android.openExternal('https://wa.me/?text='+encodeURIComponent(text))}catch(e){window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank')}}
+else{window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank')}
+}
+
+// ============================
+// INIT
+// ============================
+renderRights();
+renderTestsList();
+</script>
+</body>
+</html>

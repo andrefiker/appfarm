@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Guia Psicofarmacológico</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+--bg:#F0F4F5;--surface:#FFFFFF;--surfaceAlt:#F7FAFA;--card:#FFFFFF;
+--primary:#00697A;--primaryLight:#E0F2F4;--primaryFaded:rgba(0,105,122,.08);
+--accent:#00897B;--accentLight:#E0F5F3;
+--text:#1A2B2E;--textMuted:#5A7275;--textLight:#8FA3A6;
+--border:#D8E4E6;--borderLight:#E8F0F1;
+--red:#C62828;--redBg:#FFF0F0;--redBorder:#F5C6C6;
+--orange:#E65100;--orangeBg:#FFF3E0;--orangeBorder:#FFD9A8;
+--yellow:#F9A825;--yellowBg:#FFF8E1;--yellowBorder:#FFE082;
+--green:#2E7D32;--greenBg:#E8F5E9;--greenBorder:#A5D6A7;
+--blue:#1565C0;--blueBg:#E3F2FD;--blueBorder:#90CAF9;
+--purple:#6A1B9A;--purpleBg:#F3E5F5;--purpleBorder:#CE93D8;
+--radius:14px;--radiusSm:8px;--shadow:0 1px 3px rgba(0,40,50,.06),0 4px 12px rgba(0,40,50,.04);
+--font:'Segoe UI','Roboto',system-ui,-apple-system,sans-serif;
+}
+html,body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:15px;line-height:1.5;min-height:100vh;overflow-x:hidden}
+.shell{max-width:520px;margin:0 auto;padding-bottom:80px}
+.topbar{background:var(--primary);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,60,70,.2)}
+.topbar h1{font-size:17px;font-weight:700;letter-spacing:-.2px;flex:1}
+.topbar .icon{font-size:20px}
+.topbar button{background:rgba(255,255,255,.15);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.topbar button:active{background:rgba(255,255,255,.25)}
+
+/* SEARCH BAR */
+.search-wrap{padding:12px 16px;background:var(--bg);position:sticky;top:51px;z-index:90}
+.search-box{display:flex;align-items:center;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:0 12px;transition:border-color .2s;box-shadow:var(--shadow)}
+.search-box:focus-within{border-color:var(--primary)}
+.search-box input{flex:1;border:none;background:none;padding:10px 8px;font-size:15px;color:var(--text);outline:none;font-family:var(--font)}
+.search-box input::placeholder{color:var(--textLight)}
+.search-box .clear{background:none;border:none;color:var(--textLight);font-size:18px;cursor:pointer;padding:4px}
+
+/* FILTERS */
+.filters{padding:0 16px 8px;display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.filters::-webkit-scrollbar{display:none}
+.filter-chip{white-space:nowrap;padding:6px 14px;border-radius:20px;font-size:12.5px;font-weight:600;border:1.5px solid var(--border);background:var(--surface);color:var(--textMuted);cursor:pointer;transition:all .2s;flex-shrink:0}
+.filter-chip.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+/* COUNTER */
+.counter{padding:4px 16px 10px;font-size:12px;color:var(--textLight);font-weight:500}
+
+/* MED CARDS */
+.med-card{background:var(--card);margin:0 16px 10px;border-radius:var(--radius);border:1px solid var(--borderLight);box-shadow:var(--shadow);cursor:pointer;transition:all .15s;overflow:hidden}
+.med-card:active{transform:scale(.985)}
+.med-card .header{display:flex;align-items:center;padding:14px 16px;gap:12px}
+.med-card .class-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.med-card .med-name{font-size:15px;font-weight:700;flex:1;color:var(--text)}
+.med-card .med-class{font-size:11px;color:var(--textMuted);font-weight:500;margin-top:1px}
+.med-card .chevron{color:var(--textLight);font-size:16px;transition:transform .2s}
+.med-card.open .chevron{transform:rotate(180deg)}
+
+/* EXPANDED DETAIL */
+.med-detail{display:none;padding:0 16px 16px;border-top:1px solid var(--borderLight)}
+.med-card.open .med-detail{display:block}
+
+.detail-section{margin-top:14px}
+.detail-section h4{font-size:11.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--primary);font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.detail-section h4 span{font-size:14px}
+
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.info-item{background:var(--surfaceAlt);border-radius:var(--radiusSm);padding:8px 10px}
+.info-item .label{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--textLight);font-weight:600}
+.info-item .value{font-size:13.5px;font-weight:600;color:var(--text);margin-top:2px}
+.info-item.full{grid-column:1/-1}
+
+/* DOSE BAR */
+.dose-bar-wrap{margin-top:8px}
+.dose-bar{height:8px;background:var(--borderLight);border-radius:4px;overflow:hidden;position:relative;margin:4px 0}
+.dose-bar .fill{height:100%;border-radius:4px;transition:width .4s ease}
+.dose-labels{display:flex;justify-content:space-between;font-size:10.5px;color:var(--textMuted);font-weight:500}
+
+/* SIDE EFFECTS */
+.se-list{display:flex;flex-wrap:wrap;gap:4px}
+.se-chip{padding:3px 8px;border-radius:12px;font-size:11.5px;font-weight:500;background:var(--surfaceAlt);color:var(--textMuted);border:1px solid var(--borderLight)}
+.se-chip.common{background:var(--orangeBg);color:var(--orange);border-color:var(--orangeBorder)}
+.se-chip.rare{background:var(--purpleBg);color:var(--purple);border-color:var(--purpleBorder)}
+
+/* INTERACTIONS */
+.inter-item{padding:8px 10px;border-radius:var(--radiusSm);margin-bottom:4px;border-left:3px solid}
+.inter-item.severe{background:var(--redBg);border-color:var(--red)}
+.inter-item.moderate{background:var(--yellowBg);border-color:var(--yellow)}
+.inter-item.mild{background:var(--greenBg);border-color:var(--green)}
+.inter-item .inter-label{font-size:10px;text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+.inter-item.severe .inter-label{color:var(--red)}
+.inter-item.moderate .inter-label{color:var(--orange)}
+.inter-item.mild .inter-label{color:var(--green)}
+.inter-item .inter-text{font-size:12.5px;color:var(--text);margin-top:2px;line-height:1.4}
+
+/* SPECIAL POPULATIONS */
+.pop-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pop-item{padding:8px 10px;border-radius:var(--radiusSm);background:var(--surfaceAlt);text-align:center}
+.pop-item .pop-icon{font-size:18px}
+.pop-item .pop-label{font-size:10px;color:var(--textLight);text-transform:uppercase;letter-spacing:.4px;font-weight:600;margin-top:2px}
+.pop-item .pop-val{font-size:12px;font-weight:600;color:var(--text);margin-top:2px}
+.pop-item.caution{background:var(--yellowBg);border:1px solid var(--yellowBorder)}
+.pop-item.avoid{background:var(--redBg);border:1px solid var(--redBorder)}
+.pop-item.safe{background:var(--greenBg);border:1px solid var(--greenBorder)}
+
+/* NOTES */
+.notes-box{background:var(--primaryFaded);border-radius:var(--radiusSm);padding:10px 12px;font-size:12.5px;color:var(--primary);line-height:1.5;border-left:3px solid var(--primary)}
+
+/* BACK BUTTON */
+.back-btn{display:none;background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:4px}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;z-index:100;max-width:520px;margin:0 auto}
+.nav-item{flex:1;padding:8px 4px;text-align:center;cursor:pointer;transition:color .2s}
+.nav-item .nav-icon{font-size:20px;display:block}
+.nav-item .nav-label{font-size:10px;font-weight:600;margin-top:2px;display:block}
+.nav-item{color:var(--textLight)}
+.nav-item.active{color:var(--primary)}
+
+/* PAGES */
+.page{display:none}
+.page.active{display:block}
+
+/* FAVORITES */
+.fav-btn{background:none;border:none;font-size:20px;cursor:pointer;padding:4px;color:var(--textLight)}
+.fav-btn.faved{color:#F9A825}
+
+/* CLASS INDEX */
+.class-section{margin:12px 16px}
+.class-header{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--card);border-radius:var(--radius);margin-bottom:8px;box-shadow:var(--shadow);cursor:pointer}
+.class-header .dot{width:12px;height:12px;border-radius:50%}
+.class-header h3{font-size:14px;font-weight:700;flex:1}
+.class-header .count{font-size:12px;color:var(--textLight);font-weight:500}
+.class-meds{padding-left:8px}
+
+/* INFO PAGE */
+.info-page{padding:20px 16px}
+.info-page h2{font-size:18px;font-weight:700;margin-bottom:12px;color:var(--primary)}
+.info-page p{font-size:13.5px;color:var(--textMuted);line-height:1.6;margin-bottom:12px}
+.info-page .version{font-size:12px;color:var(--textLight);margin-top:20px;text-align:center}
+
+/* DISCLAIMER */
+.disclaimer{margin:12px 16px;padding:12px 14px;background:var(--yellowBg);border:1px solid var(--yellowBorder);border-radius:var(--radiusSm);font-size:11.5px;color:var(--orange);line-height:1.5}
+
+/* ANIMATION */
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.animate{animation:fadeIn .25s ease-out}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;opacity:0;transition:opacity .3s;z-index:200;pointer-events:none}
+.toast.show{opacity:1}
+
+@media(max-width:380px){.info-grid{grid-template-columns:1fr}.pop-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="topbar">
+<button class="back-btn" id="backBtn" onclick="goBack()">←</button>
+<span class="icon">💊</span>
+<h1>Guia Psicofarmacológico</h1>
+<button onclick="togglePage('info')" title="Sobre">ℹ</button>
+</div>
+
+<div id="pageSearch" class="page active">
+<div class="search-wrap">
+<div class="search-box">
+<span style="color:var(--textLight);font-size:16px">🔍</span>
+<input type="text" id="searchInput" placeholder="Buscar medicamento..." oninput="doSearch()" autocomplete="off">
+<button class="clear" id="clearBtn" onclick="clearSearch()" style="display:none">✕</button>
+</div>
+</div>
+<div class="filters" id="filters"></div>
+<div class="disclaimer">⚠️ Este guia é apenas para consulta rápida e fins educacionais. Não substitui avaliação clínica, bulas oficiais ou consulta a bases como UpToDate/Micromedex. Sempre consulte o prescritor.</div>
+<div class="counter" id="counter"></div>
+<div id="medList"></div>
+</div>
+
+<div id="pageClasses" class="page">
+<div style="padding:12px 16px 4px"><h2 style="font-size:16px;font-weight:700;color:var(--primary)">Classes Farmacológicas</h2></div>
+<div id="classIndex"></div>
+</div>
+
+<div id="pageFavorites" class="page">
+<div style="padding:12px 16px 4px"><h2 style="font-size:16px;font-weight:700;color:var(--primary)">⭐ Favoritos</h2></div>
+<div id="favList"></div>
+<div id="favEmpty" style="display:none;text-align:center;padding:60px 20px;color:var(--textLight)">
+<div style="font-size:40px;margin-bottom:12px">⭐</div>
+<p style="font-size:14px">Nenhum favorito ainda</p>
+<p style="font-size:12px;margin-top:4px">Toque no ⭐ em qualquer medicamento para adicioná-lo aqui</p>
+</div>
+</div>
+
+<div id="pageInfo" class="page">
+<div class="info-page">
+<h2>Sobre o Guia</h2>
+<p>O <strong>Guia Psicofarmacológico</strong> é uma referência rápida de bolso para profissionais de saúde mental que precisam consultar informações sobre medicamentos psiquiátricos durante o atendimento clínico.</p>
+<p>Contém informações sobre as principais classes de psicofármacos incluindo: faixas de dose, efeitos colaterais comuns, interações medicamentosas relevantes, populações especiais e mecanismo de ação.</p>
+<p><strong>Público-alvo:</strong> Psicólogos, psiquiatras e profissionais de saúde mental que precisam compreender a farmacoterapia de seus pacientes.</p>
+<p><strong>Limitações:</strong> Este guia não substitui bulas oficiais, bases de dados farmacológicas completas (UpToDate, Micromedex, DDInter) ou o julgamento clínico do prescritor. As informações são resumidas para consulta rápida.</p>
+<p><strong>Dados offline:</strong> Todas as informações estão armazenadas localmente. O app funciona 100% sem internet.</p>
+<div class="version">Versão 1.0 · App Farm · 2026</div>
+</div>
+</div>
+
+<div class="bottom-nav">
+<div class="nav-item active" onclick="togglePage('search')" data-page="search">
+<span class="nav-icon">🔍</span><span class="nav-label">Buscar</span>
+</div>
+<div class="nav-item" onclick="togglePage('classes')" data-page="classes">
+<span class="nav-icon">📋</span><span class="nav-label">Classes</span>
+</div>
+<div class="nav-item" onclick="togglePage('favorites')" data-page="favorites">
+<span class="nav-icon">⭐</span><span class="nav-label">Favoritos</span>
+</div>
+<div class="nav-item" onclick="togglePage('info')" data-page="info">
+<span class="nav-icon">ℹ️</span><span class="nav-label">Sobre</span>
+</div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================
+// DATABASE — ~92 psychiatric medications
+// ============================
+// Fields: n=name, c=class, mech=mechanism, dose=[initial,therapeutic,max] in mg/day,
+// form=formulations, hl=half-life, cyp=metabolism, se=side effects (common), seR=rare/serious,
+// inter=interactions [{d:drug,s:severity,t:text}], pop={elderly,pregnancy,hepatic,renal},
+// notes=clinical pearls
+
+var CLASS_COLORS={
+"ISRS":"#1E88E5","IRSN":"#7B1FA2","Tricíclico":"#C62828","Atípico (AD)":"#00897B",
+"IMAO":"#4E342E","Estabilizador":"#F57F17","Antipsicótico Típico":"#E65100",
+"Antipsicótico Atípico":"#6A1B9A","Benzodiazepínico":"#0097A7","Hipnótico":"#00695C",
+"Estimulante":"#D84315","Anticolinesterásico":"#558B2F","Outros":"#546E7A"
+};
+
+var CLASS_ORDER=["ISRS","IRSN","Tricíclico","Atípico (AD)","IMAO","Estabilizador","Antipsicótico Típico","Antipsicótico Atípico","Benzodiazepínico","Hipnótico","Estimulante","Anticolinesterásico","Outros"];
+
+var MEDS=[
+// === ISRS ===
+{n:"Fluoxetina",c:"ISRS",mech:"Inibição seletiva da recaptação de serotonina (5-HT). Também inibidor potente de CYP2D6.",dose:[20,20,80],form:"Comp 20mg, cáps 20mg, sol oral",hl:"1-3 dias (norfluoxetina: 4-16 dias)",cyp:"CYP2D6 (substrato e inibidor potente), CYP2C9",
+se:["Náusea","Insônia","Cefaleia","Disfunção sexual","Ansiedade inicial","Diarreia"],
+seR:["Síndrome serotoninérgica","Hiponatremia (SIADH)","Sangramento GI","Mania"],
+inter:[{d:"IMAO",s:"severe",t:"Contraindicação absoluta. Risco fatal de síndrome serotoninérgica. Intervalo ≥5 semanas (meia-vida longa)."},{d:"Tamoxifeno",s:"severe",t:"Bloqueia conversão em endoxifeno via CYP2D6. Evitar."},{d:"Risperidona",s:"moderate",t:"Aumenta níveis de risperidona via inibição CYP2D6."},{d:"Amitriptilina",s:"moderate",t:"Aumenta níveis de tricíclicos. Risco QTc. Monitorar ECG."},{d:"Alprazolam",s:"mild",t:"Pode aumentar levemente níveis via CYP3A4."}],
+pop:{elderly:"Cautela: risco SIADH",pregnancy:"Cat C. Risco HPPRN no 3º tri",hepatic:"Reduzir dose",renal:"Sem ajuste"},
+notes:"Meia-vida muito longa (ativo + metabólito). Útil para má adesão. Ativadora — preferir manhã. Potente inibidor CYP2D6: atenção a interações."},
+
+{n:"Sertralina",c:"ISRS",mech:"Inibição seletiva da recaptação de 5-HT. Leve ação dopaminérgica. Menor inibição CYP que fluoxetina.",dose:[50,50,200],form:"Comp 25, 50, 75, 100mg",hl:"26 horas",cyp:"CYP2B6, CYP2C19 (inibidor leve)",
+se:["Náusea","Diarreia","Disfunção sexual","Cefaleia","Tontura","Insônia"],seR:["Síndrome serotoninérgica","Hiponatremia","Sangramento GI"],
+inter:[{d:"IMAO",s:"severe",t:"Contraindicado. Intervalo ≥14 dias."},{d:"Lítio",s:"moderate",t:"Aumento do risco serotoninérgico. Monitorar."}],
+pop:{elderly:"Bem tolerada. 1ª linha geriátrica",pregnancy:"Cat C. Mais dados de segurança entre ISRS",hepatic:"Reduzir dose",renal:"Sem ajuste"},
+notes:"Considerada ISRS com melhor perfil de interações. Primeira linha em depressão, TOC, TEPT. Boa opção para idosos e pacientes com comorbidades."},
+
+{n:"Paroxetina",c:"ISRS",mech:"Inibição seletiva 5-HT + leve ação anticolinérgica e noradrenérgica. Inibidor potente CYP2D6.",dose:[20,20,60],form:"Comp 20, 25mg CR",hl:"21 horas",cyp:"CYP2D6 (substrato e inibidor potente)",
+se:["Ganho de peso","Disfunção sexual","Sonolência","Boca seca","Constipação","Sudorese"],seR:["Síndrome de descontinuação (grave)","SIADH","Teratogenicidade"],
+inter:[{d:"IMAO",s:"severe",t:"Contraindicado."},{d:"Tamoxifeno",s:"severe",t:"Inibição CYP2D6. Evitar."},{d:"Tioridazina",s:"severe",t:"Risco arritmia fatal."}],
+pop:{elderly:"Cautela: anticolinérgico",pregnancy:"Cat D. Risco cardíaco fetal no 1º tri",hepatic:"Reduzir dose",renal:"Reduzir dose se ClCr<30"},
+notes:"Mais sedativa e com mais efeito anticolinérgico entre ISRS. Síndrome de descontinuação intensa — nunca interromper abruptamente. Evitar em gestantes."},
+
+{n:"Citalopram",c:"ISRS",mech:"ISRS mais seletivo. Mínima interação com CYP.",dose:[20,20,40],form:"Comp 20, 40mg, gotas",hl:"35 horas",cyp:"CYP2C19, CYP3A4 (interações mínimas)",
+se:["Náusea","Boca seca","Sonolência","Disfunção sexual","Sudorese"],seR:["Prolongamento QTc dose-dependente","SIADH"],
+inter:[{d:"IMAO",s:"severe",t:"Contraindicado."},{d:"Omeprazol",s:"mild",t:"Omeprazol inibe CYP2C19, pode aumentar níveis."}],
+pop:{elderly:"Máximo 20mg (risco QTc)",pregnancy:"Cat C",hepatic:"Máximo 20mg",renal:"Sem ajuste"},
+notes:"Dose máxima 40mg (20mg em idosos) por risco de prolongamento QTc dose-dependente. Poucas interações medicamentosas."},
+
+{n:"Escitalopram",c:"ISRS",mech:"Enantiômero S do citalopram. ISRS puro — maior seletividade 5-HT.",dose:[10,10,20],form:"Comp 10, 15, 20mg, gotas",hl:"27-32 horas",cyp:"CYP2C19, CYP3A4",
+se:["Náusea","Cefaleia","Disfunção sexual","Insônia","Diarreia"],seR:["Prolongamento QTc","SIADH"],
+inter:[{d:"IMAO",s:"severe",t:"Contraindicado."},{d:"Omeprazol",s:"mild",t:"CYP2C19 — pode aumentar níveis levemente."}],
+pop:{elderly:"Boa opção. Max 10mg",pregnancy:"Cat C",hepatic:"Max 10mg",renal:"Sem ajuste"},
+notes:"Melhor tolerabilidade entre ISRS. Início de ação relativamente rápido. Menos interações que fluoxetina/paroxetina."},
+
+{n:"Fluvoxamina",c:"ISRS",mech:"ISRS + agonista sigma-1. Inibidor potente de CYP1A2 e CYP2C19.",dose:[50,100,300],form:"Comp 50, 100mg",hl:"15 horas",cyp:"CYP1A2 (inibidor potente), CYP2C19 (inibidor potente)",
+se:["Náusea","Sonolência","Cefaleia","Disfunção sexual"],seR:["Síndrome serotoninérgica","Hepatotoxicidade"],
+inter:[{d:"Clozapina",s:"severe",t:"Inibe CYP1A2 — pode triplicar níveis de clozapina."},{d:"Teofilina",s:"severe",t:"Aumento importante de níveis."},{d:"IMAO",s:"severe",t:"Contraindicado."}],
+pop:{elderly:"Cautela: interações",pregnancy:"Cat C",hepatic:"Reduzir dose",renal:"Sem ajuste"},
+notes:"Principal indicação: TOC. Potente inibidor CYP1A2 — atenção especial com clozapina, teofilina, cafeína. Receptor sigma-1 pode ter efeito ansiolítico adicional."},
+
+// === IRSN ===
+{n:"Venlafaxina",c:"IRSN",mech:"Inibição da recaptação de 5-HT (doses baixas) e NE (doses altas >150mg). Dose-dependente.",dose:[75,150,375],form:"Caps XR 37.5, 75, 150mg",hl:"5h (metabólito 11h)",cyp:"CYP2D6 → desvenlafaxina",
+se:["Náusea","Cefaleia","Tontura","Insônia","Sudorese","Hipertensão"],seR:["Crise hipertensiva","Síndrome de descontinuação","Suicidabilidade em jovens"],
+inter:[{d:"IMAO",s:"severe",t:"Contraindicação absoluta. Intervalo ≥14 dias."},{d:"Tramadol",s:"severe",t:"Risco serotoninérgico."}],
+pop:{elderly:"Cautela: PA, quedas",pregnancy:"Cat C. Risco HPPRN 3º tri",hepatic:"Reduzir 50%",renal:"Reduzir 25-50%"},
+notes:"Monitorar PA regularmente. Efeito noradrenérgico significativo acima de 150mg. Síndrome de descontinuação intensa — reduzir gradualmente. Preferir formulação XR."},
+
+{n:"Desvenlafaxina",c:"IRSN",mech:"Metabólito ativo da venlafaxina. IRSN com menor dependência do CYP2D6.",dose:[50,50,200],form:"Comp lib prol 50, 100mg",hl:"11 horas",cyp:"Conjugação UGT (mínima CYP)",
+se:["Náusea","Tontura","Insônia","Sudorese","Constipação","Hipertensão"],seR:["Crise hipertensiva","Sínd. descontinuação"],
+inter:[{d:"IMAO",s:"severe",t:"Contraindicado."},{d:"ISRS",s:"moderate",t:"Risco serotoninérgico aditivo."}],
+pop:{elderly:"Cautela: PA",pregnancy:"Cat C",hepatic:"Max 100mg",renal:"Max 50mg se ClCr<30"},
+notes:"Menos interações que venlafaxina (metabolismo UGT). Dose fixa de 50mg é eficaz para maioria. Monitorar PA."},
+
+{n:"Duloxetina",c:"IRSN",mech:"IRSN equilibrado. Também usada para dor neuropática e fibromialgia.",dose:[60,60,120],form:"Caps 30, 60mg",hl:"12 horas",cyp:"CYP1A2 (principal), CYP2D6 (inibidor moderado)",
+se:["Náusea","Boca seca","Constipação","Sonolência","Fadiga","Sudorese"],seR:["Hepatotoxicidade","Crise hipertensiva","Retenção urinária"],
+inter:[{d:"IMAO",s:"severe",t:"Contraindicado."},{d:"Fluvoxamina",s:"severe",t:"Fluvoxamina inibe CYP1A2 fortemente."},{d:"Ciprofloxacino",s:"moderate",t:"Inibe CYP1A2 — aumenta níveis."}],
+pop:{elderly:"Boa opção se dor comórbida",pregnancy:"Cat C",hepatic:"Contraindicada se insuficiência",renal:"Evitar se ClCr<30"},
+notes:"Dupla indicação: depressão + dor. Contraindicada em doença hepática. Não abrir cápsula (revestimento entérico). Boa para depressão com dor crônica, fibromialgia."},
+
+// === TRICÍCLICOS ===
+{n:"Amitriptilina",c:"Tricíclico",mech:"Inibição recaptação 5-HT e NE. Ação anticolinérgica, anti-histamínica e alfa-bloqueadora significativas.",dose:[25,75,300],form:"Comp 25, 75mg",hl:"10-28 horas",cyp:"CYP2D6, CYP2C19 → nortriptilina",
+se:["Sedação","Ganho de peso","Boca seca","Constipação","Retenção urinária","Hipotensão ortostática","Visão turva"],seR:["Cardiotoxicidade","Arritmias","Convulsões em superdose","Prolongamento QTc"],
+inter:[{d:"IMAO",s:"severe",t:"Contraindicado."},{d:"Fluoxetina",s:"moderate",t:"Fluoxetina inibe CYP2D6, aumenta níveis. Risco QTc."},{d:"Álcool",s:"moderate",t:"Potencialização da sedação."}],
+pop:{elderly:"Evitar (critérios de Beers)",pregnancy:"Cat C",hepatic:"Reduzir dose",renal:"Cautela"},
+notes:"Amplamente usada em doses baixas (25-50mg) para dor crônica, cefaleia tensional, enxaqueca e insônia. Letais em superdose. ECG antes de iniciar em >40 anos. Evitar em idosos."},
+
+{n:"Nortriptilina",c:"Tricíclico",mech:"Inibição preferencial da recaptação de NE. Menos anticolinérgico que amitriptilina.",dose:[25,75,150],form:"Cáps 10, 25, 50, 75mg",hl:"18-44 horas",cyp:"CYP2D6",
+se:["Boca seca","Constipação","Sedação leve","Tremor","Hipotensão ortostática"],seR:["Cardiotoxicidade","Arritmias","Convulsões"],
+inter:[{d:"IMAO",s:"severe",t:"Contraindicado."},{d:"Fluoxetina",s:"moderate",t:"Inibição CYP2D6 — aumenta níveis."}],
+pop:{elderly:"Mais tolerado que amitriptilina",pregnancy:"Cat D",hepatic:"Reduzir dose",renal:"Cautela"},
+notes:"Janela terapêutica: 50-150 ng/mL. Melhor tolerado que amitriptilina em idosos. Útil para cessação tabágica. Dosagem sérica disponível e recomendada."},
+
+{n:"Clomipramina",c:"Tricíclico",mech:"Inibição potente de recaptação de 5-HT (o tricíclico mais serotoninérgico). Também NE via metabólito.",dose:[25,100,250],form:"Comp 10, 25, 75mg",hl:"19-37 horas",cyp:"CYP2D6, CYP1A2, CYP2C19",
+se:["Sedação","Ganho de peso","Boca seca","Constipação","Disfunção sexual","Tremor"],seR:["Convulsões (dose-dependente)","Cardiotoxicidade","Síndrome serotoninérgica"],
+inter:[{d:"IMAO",s:"severe",t:"Contraindicado. Risco serotoninérgico grave."},{d:"ISRS",s:"severe",t:"Risco serotoninérgico + aumento de níveis."}],
+pop:{elderly:"Cautela: anticolinérgico",pregnancy:"Cat C",hepatic:"Reduzir dose",renal:"Cautela"},
+notes:"Padrão-ouro para TOC (superior a ISRS em casos refratários). Risco de convulsão aumenta acima de 250mg/dia. ECG obrigatório. Útil em TOC grave e cataplexia."},
+
+{n:"Imipramina",c:"Tricíclico",mech:"Inibição recaptação 5-HT e NE. Ação anticolinérgica e anti-histamínica.",dose:[25,75,300],form:"Comp 25, 75, 150mg",hl:"6-28 horas",cyp:"CYP2D6, CYP1A2 → desipramina",
+se:["Boca seca","Constipação","Sedação","Hipotensão","Ganho de peso","Retenção urinária"],seR:["Cardiotoxicidade","Arritmias","Convulsões"],
+inter:[{d:"IMAO",s:"severe",t:"Contraindicado."},{d:"Álcool",s:"moderate",t:"Potencialização sedativa."}],
+pop:{elderly:"Evitar",pregnancy:"Cat D",hepatic:"Reduzir dose",renal:"Cautela"},
+notes:"Historicamente importante. Ainda usada para enurese noturna em crianças (dose baixa) e dor crônica. Letais em superdose."},
+
+// === ATÍPICOS (ANTIDEPRESSIVOS) ===
+{n:"Bupropiona",c:"Atípico (AD)",mech:"Inibição recaptação de NE e DA. Sem ação serotoninérgica. Inibidor CYP2D6.",dose:[150,300,450],form:"Comp 150mg XL, 150mg SR",hl:"21 horas",cyp:"CYP2B6 → hidroxibupropiona",
+se:["Insônia","Boca seca","Cefaleia","Agitação","Perda de apetite"],seR:["Convulsões (dose-dependente)","Psicose","Hipertensão"],
+inter:[{d:"IMAO",s:"severe",t:"Contraindicado."},{d:"Álcool",s:"moderate",t:"Reduz limiar convulsivo."},{d:"Tamoxifeno",s:"moderate",t:"Inibidor CYP2D6 moderado."}],
+pop:{elderly:"Boa opção (sem sedação, sem ganho)",pregnancy:"Cat C",hepatic:"Reduzir dose. Max 150mg",renal:"Max 150mg"},
+notes:"Sem disfunção sexual — diferencial importante. Contraindicada em epilepsia, transtornos alimentares e uso de álcool pesado. Auxilia cessação tabágica. Ativadora — tomar pela manhã."},
+
+{n:"Mirtazapina",c:"Atípico (AD)",mech:"Antagonista α2-adrenérgico (aumenta NE e 5-HT). Antagonista 5-HT2A, 5-HT2C, 5-HT3 e H1.",dose:[15,30,45],form:"Comp 15, 30, 45mg, orodispersível",hl:"20-40 horas",cyp:"CYP1A2, CYP2D6, CYP3A4",
+se:["Sedação intensa","Ganho de peso","Aumento de apetite","Boca seca","Edema"],seR:["Agranulocitose (raro)","Hipertrigliceridemia"],
+inter:[{d:"IMAO",s:"severe",t:"Contraindicado."},{d:"Benzodiazepínicos",s:"moderate",t:"Sedação aditiva."}],
+pop:{elderly:"Boa opção se insônia/inapetência",pregnancy:"Cat C",hepatic:"Cautela (reduzir dose)",renal:"Cautela se ClCr<40"},
+notes:"Paradoxo dose-sedação: 15mg mais sedativa que 30mg (desbloqueio noradrenérgico em doses maiores). Excelente para insônia + inapetência. Sem disfunção sexual. Hemograma se febre/infecção."},
+
+{n:"Trazodona",c:"Atípico (AD)",mech:"Antagonista 5-HT2A/2C + inibidor fraco recaptação 5-HT. Ação anti-H1.",dose:[50,150,400],form:"Comp 50, 100, 150mg",hl:"6-9 horas",cyp:"CYP3A4",
+se:["Sedação","Tontura","Hipotensão ortostática","Cefaleia","Boca seca"],seR:["Priapismo","Arritmias cardíacas"],
+inter:[{d:"IMAO",s:"severe",t:"Contraindicado."},{d:"Cetoconazol",s:"moderate",t:"Aumenta níveis via CYP3A4."}],
+pop:{elderly:"Boa opção como hipnótico",pregnancy:"Cat C",hepatic:"Cautela",renal:"Sem ajuste"},
+notes:"Amplamente usada como hipnótico off-label (50-100mg). Como antidepressivo requer doses mais altas (150-400mg). Alertar homens sobre risco de priapismo (urgência urológica)."},
+
+{n:"Agomelatina",c:"Atípico (AD)",mech:"Agonista melatonérgico (MT1/MT2) + antagonista 5-HT2C. Ressincroniza ritmo circadiano.",dose:[25,25,50],form:"Comp 25mg",hl:"1-2 horas",cyp:"CYP1A2 (principal), CYP2C9",
+se:["Cefaleia","Náusea","Tontura","Fadiga"],seR:["Hepatotoxicidade (monitorar TGO/TGP)","Elevação transaminases"],
+inter:[{d:"Fluvoxamina",s:"severe",t:"Contraindicada (inibidor CYP1A2)."},{d:"Ciprofloxacino",s:"severe",t:"Contraindicado (inibidor CYP1A2)."}],
+pop:{elderly:"Cautela: função hepática",pregnancy:"Dados insuficientes",hepatic:"Contraindicada",renal:"Sem ajuste"},
+notes:"Sem disfunção sexual, sem ganho de peso, sem descontinuação. Obrigatório monitorar transaminases: basal, 3, 6, 12 e 24 semanas. Tomar à noite. Contraindicada em tabagistas pesados (CYP1A2)."},
+
+{n:"Vortioxetina",c:"Atípico (AD)",mech:"Multimodal: inibidor recaptação 5-HT + agonista 5-HT1A + antagonista 5-HT3/5-HT7 + agonista parcial 5-HT1B.",dose:[10,10,20],form:"Comp 5, 10, 20mg",hl:"66 horas",cyp:"CYP2D6 (principal)",
+se:["Náusea","Cefaleia","Tontura","Diarreia","Constipação"],seR:["Síndrome serotoninérgica","Sangramento"],
+inter:[{d:"IMAO",s:"severe",t:"Contraindicado."},{d:"Bupropiona",s:"moderate",t:"Inibição CYP2D6 — reduzir dose para 10mg."}],
+pop:{elderly:"Boa opção (pró-cognitivo)",pregnancy:"Cat C",hepatic:"Sem ajuste",renal:"Sem ajuste"},
+notes:"Diferencial: melhora de função cognitiva (atenção, memória, velocidade de processamento). Menor incidência de disfunção sexual. Náusea é o efeito colateral mais limitante — melhora com tempo."},
+
+// === IMAO ===
+{n:"Tranilcipromina",c:"IMAO",mech:"Inibidor irreversível e não-seletivo da MAO-A e MAO-B. Estrutura similar à anfetamina.",dose:[20,30,60],form:"Comp 10mg",hl:"2.5 horas (efeito dura 2-3 semanas)",cyp:"Inibição MAO (não CYP)",
+se:["Insônia","Hipotensão ortostática","Ganho de peso","Tontura","Disfunção sexual"],seR:["Crise hipertensiva com tiramina","Síndrome serotoninérgica"],
+inter:[{d:"ISRS/IRSN",s:"severe",t:"Contraindicação absoluta. Intervalo ≥14 dias (5 semanas se fluoxetina)."},{d:"Tiramina (alimentos)",s:"severe",t:"Crise hipertensiva. Dieta restritiva obrigatória."},{d:"Meperidina",s:"severe",t:"Contraindicado. Risco fatal."},{d:"Descongestionantes",s:"severe",t:"Pseudoefedrina pode causar crise hipertensiva."}],
+pop:{elderly:"Risco alto: quedas, PA",pregnancy:"Contraindicada",hepatic:"Contraindicada",renal:"Cautela extrema"},
+notes:"Reservada para depressão refratária. Dieta sem tiramina obrigatória (queijos curados, vinhos, embutidos, soja fermentada). Paciente precisa ser confiável e aderente à dieta. Efeito persiste 2-3 semanas após suspensão."},
+
+{n:"Selegilina",c:"IMAO",mech:"Inibidor seletivo MAO-B (doses baixas). Em doses altas perde seletividade. Transdérmico disponível.",dose:[5,10,10],form:"Comp 5mg (Brasil: off-label para depressão)",hl:"10 horas",cyp:"CYP2B6, CYP2C9",
+se:["Insônia","Náusea","Cefaleia","Boca seca"],seR:["Crise hipertensiva (doses altas)"],
+inter:[{d:"ISRS",s:"severe",t:"Risco serotoninérgico, especialmente em doses >10mg."},{d:"Meperidina",s:"severe",t:"Contraindicado."}],
+pop:{elderly:"Usada em Parkinson",pregnancy:"Contraindicada",hepatic:"Cautela",renal:"Cautela"},
+notes:"Principalmente usada em Parkinson. Forma transdérmica (não disponível no Brasil) permite uso sem restrição dietética em dose baixa."},
+
+// === ESTABILIZADORES DE HUMOR ===
+{n:"Lítio",c:"Estabilizador",mech:"Mecanismo complexo: modulação GSK-3β, inositol, neurotrofinas (BDNF). Neuroprotetor.",dose:[300,900,1800],form:"Comp 300, 450mg. Carbolitium",hl:"18-36 horas",cyp:"Excreção renal (100%)",
+se:["Tremor fino","Poliúria","Polidipsia","Ganho de peso","Hipotireoidismo","Acne"],seR:["Toxicidade (>1.5 mEq/L)","Nefropatia intersticial","Diabetes insipidus nefrogênico","Ebstein (fetal)"],
+inter:[{d:"IECA",s:"moderate",t:"Aumentam litemia por redução excreção renal."},{d:"Diurético tiazídico",s:"moderate",t:"Aumentam litemia. Monitorar frequentemente."},{d:"AINE",s:"moderate",t:"Reduzem excreção de lítio."},{d:"Haloperidol",s:"moderate",t:"Risco raro de encefalopatia."}],
+pop:{elderly:"Dose menor, nível 0.4-0.8",pregnancy:"Cat D. Risco Ebstein 1º tri",hepatic:"Sem ajuste",renal:"Contraindicado se IR grave"},
+notes:"Litemia terapêutica: 0.6-1.2 mEq/L (agudo), 0.6-0.8 (manutenção). Monitorar: litemia, TSH, creatinina, Ca²+ a cada 3-6 meses. Hidratação adequada. Efeito anti-suicida único entre psicofármacos."},
+
+{n:"Valproato",c:"Estabilizador",mech:"Bloqueio canais de Na+, aumento GABA, inibição histona deacetilase. Amplo espectro anticonvulsivante.",dose:[250,1000,2000],form:"Comp 250, 500mg. Depakene, Depakote, Valpakine",hl:"9-16 horas",cyp:"CYP2C9, CYP2C19, UGT (inibidor de múltiplos CYP)",
+se:["Ganho de peso","Tremor","Queda de cabelo","Náusea","Sedação","Trombocitopenia"],seR:["Hepatotoxicidade fulminante","Pancreatite","Teratogenicidade grave","SOP (mulheres)"],
+inter:[{d:"Carbamazepina",s:"moderate",t:"Carbamazepina induz metabolismo do valproato. Valproato aumenta metabólito tóxico da CBZ."},{d:"Lamotrigina",s:"moderate",t:"Valproato dobra níveis de lamotrigina. Reduzir dose de LTG 50%."}],
+pop:{elderly:"Cautela: sedação, quedas",pregnancy:"CONTRAINDICADO em mulheres em idade fértil. Defeitos tubo neural.",hepatic:"Contraindicado",renal:"Cautela"},
+notes:"Nível sérico: 50-100 μg/mL. NUNCA usar em mulheres em idade fértil sem anticoncepção segura. Monitorar: hepatograma, hemograma, amilase. Risco de SOP e hiperandrogenismo em mulheres."},
+
+{n:"Carbamazepina",c:"Estabilizador",mech:"Bloqueio canais de Na+. Potente indutor enzimático. Ativo em mania e neuralgia.",dose:[200,600,1600],form:"Comp 200, 400mg. Tegretol",hl:"12-17 horas (auto-indução)",cyp:"CYP3A4 (substrato e indutor potente), CYP1A2",
+se:["Sonolência","Tontura","Ataxia","Diplopia","Náusea","Leucopenia benigna"],seR:["Agranulocitose","Stevens-Johnson (HLA-B*1502)","Hepatotoxicidade","SIADH"],
+inter:[{d:"Valproato",s:"moderate",t:"CBZ induz metabolismo do VPA. VPA aumenta epóxido da CBZ."},{d:"Lamotrigina",s:"moderate",t:"CBZ induz metabolismo da LTG — doses maiores necessárias."},{d:"Contraceptivos orais",s:"moderate",t:"CBZ reduz eficácia (indução CYP3A4)."},{d:"Quetiapina",s:"moderate",t:"CBZ reduz níveis significativamente."}],
+pop:{elderly:"Cautela: hiponatremia, interações",pregnancy:"Cat D. Defeitos tubo neural",hepatic:"Cautela",renal:"Sem ajuste"},
+notes:"Auto-indução enzimática: níveis caem em 2-4 semanas. Nível sérico: 4-12 μg/mL. Testar HLA-B*1502 em asiáticos antes de iniciar (risco Stevens-Johnson). Indutor enzimático potente — muitas interações."},
+
+{n:"Lamotrigina",c:"Estabilizador",mech:"Bloqueio canais de Na+ e Ca²+. Inibição glutamato. Perfil predominantemente antidepressivo.",dose:[25,200,400],form:"Comp 25, 50, 100, 200mg. Lamictal",hl:"25-33 horas",cyp:"UGT1A4 (glucuronidação)",
+se:["Cefaleia","Náusea","Tontura","Diplopia","Insônia","Rash benigno"],seR:["Stevens-Johnson/NET","Meningite asséptica"],
+inter:[{d:"Valproato",s:"moderate",t:"Dobra níveis de LTG. Iniciar com 12.5mg, titular lentamente."},{d:"Carbamazepina",s:"moderate",t:"Reduz níveis de LTG 50%. Doses maiores necessárias."},{d:"Contraceptivos orais",s:"moderate",t:"Podem reduzir níveis de LTG. LTG pode reduzir eficácia do CO."}],
+pop:{elderly:"Bem tolerada",pregnancy:"Mais seguro entre estabilizadores. Ácido fólico 5mg",hepatic:"Reduzir dose",renal:"Reduzir se ClCr<30"},
+notes:"Titulação LENTA obrigatória (risco Stevens-Johnson). Semanas 1-2: 25mg/dia; sem 3-4: 50mg/dia; aumentar 50mg a cada 1-2 semanas. Com valproato: metade das doses. Melhor perfil em fase depressiva do TAB. Considerar folato na gestação."},
+
+{n:"Topiramato",c:"Estabilizador",mech:"Bloqueio Na+, potencialização GABA, inibição glutamato, inibição anidrase carbônica.",dose:[25,200,400],form:"Comp 25, 50, 100mg. Topamax",hl:"21 horas",cyp:"CYP3A4 (indução leve)",
+se:["Perda de peso","Parestesias","Dificuldade cognitiva ('brain fog')","Fadiga","Nefrolitíase"],seR:["Glaucoma agudo","Acidose metabólica","Oligoidrose e hipertermia"],
+inter:[{d:"Contraceptivos orais",s:"moderate",t:"Reduz eficácia em doses >200mg."},{d:"Valproato",s:"mild",t:"Risco aumentado de hiperamonemia."}],
+pop:{elderly:"Cautela: cognição",pregnancy:"Cat D. Fenda labiopalatal",hepatic:"Cautela",renal:"Reduzir dose"},
+notes:"Causa perda de peso — útil como adjuvante se ganho ponderal com outros psicofármacos. Efeito cognitivo ('emburrece') é dose-dependente e limitante. Off-label: profilaxia enxaqueca, compulsão alimentar."},
+
+// === ANTIPSICÓTICOS TÍPICOS ===
+{n:"Haloperidol",c:"Antipsicótico Típico",mech:"Antagonista D2 potente. Alta potência, pouca ação anticolinérgica/anti-H1.",dose:[2,5,20],form:"Comp 1, 5mg. Gotas 2mg/mL. Inj 5mg/mL. Decanoato 50mg/mL",hl:"12-36 horas (decanoato: 3 semanas)",cyp:"CYP2D6, CYP3A4",
+se:["SEP (acatisia, distonia, parkinsonismo)","Acatisia","Prolactina elevada","Disfunção sexual"],seR:["Discinesia tardia","Síndrome neuroléptica maligna","Prolongamento QTc","Morte súbita"],
+inter:[{d:"Lítio",s:"moderate",t:"Risco raro de encefalopatia."},{d:"QTc prolongadores",s:"moderate",t:"Efeito aditivo no QTc."}],
+pop:{elderly:"Risco: SEP, quedas, morte em demência",pregnancy:"Cat C. Preferir se necessário (mais dados)",hepatic:"Reduzir dose",renal:"Sem ajuste"},
+notes:"Padrão-ouro para psicose aguda e agitação. Decanoato para manutenção e má adesão. Evitar IV se possível (risco QTc). Anti-emético em doses baixas. Risco de SEP muito alto — considerar anticolinérgico profilático."},
+
+{n:"Clorpromazina",c:"Antipsicótico Típico",mech:"Antagonista D2 baixa potência. Forte ação anti-H1, anticolinérgica e alfa-bloqueadora.",dose:[75,300,1000],form:"Comp 25, 100mg. Gotas. Amplictil",hl:"16-30 horas",cyp:"CYP2D6, CYP1A2",
+se:["Sedação intensa","Hipotensão ortostática","Ganho de peso","Boca seca","Fotossensibilidade"],seR:["Síndrome neuroléptica maligna","Discinesia tardia","Agranulocitose","Icterícia colestática"],
+inter:[{d:"Álcool",s:"moderate",t:"Sedação aditiva importante."},{d:"Anti-hipertensivos",s:"moderate",t:"Hipotensão aditiva."}],
+pop:{elderly:"Evitar (sedação, hipotensão)",pregnancy:"Cat C",hepatic:"Cautela",renal:"Cautela"},
+notes:"Primeiro antipsicótico (1952). Muito sedativo — às vezes usado apenas para essa finalidade. Anti-emético. Fotossensibilidade significativa. Reservada para psicose refratária ou quando sedação é desejada."},
+
+{n:"Levomepromazina",c:"Antipsicótico Típico",mech:"Antagonista D2 baixa potência. Potente anti-H1 e anticolinérgico. Muito sedativo.",dose:[25,100,400],form:"Comp 25, 100mg. Gotas 40mg/mL. Neozine",hl:"15-30 horas",cyp:"CYP2D6",
+se:["Sedação profunda","Hipotensão ortostática","Ganho de peso","Boca seca","Constipação"],seR:["Síndrome neuroléptica maligna","Discinesia tardia"],
+inter:[{d:"Outros sedativos",s:"moderate",t:"Sedação aditiva marcante."},{d:"Anti-hipertensivos",s:"moderate",t:"Hipotensão aditiva."}],
+pop:{elderly:"Evitar",pregnancy:"Cat C",hepatic:"Cautela",renal:"Cautela"},
+notes:"Usado primariamente como hipnótico/sedativo em psiquiatria (gotas 3-15 à noite). Cuidados paliativos: controle de náusea/vômito refratário. Muito sedativo — atenção ao dirigir."},
+
+// === ANTIPSICÓTICOS ATÍPICOS ===
+{n:"Risperidona",c:"Antipsicótico Atípico",mech:"Antagonista D2 e 5-HT2A. Em doses baixas predomina bloqueio 5-HT2A.",dose:[1,4,8],form:"Comp 1, 2, 3mg. Sol oral. Inj LA (Risperdal Consta)",hl:"3h (metabólito ativo 9-OH: 21h)",cyp:"CYP2D6 → paliperidona (9-OH-risperidona)",
+se:["Prolactina elevada","Ganho de peso moderado","SEP dose-dependente","Sonolência","Hipotensão"],seR:["Síndrome neuroléptica maligna","Discinesia tardia","Hiperglicemia"],
+inter:[{d:"Fluoxetina",s:"moderate",t:"Inibição CYP2D6, aumenta níveis."},{d:"Carbamazepina",s:"moderate",t:"Reduz níveis significativamente."}],
+pop:{elderly:"Dose baixa. Risco AVC em demência",pregnancy:"Cat C",hepatic:"Iniciar com metade",renal:"Iniciar com metade"},
+notes:"Eleva prolactina mais que outros atípicos. Forma depot (Consta) cada 2 semanas para manutenção. Em doses >6mg comporta-se mais como típico. Útil em irritabilidade do autismo."},
+
+{n:"Paliperidona",c:"Antipsicótico Atípico",mech:"Metabólito ativo da risperidona. Antagonista D2/5-HT2A. Não passa por metabolismo hepático significativo.",dose:[3,6,12],form:"Comp ER 3, 6, 9mg. Inj mensal/trimestral (Invega Sustenna/Trinza)",hl:"23 horas (oral). Depot: semanas-meses",cyp:"Mínimo (excreção renal)",
+se:["Prolactina elevada","SEP","Ganho de peso moderado","Taquicardia"],seR:["Síndrome neuroléptica maligna","Discinesia tardia"],
+inter:[{d:"Carbamazepina",s:"moderate",t:"Pode reduzir absorção (indução P-gp)."}],
+pop:{elderly:"Ajustar por função renal",pregnancy:"Cat C",hepatic:"Sem ajuste",renal:"Reduzir se ClCr<50"},
+notes:"Vantagem: mínimo metabolismo hepático — poucas interações. Formas depot (mensal e trimestral) excelentes para adesão. Mesmo perfil de prolactina da risperidona."},
+
+{n:"Quetiapina",c:"Antipsicótico Atípico",mech:"Antagonista D2 fraco, 5-HT2A, H1, alfa-1. Metabólito norquetiapina: IRNA (perfil antidepressivo).",dose:[50,300,800],form:"Comp 25, 100, 200, 300mg. XR",hl:"6-7 horas",cyp:"CYP3A4",
+se:["Sedação","Ganho de peso","Hipotensão ortostática","Boca seca","Elevação TG/colesterol"],seR:["Hiperglicemia/diabetes","Cataratas","Síndrome neuroléptica maligna"],
+inter:[{d:"Cetoconazol",s:"severe",t:"Inibe CYP3A4, aumenta significativamente níveis. Reduzir dose."},{d:"Carbamazepina",s:"moderate",t:"Induz CYP3A4, reduz níveis. Pode precisar 2-3x dose."}],
+pop:{elderly:"Dose baixa para insônia",pregnancy:"Cat C",hepatic:"Iniciar dose menor",renal:"Sem ajuste"},
+notes:"Versátil: esquizofrenia (300-800mg), TAB (300-600mg), depressão adjuvante (50-300mg), insônia (25-100mg). XR tem perfil mais suave. Monitorar: glicemia, lipídios, peso. Baixa incidência de SEP."},
+
+{n:"Olanzapina",c:"Antipsicótico Atípico",mech:"Antagonista D2, 5-HT2A, H1, M1, alfa-1. Perfil farmacológico similar à clozapina.",dose:[5,10,20],form:"Comp 5, 10mg. Inj IM. Velotab (orodispersível). Zyprexa",hl:"21-54 horas",cyp:"CYP1A2, UGT",
+se:["Ganho de peso significativo","Sedação","Hiperglicemia","Dislipidemia","Boca seca"],seR:["Diabetes","Síndrome metabólica","Pancreatite","SNM"],
+inter:[{d:"Fluvoxamina",s:"moderate",t:"Inibe CYP1A2, aumenta níveis."},{d:"Tabaco",s:"moderate",t:"Induz CYP1A2 — fumantes precisam doses maiores. Reduzir ao parar de fumar."}],
+pop:{elderly:"Cautela: risco metabólico, quedas",pregnancy:"Cat C",hepatic:"Iniciar dose menor",renal:"Sem ajuste"},
+notes:"Alta eficácia mas alto risco metabólico. Monitorar peso, circunferência abdominal, glicemia e lipídios regularmente. IM útil em agitação aguda. Tabagistas metabolizam mais rápido (CYP1A2)."},
+
+{n:"Aripiprazol",c:"Antipsicótico Atípico",mech:"Agonista parcial D2 e 5-HT1A. Antagonista 5-HT2A. 'Estabilizador dopaminérgico'.",dose:[5,15,30],form:"Comp 10, 15, 20, 30mg. Inj IM. Depot mensal (Maintena). Sol oral",hl:"75 horas (metabólito: 94h)",cyp:"CYP2D6, CYP3A4",
+se:["Acatisia","Insônia","Náusea","Cefaleia","Agitação inicial"],seR:["Acatisia grave","Jogo patológico","Compulsões"],
+inter:[{d:"Fluoxetina/Paroxetina",s:"moderate",t:"Inibição CYP2D6 — reduzir dose para metade."},{d:"Carbamazepina",s:"moderate",t:"Indução CYP3A4 — pode precisar dobrar dose."}],
+pop:{elderly:"Menos sedação, menor risco metabólico",pregnancy:"Cat C",hepatic:"Sem ajuste",renal:"Sem ajuste"},
+notes:"Perfil metabólico favorável: pouco ganho de peso, pouca sedação, baixa prolactina. Acatisia é o efeito colateral mais limitante. Risco de compulsões (jogo, compras, hipersexualidade) — alertar paciente."},
+
+{n:"Clozapina",c:"Antipsicótico Atípico",mech:"Antagonista D4>D2, 5-HT2A, H1, M1, alfa-1. Perfil receptor único entre antipsicóticos.",dose:[25,300,900],form:"Comp 25, 100mg. Leponex",hl:"12 horas",cyp:"CYP1A2 (principal), CYP3A4",
+se:["Sedação","Ganho de peso","Sialorreia","Constipação","Taquicardia","Hipotensão"],seR:["Agranulocitose (1-2%)","Miocardite","Cardiomiopatia","Convulsões dose-dep","Íleo paralítico"],
+inter:[{d:"Fluvoxamina",s:"severe",t:"Inibe CYP1A2 fortemente — pode triplicar níveis."},{d:"Tabaco",s:"moderate",t:"Fumantes: níveis menores (CYP1A2 indução). Reduzir ao parar de fumar."},{d:"Benzodiazepínicos",s:"moderate",t:"Risco de colapso cardiorrespiratório raro."}],
+pop:{elderly:"Risco alto: sedação, quedas, cardíaco",pregnancy:"Cat B",hepatic:"Cautela",renal:"Cautela"},
+notes:"Padrão-ouro para esquizofrenia refratária (falha ≥2 antipsicóticos). Único com evidência anti-suicida na esquizofrenia. Hemograma SEMANAL por 18 semanas, depois mensal. REMS obrigatório. Sialorreia paradoxal — tratar com hioscina ou ipratrópio."},
+
+{n:"Ziprasidona",c:"Antipsicótico Atípico",mech:"Antagonista D2/5-HT2A + inibidor recaptação 5-HT e NE. Deve ser tomada com alimento.",dose:[40,120,160],form:"Caps 40, 60, 80mg. Inj IM",hl:"6-7 horas",cyp:"Aldeído oxidase (principal), CYP3A4 (menor)",
+se:["Sonolência","Náusea","Tontura","Astenia","Prolongamento QTc"],seR:["Arritmias (QTc)","Síndrome neuroléptica maligna"],
+inter:[{d:"QTc prolongadores",s:"severe",t:"Evitar combinação com outros que prolongam QTc."},{d:"Carbamazepina",s:"moderate",t:"Pode reduzir níveis."}],
+pop:{elderly:"Cautela: QTc, quedas",pregnancy:"Cat C",hepatic:"Sem ajuste",renal:"Sem ajuste"},
+notes:"Neutro em peso — boa opção se risco metabólico. OBRIGATÓRIO tomar com alimento (absorção cai 50% em jejum). ECG basal recomendado. Evitar com outros QTc prolongadores."},
+
+// === BENZODIAZEPÍNICOS ===
+{n:"Diazepam",c:"Benzodiazepínico",mech:"Agonista alostérico GABA-A. Longa duração. Ansiolítico, anticonvulsivante, miorrelaxante.",dose:[5,10,40],form:"Comp 5, 10mg. Inj 10mg/2mL. Valium",hl:"20-100h (metabólito ativo desmetildiazepam: 36-200h)",cyp:"CYP2C19, CYP3A4",
+se:["Sedação","Sonolência","Ataxia","Amnésia","Dependência","Tolerância"],seR:["Depressão respiratória","Reações paradoxais","Abstinência grave"],
+inter:[{d:"Álcool",s:"severe",t:"Depressão do SNC aditiva. Risco de depressão respiratória, sedação profunda e coma."},{d:"Opioides",s:"severe",t:"Depressão respiratória sinérgica."}],
+pop:{elderly:"Evitar (critérios de Beers). Acúmulo de metabólitos",pregnancy:"Cat D. Risco: fenda, sínd. floppy baby",hepatic:"Evitar (metabólitos ativos acumulam)",renal:"Cautela"},
+notes:"Meia-vida muito longa — acúmulo em uso crônico. Recomendação: uso máximo 2-4 semanas. Útil em crises convulsivas (via retal/IV). Evitar em idosos e hepatopatas."},
+
+{n:"Clonazepam",c:"Benzodiazepínico",mech:"Agonista alostérico GABA-A. Alta potência. Ação anticonvulsivante importante.",dose:[0.5,2,6],form:"Comp 0.5, 2mg. Gotas 2.5mg/mL. Rivotril",hl:"18-50 horas",cyp:"CYP3A4",
+se:["Sedação","Sonolência","Ataxia","Alteração de memória","Dependência"],seR:["Depressão respiratória","Abstinência grave (convulsões)"],
+inter:[{d:"Álcool",s:"severe",t:"Depressão SNC aditiva."},{d:"Opioides",s:"severe",t:"Risco depressão respiratória."}],
+pop:{elderly:"Cautela extrema: quedas",pregnancy:"Cat D",hepatic:"Reduzir dose",renal:"Sem ajuste"},
+notes:"BZD mais prescrito no Brasil. Alta potência e meia-vida intermediária. Útil em transtorno do pânico, epilepsia, transtorno de ansiedade. Dependência frequente — planejar descontinuação gradual desde o início."},
+
+{n:"Alprazolam",c:"Benzodiazepínico",mech:"Agonista alostérico GABA-A. Alta potência, ação curta. Ansiolítico.",dose:[0.25,1,4],form:"Comp 0.25, 0.5, 1, 2mg. XR disponível",hl:"6-12 horas",cyp:"CYP3A4",
+se:["Sedação","Sonolência","Dependência rápida","Rebote entre doses","Amnésia"],seR:["Abstinência grave","Depressão respiratória"],
+inter:[{d:"Cetoconazol",s:"severe",t:"Inibe CYP3A4 fortemente — aumenta níveis."},{d:"Fluoxetina",s:"mild",t:"Leve aumento de níveis via CYP3A4."},{d:"Álcool",s:"severe",t:"Depressão SNC."}],
+pop:{elderly:"Evitar",pregnancy:"Cat D",hepatic:"Reduzir dose",renal:"Sem ajuste"},
+notes:"Meia-vida curta → alto potencial de dependência e efeito rebote entre doses. Difícil descontinuação. Evitar como primeira linha. Se usado, preferir formulação XR."},
+
+{n:"Lorazepam",c:"Benzodiazepínico",mech:"Agonista GABA-A. Potência intermediária. SEM metabólitos ativos.",dose:[1,2,6],form:"Comp 1, 2mg. Inj 2mg/mL. Lorax",hl:"10-20 horas",cyp:"Glucuronidação direta (sem CYP)",
+se:["Sedação","Amnésia","Dependência","Ataxia"],seR:["Depressão respiratória","Abstinência"],
+inter:[{d:"Álcool",s:"severe",t:"Depressão SNC aditiva."},{d:"Opioides",s:"severe",t:"Risco respiratório."}],
+pop:{elderly:"Preferido entre BZDs (sem metabólito ativo)",pregnancy:"Cat D",hepatic:"PREFERIDO em hepatopatas",renal:"Sem ajuste"},
+notes:"Metabolismo por glucuronidação direta — não depende de CYP450. Ideal para hepatopatas e pacientes com múltiplas medicações. Forma IV para status epilepticus e agitação aguda."},
+
+{n:"Bromazepam",c:"Benzodiazepínico",mech:"Agonista GABA-A. Potência intermediária.",dose:[1.5,6,12],form:"Comp 3, 6mg. Lexotan",hl:"12-20 horas",cyp:"CYP3A4",
+se:["Sedação","Sonolência","Dependência","Ataxia","Alteração de memória"],seR:["Depressão respiratória","Abstinência"],
+inter:[{d:"Álcool",s:"severe",t:"Depressão SNC."},{d:"Inibidores CYP3A4",s:"moderate",t:"Aumentam níveis."}],
+pop:{elderly:"Cautela",pregnancy:"Cat D",hepatic:"Cautela",renal:"Sem ajuste"},
+notes:"Muito prescrito no Brasil. Perfil intermediário. Mesmo cuidados gerais de todos BZDs. Planejar retirada gradual."},
+
+// === HIPNÓTICOS ===
+{n:"Zolpidem",c:"Hipnótico",mech:"Agonista seletivo GABA-A subunidade α1. Não é benzodiazepínico, mas ação similar.",dose:[5,10,10],form:"Comp 10mg. Sublingual 5mg. CR 12.5mg",hl:"2.5 horas",cyp:"CYP3A4, CYP1A2",
+se:["Sonolência residual","Tontura","Cefaleia","Amnésia anterógrada"],seR:["Comportamentos complexos durante o sono (sonambulismo, comer, dirigir)","Dependência"],
+inter:[{d:"Álcool",s:"severe",t:"Sedação e comportamentos perigosos."},{d:"Inibidores CYP3A4",s:"moderate",t:"Aumentam exposição."}],
+pop:{elderly:"Iniciar com 5mg",pregnancy:"Cat C",hepatic:"5mg",renal:"Sem ajuste"},
+notes:"Meia-vida curta — ideal para insônia inicial. Alertar sobre comportamentos complexos do sono (relatos de dirigir dormindo). Não exceder 2-4 semanas de uso. Tomar imediatamente antes de deitar com 7-8h para dormir."},
+
+{n:"Zopiclona",c:"Hipnótico",mech:"Ciclopirrolona. Agonista GABA-A não-BZD. Ação em subunidades α1, α2, α3.",dose:[3.75,7.5,7.5],form:"Comp 7.5mg",hl:"5 horas",cyp:"CYP3A4, CYP2C8",
+se:["Gosto metálico","Boca seca","Sonolência residual","Cefaleia"],seR:["Comportamentos complexos do sono","Dependência"],
+inter:[{d:"Álcool",s:"severe",t:"Sedação aditiva."},{d:"Eritromicina",s:"moderate",t:"Aumenta níveis via CYP3A4."}],
+pop:{elderly:"3.75mg",pregnancy:"Cat C",hepatic:"Reduzir dose",renal:"Sem ajuste"},
+notes:"Gosto metálico residual é queixa frequente. Meia-vida um pouco mais longa que zolpidem — pode ajudar insônia de manutenção. Mesmos cuidados quanto a comportamentos do sono."},
+
+// === ESTIMULANTES ===
+{n:"Metilfenidato",c:"Estimulante",mech:"Inibição recaptação de DA e NE. Não libera monoaminas (diferente de anfetaminas).",dose:[10,30,60],form:"Comp 10mg IR. LA 10, 20, 30, 40mg. Concerta (OROS) 18, 36, 54mg. Ritalina",hl:"2-3h (IR), 8h (LA/OROS)",cyp:"Esterases (não CYP — poucas interações)",
+se:["Insônia","Perda de apetite","Cefaleia","Taquicardia","Irritabilidade","Boca seca"],seR:["Arritmias","Psicose","Atraso crescimento em crianças","Abuso"],
+inter:[{d:"IMAO",s:"severe",t:"Contraindicado. Crise hipertensiva."},{d:"Anti-hipertensivos",s:"mild",t:"Efeito antagonista na PA."}],
+pop:{elderly:"Cautela cardiovascular",pregnancy:"Cat C",hepatic:"Sem ajuste",renal:"Sem ajuste"},
+notes:"Formulação importa: IR (3-4h), LA (8h), OROS (12h). Ajustar horários para cobrir período necessário. Monitorar: PA, FC, peso, altura (crianças). Drug holiday em férias escolares é controverso. Substância controlada A3."},
+
+{n:"Lisdexanfetamina",c:"Estimulante",mech:"Pró-droga: convertida em d-anfetamina no sangue. Liberação lenta. Inibição/liberação de DA e NE.",dose:[30,50,70],form:"Caps 30, 50, 70mg. Venvanse",hl:"1h (pró-droga) → d-anfetamina: 10-12h",cyp:"Hidrólise eritrocitária (sem CYP)",
+se:["Insônia","Perda de apetite","Boca seca","Taquicardia","Irritabilidade","Ansiedade"],seR:["Arritmias","Psicose","Abuso (menor que anfetamina)"],
+inter:[{d:"IMAO",s:"severe",t:"Contraindicado."},{d:"Alcalinizantes urinários",s:"mild",t:"Reduzem excreção de anfetamina."}],
+pop:{elderly:"Cautela cardiovascular",pregnancy:"Cat C",hepatic:"Sem ajuste",renal:"Sem ajuste"},
+notes:"Menor potencial de abuso que anfetaminas por ser pró-droga. Duração longa (~14h) — tomar pela manhã. Também aprovada para compulsão alimentar. Controle especial A3. Efeito mais suave e sustentado que metilfenidato."},
+
+{n:"Atomoxetina",c:"Estimulante",mech:"Inibidor seletivo recaptação de NE. NÃO é estimulante — sem potencial de abuso.",dose:[40,80,100],form:"Caps 10, 18, 25, 40, 60, 80mg. Strattera",hl:"5 horas (metabolizadores extensivos)",cyp:"CYP2D6",
+se:["Náusea","Boca seca","Diminuição apetite","Insônia ou sonolência","Constipação"],seR:["Hepatotoxicidade rara","Ideação suicida em jovens","Efeitos cardiovasculares"],
+inter:[{d:"Fluoxetina/Paroxetina",s:"moderate",t:"Inibem CYP2D6 — aumentam níveis significativamente."},{d:"IMAO",s:"severe",t:"Contraindicado."}],
+pop:{elderly:"Dados limitados",pregnancy:"Cat C",hepatic:"Reduzir dose",renal:"Sem ajuste"},
+notes:"Alternativa não-estimulante para TDAH. Sem controle especial. Efeito pleno em 4-6 semanas (diferente dos estimulantes). Útil quando há comorbidade com ansiedade, abuso de substâncias, ou tics. Metabolizadores lentos CYP2D6 têm exposição maior."},
+
+// === ANTICOLINESTERÁSICOS ===
+{n:"Donepezila",c:"Anticolinesterásico",mech:"Inibidor reversível da acetilcolinesterase. Aumenta acetilcolina sináptica.",dose:[5,10,10],form:"Comp 5, 10mg. Aricept",hl:"70 horas",cyp:"CYP2D6, CYP3A4",
+se:["Náusea","Diarreia","Insônia","Câimbras","Fadiga","Bradicardia"],seR:["Bloqueio AV","Convulsões","Síncope"],
+inter:[{d:"Anticolinérgicos",s:"moderate",t:"Antagonizam o efeito. Evitar."},{d:"Betabloqueadores",s:"moderate",t:"Bradicardia aditiva."}],
+pop:{elderly:"Indicação primária (Alzheimer)",pregnancy:"Não aplicável geralmente",hepatic:"Sem ajuste",renal:"Sem ajuste"},
+notes:"Indicada em Alzheimer leve a moderado. Iniciar 5mg por 4-6 semanas, depois 10mg. Efeitos GI diminuem com tempo. Dose noturna pode minimizar náusea. Não interromper abruptamente (piora cognitiva)."},
+
+{n:"Rivastigmina",c:"Anticolinesterásico",mech:"Inibidor pseudo-irreversível de AChE e BuChE. Disponível transdérmico.",dose:[3,12,12],form:"Caps 1.5, 3, 4.5, 6mg. Patch transdérmico. Exelon",hl:"1-2h (oral), 24h (patch)",cyp:"Hidrólise (sem CYP significativo)",
+se:["Náusea","Vômito","Diarreia","Perda de apetite","Tontura"],seR:["Bradicardia","Convulsões","Perda de peso grave"],
+inter:[{d:"Anticolinérgicos",s:"moderate",t:"Antagonismo de efeito."},{d:"Succinilcolina",s:"moderate",t:"Prolongamento do bloqueio neuromuscular."}],
+pop:{elderly:"Indicação primária",pregnancy:"Não aplicável",hepatic:"Cuidado em insuficiência leve-moderada",renal:"Sem ajuste"},
+notes:"Patch transdérmico reduz efeitos GI significativamente. Indicada em Alzheimer e demência do Parkinson. Única com evidência para Parkinson. Titulação lenta essencial."},
+
+// === OUTROS ===
+{n:"Gabapentina",c:"Outros",mech:"Liga-se a subunidade α2δ dos canais de Ca²+ voltagem-dependentes. Não age no GABA.",dose:[300,900,3600],form:"Caps 300, 400mg. Comp 600, 800mg",hl:"5-7 horas",cyp:"Excreção renal (sem metabolismo hepático)",
+se:["Sonolência","Tontura","Edema periférico","Ganho de peso","Ataxia"],seR:["Depressão respiratória com opioides","Angioedema","Suicidabilidade"],
+inter:[{d:"Opioides",s:"moderate",t:"Risco aumentado de depressão respiratória."},{d:"Antiácidos",s:"mild",t:"Reduzem absorção — separar 2h."}],
+pop:{elderly:"Dose menor; risco quedas",pregnancy:"Cat C",hepatic:"Sem ajuste",renal:"Ajustar pela ClCr"},
+notes:"Off-label: ansiedade, insônia, dor neuropática, abstinência alcoólica. Absorção é saturável — fracionar doses. Sem interações CYP. Potencial de abuso reconhecido."},
+
+{n:"Pregabalina",c:"Outros",mech:"Liga-se a α2δ dos canais de Ca²+. Similar à gabapentina com farmacocinética linear.",dose:[75,300,600],form:"Caps 75, 150, 300mg. Lyrica",hl:"6 horas",cyp:"Excreção renal (sem CYP)",
+se:["Sonolência","Tontura","Ganho de peso","Edema","Visão turva","Boca seca"],seR:["Angioedema","Abuso","Depressão respiratória com opioides"],
+inter:[{d:"Opioides",s:"moderate",t:"Risco depressão respiratória."},{d:"Álcool",s:"moderate",t:"Sedação aditiva."}],
+pop:{elderly:"Dose menor",pregnancy:"Cat C",hepatic:"Sem ajuste",renal:"Ajustar pela ClCr"},
+notes:"Aprovada para TAG, fibromialgia, dor neuropática. Absorção linear (vantagem sobre gabapentina). Controle especial no Brasil (C1). Potencial de abuso e dependência — cautela."},
+
+{n:"Hidroxizina",c:"Outros",mech:"Antagonista H1 de primeira geração. Ansiolítico e anti-histamínico. Metabólito: cetirizina.",dose:[25,50,100],form:"Comp 25mg. Xarope. Hixizine",hl:"20 horas",cyp:"CYP3A4 → cetirizina",
+se:["Sedação","Boca seca","Constipação","Visão turva"],seR:["Prolongamento QTc","Arritmia em idosos"],
+inter:[{d:"Outros sedativos",s:"moderate",t:"Sedação aditiva."},{d:"QTc prolongadores",s:"moderate",t:"Efeito aditivo."}],
+pop:{elderly:"Evitar (anticolinérgico, QTc)",pregnancy:"Contraindicada 1º tri",hepatic:"Reduzir 50%",renal:"Reduzir 50%"},
+notes:"Alternativa não-BZD para ansiedade aguda. Sem potencial de dependência. Útil em ansiedade com prurido ou urticária. Evitar em idosos. Máximo 100mg/dia por risco QTc (EMA 2015)."},
+
+{n:"Buspirona",c:"Outros",mech:"Agonista parcial 5-HT1A. Ansiolítico sem ação GABAérgica.",dose:[15,30,60],form:"Comp 5, 10mg",hl:"2-3 horas",cyp:"CYP3A4",
+se:["Tontura","Náusea","Cefaleia","Nervosismo"],seR:["Síndrome serotoninérgica (com ISRS, raro)"],
+inter:[{d:"IMAO",s:"severe",t:"Contraindicado. Hipertensão."},{d:"Cetoconazol",s:"moderate",t:"Aumenta níveis."}],
+pop:{elderly:"Boa opção (sem sedação, sem dependência)",pregnancy:"Cat B",hepatic:"Reduzir dose",renal:"Não recomendada se grave"},
+notes:"Início de ação lento (2-4 semanas). Sem potencial de dependência, sem sedação, sem interação com álcool. Não funciona PRN. Boa para TAG em idosos e pacientes com histórico de dependência."},
+
+{n:"Prometazina",c:"Outros",mech:"Anti-histamínico H1 de primeira geração. Anticolinérgico. Sedativo.",dose:[25,25,100],form:"Comp 25mg. Inj 50mg/2mL. Fenergan",hl:"10-14 horas",cyp:"CYP2D6",
+se:["Sedação intensa","Boca seca","Visão turva","Hipotensão","Constipação"],seR:["Depressão respiratória em crianças","Necrose tecidual (IV/IA)","Convulsões em superdose"],
+inter:[{d:"Opioides",s:"moderate",t:"Depressão respiratória aditiva."},{d:"Anticolinérgicos",s:"moderate",t:"Efeitos aditivos."}],
+pop:{elderly:"Evitar",pregnancy:"Cat C",hepatic:"Cautela",renal:"Cautela"},
+notes:"Usado em psiquiatria como sedativo IM em agitação aguda (junto com haloperidol). NUNCA administrar intra-arterial (necrose). Evitar IV rápido. Evitar em crianças <2 anos. Uso crônico: risco anticolinérgico."},
+
+{n:"Melatonina",c:"Outros",mech:"Agonista receptores MT1/MT2. Regulador circadiano endógeno.",dose:[0.5,3,10],form:"Comp 3, 5mg. Lib prolongada. Gotas",hl:"40-50 minutos",cyp:"CYP1A2",
+se:["Sonolência diurna","Cefaleia","Tontura","Náusea"],seR:["Raros. Segurança excelente."],
+inter:[{d:"Fluvoxamina",s:"moderate",t:"Inibe CYP1A2 — aumenta níveis de melatonina."},{d:"Anticoagulantes",s:"mild",t:"Pode potencializar efeito."}],
+pop:{elderly:"Segura. Pode ser primeira linha insônia",pregnancy:"Dados insuficientes",hepatic:"Cautela (metabolismo hepático)",renal:"Sem ajuste"},
+notes:"Sem potencial de dependência. Melhor para insônia circadiana e início de sono. Eficácia modesta vs. hipnóticos. Tomar 30-60min antes de deitar. Dose ≤5mg para insônia; acima disso provavelmente sem benefício adicional."},
+
+{n:"Naltrexona",c:"Outros",mech:"Antagonista opioide (mu, kappa, delta). Bloqueia efeitos de reforço de álcool e opioides.",dose:[25,50,50],form:"Comp 50mg. Inj depot mensal (Vivitrol 380mg)",hl:"4h (metabólito: 12h)",cyp:"Redutases (não CYP significativo)",
+se:["Náusea","Cefaleia","Tontura","Fadiga","Ansiedade","Insônia"],seR:["Hepatotoxicidade (doses altas)","Precipitação de abstinência opioide"],
+inter:[{d:"Opioides",s:"severe",t:"Bloqueia efeito. NÃO usar em dependência ativa de opioides (precipita abstinência grave)."},{d:"Opioides para dor",s:"severe",t:"Paciente não responderá a analgésicos opioides. Alertar equipe médica."}],
+pop:{elderly:"Cautela: função hepática",pregnancy:"Cat C",hepatic:"Contraindicada se hepatite aguda",renal:"Cautela"},
+notes:"Indicada para dependência de álcool e prevenção de recaída opioide. OBRIGATÓRIO: paciente deve estar abstinente de opioides ≥7-10 dias antes de iniciar (teste de naloxona recomendado). Hepatograma basal e periódico. Alertar sobre MedicAlert bracelet."},
+
+{n:"Dissulfiram",c:"Outros",mech:"Inibidor irreversível da aldeído desidrogenase. Acúmulo de acetaldeído com álcool.",dose:[250,250,500],form:"Comp 250mg. Antietanol",hl:"60-120 horas",cyp:"CYP2E1 (inibidor), CYP1A2",
+se:["Gosto metálico","Fadiga","Cefaleia","Dermatite acneiforme"],seR:["Reação dissulfiram-etanol (rubor, náusea, hipotensão, taquicardia)","Hepatotoxicidade","Neuropatia","Psicose"],
+inter:[{d:"Álcool",s:"severe",t:"Reação grave: rubor facial, náusea, vômitos, hipotensão, taquicardia. Potencialmente fatal."},{d:"Metronidazol",s:"severe",t:"Reação tipo dissulfiram."},{d:"Fenitoína",s:"moderate",t:"Inibição metabólica — aumenta níveis."}],
+pop:{elderly:"Cautela: cardíaco",pregnancy:"Contraindicada",hepatic:"Contraindicada se grave",renal:"Cautela"},
+notes:"Funciona por aversão (punição). Eficácia depende de supervisão direta da tomada. Paciente deve estar abstinente ≥12h antes de iniciar. Efeito persiste até 14 dias após última dose. Consentimento informado obrigatório."},
+
+{n:"Acamprosato",c:"Outros",mech:"Modulador glutamatérgico (antagonista NMDA parcial). Restaura equilíbrio GABA/glutamato.",dose:[999,1998,1998],form:"Comp 333mg (2 comp 3x/dia)",hl:"20-33 horas",cyp:"Sem metabolismo hepático (excreção renal intacta)",
+se:["Diarreia","Náusea","Flatulência","Prurido"],seR:["Raros. Bem tolerado."],
+inter:[{d:"Interações mínimas",s:"mild",t:"Sem interações CYP significativas."}],
+pop:{elderly:"Ajustar por função renal",pregnancy:"Cat C",hepatic:"Sem ajuste",renal:"Contraindicado se ClCr<30"},
+notes:"Indicado para manutenção de abstinência alcoólica. Pode ser combinado com naltrexona. Iniciar após abstinência estabelecida. Posologia inconveniente (2 comp 3x/dia) limita adesão. Sem potencial de abuso."}
+
+];
+
+// ============================
+// STATE
+// ============================
+var favorites=[];
+var openId=null;
+var currentFilter=null;
+var currentPage='search';
+try{var f=localStorage.getItem('guia_favs_v1');if(f)favorites=JSON.parse(f)}catch(e){}
+
+function saveFavs(){try{localStorage.setItem('guia_favs_v1',JSON.stringify(favorites))}catch(e){}}
+function isFav(name){return favorites.indexOf(name)!==-1}
+function toggleFav(name,ev){if(ev)ev.stopPropagation();var i=favorites.indexOf(name);if(i===-1){favorites.push(name);showToast('⭐ '+name+' adicionado aos favoritos')}else{favorites.splice(i,1);showToast(name+' removido dos favoritos')}saveFavs();render()}
+
+function showToast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(function(){el.classList.remove('show')},2000)}
+
+// ============================
+// RENDER
+// ============================
+function norm(s){return(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
+
+function getFiltered(){
+var q=norm(document.getElementById('searchInput').value);
+var list=MEDS;
+if(currentFilter){list=list.filter(function(m){return m.c===currentFilter})}
+if(q.length>0){list=list.filter(function(m){return norm(m.n).indexOf(q)!==-1||norm(m.c).indexOf(q)!==-1||norm(m.mech).indexOf(q)!==-1||m.se.some(function(s){return norm(s).indexOf(q)!==-1})})}
+return list;
+}
+
+function renderFilters(){
+var el=document.getElementById('filters');
+var h='<div class="filter-chip'+(currentFilter===null?' active':'')+'" onclick="setFilter(null)">Todos ('+MEDS.length+')</div>';
+CLASS_ORDER.forEach(function(c){var count=MEDS.filter(function(m){return m.c===c}).length;if(count>0)h+='<div class="filter-chip'+(currentFilter===c?' active':'')+'" onclick="setFilter(\''+c+'\')">'+c+' ('+count+')</div>'});
+el.innerHTML=h;
+}
+
+function setFilter(c){currentFilter=c;renderFilters();renderMeds()}
+
+function doSearch(){
+var v=document.getElementById('searchInput').value;
+document.getElementById('clearBtn').style.display=v.length>0?'block':'none';
+renderMeds();
+}
+function clearSearch(){document.getElementById('searchInput').value='';document.getElementById('clearBtn').style.display='none';renderMeds();document.getElementById('searchInput').focus()}
+
+function renderMeds(){
+var list=getFiltered();
+document.getElementById('counter').textContent=list.length+' medicamento'+(list.length!==1?'s':'')+' encontrado'+(list.length!==1?'s':'');
+var h='';
+list.forEach(function(m){
+var isOpen=openId===m.n;
+var color=CLASS_COLORS[m.c]||'#546E7A';
+h+='<div class="med-card animate'+(isOpen?' open':'')+'" onclick="toggleCard(\''+m.n.replace(/'/g,"\\'")+'\')">';
+h+='<div class="header"><div class="class-dot" style="background:'+color+'"></div><div><div class="med-name">'+m.n+'</div><div class="med-class">'+m.c+'</div></div>';
+h+='<button class="fav-btn'+(isFav(m.n)?' faved':'')+'" onclick="toggleFav(\''+m.n.replace(/'/g,"\\'")+'\',event)">'+(isFav(m.n)?'★':'☆')+'</button>';
+h+='<span class="chevron">▼</span></div>';
+if(isOpen)h+=renderDetail(m);
+h+='</div>';
+});
+if(list.length===0)h='<div style="text-align:center;padding:40px;color:var(--textLight)"><div style="font-size:32px;margin-bottom:8px">🔍</div><p>Nenhum medicamento encontrado</p></div>';
+document.getElementById('medList').innerHTML=h;
+}
+
+function toggleCard(name){openId=openId===name?null:name;renderMeds()}
+
+function renderDetail(m){
+var color=CLASS_COLORS[m.c]||'#546E7A';
+var h='<div class="med-detail">';
+
+// Mechanism
+h+='<div class="detail-section"><h4><span>⚙️</span> Mecanismo de Ação</h4><div class="notes-box">'+m.mech+'</div></div>';
+
+// Dose
+var pct=Math.min(100,Math.round((m.dose[1]/m.dose[2])*100));
+h+='<div class="detail-section"><h4><span>💊</span> Posologia (mg/dia)</h4>';
+h+='<div class="info-grid"><div class="info-item"><div class="label">Inicial</div><div class="value">'+fmtDose(m.dose[0])+'</div></div>';
+h+='<div class="info-item"><div class="label">Terapêutica</div><div class="value" style="color:'+color+'">'+fmtDose(m.dose[1])+'</div></div>';
+h+='<div class="info-item"><div class="label">Máxima</div><div class="value" style="color:var(--red)">'+fmtDose(m.dose[2])+'</div></div>';
+h+='<div class="info-item"><div class="label">Meia-vida</div><div class="value">'+m.hl+'</div></div></div>';
+h+='<div class="dose-bar-wrap"><div class="dose-bar"><div class="fill" style="width:'+pct+'%;background:'+color+'"></div></div>';
+h+='<div class="dose-labels"><span>'+fmtDose(m.dose[0])+'</span><span style="color:'+color+';font-weight:700">'+fmtDose(m.dose[1])+'</span><span style="color:var(--red)">'+fmtDose(m.dose[2])+'</span></div></div>';
+h+='</div>';
+
+// Formulations & CYP
+h+='<div class="detail-section"><h4><span>📦</span> Apresentações & Metabolismo</h4>';
+h+='<div class="info-grid"><div class="info-item full"><div class="label">Apresentações</div><div class="value" style="font-size:12.5px;font-weight:500">'+m.form+'</div></div>';
+h+='<div class="info-item full"><div class="label">Metabolismo (CYP)</div><div class="value" style="font-size:12.5px;font-weight:500">'+m.cyp+'</div></div></div></div>';
+
+// Side effects
+h+='<div class="detail-section"><h4><span>⚡</span> Efeitos Colaterais</h4>';
+h+='<div style="font-size:11px;color:var(--textLight);margin-bottom:4px;font-weight:600">COMUNS</div><div class="se-list">';
+m.se.forEach(function(s){h+='<span class="se-chip common">'+s+'</span>'});
+h+='</div>';
+if(m.seR&&m.seR.length){h+='<div style="font-size:11px;color:var(--textLight);margin:8px 0 4px;font-weight:600">GRAVES / RAROS</div><div class="se-list">';
+m.seR.forEach(function(s){h+='<span class="se-chip rare">'+s+'</span>'});
+h+='</div>'}
+h+='</div>';
+
+// Interactions
+if(m.inter&&m.inter.length){
+h+='<div class="detail-section"><h4><span>🔗</span> Interações Medicamentosas</h4>';
+m.inter.forEach(function(i){h+='<div class="inter-item '+i.s+'"><div class="inter-label">'+(i.s==='severe'?'🔴 GRAVE':i.s==='moderate'?'🟡 MODERADA':'🟢 LEVE')+' — '+i.d+'</div><div class="inter-text">'+i.t+'</div></div>'});
+h+='</div>';
+}
+
+// Special populations
+h+='<div class="detail-section"><h4><span>👥</span> Populações Especiais</h4><div class="pop-grid">';
+var pops=[
+{k:'elderly',label:'Idosos',icon:'👴',v:m.pop.elderly},
+{k:'pregnancy',label:'Gestação',icon:'🤰',v:m.pop.pregnancy},
+{k:'hepatic',label:'Hepática',icon:'🫀',v:m.pop.hepatic},
+{k:'renal',label:'Renal',icon:'🫘',v:m.pop.renal}
+];
+pops.forEach(function(p){
+var cls='';var vl=norm(p.v);
+if(vl.indexOf('contraindicad')!==-1||vl.indexOf('evitar')!==-1)cls='avoid';
+else if(vl.indexOf('cautela')!==-1||vl.indexOf('reduzir')!==-1||vl.indexOf('max ')!==-1||vl.indexOf('máx')!==-1)cls='caution';
+else if(vl.indexOf('sem ajuste')!==-1||vl.indexOf('segur')!==-1||vl.indexOf('boa opção')!==-1||vl.indexOf('preferid')!==-1)cls='safe';
+h+='<div class="pop-item '+cls+'"><div class="pop-icon">'+p.icon+'</div><div class="pop-label">'+p.label+'</div><div class="pop-val">'+p.v+'</div></div>';
+});
+h+='</div></div>';
+
+// Clinical notes
+if(m.notes){h+='<div class="detail-section"><h4><span>📝</span> Notas Clínicas</h4><div class="notes-box">'+m.notes+'</div></div>'}
+
+h+='</div>';
+return h;
+}
+
+function fmtDose(d){return d>=1?d+'mg':d+'mg'}
+
+// ============================
+// CLASS INDEX PAGE
+// ============================
+function renderClassIndex(){
+var h='';
+CLASS_ORDER.forEach(function(c){
+var meds=MEDS.filter(function(m){return m.c===c});
+if(!meds.length)return;
+var color=CLASS_COLORS[c]||'#546E7A';
+h+='<div class="class-section">';
+h+='<div class="class-header" onclick="setFilter(\''+c+'\');togglePage(\'search\')"><div class="dot" style="background:'+color+'"></div><h3>'+c+'</h3><span class="count">'+meds.length+' med'+(meds.length>1?'s':'')+'</span><span style="color:var(--textLight)">→</span></div>';
+h+='</div>';
+});
+document.getElementById('classIndex').innerHTML=h;
+}
+
+// ============================
+// FAVORITES PAGE
+// ============================
+function renderFavorites(){
+var list=MEDS.filter(function(m){return isFav(m.n)});
+if(!list.length){document.getElementById('favList').innerHTML='';document.getElementById('favEmpty').style.display='block';return}
+document.getElementById('favEmpty').style.display='none';
+var h='';
+list.forEach(function(m){
+var color=CLASS_COLORS[m.c]||'#546E7A';
+h+='<div class="med-card animate" style="margin:0 16px 10px" onclick="openId=\''+m.n.replace(/'/g,"\\'")+'\';togglePage(\'search\')">';
+h+='<div class="header"><div class="class-dot" style="background:'+color+'"></div><div><div class="med-name">'+m.n+'</div><div class="med-class">'+m.c+'</div></div>';
+h+='<button class="fav-btn faved" onclick="toggleFav(\''+m.n.replace(/'/g,"\\'")+'\',event)">★</button>';
+h+='<span style="color:var(--textLight)">→</span></div></div>';
+});
+document.getElementById('favList').innerHTML=h;
+}
+
+// ============================
+// NAVIGATION
+// ============================
+function togglePage(p){
+currentPage=p;
+document.querySelectorAll('.page').forEach(function(el){el.classList.remove('active')});
+document.getElementById('page'+p.charAt(0).toUpperCase()+p.slice(1)).classList.add('active');
+document.querySelectorAll('.nav-item').forEach(function(el){el.classList.toggle('active',el.getAttribute('data-page')===p)});
+if(p==='classes')renderClassIndex();
+if(p==='favorites')renderFavorites();
+if(p==='search')renderMeds();
+document.getElementById('backBtn').style.display='none';
+}
+
+function goBack(){togglePage('search')}
+
+function render(){
+renderFilters();
+renderMeds();
+if(currentPage==='favorites')renderFavorites();
+if(currentPage==='classes')renderClassIndex();
+}
+
+// ============================
+// INIT
+// ============================
+render();
+</script>
+</body>
+</html>

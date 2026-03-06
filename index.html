@@ -586,6 +586,71 @@
             border-radius: 0 8px 8px 0;
         }
 
+        .modal-screenshots {
+            margin-bottom: 24px;
+        }
+
+        .modal-screenshots .section-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .screenshots-scroll {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .screenshots-scroll::-webkit-scrollbar { height: 4px; }
+        .screenshots-scroll::-webkit-scrollbar-track { background: var(--bg-card); border-radius: 2px; }
+        .screenshots-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        .screenshot-img {
+            flex-shrink: 0;
+            width: 200px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            scroll-snap-align: start;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .screenshot-img:hover {
+            transform: scale(1.02);
+            border-color: var(--accent);
+        }
+
+        .screenshot-full-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 300;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            cursor: pointer;
+        }
+
+        .screenshot-full-overlay.active { display: flex; }
+
+        .screenshot-full-overlay img {
+            max-height: 90vh;
+            max-width: 90vw;
+            border-radius: 12px;
+            object-fit: contain;
+        }
+
         body.modal-open { overflow: hidden; }
 
         /* ===== CONTACT ===== */
@@ -743,6 +808,11 @@
     <!-- MODAL -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal-content" id="modalContent"></div>
+    </div>
+
+    <!-- SCREENSHOT FULLSCREEN -->
+    <div class="screenshot-full-overlay" id="screenshotOverlay" onclick="closeScreenshot()">
+        <img id="screenshotFull" src="">
     </div>
 
     <!-- CONTACT -->
@@ -919,6 +989,7 @@
             tags: ["Inglês", "Vocabulário", "Adaptativo"],
             price: "R$ 10,00",
             slug: "vocab-builder",
+            screenshots: ["img/vocab-builder.png"],
             available: true,
             longDescription: "Você sabe se seu inglês é B1 ou B2? A diferença entre 'achar que sabe' e saber de verdade pode custar uma vaga, uma promoção ou uma oportunidade. Este teste usa um algoritmo adaptativo que se ajusta em tempo real ao seu nível: acertou? A próxima fica mais difícil. Errou? Ela recalibra. Em 20 perguntas, você recebe uma estimativa precisa do seu nível (A1 a C2) com base no quadro europeu de referência. Acompanhe sua evolução ao longo do tempo e descubra exatamente quais tipos de palavras você domina e quais precisa estudar.",
             features: [
@@ -1057,6 +1128,14 @@
             <div class="modal-body">
                 <p class="modal-description">${app.longDescription}</p>
 
+                ${app.screenshots && app.screenshots.length ? `
+                <div class="modal-screenshots">
+                    <div class="section-label"><span>📱</span> Screenshots</div>
+                    <div class="screenshots-scroll">
+                        ${app.screenshots.map(src => `<img class="screenshot-img" src="${src}" onclick="openScreenshot('${src}')" alt="Screenshot">`).join('')}
+                    </div>
+                </div>` : ''}
+
                 <div class="modal-section-title">
                     <span class="icon">✦</span> Funcionalidades
                 </div>
@@ -1104,8 +1183,18 @@
     });
 
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeModal();
+        if (e.key === 'Escape') { closeModal(); closeScreenshot(); }
     });
+
+    function openScreenshot(src) {
+        event.stopPropagation();
+        document.getElementById('screenshotFull').src = src;
+        document.getElementById('screenshotOverlay').classList.add('active');
+    }
+
+    function closeScreenshot() {
+        document.getElementById('screenshotOverlay').classList.remove('active');
+    }
 
     // ===== SCROLL OBSERVER =====
     const observer = new IntersectionObserver((entries) => {

@@ -150,7 +150,8 @@
         "orcamento":        { name: "Orçamento Pessoal", icon: "📊", bg: "#141820", cat: "Finanças", apk: "dl/BudgetMinimalist.apk", web: "dl/orcamento.html" },
         "vocab-builder":    { name: "Teste de Vocabulário", icon: "📚", bg: "#1e1420", cat: "Educação", apk: "dl/VocabBuilder.apk", web: "dl/vocab-builder.html" },
         "story-tracker":    { name: "StoryTracker", icon: "📰", bg: "#181820", cat: "Notícias", apk: "dl/StoryTracker-Intel.apk", web: "dl/story-tracker.html" },
-        "guia-psicofarm":   { name: "Guia Psicofarmacológico", icon: "💉", bg: "#0d1f20", cat: "Saúde", apk: "dl/GuiaPsicofarm.apk", web: "dl/guia-psicofarmacologico.html" }
+        "guia-psicofarm":   { name: "Guia Psicofarmacológico", icon: "💉", bg: "#0d1f20", cat: "Saúde", apk: "dl/GuiaPsicofarm.apk", web: "dl/guia-psicofarmacologico.html" },
+        "bundle":           { name: "Pacote Completo (9 apps)", icon: "🌱", bg: "#141e14", cat: "Todos", apk: null, web: null, isBundle: true }
     };
 
     // ===== CODE VALIDATION =====
@@ -193,12 +194,34 @@
         document.getElementById('appCat').textContent = app.cat;
         document.getElementById('appIcon').textContent = app.icon;
         document.getElementById('appIcon').style.background = app.bg;
-        document.getElementById('dlApk').href = app.apk;
-        document.getElementById('dlWeb').href = app.web;
         document.title = `Adquirir ${app.name} — App Farm`;
         
-        const waMsg = encodeURIComponent(`Olá! Fiz o Pix de R$10 para o app "${app.name}". Segue comprovante:`);
+        // Bundle pricing
+        if (app.isBundle) {
+            document.querySelector('.price-big').textContent = 'R$ 50,00';
+            document.querySelector('.price-sub').innerHTML = 'Pagamento único · Todos os 9 apps<br><s style="color:var(--text3)">De R$ 90,00</s> — Economize R$ 40,00';
+            document.querySelector('.price-note').textContent = 'Inclui APK + Web App de cada um dos 9 aplicativos';
+            document.querySelector('.pix-value strong').textContent = 'R$ 50,00';
+        }
+
+        const price = app.isBundle ? 'R$50' : 'R$10';
+        const waMsg = encodeURIComponent(`Olá! Fiz o Pix de ${price} para ${app.isBundle ? 'o Pacote Completo (9 apps)' : 'o app "' + app.name + '"'}. Segue comprovante:`);
         document.getElementById('waLink').href = `https://wa.me/5511961820112?text=${waMsg}`;
+
+        // For bundle, show all downloads when code is valid
+        if (app.isBundle) {
+            const allApps = Object.entries(apps).filter(([k,v]) => !v.isBundle);
+            document.getElementById('dlApk').style.display = 'none';
+            document.getElementById('dlWeb').style.display = 'none';
+            const extraLinks = allApps.map(([k,v]) => `
+                <a class="dl-btn dl-apk" href="${v.apk}" download style="font-size:.82rem;padding:10px">${v.icon} ${v.name} (APK)</a>
+                <a class="dl-btn dl-web" href="${v.web}" target="_blank" style="font-size:.82rem;padding:10px">${v.icon} ${v.name} (Web)</a>
+            `).join('');
+            document.getElementById('downloadLinks').insertAdjacentHTML('beforeend', extraLinks);
+        } else {
+            document.getElementById('dlApk').href = app.apk;
+            document.getElementById('dlWeb').href = app.web;
+        }
     }
 
     function copyPix() {

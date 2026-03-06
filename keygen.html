@@ -8,6 +8,13 @@
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:'Segoe UI',system-ui,sans-serif;background:#111;color:#eee;padding:20px;min-height:100vh}
         h1{font-size:1.3rem;margin-bottom:20px;color:#8ab87a}
+        .gate{max-width:300px;margin:120px auto;text-align:center}
+        .gate input{background:#1a1a1a;border:1px solid #333;border-radius:6px;padding:12px;color:#eee;font-size:1rem;width:100%;text-align:center;margin:16px 0;outline:none}
+        .gate input:focus{border-color:#6b8f5e}
+        .gate button{padding:12px 24px;background:#6b8f5e;color:#fff;border:none;border-radius:6px;font-size:.95rem;cursor:pointer;width:100%}
+        .gate p{color:#666;font-size:.85rem;margin-top:8px}
+        .gate .err{color:#c46b5a;font-size:.85rem;margin-top:8px;display:none}
+        .app-content{display:none}
         label{display:block;font-size:.75rem;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
         select,input{background:#1a1a1a;border:1px solid #333;border-radius:6px;padding:10px 12px;color:#eee;font-size:.9rem;width:100%;outline:none}
         select:focus,input:focus{border-color:#6b8f5e}
@@ -38,6 +45,14 @@
     </style>
 </head>
 <body>
+    <div class="gate" id="gate">
+        <h1>🔒 Área Admin</h1>
+        <p>Digite a senha para acessar</p>
+        <input type="password" id="gatePass" placeholder="Senha" onkeydown="if(event.key==='Enter')checkGate()">
+        <button onclick="checkGate()">Entrar</button>
+        <div class="err" id="gateErr">Senha incorreta</div>
+    </div>
+    <div class="app-content" id="appContent">
     <h1>🔑 Gerador de Códigos — App Farm</h1>
     <div class="form">
         <div>
@@ -56,6 +71,7 @@
                 <option value="vocab-builder">Teste de Vocabulário</option>
                 <option value="story-tracker">StoryTracker</option>
                 <option value="guia-psicofarm">Guia Psicofarmacológico</option>
+                <option value="bundle">Pacote Completo (9 apps)</option>
             </select>
         </div>
         <button onclick="generate()">Gerar código</button>
@@ -178,6 +194,18 @@
     }
 
     renderHistory();
+    </script>
+    </div><!-- /app-content -->
+    <script>
+    function checkGate(){
+        var p=document.getElementById('gatePass').value;
+        if(p==='farm2026'){
+            document.getElementById('gate').style.display='none';
+            document.getElementById('appContent').style.display='block';
+        } else {
+            document.getElementById('gateErr').style.display='block';
+        }
+    }
     </script>
 </body>
 </html>

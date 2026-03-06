@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Life RPG</title>
+<style>
+:root {
+  --bg: #f5f4f0;
+  --bg-card: #ffffff;
+  --bg-input: #f0eeea;
+  --bg-hover: #e8e6e1;
+  --border: #ddd9d1;
+  --border-light: #eae7e0;
+  --text: #2c2c2c;
+  --text-secondary: #6b6960;
+  --text-muted: #9e9a90;
+  --gold: #b8860b;
+  --gold-light: #daa520;
+  --gold-bg: rgba(184,134,11,0.08);
+  --gold-border: rgba(184,134,11,0.2);
+  --teal: #2a7f8f;
+  --teal-bg: rgba(42,127,143,0.08);
+  --green: #3d8c40;
+  --green-bg: rgba(61,140,64,0.08);
+  --red: #c0392b;
+  --red-bg: rgba(192,57,43,0.08);
+  --orange: #c97d1e;
+  --purple: #7b5ea7;
+  --pink: #a85d8a;
+  --blue: #3a6fb5;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --shadow: 0 1px 4px rgba(0,0,0,0.06), 0 2px 12px rgba(0,0,0,0.04);
+  --shadow-lg: 0 4px 20px rgba(0,0,0,0.08);
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:15px;line-height:1.5;-webkit-tap-highlight-color:transparent;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+
+#app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;}
+.header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--bg-card);}
+.header h1{font-size:18px;font-weight:700;letter-spacing:0.5px;color:var(--gold);}
+.header .level-badge{font-size:12px;color:var(--gold);border:1px solid var(--gold-border);padding:2px 10px;border-radius:20px;background:var(--gold-bg);font-weight:600;}
+.tab-content{flex:1;overflow-y:auto;padding:16px;padding-bottom:80px;}
+.tab-bar{display:flex;border-top:1px solid var(--border);background:var(--bg-card);padding:6px 4px 10px;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;}
+.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;color:var(--text-muted);font-size:10px;padding:4px 2px;cursor:pointer;transition:color 0.2s;font-family:var(--font);}
+.tab-btn.active{color:var(--gold);}
+.tab-btn svg{width:20px;height:20px;}
+
+.card{background:var(--bg-card);border-radius:var(--radius);padding:16px;margin-bottom:12px;border:1px solid var(--border-light);box-shadow:var(--shadow);}
+.card-title{font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:12px;}
+.card-title-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:var(--radius-sm);border:none;cursor:pointer;font-size:14px;font-family:var(--font);font-weight:600;transition:all 0.2s;}
+.btn-gold{background:var(--gold);color:white;}
+.btn-gold:active{transform:scale(0.97);background:var(--gold-light);}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text);}
+.btn-outline:active{background:var(--bg-input);}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.btn-danger{background:var(--red);color:white;}
+.btn-block{width:100%;justify-content:center;}
+
+input,select,textarea{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-input);color:var(--text);font-size:14px;font-family:var(--font);outline:none;transition:border-color 0.2s;}
+input:focus,select:focus,textarea:focus{border-color:var(--gold-border);box-shadow:0 0 0 3px var(--gold-bg);}
+textarea{resize:vertical;min-height:60px;}
+select{appearance:none;cursor:pointer;}
+
+/* XP Bars */
+.xp-bar-wrap{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.xp-bar-label{font-size:13px;font-weight:600;min-width:100px;display:flex;align-items:center;gap:6px;}
+.xp-bar-label .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.xp-bar-track{flex:1;height:8px;background:var(--bg-input);border-radius:4px;overflow:hidden;}
+.xp-bar-fill{height:100%;border-radius:4px;transition:width 0.5s ease;}
+.xp-bar-level{font-size:12px;color:var(--text-muted);min-width:36px;text-align:right;font-weight:700;}
+
+/* Streaks */
+.streak-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-light);}
+.streak-row:last-child{border-bottom:none;}
+.streak-name{font-size:13px;}
+.streak-count{font-size:14px;font-weight:700;color:var(--gold);display:flex;align-items:center;gap:4px;}
+
+/* Log */
+.log-entry{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border-light);}
+.log-entry:last-child{border-bottom:none;}
+.log-check{width:22px;height:22px;border-radius:50%;border:2px solid var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;color:var(--green);}
+.log-text{flex:1;font-size:14px;}
+.log-xp{font-size:12px;color:var(--gold);font-weight:600;}
+.log-domain-tag{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;}
+.log-delete{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px;padding:4px;}
+
+/* Goals */
+.goal-card{background:var(--bg-card);border-radius:var(--radius);padding:14px;margin-bottom:10px;border:1px solid var(--border-light);box-shadow:var(--shadow);}
+.goal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.goal-title{font-size:15px;font-weight:600;}
+.goal-progress-text{font-size:12px;color:var(--gold);font-weight:600;}
+.goal-progress-bar{height:6px;background:var(--bg-input);border-radius:3px;overflow:hidden;margin-bottom:10px;}
+.goal-progress-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--green));border-radius:3px;transition:width 0.4s;}
+.step-item{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;}
+.step-check{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;font-size:11px;color:transparent;background:var(--bg-input);}
+.step-check.done{border-color:var(--green);background:var(--green);color:white;}
+.step-text{flex:1;}
+.step-text.done{text-decoration:line-through;color:var(--text-muted);}
+
+/* Quests */
+.quest-card{background:var(--bg-card);border-radius:var(--radius);padding:14px;margin-bottom:10px;border:1px solid var(--border-light);border-left:3px solid var(--gold);box-shadow:var(--shadow);}
+.quest-title{font-size:14px;font-weight:600;margin-bottom:4px;}
+.quest-meta{font-size:12px;color:var(--text-muted);margin-bottom:8px;}
+.quest-progress{display:flex;align-items:center;gap:8px;}
+
+/* Reflection */
+.slider-group{margin-bottom:16px;}
+.slider-label{display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;font-weight:600;}
+.slider-label span:last-child{color:var(--gold);font-weight:700;}
+input[type="range"]{-webkit-appearance:none;width:100%;height:6px;background:var(--bg-input);border-radius:3px;border:none;padding:0;box-shadow:none;}
+input[type="range"]:focus{box-shadow:none;}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--gold);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.15);}
+
+/* Radar */
+#radarCanvas{display:block;margin:0 auto;}
+
+/* Report */
+.report-stat{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;border-bottom:1px solid var(--border-light);}
+.report-stat:last-child{border-bottom:none;}
+.report-val{font-weight:600;color:var(--gold);}
+.insight-box{background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:var(--radius-sm);padding:12px;margin-top:8px;font-size:13px;line-height:1.6;}
+.insight-box strong{color:var(--gold);}
+
+/* Modal */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;}
+.modal{background:var(--bg-card);border-radius:var(--radius);padding:20px;width:100%;max-width:420px;border:1px solid var(--border-light);max-height:85vh;overflow-y:auto;box-shadow:var(--shadow-lg);}
+.modal h3{font-size:16px;margin-bottom:16px;}
+.form-group{margin-bottom:14px;}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px;}
+.form-actions{display:flex;gap:8px;margin-top:16px;}
+.form-actions .btn{flex:1;}
+
+/* Activity picker chips */
+.chip-group{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.chip{padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:var(--bg-input);font-size:12px;cursor:pointer;transition:all 0.2s;font-family:var(--font);color:var(--text-secondary);}
+.chip:active{transform:scale(0.96);}
+.chip.selected{background:var(--gold-bg);border-color:var(--gold-border);color:var(--gold);font-weight:600;}
+
+/* Cadastro / Onboarding */
+.onboard-screen{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto;background:var(--bg);}
+.onboard-content{flex:1;overflow-y:auto;padding:24px 20px;}
+.onboard-header{text-align:center;margin-bottom:24px;}
+.onboard-header h2{font-size:22px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.onboard-header p{font-size:14px;color:var(--text-secondary);line-height:1.5;}
+.onboard-footer{padding:16px 20px;border-top:1px solid var(--border);background:var(--bg-card);}
+.onboard-step{font-size:12px;color:var(--text-muted);text-align:center;margin-bottom:8px;}
+.onboard-progress{height:4px;background:var(--bg-input);border-radius:2px;margin-bottom:16px;}
+.onboard-progress-fill{height:100%;background:var(--gold);border-radius:2px;transition:width 0.4s;}
+
+.goal-option{padding:12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;cursor:pointer;transition:all 0.2s;background:var(--bg-card);}
+.goal-option:active{transform:scale(0.98);}
+.goal-option.selected{border-color:var(--gold);background:var(--gold-bg);}
+.goal-option .go-title{font-size:14px;font-weight:600;margin-bottom:2px;}
+.goal-option .go-desc{font-size:12px;color:var(--text-secondary);}
+.goal-option .go-check{float:right;width:20px;height:20px;border-radius:50%;border:2px solid var(--border);margin-top:2px;display:flex;align-items:center;justify-content:center;font-size:12px;color:transparent;}
+.goal-option.selected .go-check{border-color:var(--gold);background:var(--gold);color:white;}
+
+/* Domain section in onboarding */
+.domain-section{margin-bottom:20px;}
+.domain-section-title{font-size:13px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+
+/* Settings */
+.setting-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border-light);}
+.setting-row:last-child{border-bottom:none;}
+
+/* Empty state */
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-muted);}
+.empty-state .icon{font-size:40px;margin-bottom:12px;}
+.empty-state p{font-size:14px;margin-bottom:16px;}
+
+/* Toast */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--gold);color:white;padding:12px 24px;border-radius:var(--radius);font-weight:700;font-size:15px;z-index:200;box-shadow:var(--shadow-lg);animation:toastIn 0.4s ease,toastOut 0.4s ease 2.6s forwards;}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes toastOut{to{opacity:0;transform:translateX(-50%) translateY(-20px)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn 0.3s ease;}
+.today-date{font-size:12px;color:var(--text-muted);}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="modalContainer"></div>
+<div id="toastContainer"></div>
+
+<script>
+// ===== BEHAVIORAL ACTIVATION ACTIVITY LIBRARY =====
+const BA_ACTIVITIES = {
+  health: {
+    label:'Health', icon:'💪', color:'#3d8c40',
+    mastery: [
+      {text:'Walked for 20+ minutes', xp:5},
+      {text:'Exercised (gym/run/sport)', xp:6},
+      {text:'Stretched or did yoga', xp:4},
+      {text:'Cooked a healthy meal', xp:5},
+      {text:'Drank 2L+ of water', xp:3},
+      {text:'Slept 7+ hours', xp:5},
+      {text:'Avoided ultra-processed food', xp:4},
+      {text:'Took prescribed medication', xp:3},
+      {text:'Did breathing exercises', xp:4},
+      {text:'Went outside for sunlight', xp:3}
+    ],
+    pleasure: [
+      {text:'Took a relaxing bath/shower', xp:3},
+      {text:'Rested without guilt', xp:4},
+      {text:'Napped when needed', xp:3},
+      {text:'Ate a meal I enjoyed', xp:3}
+    ]
+  },
+  mind: {
+    label:'Mind', icon:'🧠', color:'#7b5ea7',
+    mastery: [
+      {text:'Meditated (5+ min)', xp:5},
+      {text:'Journaled or wrote reflections', xp:4},
+      {text:'Practiced mindfulness during routine task', xp:4},
+      {text:'Identified and named an emotion', xp:5},
+      {text:'Challenged a negative thought', xp:5},
+      {text:'Practiced acceptance of discomfort', xp:5},
+      {text:'Set an intention for the day', xp:3},
+      {text:'Did a body scan', xp:4},
+      {text:'Reduced screen time before bed', xp:3},
+      {text:'Practiced gratitude (3 things)', xp:4}
+    ],
+    pleasure: [
+      {text:'Listened to music I enjoy', xp:3},
+      {text:'Spent quiet time alone', xp:3},
+      {text:'Daydreamed or imagined positively', xp:3}
+    ]
+  },
+  career: {
+    label:'Career', icon:'💼', color:'#3a6fb5',
+    mastery: [
+      {text:'Completed a work task I was avoiding', xp:6},
+      {text:'Attended patients/clients', xp:5},
+      {text:'Finished a report or document', xp:5},
+      {text:'Had a productive meeting', xp:4},
+      {text:'Organized my workspace', xp:3},
+      {text:'Planned tomorrow\'s priorities', xp:4},
+      {text:'Delegated a task effectively', xp:5},
+      {text:'Responded to pending emails/messages', xp:3},
+      {text:'Worked on a long-term project', xp:5},
+      {text:'Asked for help when needed', xp:5}
+    ],
+    pleasure: [
+      {text:'Celebrated a small work win', xp:3},
+      {text:'Took a proper break during work', xp:3},
+      {text:'Connected with a colleague socially', xp:3}
+    ]
+  },
+  finance: {
+    label:'Finance', icon:'💰', color:'#b8860b',
+    mastery: [
+      {text:'Tracked spending today', xp:4},
+      {text:'Stayed within daily budget', xp:5},
+      {text:'Paid a bill on time', xp:4},
+      {text:'Saved money (any amount)', xp:5},
+      {text:'Reviewed monthly finances', xp:5},
+      {text:'Avoided an impulse purchase', xp:5},
+      {text:'Researched a financial decision', xp:4},
+      {text:'Organized financial documents', xp:3}
+    ],
+    pleasure: [
+      {text:'Spent money on something meaningful', xp:3},
+      {text:'Treated someone I care about', xp:4}
+    ]
+  },
+  relationships: {
+    label:'Relationships', icon:'❤️', color:'#a85d8a',
+    mastery: [
+      {text:'Called or messaged a friend/family member', xp:5},
+      {text:'Had a meaningful conversation', xp:5},
+      {text:'Expressed appreciation to someone', xp:5},
+      {text:'Listened without interrupting', xp:5},
+      {text:'Set a healthy boundary', xp:6},
+      {text:'Apologized or repaired a conflict', xp:6},
+      {text:'Helped someone without being asked', xp:5},
+      {text:'Spent quality time with partner/family', xp:5},
+      {text:'Made plans to see someone', xp:4},
+      {text:'Shared how I was feeling', xp:5}
+    ],
+    pleasure: [
+      {text:'Laughed with someone', xp:3},
+      {text:'Gave or received a hug', xp:3},
+      {text:'Played with kids or pets', xp:4}
+    ]
+  },
+  learning: {
+    label:'Learning', icon:'📚', color:'#2a7f8f',
+    mastery: [
+      {text:'Read 10+ pages of a book', xp:5},
+      {text:'Watched an educational video/lecture', xp:4},
+      {text:'Practiced a new skill', xp:5},
+      {text:'Studied a course or material', xp:5},
+      {text:'Taught something to someone', xp:6},
+      {text:'Took notes on what I learned', xp:4},
+      {text:'Practiced a foreign language', xp:5},
+      {text:'Explored a topic out of curiosity', xp:4},
+      {text:'Attended a workshop or class', xp:5}
+    ],
+    pleasure: [
+      {text:'Read for pure enjoyment', xp:3},
+      {text:'Listened to a podcast I like', xp:3},
+      {text:'Explored something creative', xp:4}
+    ]
+  },
+  environment: {
+    label:'Environment', icon:'🌿', color:'#4a8c5c',
+    mastery: [
+      {text:'Cleaned or tidied a room', xp:4},
+      {text:'Did laundry or dishes', xp:3},
+      {text:'Organized a drawer/closet/area', xp:4},
+      {text:'Fixed something at home', xp:5},
+      {text:'Took out trash/recycling', xp:3},
+      {text:'Went grocery shopping', xp:4},
+      {text:'Improved a space (plant, decoration)', xp:4},
+      {text:'Cooked instead of ordering', xp:4}
+    ],
+    pleasure: [
+      {text:'Enjoyed being in a clean space', xp:3},
+      {text:'Spent time in nature', xp:4},
+      {text:'Lit a candle or made space cozy', xp:3}
+    ]
+  },
+  fun: {
+    label:'Fun', icon:'🎮', color:'#c97d1e',
+    mastery: [
+      {text:'Tried something new', xp:5},
+      {text:'Engaged in a hobby', xp:5},
+      {text:'Created something (art, music, writing)', xp:5},
+      {text:'Played a game (board/video/sport)', xp:4},
+      {text:'Planned a fun activity for the future', xp:4}
+    ],
+    pleasure: [
+      {text:'Watched a show or movie I enjoyed', xp:3},
+      {text:'Scrolled/browsed guilt-free (with time limit)', xp:2},
+      {text:'Did something spontaneous', xp:4},
+      {text:'Laughed at something', xp:3},
+      {text:'Danced or sang', xp:4}
+    ]
+  }
+};
+
+// Pre-written goal options per domain
+const GOAL_OPTIONS = {
+  health: [
+    {title:'Improve cardiovascular fitness', steps:['Walk 20 min 3x/week','Schedule a check-up','Track resting heart rate','Increase to 30 min walks']},
+    {title:'Sleep better consistently', steps:['Set a fixed bedtime','No screens 30 min before bed','Create a wind-down routine','Track sleep quality for 2 weeks']},
+    {title:'Eat more intentionally', steps:['Cook at home 3x/week','Reduce ultra-processed food','Add vegetables to one meal/day','Plan weekly meals on Sunday']},
+    {title:'Build an exercise habit', steps:['Choose an activity I enjoy','Start with 15 min sessions','Exercise 2x/week for 2 weeks','Increase to 3x/week']},
+    {title:'Reduce physical tension', steps:['Daily 5-min stretch','Try one yoga session','Notice tension patterns during day','Practice progressive muscle relaxation']},
+    {title:'Manage a health condition', steps:['Take medication consistently','Schedule follow-up appointment','Track symptoms daily','Research one self-care strategy']}
+  ],
+  mind: [
+    {title:'Develop a meditation practice', steps:['Meditate 3 minutes daily','Try guided meditation app','Increase to 5 minutes','Practice 5 days/week for 3 weeks']},
+    {title:'Reduce anxiety symptoms', steps:['Learn one breathing technique','Identify 3 anxiety triggers','Practice grounding exercises','Journal about anxious moments']},
+    {title:'Improve emotional awareness', steps:['Name my emotions 3x/day','Journal about one feeling daily','Notice body sensations with emotions','Share a feeling with someone']},
+    {title:'Practice self-compassion', steps:['Write 3 self-kind statements','Notice self-critical thoughts','Replace one harsh thought/day','Practice loving-kindness meditation']},
+    {title:'Build psychological flexibility', steps:['Notice urges without acting','Practice defusion techniques','Identify my values clearly','Take one values-based action daily']},
+    {title:'Reduce rumination', steps:['Set a worry window (15 min/day)','Practice thought labeling','Engage in an absorbing activity when stuck','Journal to externalize thoughts']}
+  ],
+  career: [
+    {title:'Overcome work procrastination', steps:['Identify top 3 avoided tasks','Start with 10-min work blocks','Use a timer for focus sessions','Complete one avoided task this week']},
+    {title:'Improve work-life boundaries', steps:['Set a firm end-of-work time','Turn off notifications after hours','Say no to one extra request','Plan a non-work evening activity']},
+    {title:'Advance professional skills', steps:['Identify one skill gap','Find a course or resource','Study 30 min/week','Apply learning in a real task']},
+    {title:'Build professional confidence', steps:['List 5 recent accomplishments','Ask for feedback from one person','Volunteer for a visible task','Document wins weekly']},
+    {title:'Organize workflow', steps:['Clear email inbox','Create a weekly planning ritual','Use a task management system','Review and adjust priorities daily']}
+  ],
+  finance: [
+    {title:'Build a savings habit', steps:['Open a savings account','Set up automatic transfer','Save any amount weekly','Track savings progress monthly']},
+    {title:'Control spending', steps:['Track all spending for 1 week','Identify 3 unnecessary expenses','Set a daily spending limit','Review budget weekly']},
+    {title:'Pay off a debt', steps:['List all debts with amounts','Choose smallest debt first','Make extra payment this month','Celebrate each debt paid off']},
+    {title:'Build financial literacy', steps:['Read one article about personal finance','Understand my payslip fully','Learn about one investment type','Create a 3-month financial plan']}
+  ],
+  relationships: [
+    {title:'Strengthen a key relationship', steps:['Schedule weekly quality time','Express appreciation daily','Ask about their day genuinely','Plan a surprise or thoughtful gesture']},
+    {title:'Expand social connections', steps:['Reach out to one old friend','Accept one social invitation','Join a group or activity','Have coffee with someone new']},
+    {title:'Improve communication skills', steps:['Practice active listening once/day','Use "I feel" statements','Ask open-ended questions','Give one genuine compliment daily']},
+    {title:'Set healthier boundaries', steps:['Identify one relationship where I overextend','Practice saying "no" once this week','Communicate a need directly','Notice guilt after boundaries and sit with it']},
+    {title:'Repair a damaged relationship', steps:['Reflect on my part honestly','Write what I want to say','Reach out with vulnerability','Listen without defending']}
+  ],
+  learning: [
+    {title:'Read more regularly', steps:['Choose a book that interests me','Read 10 pages daily','Set a reading time','Finish one book this month']},
+    {title:'Learn a new language', steps:['Choose target language','Practice 10 min daily','Learn 5 new words/week','Have one conversation attempt']},
+    {title:'Develop a new skill', steps:['Choose skill and find a resource','Practice 20 min 3x/week','Track progress weekly','Apply skill in a real situation']},
+    {title:'Stay intellectually curious', steps:['Read one article outside my field/week','Watch one documentary/month','Discuss an idea with someone','Take notes on something interesting']}
+  ],
+  environment: [
+    {title:'Declutter living space', steps:['Choose one room/area','Sort into keep/donate/trash','Organize remaining items','Maintain for 2 weeks']},
+    {title:'Create a functional routine', steps:['Establish morning sequence','Do dishes after each meal','10-min tidy before bed','Weekly deeper clean']},
+    {title:'Make home more comfortable', steps:['Fix one thing that bothers me','Add a plant or decoration','Improve lighting in one room','Create a dedicated relaxation spot']}
+  ],
+  fun: [
+    {title:'Rediscover a hobby', steps:['List hobbies I used to enjoy','Choose one to restart','Schedule time for it','Do it 2x this week']},
+    {title:'Have more fun regularly', steps:['Plan one fun activity/week','Try one new experience/month','Allow unstructured free time','Say yes to something spontaneous']},
+    {title:'Develop a creative practice', steps:['Choose a creative medium','Create for 15 min 2x/week','Share something I made','Join a creative community or class']}
+  ]
+};
+
+const DOMAINS = Object.keys(BA_ACTIVITIES).map(id=>({
+  id, name:BA_ACTIVITIES[id].label, icon:BA_ACTIVITIES[id].icon, color:BA_ACTIVITIES[id].color
+}));
+
+const XP_PER_LEVEL = 50;
+const STREAK_FORGIVENESS = 1;
+
+function today(){return new Date().toISOString().slice(0,10);}
+function weekAgo(){const d=new Date();d.setDate(d.getDate()-7);return d.toISOString().slice(0,10);}
+function daysBetween(a,b){return Math.round((new Date(b)-new Date(a))/86400000);}
+
+// Storage
+function ld(k,f){try{const v=localStorage.getItem('lrpg_'+k);return v?JSON.parse(v):f;}catch(e){return f;}}
+function sv(k,v){try{localStorage.setItem('lrpg_'+k,JSON.stringify(v));}catch(e){}}
+
+let logs=ld('logs',[]);
+let goals=ld('goals',[]);
+let quests=ld('quests',[]);
+let reflections=ld('reflections',[]);
+let profile=ld('profile',null); // null = needs onboarding
+let settings=ld('settings',{email:'',userName:''});
+
+function persist(){sv('logs',logs);sv('goals',goals);sv('quests',quests);sv('reflections',reflections);sv('profile',profile);sv('settings',settings);}
+
+// XP
+function getDomainXP(d){return logs.filter(l=>l.domain===d).reduce((s,l)=>s+(l.xp||5),0);}
+function getDomainLevel(d){return Math.floor(getDomainXP(d)/XP_PER_LEVEL)+1;}
+function getDomainProgress(d){return(getDomainXP(d)%XP_PER_LEVEL)/XP_PER_LEVEL;}
+function getGlobalLevel(){const t=DOMAINS.reduce((s,d)=>s+getDomainXP(d.id),0);return Math.floor(t/(XP_PER_LEVEL*DOMAINS.length))+1;}
+function getTodayLogs(){return logs.filter(l=>l.date===today());}
+function getWeekLogs(){const w=weekAgo();return logs.filter(l=>l.date>=w);}
+
+// Streaks
+function getStreaks(){
+  const dd={};DOMAINS.forEach(d=>dd[d.id]={});
+  logs.forEach(l=>{if(dd[l.domain])dd[l.domain][l.date]=true;});
+  const r=[];
+  DOMAINS.forEach(d=>{const days=dd[d.id];let streak=0,missed=0;const t=new Date();
+    for(let i=0;i<365;i++){const dt=new Date(t);dt.setDate(dt.getDate()-i);const ds=dt.toISOString().slice(0,10);
+      if(days[ds]){streak++;missed=0;}else{missed++;if(missed>STREAK_FORGIVENESS)break;if(i>0)streak++;}}
+    if(streak>0)r.push({domain:d,streak});});
+  return r.sort((a,b)=>b.streak-a.streak);
+}
+
+// Insights
+function generateInsights(){
+  const ins=[];const wl=getWeekLogs();const wr=reflections.filter(r=>r.date>=weekAgo());
+  const dc={};DOMAINS.forEach(d=>dc[d.id]=0);wl.forEach(l=>dc[l.domain]=(dc[l.domain]||0)+1);
+  const neg=DOMAINS.filter(d=>dc[d.id]===0);
+  if(neg.length>0)ins.push({type:'warning',text:`No activity in ${neg.map(d=>d.name).join(', ')} this week. Even a small step in ${neg[0]?.name} would count.`});
+  if(wr.length>=3){
+    const hsd=wr.filter(r=>r.stress>=4).map(r=>r.date);
+    const exd=wl.filter(l=>l.domain==='health').map(l=>l.date);
+    const swe=hsd.filter(d=>!exd.includes(d));
+    if(swe.length>=2)ins.push({type:'pattern',text:`Stress was high on ${swe.length} days without Health activity. Physical movement on high-stress days tends to help regulate.`});
+    const am=wr.reduce((s,r)=>s+r.mood,0)/wr.length;
+    if(am<=2)ins.push({type:'alert',text:`Average mood: ${am.toFixed(1)}/5. Consider what's weighing on you and whether small routine shifts might help.`});
+    else if(am>=4)ins.push({type:'positive',text:`Average mood: ${am.toFixed(1)}/5. Good week. Notice what contributed to this.`});
+  }
+  const so=Object.entries(dc).sort((a,b)=>b[1]-a[1]);
+  if(so[0]&&so[0][1]>0){const td=DOMAINS.find(d=>d.id===so[0][0]);ins.push({type:'strength',text:`${td?.name} was your strongest domain this week with ${so[0][1]} actions.`});}
+  const streaks=getStreaks();const lsd=DOMAINS.filter(d=>!streaks.find(s=>s.domain.id===d.id));
+  if(lsd.length>0&&quests.filter(q=>!q.done).length<3){ins.push({type:'quest',text:`Suggested quest: Log 3 ${lsd[0].name} actions this week.`,domain:lsd[0]});}
+  return ins;
+}
+
+function showToast(msg){const tc=document.getElementById('toastContainer');const t=document.createElement('div');t.className='toast';t.textContent=msg;tc.appendChild(t);setTimeout(()=>t.remove(),3000);}
+function closeModal(){document.getElementById('modalContainer').innerHTML='';}
+
+// ===== ONBOARDING =====
+let onboardStep=0;
+let onboardData={name:'',selectedGoals:{}};
+
+function renderOnboarding(){
+  const root=document.getElementById('root');
+  const steps=[renderOnboard1,renderOnboard2,renderOnboard3];
+  const totalSteps=steps.length;
+  const pct=((onboardStep+1)/totalSteps)*100;
+
+  root.innerHTML=`<div class="onboard-screen">
+    <div class="onboard-content" id="onboardContent"></div>
+    <div class="onboard-footer">
+      <div class="onboard-step">Step ${onboardStep+1} of ${totalSteps}</div>
+      <div class="onboard-progress"><div class="onboard-progress-fill" style="width:${pct}%"></div></div>
+      <div style="display:flex;gap:8px">
+        ${onboardStep>0?'<button class="btn btn-outline" style="flex:1" onclick="onboardBack()">Back</button>':''}
+        <button class="btn btn-gold" style="flex:2" onclick="onboardNext()" id="onboardNextBtn">
+          ${onboardStep===totalSteps-1?'Start':'Continue'}
+        </button>
+      </div>
+    </div>
+  </div>`;
+  steps[onboardStep]();
+}
+
+function renderOnboard1(){
+  document.getElementById('onboardContent').innerHTML=`
+    <div class="onboard-header fade-in">
+      <div style="font-size:48px;margin-bottom:12px">🎯</div>
+      <h2>Welcome to Life RPG</h2>
+      <p>A behavioral activation tool that turns daily actions into visible progress across the domains of your life.</p>
+    </div>
+    <div class="card fade-in">
+      <div class="form-group">
+        <label>Your Name</label>
+        <input id="onName" value="${onboardData.name}" placeholder="How should we call you?" oninput="onboardData.name=this.value">
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-top:8px">You'll track 8 life domains: Health, Mind, Career, Finance, Relationships, Learning, Environment, and Fun. Each action you log earns XP in that domain.</p>
+    </div>
+    <div class="card fade-in">
+      <div class="card-title">How it works</div>
+      <div style="font-size:13px;color:var(--text-secondary);line-height:1.7">
+        <p style="margin-bottom:8px"><b>1.</b> Choose goals that matter to you (next step)</p>
+        <p style="margin-bottom:8px"><b>2.</b> Log daily actions from a curated activity menu</p>
+        <p style="margin-bottom:8px"><b>3.</b> Watch your domains level up as you build consistency</p>
+        <p><b>4.</b> Reflect nightly and review weekly insights</p>
+      </div>
+    </div>
+  `;
+}
+
+function renderOnboard2(){
+  const c=document.getElementById('onboardContent');
+  let html=`<div class="onboard-header fade-in">
+    <h2>Choose Your Goals</h2>
+    <p>Select goals that resonate with you. You can add or change them later.</p>
+  </div>`;
+
+  DOMAINS.forEach(d=>{
+    const opts=GOAL_OPTIONS[d.id]||[];
+    if(opts.length===0)return;
+    if(!onboardData.selectedGoals[d.id])onboardData.selectedGoals[d.id]=[];
+    html+=`<div class="domain-section fade-in">
+      <div class="domain-section-title"><span style="color:${d.color}">${d.icon}</span> ${d.name}</div>
+      ${opts.map((g,i)=>{
+        const sel=onboardData.selectedGoals[d.id].includes(i);
+        return `<div class="goal-option ${sel?'selected':''}" onclick="toggleOnboardGoal('${d.id}',${i})">
+          <div class="go-check">${sel?'✓':''}</div>
+          <div class="go-title">${g.title}</div>
+          <div class="go-desc">${g.steps.slice(0,2).join(' · ')}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  });
+  c.innerHTML=html;
+}
+
+function renderOnboard3(){
+  const selectedCount=Object.values(onboardData.selectedGoals).reduce((s,arr)=>s+arr.length,0);
+  document.getElementById('onboardContent').innerHTML=`
+    <div class="onboard-header fade-in">
+      <div style="font-size:48px;margin-bottom:12px">✨</div>
+      <h2>Ready to Go</h2>
+      <p>You selected <b>${selectedCount}</b> goals across your life domains. Here's what's waiting for you.</p>
+    </div>
+    <div class="card fade-in">
+      <div class="card-title">Your toolkit</div>
+      <div style="font-size:13px;color:var(--text-secondary);line-height:1.8">
+        <p style="margin-bottom:6px">📋 <b>Activity Menu</b> — Tap to log from behavioral activation actions</p>
+        <p style="margin-bottom:6px">🎯 <b>Goals & Steps</b> — Break ambitions into micro-steps</p>
+        <p style="margin-bottom:6px">⭐ <b>Quests</b> — Short challenges to build momentum</p>
+        <p style="margin-bottom:6px">🌙 <b>Reflection</b> — Track mood, energy, stress nightly</p>
+        <p style="margin-bottom:6px">📊 <b>Weekly Report</b> — Insights and email export</p>
+        <p>🔥 <b>Streaks</b> — Consistency tracking with forgiveness built in</p>
+      </div>
+    </div>
+    ${selectedCount>0?`<div class="card fade-in">
+      <div class="card-title">Selected Goals Preview</div>
+      ${Object.entries(onboardData.selectedGoals).filter(([_,arr])=>arr.length>0).map(([domId,indices])=>{
+        const d=DOMAINS.find(x=>x.id===domId);
+        return indices.map(i=>{
+          const g=GOAL_OPTIONS[domId][i];
+          return `<div style="padding:6px 0;font-size:13px;border-bottom:1px solid var(--border-light)">
+            <span style="color:${d.color}">${d.icon}</span> ${g.title}
+          </div>`;
+        }).join('');
+      }).join('')}
+    </div>`:''}
+  `;
+}
+
+function toggleOnboardGoal(domId,idx){
+  if(!onboardData.selectedGoals[domId])onboardData.selectedGoals[domId]=[];
+  const arr=onboardData.selectedGoals[domId];
+  const i=arr.indexOf(idx);
+  if(i>=0)arr.splice(i,1);else arr.push(idx);
+  renderOnboard2();
+}
+
+function onboardBack(){if(onboardStep>0){onboardStep--;renderOnboarding();}}
+function onboardNext(){
+  if(onboardStep===0){
+    if(!onboardData.name.trim()){onboardData.name='User';}
+    settings.userName=onboardData.name.trim();
+  }
+  if(onboardStep===2){
+    // Finalize: create goals from selections
+    Object.entries(onboardData.selectedGoals).forEach(([domId,indices])=>{
+      indices.forEach(i=>{
+        const g=GOAL_OPTIONS[domId][i];
+        goals.push({id:Date.now().toString()+Math.random().toString(36).slice(2,6),
+          title:g.title, domain:domId,
+          steps:g.steps.map(s=>({id:Date.now().toString()+Math.random().toString(36).slice(2,6),text:s,done:false}))
+        });
+      });
+    });
+    profile={onboarded:true,date:today()};
+    persist();
+    renderApp();
+    return;
+  }
+  onboardStep++;
+  renderOnboarding();
+}
+
+// ===== MAIN APP =====
+let currentTab='dashboard';
+
+function renderApp(){
+  const root=document.getElementById('root');
+  root.innerHTML=`<div id="app">
+    <div class="header">
+      <h1>LIFE RPG</h1>
+      <div class="level-badge" id="globalLevel">LVL ${getGlobalLevel()}</div>
+    </div>
+    <div class="tab-content" id="tabContent"></div>
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="dashboard" onclick="switchTab('dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home
+      </button>
+      <button class="tab-btn" data-tab="log" onclick="switchTab('log')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Log
+      </button>
+      <button class="tab-btn" data-tab="goals" onclick="switchTab('goals')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>Goals
+      </button>
+      <button class="tab-btn" data-tab="quests" onclick="switchTab('quests')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Quests
+      </button>
+      <button class="tab-btn" data-tab="reflect" onclick="switchTab('reflect')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"/></svg>Reflect
+      </button>
+      <button class="tab-btn" data-tab="report" onclick="switchTab('report')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Report
+      </button>
+    </div>
+  </div>`;
+  renderTab();
+}
+
+function switchTab(tab){
+  currentTab=tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  renderTab();
+}
+
+function renderTab(){
+  const c=document.getElementById('tabContent');if(!c)return;
+  const gl=document.getElementById('globalLevel');if(gl)gl.textContent=`LVL ${getGlobalLevel()}`;
+  switch(currentTab){
+    case 'dashboard':renderDashboard(c);break;
+    case 'log':renderLog(c);break;
+    case 'goals':renderGoals(c);break;
+    case 'quests':renderQuests(c);break;
+    case 'reflect':renderReflect(c);break;
+    case 'report':renderReport(c);break;
+  }
+}
+
+// ===== DASHBOARD =====
+function renderDashboard(c){
+  const tl=getTodayLogs();const streaks=getStreaks().slice(0,5);const tr=reflections.find(r=>r.date===today());
+  c.innerHTML=`
+    <div class="today-date">${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</div>
+    <div class="card" style="margin-top:10px"><div class="card-title">Life Map</div><canvas id="radarCanvas" width="280" height="280"></canvas></div>
+    <div class="card"><div class="card-title">Domain Levels</div>
+      ${DOMAINS.map(d=>`<div class="xp-bar-wrap"><div class="xp-bar-label"><span class="dot" style="background:${d.color}"></span>${d.icon} ${d.name}</div>
+        <div class="xp-bar-track"><div class="xp-bar-fill" style="width:${getDomainProgress(d.id)*100}%;background:${d.color}"></div></div>
+        <div class="xp-bar-level">L${getDomainLevel(d.id)}</div></div>`).join('')}
+    </div>
+    ${streaks.length>0?`<div class="card"><div class="card-title">Active Streaks</div>
+      ${streaks.map(s=>`<div class="streak-row"><span class="streak-name">${s.domain.icon} ${s.domain.name}</span><span class="streak-count">🔥 ${s.streak}d</span></div>`).join('')}</div>`:''}
+    <div class="card"><div class="card-title-row"><span class="card-title" style="margin:0">Today's Log</span><span style="font-size:13px;color:var(--gold);font-weight:600">+${tl.reduce((s,l)=>s+(l.xp||5),0)} XP</span></div>
+      ${tl.length===0?'<div style="font-size:13px;color:var(--text-muted);padding:8px 0">No entries yet. Tap Log to start.</div>':
+        tl.map(l=>{const d=DOMAINS.find(x=>x.id===l.domain);return `<div class="log-entry"><div class="log-check">✓</div><div class="log-text">${l.text}</div><span class="log-domain-tag" style="background:${d?d.color+'14':''};color:${d?d.color:''}">${d?d.name:''}</span></div>`;}).join('')}
+    </div>
+    ${tr?`<div class="card"><div class="card-title">Today's Reflection</div><div style="display:flex;gap:16px;font-size:13px;margin-bottom:8px"><span>Mood: <b style="color:var(--gold)">${tr.mood}/5</b></span><span>Energy: <b style="color:var(--teal)">${tr.energy}/5</b></span><span>Stress: <b style="color:var(--red)">${tr.stress}/5</b></span></div>${tr.note?`<div style="font-size:13px;color:var(--text-secondary);font-style:italic">"${tr.note}"</div>`:''}</div>`:''}
+  `;
+  setTimeout(()=>drawRadar(),50);
+}
+
+function drawRadar(){
+  const canvas=document.getElementById('radarCanvas');if(!canvas)return;
+  const ctx=canvas.getContext('2d');const W=canvas.width,H=canvas.height,cx=W/2,cy=H/2,R=100;
+  ctx.clearRect(0,0,W,H);const n=DOMAINS.length;
+  const angles=DOMAINS.map((_,i)=>(Math.PI*2*i/n)-Math.PI/2);
+  for(let r=1;r<=5;r++){ctx.beginPath();const rr=R*r/5;angles.forEach((a,i)=>{const x=cx+Math.cos(a)*rr,y=cy+Math.sin(a)*rr;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});ctx.closePath();ctx.strokeStyle='rgba(200,195,185,0.5)';ctx.lineWidth=1;ctx.stroke();}
+  angles.forEach(a=>{ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*R,cy+Math.sin(a)*R);ctx.strokeStyle='rgba(200,195,185,0.3)';ctx.stroke();});
+  const maxLvl=20;ctx.beginPath();
+  DOMAINS.forEach((d,i)=>{const lvl=Math.min(getDomainLevel(d.id),maxLvl);const ratio=lvl/maxLvl;const x=cx+Math.cos(angles[i])*R*ratio,y=cy+Math.sin(angles[i])*R*ratio;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+  ctx.closePath();ctx.fillStyle='rgba(184,134,11,0.12)';ctx.fill();ctx.strokeStyle='rgba(184,134,11,0.6)';ctx.lineWidth=2;ctx.stroke();
+  DOMAINS.forEach((d,i)=>{const lvl=Math.min(getDomainLevel(d.id),maxLvl);const ratio=lvl/maxLvl;const x=cx+Math.cos(angles[i])*R*ratio,y=cy+Math.sin(angles[i])*R*ratio;
+    ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fillStyle=d.color;ctx.fill();
+    const lx=cx+Math.cos(angles[i])*(R+18),ly=cy+Math.sin(angles[i])*(R+18);
+    ctx.font='11px system-ui';ctx.fillStyle='#9e9a90';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(`${d.icon}${d.name}`,lx,ly);});
+}
+
+// ===== LOG TAB =====
+let logDomainFilter='all';
+
+function renderLog(c){
+  const tl=getTodayLogs();
+  c.innerHTML=`
+    <div class="card">
+      <div class="card-title">Log an Activity</div>
+      <div class="chip-group" style="margin-bottom:12px">
+        <span class="chip ${logDomainFilter==='all'?'selected':''}" onclick="logDomainFilter='all';renderTab()">All</span>
+        ${DOMAINS.map(d=>`<span class="chip ${logDomainFilter===d.id?'selected':''}" onclick="logDomainFilter='${d.id}';renderTab()">${d.icon} ${d.name}</span>`).join('')}
+      </div>
+      ${renderActivityMenu()}
+      <div style="margin-top:12px;border-top:1px solid var(--border-light);padding-top:12px">
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Custom entry</div>
+        <div style="display:flex;gap:8px">
+          <input id="customLogText" placeholder="Type your own activity..." style="flex:1">
+          <select id="customLogDomain" style="width:110px;font-size:12px">
+            ${DOMAINS.map(d=>`<option value="${d.id}">${d.icon} ${d.name}</option>`).join('')}
+          </select>
+        </div>
+        <button class="btn btn-outline btn-block btn-sm" style="margin-top:8px" onclick="addCustomLog()">+ Log Custom</button>
+      </div>
+      <div style="text-align:center;margin-top:10px">
+        <button class="btn btn-outline btn-sm" onclick="addRestDay()">🛌 Rest Day (+5 XP)</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title-row"><span class="card-title" style="margin:0">Today</span><span style="font-size:12px;color:var(--text-muted)">${tl.length} entries · +${tl.reduce((s,l)=>s+(l.xp||5),0)} XP</span></div>
+      ${tl.length===0?'<div style="font-size:13px;color:var(--text-muted);padding:10px 0">Nothing logged yet.</div>':
+        tl.map(l=>{const d=DOMAINS.find(x=>x.id===l.domain);return `<div class="log-entry"><div class="log-check">✓</div><div class="log-text">${l.text}</div><span class="log-xp">+${l.xp||5}</span><span class="log-domain-tag" style="background:${d?d.color+'14':''};color:${d?d.color:''}">${d?d.name:''}</span><button class="log-delete" onclick="deleteLog('${l.id}')">×</button></div>`;}).join('')}
+    </div>
+  `;
+  setTimeout(()=>{const inp=document.getElementById('customLogText');if(inp)inp.addEventListener('keydown',e=>{if(e.key==='Enter')addCustomLog();});},50);
+}
+
+function renderActivityMenu(){
+  const domainsToShow=logDomainFilter==='all'?DOMAINS:DOMAINS.filter(d=>d.id===logDomainFilter);
+  const todayIds=getTodayLogs().map(l=>l.text);
+
+  return domainsToShow.map(d=>{
+    const ba=BA_ACTIVITIES[d.id];
+    const allActs=[...ba.mastery.map(a=>({...a,type:'mastery'})),...ba.pleasure.map(a=>({...a,type:'pleasure'}))];
+    return `<div class="domain-section">
+      <div class="domain-section-title" style="margin-top:8px"><span style="color:${d.color}">${d.icon}</span> ${d.name}</div>
+      <div class="chip-group">
+        ${allActs.map(a=>{
+          const done=todayIds.includes(a.text);
+          return `<span class="chip ${done?'selected':''}" style="${done?`background:${d.color}14;border-color:${d.color}40;color:${d.color}`:''}" onclick="${done?'':`logActivity('${d.id}','${a.text.replace(/'/g,"\\'")}',${a.xp})`}">${a.type==='pleasure'?'✦ ':''}${a.text} <span style="font-size:10px;opacity:0.7">+${a.xp}</span></span>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function logActivity(domain,text,xp){
+  const prev=getDomainLevel(domain);
+  logs.push({id:Date.now().toString(),text,domain,date:today(),xp,ts:Date.now()});
+  persist();
+  const nxt=getDomainLevel(domain);
+  if(nxt>prev){const d=DOMAINS.find(x=>x.id===domain);showToast(`${d?.icon} ${d?.name} Level ${nxt}!`);}
+  renderTab();
+}
+
+function addCustomLog(){
+  const text=document.getElementById('customLogText')?.value?.trim();
+  const domain=document.getElementById('customLogDomain')?.value;
+  if(!text)return;
+  logActivity(domain,text,5);
+}
+
+function addRestDay(){logActivity('mind','Rest & Recovery Day',5);}
+function deleteLog(id){logs=logs.filter(l=>l.id!==id);persist();renderTab();}
+
+// ===== GOALS =====
+function renderGoals(c){
+  c.innerHTML=`
+    <div class="card-title-row" style="margin-bottom:12px"><span class="card-title" style="margin:0">Goals</span>
+      <button class="btn btn-gold btn-sm" onclick="showGoalModal()">+ New Goal</button></div>
+    ${goals.length===0?'<div class="empty-state"><div class="icon">🎯</div><p>No goals yet.</p></div>':''}
+    ${goals.map(g=>{const d=DOMAINS.find(x=>x.id===g.domain);const total=g.steps.length||1;const done=g.steps.filter(s=>s.done).length;const pct=Math.round(done/total*100);
+      return `<div class="goal-card fade-in"><div class="goal-header"><div class="goal-title">${d?d.icon:''} ${g.title}</div><div style="display:flex;align-items:center;gap:8px"><span class="goal-progress-text">${pct}%</span><button class="log-delete" onclick="deleteGoal('${g.id}')">×</button></div></div>
+        <div class="goal-progress-bar"><div class="goal-progress-fill" style="width:${pct}%"></div></div>
+        ${g.steps.map(s=>`<div class="step-item"><div class="step-check ${s.done?'done':''}" onclick="toggleStep('${g.id}','${s.id}')">✓</div><span class="step-text ${s.done?'done':''}">${s.text}</span></div>`).join('')}
+        <div style="margin-top:8px"><input placeholder="Add a step..." style="font-size:12px;padding:6px 10px" onkeydown="if(event.key==='Enter'){addStep('${g.id}',this.value);this.value=''}"></div>
+      </div>`;}).join('')}
+  `;
+}
+
+function showGoalModal(){
+  document.getElementById('modalContainer').innerHTML=`
+    <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+      <div class="modal fade-in">
+        <h3>New Goal</h3>
+        <div class="form-group"><label>Choose from templates or write your own</label>
+          <select id="goalTemplate" onchange="fillGoalTemplate()">
+            <option value="">— Write custom goal —</option>
+            ${DOMAINS.map(d=>(GOAL_OPTIONS[d.id]||[]).map((g,i)=>`<option value="${d.id}:${i}">${d.icon} ${g.title}</option>`).join('')).join('')}
+          </select>
+        </div>
+        <div class="form-group"><label>Goal Title</label><input id="goalTitle" placeholder="e.g. Improve cardiovascular health"></div>
+        <div class="form-group"><label>Domain</label><select id="goalDomain">${DOMAINS.map(d=>`<option value="${d.id}">${d.icon} ${d.name}</option>`).join('')}</select></div>
+        <div class="form-group"><label>Steps (one per line)</label><textarea id="goalSteps" rows="4" placeholder="Walk 20 minutes\nSchedule blood test"></textarea></div>
+        <div class="form-actions"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-gold" onclick="createGoal()">Create</button></div>
+      </div>
+    </div>`;
+}
+
+function fillGoalTemplate(){
+  const v=document.getElementById('goalTemplate')?.value;if(!v)return;
+  const[domId,idx]=v.split(':');const g=GOAL_OPTIONS[domId]?.[parseInt(idx)];if(!g)return;
+  document.getElementById('goalTitle').value=g.title;
+  document.getElementById('goalDomain').value=domId;
+  document.getElementById('goalSteps').value=g.steps.join('\n');
+}
+
+function createGoal(){
+  const title=document.getElementById('goalTitle')?.value?.trim();const domain=document.getElementById('goalDomain')?.value;
+  const stepsText=document.getElementById('goalSteps')?.value?.trim();if(!title)return;
+  const steps=stepsText?stepsText.split('\n').filter(s=>s.trim()).map(s=>({id:Date.now().toString()+Math.random().toString(36).slice(2,6),text:s.trim(),done:false})):[];
+  goals.push({id:Date.now().toString(),title,domain,steps});persist();closeModal();renderTab();
+}
+
+function toggleStep(goalId,stepId){
+  const goal=goals.find(g=>g.id===goalId);if(!goal)return;
+  const step=goal.steps.find(s=>s.id===stepId);if(!step)return;
+  step.done=!step.done;
+  if(step.done){const prev=getDomainLevel(goal.domain);logs.push({id:Date.now().toString(),text:`Goal step: ${step.text}`,domain:goal.domain,date:today(),xp:5,ts:Date.now()});const nxt=getDomainLevel(goal.domain);if(nxt>prev){const d=DOMAINS.find(x=>x.id===goal.domain);showToast(`${d?.icon} ${d?.name} Level ${nxt}!`);}}
+  persist();renderTab();
+}
+
+function addStep(goalId,text){if(!text?.trim())return;const goal=goals.find(g=>g.id===goalId);if(!goal)return;goal.steps.push({id:Date.now().toString()+Math.random().toString(36).slice(2,6),text:text.trim(),done:false});persist();renderTab();}
+function deleteGoal(id){if(!confirm('Delete this goal?'))return;goals=goals.filter(g=>g.id!==id);persist();renderTab();}
+
+// ===== QUESTS =====
+function renderQuests(c){
+  const active=quests.filter(q=>!q.done);const completed=quests.filter(q=>q.done);const qInsights=generateInsights().filter(i=>i.type==='quest');
+  c.innerHTML=`
+    <div class="card-title-row" style="margin-bottom:12px"><span class="card-title" style="margin:0">Active Quests</span><button class="btn btn-gold btn-sm" onclick="showQuestModal()">+ New Quest</button></div>
+    ${qInsights.map(i=>`<div class="quest-card fade-in" style="border-left-color:var(--teal)"><div class="quest-title">💡 Suggested</div><div class="quest-meta">${i.text}</div><button class="btn btn-outline btn-sm" onclick="autoCreateQuest('${i.domain?.id}')">Accept Quest</button></div>`).join('')}
+    ${active.length===0&&qInsights.length===0?'<div class="empty-state"><div class="icon">⭐</div><p>No active quests.</p></div>':''}
+    ${active.map(q=>{const d=DOMAINS.find(x=>x.id===q.domain);const pct=Math.min(100,Math.round((q.current/q.target)*100));const dl=q.deadline?daysBetween(today(),q.deadline):null;
+      return `<div class="quest-card fade-in"><div class="quest-title">${d?d.icon:''} ${q.title}</div><div class="quest-meta">${q.current}/${q.target} ${q.unit}${dl!==null?` · ${dl>0?dl+'d left':'Due today!'}`:''}
+      </div><div class="quest-progress"><div class="xp-bar-track" style="flex:1"><div class="xp-bar-fill" style="width:${pct}%;background:var(--gold)"></div></div><span style="font-size:12px;color:var(--gold);font-weight:600">${pct}%</span><button class="btn btn-outline btn-sm" onclick="incrementQuest('${q.id}')" style="padding:4px 10px">+1</button>${pct>=100?`<button class="btn btn-gold btn-sm" onclick="completeQuest('${q.id}')" style="padding:4px 10px">✓</button>`:''}</div></div>`;}).join('')}
+    ${completed.length>0?`<div class="card-title" style="margin-top:20px">Completed</div>${completed.slice(0,5).map(q=>{const d=DOMAINS.find(x=>x.id===q.domain);return `<div class="quest-card" style="opacity:0.6;border-left-color:var(--green)"><div class="quest-title">${d?d.icon:''} ${q.title}</div><div class="quest-meta">Completed ✓</div></div>`;}).join('')}`:''}
+  `;
+}
+
+function showQuestModal(){
+  document.getElementById('modalContainer').innerHTML=`<div class="modal-overlay" onclick="if(event.target===this)closeModal()"><div class="modal fade-in"><h3>New Quest</h3>
+    <div class="form-group"><label>Quest Title</label><input id="questTitle" placeholder="e.g. 7-day exercise streak"></div>
+    <div class="form-group"><label>Domain</label><select id="questDomain">${DOMAINS.map(d=>`<option value="${d.id}">${d.icon} ${d.name}</option>`).join('')}</select></div>
+    <div class="form-group" style="display:flex;gap:8px"><div style="flex:1"><label>Target</label><input id="questTarget" type="number" value="7" min="1"></div><div style="flex:1"><label>Unit</label><input id="questUnit" value="actions"></div></div>
+    <div class="form-group"><label>Deadline (optional)</label><input id="questDeadline" type="date"></div>
+    <div class="form-actions"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-gold" onclick="createQuest()">Create</button></div></div></div>`;
+}
+
+function createQuest(){const title=document.getElementById('questTitle')?.value?.trim();const domain=document.getElementById('questDomain')?.value;const target=parseInt(document.getElementById('questTarget')?.value)||7;const unit=document.getElementById('questUnit')?.value?.trim()||'actions';const deadline=document.getElementById('questDeadline')?.value||null;if(!title)return;quests.push({id:Date.now().toString(),title,domain,target,current:0,unit,deadline,done:false});persist();closeModal();renderTab();}
+function autoCreateQuest(domainId){const d=DOMAINS.find(x=>x.id===domainId);if(!d)return;quests.push({id:Date.now().toString(),title:`3 ${d.name} actions this week`,domain:d.id,target:3,current:0,unit:'actions',deadline:new Date(Date.now()+7*86400000).toISOString().slice(0,10),done:false});persist();renderTab();}
+function incrementQuest(id){const q=quests.find(x=>x.id===id);if(!q||q.done)return;q.current++;if(q.current>=q.target){const prev=getDomainLevel(q.domain);logs.push({id:Date.now().toString(),text:`Quest completed: ${q.title}`,domain:q.domain,date:today(),xp:15,ts:Date.now()});const nxt=getDomainLevel(q.domain);if(nxt>prev){const d=DOMAINS.find(x=>x.id===q.domain);showToast(`${d?.icon} ${d?.name} Level ${nxt}!`);}}persist();renderTab();}
+function completeQuest(id){const q=quests.find(x=>x.id===id);if(!q)return;q.done=true;showToast('⭐ Quest Complete!');persist();renderTab();}
+
+// ===== REFLECT =====
+function renderReflect(c){
+  const tr=reflections.find(r=>r.date===today());
+  c.innerHTML=`
+    <div class="card"><div class="card-title">Evening Reflection</div>
+      <div class="today-date" style="margin-bottom:16px">${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</div>
+      <div class="slider-group"><div class="slider-label"><span>Mood</span><span id="moodVal">${tr?.mood||3}</span></div><input type="range" id="moodSlider" min="1" max="5" value="${tr?.mood||3}" oninput="document.getElementById('moodVal').textContent=this.value"></div>
+      <div class="slider-group"><div class="slider-label"><span>Energy</span><span id="energyVal">${tr?.energy||3}</span></div><input type="range" id="energySlider" min="1" max="5" value="${tr?.energy||3}" oninput="document.getElementById('energyVal').textContent=this.value"></div>
+      <div class="slider-group"><div class="slider-label"><span>Stress</span><span id="stressVal">${tr?.stress||3}</span></div><input type="range" id="stressSlider" min="1" max="5" value="${tr?.stress||3}" oninput="document.getElementById('stressVal').textContent=this.value"></div>
+      <div class="form-group"><label>One thing that went well today?</label><textarea id="reflectNote" rows="3" placeholder="A small win, a moment of clarity...">${tr?.note||''}</textarea></div>
+      <button class="btn btn-gold btn-block" onclick="saveReflection()">${tr?'Update':'Save'} Reflection</button>
+    </div>
+    <div class="card"><div class="card-title">Recent Reflections</div>
+      ${reflections.filter(r=>r.date!==today()).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,7).map(r=>{
+        const dn=new Date(r.date+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+        return `<div style="padding:8px 0;border-bottom:1px solid var(--border-light);font-size:13px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--text-muted)">${dn}</span><span>😊${r.mood} ⚡${r.energy} 😰${r.stress}</span></div>${r.note?`<div style="color:var(--text-secondary);font-style:italic">"${r.note}"</div>`:''}</div>`;}).join('')}
+      ${reflections.length===0?'<div style="font-size:13px;color:var(--text-muted)">No reflections yet.</div>':''}
+    </div>
+  `;
+}
+
+function saveReflection(){
+  const mood=parseInt(document.getElementById('moodSlider')?.value)||3;const energy=parseInt(document.getElementById('energySlider')?.value)||3;
+  const stress=parseInt(document.getElementById('stressSlider')?.value)||3;const note=document.getElementById('reflectNote')?.value?.trim()||'';
+  const existing=reflections.findIndex(r=>r.date===today());const entry={date:today(),mood,energy,stress,note};
+  if(existing>=0)reflections[existing]=entry;else reflections.push(entry);persist();showToast('Reflection saved');renderTab();
+}
+
+// ===== REPORT =====
+function renderReport(c){
+  const wl=getWeekLogs();const wr=reflections.filter(r=>r.date>=weekAgo());const insights=generateInsights();
+  const totalXP=wl.reduce((s,l)=>s+(l.xp||5),0);const activeDays=[...new Set(wl.map(l=>l.date))].length;
+  const avgM=wr.length?(wr.reduce((s,r)=>s+r.mood,0)/wr.length).toFixed(1):'-';
+  const avgE=wr.length?(wr.reduce((s,r)=>s+r.energy,0)/wr.length).toFixed(1):'-';
+  const avgS=wr.length?(wr.reduce((s,r)=>s+r.stress,0)/wr.length).toFixed(1):'-';
+
+  c.innerHTML=`
+    <div class="card"><div class="card-title-row"><span class="card-title" style="margin:0">Weekly Report</span><span class="today-date">${weekAgo()} → ${today()}</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
+        <div style="text-align:center;padding:10px;background:var(--bg-input);border-radius:var(--radius-sm)"><div style="font-size:22px;font-weight:700;color:var(--gold)">${totalXP}</div><div style="font-size:11px;color:var(--text-muted)">Total XP</div></div>
+        <div style="text-align:center;padding:10px;background:var(--bg-input);border-radius:var(--radius-sm)"><div style="font-size:22px;font-weight:700;color:var(--teal)">${wl.length}</div><div style="font-size:11px;color:var(--text-muted)">Actions</div></div>
+        <div style="text-align:center;padding:10px;background:var(--bg-input);border-radius:var(--radius-sm)"><div style="font-size:22px;font-weight:700;color:var(--green)">${activeDays}/7</div><div style="font-size:11px;color:var(--text-muted)">Active Days</div></div>
+      </div>
+    </div>
+    <div class="card"><div class="card-title">Domain Breakdown</div>
+      ${DOMAINS.map(d=>{const dl=wl.filter(l=>l.domain===d.id);return `<div class="report-stat"><span>${d.icon} ${d.name}</span><span><span class="report-val">${dl.length} actions · +${dl.reduce((s,l)=>s+(l.xp||5),0)} XP</span> · L${getDomainLevel(d.id)}</span></div>`;}).join('')}
+    </div>
+    ${wr.length>0?`<div class="card"><div class="card-title">Wellbeing Averages</div><div class="report-stat"><span>Mood</span><span class="report-val">${avgM}/5</span></div><div class="report-stat"><span>Energy</span><span class="report-val">${avgE}/5</span></div><div class="report-stat"><span>Stress</span><span class="report-val">${avgS}/5</span></div></div>`:''}
+    ${insights.length>0?`<div class="card"><div class="card-title">Insights & Suggestions</div>${insights.map(i=>`<div class="insight-box" style="margin-bottom:8px"><strong>${i.type==='warning'?'⚠️':i.type==='pattern'?'🔍':i.type==='strength'?'💪':i.type==='positive'?'✨':i.type==='alert'?'🚨':'💡'}</strong> ${i.text}</div>`).join('')}</div>`:''}
+    <div class="card"><div class="card-title">Export</div>
+      <button class="btn btn-gold btn-block" onclick="emailReport()" style="margin-bottom:8px">📧 Email Weekly Report</button>
+      <button class="btn btn-outline btn-block" onclick="exportData()">💾 Export All Data (JSON)</button>
+      <div style="margin-top:8px"><button class="btn btn-outline btn-block btn-sm" onclick="importData()">📂 Import Data</button></div>
+    </div>
+    <div class="card"><div class="card-title">Settings</div>
+      <div class="setting-row"><span>Name</span><input value="${settings.userName||''}" style="width:120px;text-align:right" onchange="settings.userName=this.value;persist()"></div>
+      <div class="setting-row"><span>Email for Reports</span><input value="${settings.email||''}" placeholder="your@email.com" style="width:180px;text-align:right" onchange="settings.email=this.value;persist()"></div>
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button class="btn btn-outline btn-sm" onclick="profile=null;persist();location.reload()">Redo Onboarding</button>
+        <button class="btn btn-danger btn-sm" onclick="if(confirm('Clear ALL data?')){localStorage.clear();location.reload()}">Reset All</button>
+      </div>
+    </div>
+  `;
+}
+
+function emailReport(){
+  const wl=getWeekLogs();const wr=reflections.filter(r=>r.date>=weekAgo());const insights=generateInsights();const streaks=getStreaks();
+  const totalXP=wl.reduce((s,l)=>s+(l.xp||5),0);const activeDays=[...new Set(wl.map(l=>l.date))].length;
+  const avgM=wr.length?(wr.reduce((s,r)=>s+r.mood,0)/wr.length).toFixed(1):'N/A';
+  const avgE=wr.length?(wr.reduce((s,r)=>s+r.energy,0)/wr.length).toFixed(1):'N/A';
+  const avgS=wr.length?(wr.reduce((s,r)=>s+r.stress,0)/wr.length).toFixed(1):'N/A';
+
+  let body=`LIFE RPG - Weekly Report\n${weekAgo()} to ${today()}\nGlobal Level: ${getGlobalLevel()}\n\n--- SUMMARY ---\nTotal XP: ${totalXP}\nActions: ${wl.length}\nActive Days: ${activeDays}/7\n\n--- DOMAINS ---\n`;
+  DOMAINS.forEach(d=>{const dl=wl.filter(l=>l.domain===d.id);body+=`${d.name}: ${dl.length} actions, +${dl.reduce((s,l)=>s+(l.xp||5),0)} XP, Level ${getDomainLevel(d.id)}\n`;});
+  body+=`\n--- WELLBEING ---\nAvg Mood: ${avgM}/5\nAvg Energy: ${avgE}/5\nAvg Stress: ${avgS}/5\n\n`;
+  if(streaks.length>0){body+='--- STREAKS ---\n';streaks.forEach(s=>body+=`${s.domain.name}: ${s.streak} days\n`);body+='\n';}
+  if(insights.length>0){body+='--- INSIGHTS ---\n';insights.forEach(i=>body+=`• ${i.text}\n`);}
+  const subject=`Life RPG Report - Week of ${weekAgo()}`;
+  window.location.href=`mailto:${settings.email||''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+function exportData(){const data={logs,goals,quests,reflections,profile,settings,exported:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`life-rpg-${today()}.json`;a.click();URL.revokeObjectURL(url);}
+function importData(){const input=document.createElement('input');input.type='file';input.accept='.json';input.onchange=e=>{const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{try{const data=JSON.parse(ev.target.result);if(data.logs)logs=data.logs;if(data.goals)goals=data.goals;if(data.quests)quests=data.quests;if(data.reflections)reflections=data.reflections;if(data.profile)profile=data.profile;if(data.settings)settings=data.settings;persist();showToast('Data imported!');renderApp();}catch(err){alert('Invalid file: '+err.message);}};reader.readAsText(file);};input.click();}
+
+// ===== INIT =====
+if(!profile){renderOnboarding();}else{renderApp();}
+</script>
+</body>
+</html>

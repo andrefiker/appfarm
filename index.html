@@ -950,7 +950,7 @@
             <p class="hero-desc">Ferramentas para profissionais de saúde mental, educação e produtividade. Feitas por quem vive a clínica.</p>
             <div class="hero-stats">
                 <div class="hero-stat">
-                    <div class="number" id="appCount">10</div>
+                    <div class="number" id="appCount">11</div>
                     <div class="label">Apps</div>
                 </div>
                 <div class="hero-stat">
@@ -980,13 +980,13 @@
         <div class="bundle-card">
             <div>
                 <div class="bundle-badge">🔥 Melhor valor</div>
-                <h3>Pacote Completo — Todos os 10 apps</h3>
+                <h3>Pacote Completo — Todos os 11 apps</h3>
                 <div class="bundle-desc">Acesse todo o ecossistema App Farm: 10 ferramentas clínicas, financeiras, educacionais e de bem-estar. APK + Web App inclusos.</div>
             </div>
             <div class="bundle-pricing">
-                <div class="bundle-old-price">De R$ 100,00</div>
+                <div class="bundle-old-price">De R$ 110,00</div>
                 <div class="bundle-new-price">R$ 50,00</div>
-                <div class="bundle-save">Economize R$ 50,00</div>
+                <div class="bundle-save">Economize R$ 60,00</div>
                 <a href="comprar.html?app=bundle" class="bundle-btn">Comprar pacote</a>
             </div>
         </div>
@@ -997,7 +997,7 @@
         <div class="tier-header">
             <div class="tier-icon" style="background: rgba(107, 143, 94, 0.12)">🏥</div>
             <h2>Para Profissionais de Saúde Mental</h2>
-            <span class="tier-count">5 apps</span>
+            <span class="tier-count">6 apps</span>
         </div>
         <p class="tier-desc">Prontuário, agenda, testes, prescrições, interações e farmacologia — tudo que o psicólogo e psiquiatra precisam no consultório.</p>
         <div class="apps-grid" id="appsGridClinical"></div>
@@ -1271,6 +1271,33 @@
             note: "Feito para pessoas autistas, familiares e profissionais. Informação acessível, ferramentas práticas, direitos claros — tudo no bolso."
         },
         {
+            name: "Entendendo Transtornos Psiquiátricos",
+            description: "36 diagnósticos psiquiátricos explicados com clareza: sintomas, tratamento, medicação, CID-10/CID-11 e dicas práticas — para pacientes, familiares e profissionais.",
+            category: "Saúde",
+            icon: "🧠",
+            iconBg: "#1a1520",
+            tags: ["Psiquiatria", "Psicoeducação", "Android", "Web App"],
+            price: "R$ 10,00",
+            slug: "psicoeducacao",
+            available: true,
+            longDescription: "Seu paciente acabou de receber um diagnóstico e não entende o que significa. Ou você é profissional e precisa de uma referência rápida para psicoeducação durante a sessão. O Entendendo Transtornos Psiquiátricos cobre 36 diagnósticos — de depressão e ansiedade a esquizofrenia, bipolar, TEPT, TOC, transtornos alimentares, dependência química e transtornos de personalidade — com linguagem acessível mas tecnicamente precisa. Cada transtorno traz: o que é (sem jargão), sintomas principais, opções de tratamento, medicamentos com nomes comerciais, CID-10 e CID-11, e dicas práticas escritas para quem vive o diagnóstico. Inclui seção de direitos (CIPTEA, BPC-LOAS, cotas PcD) e sistema de favoritos para acesso rápido. Busca por nome, CID ou sintoma. 100% offline.",
+            features: [
+                "36 transtornos psiquiátricos — a referência mais completa em português que cabe no bolso",
+                "Linguagem dupla — técnica para profissionais, acessível para pacientes e familiares",
+                "Sintomas, tratamento e medicação em cada diagnóstico — tudo em uma ficha",
+                "CID-10 e CID-11 lado a lado — atualizado para a nova classificação",
+                "Dicas práticas por diagnóstico — escritas para quem vive o transtorno, não para quem estuda",
+                "Busca por nome, CID ou sintoma — encontre o diagnóstico em milissegundos",
+                "Filtro por categoria — humor, ansiedade, psicóticos, neurodesenvolvimento, personalidade e mais",
+                "Sistema de favoritos — marque os diagnósticos que usa mais e acesse com um toque",
+                "Seção de direitos — CIPTEA, BPC-LOAS, cotas, meia-entrada com passo a passo",
+                "Textos de psicoeducação prontos — compartilhe via WhatsApp com pacientes e familiares",
+                "Cobre: depressão, bipolar I/II, TAG, pânico, fobia social, TOC, TEPT, esquizofrenia, borderline, TDAH, TEA, anorexia, compulsão alimentar, dependência química e mais",
+                "100% offline — use no consultório, hospital ou supervisão sem internet"
+            ],
+            note: "Psicoeducação é a primeira linha de tratamento. Este app coloca informação de qualidade na mão de quem mais precisa: o paciente."
+        },
+        {
             name: "StoryTracker",
             description: "Todas as suas fontes de notícia em um lugar só. Agregador RSS leve com categorização automática, favoritos e leitura sem distrações.",
             category: "Notícias",
@@ -1296,7 +1323,7 @@
     ];
 
     // ===== TIER CLASSIFICATION =====
-    const clinicalSlugs = ['clinica-facil', 'interacoes', 'prescripta', 'guia-psicofarm', 'autismo-facil'];
+    const clinicalSlugs = ['clinica-facil', 'interacoes', 'prescripta', 'guia-psicofarm', 'autismo-facil', 'psicoeducacao'];
 
     // ===== RENDER =====
     function renderApps() {

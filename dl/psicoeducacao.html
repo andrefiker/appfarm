@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Psicoeducação</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg:#F3F1EE;--sf:#FFFEF9;--card:#FFFEF9;--alt:#EDEAE5;--p:#375A7F;--pL:#E8EEF5;--pF:rgba(55,90,127,.08);--ac:#D4896A;--acL:#FFF0E3;--tx:#2A3640;--tm:#647580;--tl:#95A5AD;--bd:#D5CFC6;--bl:#E8E3DC;--rd:#C25B56;--rBg:#FDF0EF;--gn:#5E9B6B;--gBg:#EFF7F0;--yl:#C49A3A;--yBg:#FEF8EC;--bl2:#4A80A8;--bBg:#E3EEF5;--pp:#8B6BAE;--pBg:#F3EEF8;--r:14px;--rs:10px;--sh:0 2px 8px rgba(42,54,64,.06);--f:'Segoe UI',system-ui,sans-serif}
+html,body{font-family:var(--f);background:var(--bg);color:var(--tx);font-size:15px;line-height:1.6;min-height:100vh}
+.sh{max-width:520px;margin:0 auto;padding-bottom:72px}
+.tb{background:var(--p);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100}
+.tb h1{font-size:16px;font-weight:700;flex:1}.tb .bk{background:none;border:none;color:#fff;font-size:20px;cursor:pointer;display:none;padding:4px 8px 4px 0}
+.bn{position:fixed;bottom:0;left:0;right:0;background:var(--sf);border-top:1.5px solid var(--bd);display:flex;z-index:100;max-width:520px;margin:0 auto}
+.bn-i{flex:1;padding:6px 2px 8px;text-align:center;cursor:pointer;color:var(--tl);transition:.2s}.bn-i.a{color:var(--p)}
+.bn-i .ic{font-size:20px;display:block}.bn-i .lb{font-size:9.5px;font-weight:700;margin-top:1px;display:block;letter-spacing:.3px}
+.pg{display:none}.pg.a{display:block}
+.sp{display:none}.sp.a{display:block}
+.cd{background:var(--card);border:1px solid var(--bl);border-radius:var(--r);padding:14px 16px;margin:0 16px 10px;box-shadow:var(--sh)}
+.cd-t{font-size:14px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.cd-p{font-size:13.5px;color:var(--tm);line-height:1.6}
+.sec{padding:14px 16px 6px;font-size:12px;font-weight:700;color:var(--p);text-transform:uppercase;letter-spacing:.7px}
+.sb{padding:10px 16px;background:var(--bg);position:sticky;top:49px;z-index:90}
+.sbi{display:flex;align-items:center;background:var(--sf);border:1.5px solid var(--bd);border-radius:12px;padding:0 12px;box-shadow:var(--sh)}
+.sbi:focus-within{border-color:var(--p)}
+.sbi input{flex:1;border:none;background:none;padding:10px 8px;font-size:15px;color:var(--tx);outline:none;font-family:var(--f)}
+.sbi input::placeholder{color:var(--tl)}
+.sbi .cl{background:none;border:none;color:var(--tl);font-size:18px;cursor:pointer;padding:4px}
+.fc{padding:0 16px 8px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}.fc::-webkit-scrollbar{display:none}
+.fp{white-space:nowrap;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid var(--bd);background:var(--sf);color:var(--tm);cursor:pointer;flex-shrink:0;transition:.2s}
+.fp.a{background:var(--p);color:#fff;border-color:var(--p)}
+.cnt{padding:4px 16px 8px;font-size:12px;color:var(--tl);font-weight:500}
+.ex{background:var(--card);border:1px solid var(--bl);border-radius:var(--r);margin:0 16px 8px;box-shadow:var(--sh);overflow:hidden;cursor:pointer}
+.ex-h{padding:12px 16px;display:flex;align-items:center;gap:10px}
+.ex-h .ei{font-size:18px;flex-shrink:0}.ex-h .et{font-size:13.5px;font-weight:600;flex:1;line-height:1.4}.ex-h .ea{color:var(--tl);font-size:14px;transition:.2s}
+.ex.o .ea{transform:rotate(180deg)}
+.ex-b{display:none;padding:0 16px 14px;font-size:13px;color:var(--tm);line-height:1.7;border-top:1px solid var(--bl)}
+.ex.o .ex-b{display:block}
+.tag{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;margin:2px}
+.tg-r{background:var(--rBg);color:var(--rd)}.tg-g{background:var(--gBg);color:var(--gn)}.tg-y{background:var(--yBg);color:var(--yl)}.tg-b{background:var(--bBg);color:var(--bl2)}.tg-p{background:var(--pBg);color:var(--pp)}
+.cid{display:inline-flex;gap:4px;margin:6px 0}
+.cid span{padding:2px 8px;border-radius:6px;font-size:10.5px;font-weight:700;letter-spacing:.3px}
+.cid .c10{background:#EDE7E0;color:#8A7A6A}.cid .c11{background:var(--pL);color:var(--p)}
+.btn{padding:10px 20px;border-radius:var(--rs);border:none;font-family:var(--f);font-weight:600;font-size:14px;cursor:pointer;transition:.2s}
+.btn-p{background:var(--p);color:#fff}.btn-f{width:100%;text-align:center}
+.disc{margin:10px 16px;padding:12px;background:var(--yBg);border:1px solid var(--yl);border-radius:var(--rs);font-size:11px;color:#8B6F30;line-height:1.5}
+.fav{background:none;border:none;font-size:18px;cursor:pointer;padding:4px;color:var(--tl)}.fav.v{color:#F9A825}
+.det{padding:0 0 16px}
+.det .ds{margin:12px 16px 0}
+.det .ds h4{font-size:11.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--p);font-weight:700;margin-bottom:6px}
+.det .nb{background:var(--pF);border-radius:var(--rs);padding:10px 12px;font-size:13px;color:var(--p);line-height:1.6;border-left:3px solid var(--p)}
+.det .gs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.det .gi{background:var(--alt);border-radius:var(--rs);padding:8px 10px}
+.det .gi .gl{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--tl);font-weight:600}
+.det .gi .gv{font-size:13px;font-weight:600;color:var(--tx);margin-top:2px}
+.det .gi.fu{grid-column:1/-1}
+.st-list{display:flex;flex-wrap:wrap;gap:4px}
+.st{padding:3px 8px;border-radius:12px;font-size:11px;font-weight:500;background:var(--alt);color:var(--tm);border:1px solid var(--bl)}
+.right-step{counter-increment:step;padding:12px 12px 12px 44px;background:var(--card);border:1px solid var(--bl);border-radius:var(--rs);margin-bottom:6px;position:relative}
+.right-step::before{content:counter(step);position:absolute;left:12px;top:12px;width:22px;height:22px;background:var(--p);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.right-step p{font-size:12.5px;color:var(--tm);line-height:1.5}
+.rl{counter-reset:step;padding:0 16px}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--tx);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;opacity:0;transition:.3s;z-index:200;pointer-events:none;white-space:nowrap}.toast.show{opacity:1}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}.an{animation:fadeIn .2s ease-out}
+@media(max-width:360px){.det .gs{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="sh">
+<div class="tb"><button class="bk" id="bkBtn" onclick="goBack()">&#8592;</button><span style="font-size:20px">&#129504;</span><h1 id="topT">Psicoeduca&#231;&#227;o</h1></div>
+<div id="pgHome" class="pg a">
+<div class="sb"><div class="sbi"><span style="color:var(--tl);font-size:16px">&#128269;</span><input type="text" id="sIn" placeholder="Buscar diagn&#243;stico, CID, sintoma..." oninput="doSearch()" autocomplete="off"><button class="cl" id="clBtn" onclick="clSearch()" style="display:none">&#10005;</button></div></div>
+<div class="fc" id="filters"></div>
+<div class="disc">&#9888;&#65039; Este app &#233; informativo e n&#227;o substitui avalia&#231;&#227;o profissional. O diagn&#243;stico deve ser feito por profissional qualificado. Conte&#250;do para leigos, em linguagem acess&#237;vel.</div>
+<div class="cnt" id="cnt"></div>
+<div id="dList"></div>
+</div>
+<div id="pgDetail" class="pg"><div id="detContent"></div></div>
+<div id="pgRights" class="pg">
+<div class="sec">&#9878;&#65039; Direitos em Sa&#250;de Mental</div>
+<div class="disc">Direitos garantidos por lei a pessoas com transtornos mentais no Brasil. V&#225;lidos para todos os diagn&#243;sticos psiqui&#225;tricos com laudo m&#233;dico.</div>
+<div id="rightsList"></div>
+</div>
+<div id="pgFavs" class="pg">
+<div class="sec">&#11088; Favoritos</div>
+<div id="favList"></div>
+<div id="favEmpty" style="display:none;text-align:center;padding:60px 20px;color:var(--tl)"><div style="font-size:40px;margin-bottom:12px">&#11088;</div><p style="font-size:14px">Nenhum favorito</p><p style="font-size:12px;margin-top:4px">Toque na &#11088; em qualquer diagn&#243;stico</p></div>
+</div>
+</div>
+<div class="bn">
+<div class="bn-i a" data-t="home" onclick="goTab('home')"><span class="ic">&#128269;</span><span class="lb">Buscar</span></div>
+<div class="bn-i" data-t="rights" onclick="goTab('rights')"><span class="ic">&#9878;&#65039;</span><span class="lb">Direitos</span></div>
+<div class="bn-i" data-t="favs" onclick="goTab('favs')"><span class="ic">&#11088;</span><span class="lb">Favoritos</span></div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+var favs=[];try{var f=localStorage.getItem("psed_fav");if(f)favs=JSON.parse(f)}catch(e){}
+function savF(){try{localStorage.setItem("psed_fav",JSON.stringify(favs))}catch(e){}}
+function isFv(n){return favs.indexOf(n)!==-1}
+function togFav(n,ev){if(ev)ev.stopPropagation();var i=favs.indexOf(n);if(i===-1){favs.push(n);toast("Adicionado")}else{favs.splice(i,1);toast("Removido")}savF();render()}
+function toast(m){var e=document.getElementById("toast");e.textContent=m;e.classList.add("show");setTimeout(function(){e.classList.remove("show")},1800)}
+function norm(s){return(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
+
+// BLOCKS
+var BK=[
+{id:"neuro",nm:"Transtornos do Neurodesenvolvimento",ic:"&#129504;",cd:"6A00-6A0Z",c10:"F70-F89,F90-F98",cl:"#4A80A8"},
+{id:"psico",nm:"Esquizofrenia e Transtornos Psic&#243;ticos",ic:"&#127785;",cd:"6A20-6A2Z",c10:"F20-F29",cl:"#8B5E3C"},
+{id:"catat",nm:"Catatonia",ic:"&#129704;",cd:"6A40-6A4Z",c10:"F06.1/F20.2",cl:"#7A6B5D"},
+{id:"humor",nm:"Transtornos do Humor",ic:"&#127769;",cd:"6A60-6A8Z",c10:"F30-F39",cl:"#6A5ACD"},
+{id:"ansied",nm:"Ansiedade e Transtornos de Medo",ic:"&#128552;",cd:"6B00-6B0Z",c10:"F40-F41",cl:"#C0773D"},
+{id:"toc",nm:"TOC e Transtornos Relacionados",ic:"&#128260;",cd:"6B20-6B2Z",c10:"F42,F45.2",cl:"#2E8B57"},
+{id:"estresse",nm:"Transtornos Relacionados ao Estresse",ic:"&#9889;",cd:"6B40-6B4Z",c10:"F43",cl:"#CD5C5C"},
+{id:"dissoc",nm:"Transtornos Dissociativos",ic:"&#128566;",cd:"6B60-6B6Z",c10:"F44",cl:"#708090"},
+{id:"aliment",nm:"Transtornos Alimentares",ic:"&#127860;",cd:"6B80-6B8Z",c10:"F50",cl:"#DB7093"},
+{id:"elim",nm:"Transtornos da Elimina&#231;&#227;o",ic:"&#128692;",cd:"6C00-6C0Z",c10:"F98.0-F98.1",cl:"#5F9EA0"},
+{id:"corpo",nm:"Transtornos de Desconforto Corporal",ic:"&#129488;",cd:"6C20-6C2Z",c10:"F45",cl:"#9370DB"},
+{id:"subst",nm:"Transtornos por Uso de Subst&#226;ncias",ic:"&#127863;",cd:"6C40-6C5Z",c10:"F10-F19",cl:"#B8860B"},
+{id:"impuls",nm:"Transtornos do Controle de Impulsos",ic:"&#128165;",cd:"6C70-6C7Z",c10:"F63",cl:"#E07020"},
+{id:"disrup",nm:"Transtornos Disruptivos",ic:"&#128544;",cd:"6C90-6C9Z",c10:"F91",cl:"#DC3545"},
+{id:"person",nm:"Transtornos de Personalidade",ic:"&#127917;",cd:"6D10-6D1Z",c10:"F60-F61",cl:"#6F42C1"},
+{id:"paraf",nm:"Transtornos Paraf&#237;licos",ic:"&#128275;",cd:"6D30-6D3Z",c10:"F65",cl:"#795548"},
+{id:"fact",nm:"Transtornos Fact&#237;cios",ic:"&#127917;",cd:"6D50-6D5Z",c10:"F68",cl:"#607D8B"},
+{id:"neurocog",nm:"Transtornos Neurocognitivos",ic:"&#129504;",cd:"6D70-6E0Z",c10:"F00-F09",cl:"#5B7D65"},
+{id:"gravid",nm:"Transtornos Associados &#224; Gravidez",ic:"&#129328;",cd:"6E20-6E2Z",c10:"F53",cl:"#E91E8A"},
+{id:"psicfat",nm:"Fatores Psicol&#243;gicos Afetando Doen&#231;as",ic:"&#128161;",cd:"6E40",c10:"F54",cl:"#FF8C00"},
+{id:"secund",nm:"S&#237;ndromes Mentais Secund&#225;rias",ic:"&#128279;",cd:"6E60-6E6Z",c10:"F06-F09",cl:"#778899"}
+];
+
+// DIAGNOSES DATABASE - compact format
+// n=name, b=block id, c11=CID-11, c10=CID-10, d=description, s=symptoms, tx=treatments, med=medications, tips=practical tips
+var DX=[
+// NEURODESENVOLVIMENTO
+{n:"Transtorno do Espectro Autista (TEA)",b:"neuro",c11:"6A02",c10:"F84.0/F84.5",d:"Condi\u00e7\u00e3o do neurodesenvolvimento que afeta comunica\u00e7\u00e3o social, processamento sensorial e padr\u00f5es de comportamento. N\u00e3o \u00e9 doen\u00e7a \u2014 \u00e9 uma forma diferente de funcionamento cerebral. Espectro amplo: cada pessoa \u00e9 \u00fanica.",s:["Dificuldade com comunica\u00e7\u00e3o social e n\u00e3o-verbal","Padr\u00f5es repetitivos de comportamento","Hipersensibilidade ou hipossensibilidade sensorial","Necessidade intensa de rotina e previsibilidade","Interesses intensos e focados","Dificuldade com transi\u00e7\u00f5es e mudan\u00e7as"],tx:"Terapia ABA (crian\u00e7as), TO com integra\u00e7\u00e3o sensorial, fonoaudiologia, psicoterapia adaptada (ACT, TCC). N\u00e3o existe medicamento para autismo em si \u2014 medicamentos tratam comorbidades (ansiedade, TDAH, ins\u00f4nia).",med:"Risperidona (irritabilidade), metilfenidato (TDAH comorbido), melatonina (ins\u00f4nia). Nenhum medicamento \u00e9 obrigat\u00f3rio.",tips:["Procure profissionais especializados em TEA","Use a CIPTEA para acessar seus direitos","Respeite seus limites sensoriais sem culpa","Interesses intensos s\u00e3o recurso, n\u00e3o problema"]},
+
+{n:"TDAH - Transtorno de D\u00e9ficit de Aten\u00e7\u00e3o e Hiperatividade",b:"neuro",c11:"6A05",c10:"F90",d:"Transtorno do neurodesenvolvimento caracterizado por padr\u00f5es persistentes de desaten\u00e7\u00e3o, hiperatividade e impulsividade que impactam o funcionamento di\u00e1rio. N\u00e3o \u00e9 falta de intelig\u00eancia ou pregui\u00e7a \u2014 \u00e9 uma diferen\u00e7a na regula\u00e7\u00e3o da aten\u00e7\u00e3o e do comportamento.",s:["Dificuldade em manter foco em tarefas","Esquecimento frequente de compromissos","Inquietude, dificuldade em ficar parado","Impulsividade nas decis\u00f5es e fala","Dificuldade com organiza\u00e7\u00e3o e planejamento","Hiperfoco em atividades interessantes"],tx:"Estimulantes (metilfenidato, lisdexanfetamina), atomoxetina, terapia comportamental, coaching para TDAH, adaptac\u00f5es ambientais.",med:"Metilfenidato (Ritalina/Concerta), lisdexanfetamina (Venvanse), atomoxetina (Strattera). Controle especial A3.",tips:["Use listas, alarmes e lembretes visuais","Quebre tarefas grandes em passos pequenos","Exerc\u00edcio f\u00edsico regular melhora muito os sintomas","Body doubling: trabalhe ao lado de algu\u00e9m"]},
+
+{n:"Defici\u00eancia Intelectual",b:"neuro",c11:"6A00",c10:"F70-F79",d:"Condi\u00e7\u00e3o caracterizada por limita\u00e7\u00f5es significativas no funcionamento intelectual e no comportamento adaptativo, originando-se durante o per\u00edodo de desenvolvimento. Varia de leve a profunda.",s:["Dificuldade de aprendizagem acad\u00eamica","Limita\u00e7\u00f5es em racioc\u00ednio e resolu\u00e7\u00e3o de problemas","Dificuldades em habilidades adaptativas do dia a dia","Desenvolvimento mais lento que os pares"],tx:"Estimula\u00e7\u00e3o precoce, educa\u00e7\u00e3o especial, terapia ocupacional, fonoaudiologia, apoio psicossocial. N\u00e3o existe medicamento para a condi\u00e7\u00e3o em si.",med:"Apenas para comorbidades (epilepsia, TDAH, ansiedade).",tips:["Foque nas capacidades, n\u00e3o nas limita\u00e7\u00f5es","Ambiente estruturado e rotina ajudam muito","Direito a educa\u00e7\u00e3o inclusiva (Lei 13.146/2015)","BPC-LOAS pode ser acessado com laudo"]},
+
+// PSIC\u00d3TICOS
+{n:"Esquizofrenia",b:"psico",c11:"6A20",c10:"F20",d:"Transtorno mental grave que afeta como a pessoa pensa, sente e se comporta. Pode incluir del\u00edrios (cren\u00e7as falsas), alucina\u00e7\u00f5es (percep\u00e7\u00f5es sem est\u00edmulo real), pensamento desorganizado e redu\u00e7\u00e3o da expressividade emocional. N\u00c3O \u00e9 \u0027personalidade dupla\u0027.",s:["Del\u00edrios (persegui\u00e7\u00e3o, grandeza, referencial)","Alucina\u00e7\u00f5es (principalmente auditivas)","Fala e pensamento desorganizados","Redu\u00e7\u00e3o da express\u00e3o emocional","Isolamento social","Dificuldade cognitiva (mem\u00f3ria, aten\u00e7\u00e3o)"],tx:"Antipsic\u00f3ticos s\u00e3o essenciais. Psicoterapia (TCC para psicose), reabilita\u00e7\u00e3o psicossocial, acompanhamento no CAPS, suporte familiar. Tratamento cont\u00ednuo \u00e9 fundamental.",med:"Antipsic\u00f3ticos at\u00edpicos (risperidona, olanzapina, quetiapina, aripiprazol). Clozapina para casos refrat\u00e1rios. Haloperidol em crises agudas.",tips:["Manter medicamento \u00e9 ESSENCIAL \u2014 n\u00e3o interrompa sem m\u00e9dico","CAPS oferece atendimento gratuito e cont\u00ednuo","Fam\u00edlia precisa de orienta\u00e7\u00e3o e apoio tamb\u00e9m","Recupera\u00e7\u00e3o \u00e9 poss\u00edvel com tratamento adequado"]},
+
+{n:"Transtorno Esquizoafetivo",b:"psico",c11:"6A21",c10:"F25",d:"Combina sintomas da esquizofrenia (del\u00edrios, alucina\u00e7\u00f5es) com epis\u00f3dios de humor (depress\u00e3o ou mania). O diagn\u00f3stico exige que os sintomas psic\u00f3ticos ocorram tamb\u00e9m fora dos epis\u00f3dios de humor.",s:["Sintomas psic\u00f3ticos + epis\u00f3dios depressivos ou man\u00edacos","Per\u00edodos de fun\u00e7\u00e3o relativamente preservada entre crises"],tx:"Antipsic\u00f3ticos + estabilizadores de humor ou antidepressivos. CAPS, psicoterapia.",med:"Antipsic\u00f3ticos at\u00edpicos, l\u00edtio, valproato. Antidepressivos com cautela.",tips:["Monitorar tanto sintomas psic\u00f3ticos quanto de humor","Manter rotina de sono \u00e9 especialmente importante"]},
+
+{n:"Transtorno Delirante",b:"psico",c11:"6A24",c10:"F22",d:"Presen\u00e7a de del\u00edrios persistentes (cren\u00e7as firmes n\u00e3o compartilhadas) por pelo menos 3 meses, sem outros sintomas psic\u00f3ticos proeminentes. A pessoa pode funcionar bem em \u00e1reas n\u00e3o afetadas pelo del\u00edrio.",s:["Del\u00edrios espec\u00edficos e organizados","Funcionamento preservado fora do tema delirante","Pode incluir del\u00edrios de persegui\u00e7\u00e3o, ci\u00fame, grandeza, som\u00e1tico"],tx:"Antipsic\u00f3ticos, psicoterapia (constru\u00e7\u00e3o de v\u00ednculo antes de confrontar del\u00edrio).",med:"Antipsic\u00f3ticos em doses baixas. Ades\u00e3o costuma ser dif\u00edcil.",tips:["N\u00e3o confronte o del\u00edrio diretamente \u2014 isso afasta a pessoa","Foque na rela\u00e7\u00e3o terap\u00eautica e no funcionamento"]},
+
+// HUMOR
+{n:"Depress\u00e3o (Epis\u00f3dio Depressivo)",b:"humor",c11:"6A70",c10:"F32",d:"Per\u00edodo de pelo menos 2 semanas de humor deprimido ou perda de interesse/prazer, acompanhado de outros sintomas que prejudicam o funcionamento. N\u00e3o \u00e9 \u0027tristeza normal\u0027 \u2014 \u00e9 uma condi\u00e7\u00e3o m\u00e9dica trat\u00e1vel.",s:["Humor deprimido a maior parte do dia","Perda de interesse ou prazer (anedonia)","Altera\u00e7\u00e3o de apetite e peso","Ins\u00f4nia ou hipersonia","Fadiga persistente","Dificuldade de concentra\u00e7\u00e3o","Sentimento de inutilidade ou culpa excessiva","Pensamentos de morte ou suic\u00eddio"],tx:"Psicoterapia (TCC, ACT, interpessoal), antidepressivos, exerc\u00edcio f\u00edsico, ativa\u00e7\u00e3o comportamental. Casos graves: eletroconvulsoterapia (ECT), cetamina.",med:"ISRS (fluoxetina, sertralina, escitalopram), IRSN (venlafaxina, duloxetina), bupropiona, mirtazapina. In\u00edcio de efeito: 2-4 semanas.",tips:["Ative-se mesmo sem vontade \u2014 a\u00e7\u00e3o precede motiva\u00e7\u00e3o","Exerc\u00edcio f\u00edsico tem evid\u00eancia forte","Mantenha o medicamento mesmo ap\u00f3s melhorar","N\u00e3o se isole \u2014 pe\u00e7a ajuda ativamente"]},
+
+{n:"Depress\u00e3o Recorrente",b:"humor",c11:"6A71",c10:"F33",d:"Dois ou mais epis\u00f3dios depressivos ao longo da vida. Cada novo epis\u00f3dio aumenta o risco de recorr\u00eancia. Tratamento de manuten\u00e7\u00e3o \u00e9 frequentemente necess\u00e1rio.",s:["M\u00faltiplos epis\u00f3dios depressivos","Per\u00edodos de remiss\u00e3o entre epis\u00f3dios","Risco aumentado a cada recorr\u00eancia"],tx:"Antidepressivos de manuten\u00e7\u00e3o (m\u00ednimo 1-2 anos ap\u00f3s segundo epis\u00f3dio, indefinido ap\u00f3s terceiro). Psicoterapia de preven\u00e7\u00e3o de reca\u00edda.",med:"Mesmo da depress\u00e3o. Manuten\u00e7\u00e3o prolongada \u00e9 chave.",tips:["Ap\u00f3s 3+ epis\u00f3dios, tratamento costuma ser por tempo indeterminado","Identifique seus gatilhos pessoais de reca\u00edda","Mindfulness reduz reca\u00edda (MBCT)"]},
+
+{n:"Distimia (Transtorno Dist\u00edmico)",b:"humor",c11:"6A72",c10:"F34.1",d:"Forma cr\u00f4nica e persistente de depress\u00e3o, com sintomas mais leves mas que duram pelo menos 2 anos. A pessoa se acostuma a viver assim e pode n\u00e3o perceber como depress\u00e3o.",s:["Humor cronicamente baixo","Baixa autoestima persistente","Fadiga e falta de energia","Dificuldade de concentra\u00e7\u00e3o e decis\u00e3o","Sentimento de desesperan\u00e7a","Dura\u00e7\u00e3o m\u00ednima de 2 anos"],tx:"Antidepressivos + psicoterapia. Combina\u00e7\u00e3o \u00e9 mais eficaz que qualquer um isolado.",med:"ISRS, IRSN. Resposta pode ser mais lenta que na depress\u00e3o aguda.",tips:["Muitas pessoas s\u00f3 percebem que estavam deprimidas ap\u00f3s o tratamento","N\u00e3o normalize o sofrimento cr\u00f4nico \u2014 busque ajuda"]},
+
+{n:"Transtorno Bipolar Tipo I",b:"humor",c11:"6A60",c10:"F31",d:"Transtorno de humor caracterizado por epis\u00f3dios de mania (energia elevada, grandiosidade, redu\u00e7\u00e3o da necessidade de sono, impulsividade) alternados com epis\u00f3dios depressivos. A mania pode incluir psicose.",s:["Epis\u00f3dios de mania (euforia, grandiosidade, hiperatividade)","Redu\u00e7\u00e3o da necessidade de sono na mania","Gastos excessivos, comportamento de risco","Epis\u00f3dios depressivos intercalados","Pode incluir sintomas psic\u00f3ticos na mania"],tx:"Estabilizadores de humor (l\u00edtio, valproato), antipsic\u00f3ticos at\u00edpicos. Psicoterapia (psicoeducac\u00e3o, TCC). Monitoramento cont\u00ednuo. NUNCA antidepressivo isolado (risco de virada man\u00edaca).",med:"L\u00edtio (padr\u00e3o-ouro), valproato, lamotrigina (fase depressiva), quetiapina, olanzapina, aripiprazol.",tips:["Regularidade do sono \u00e9 CR\u00cdTICA \u2014 priva\u00e7\u00e3o de sono pode disparar mania","Mantenha o estabilizador mesmo quando bem","L\u00edtio requer exames regulares (litemia, tireoide, rim)","Dieta, exerc\u00edcio e rotina s\u00e3o tratamento complementar"]},
+
+{n:"Transtorno Bipolar Tipo II",b:"humor",c11:"6A61",c10:"F31.8",d:"Epis\u00f3dios de hipomania (mania mais leve, sem psicose e sem hospitaliza\u00e7\u00e3o) alternados com epis\u00f3dios depressivos. Frequentemente subdiagnosticado \u2014 confundido com depress\u00e3o recorrente.",s:["Epis\u00f3dios de hipomania (produtividade, sociabilidade, energia aumentadas)","Epis\u00f3dios depressivos (mais frequentes e duradouros)","Sem mania franca ou psicose"],tx:"Lamotrigina (excelente para fase depressiva), l\u00edtio, quetiapina. Psicoterapia.",med:"Lamotrigina, l\u00edtio, quetiapina. Antidepressivos s\u00f3 com estabilizador.",tips:["Se voc\u00ea tem depress\u00e3o recorrente que n\u00e3o melhora, investigue bipolar II","Per\u00edodos de alta produtividade podem ser hipomania"]},
+
+{n:"Transtorno Depressivo e Ansioso Misto",b:"humor",c11:"6A73",c10:"F41.2",d:"Presen\u00e7a simult\u00e2nea de sintomas depressivos e ansiosos que n\u00e3o preenchem crit\u00e9rios completos para nenhum dos dois diagn\u00f3sticos separadamente. Muito comum na aten\u00e7\u00e3o prim\u00e1ria.",s:["Humor deprimido + preocupa\u00e7\u00e3o excessiva","Tens\u00e3o, inquietude","Problemas de sono","Dificuldade de concentra\u00e7\u00e3o","Fadiga"],tx:"ISRS, psicoterapia (TCC), exerc\u00edcio f\u00edsico, t\u00e9cnicas de relaxamento.",med:"ISRS em dose baixa-moderada.",tips:["Muito comum e muito trat\u00e1vel","Exerc\u00edcio f\u00edsico e higiene do sono s\u00e3o primeiros passos"]},
+
+// ANSIEDADE
+{n:"Transtorno de Ansiedade Generalizada (TAG)",b:"ansied",c11:"6B00",c10:"F41.1",d:"Preocupa\u00e7\u00e3o excessiva e persistente sobre v\u00e1rios aspectos da vida (trabalho, sa\u00fade, fam\u00edlia, dinheiro) por pelo menos v\u00e1rios meses, dif\u00edcil de controlar, acompanhada de tens\u00e3o muscular, inquietude e fadiga.",s:["Preocupa\u00e7\u00e3o excessiva e incontrol\u00e1vel","Tens\u00e3o muscular cr\u00f4nica","Inquietude, sensac\u00e3o de nervos \u00e0 flor da pele","Fadiga","Dificuldade de concentra\u00e7\u00e3o","Irritabilidade","Problemas de sono"],tx:"TCC (reestrutura\u00e7\u00e3o cognitiva, relaxamento), ACT, ISRS/IRSN, buspirona, exerc\u00edcio f\u00edsico regular.",med:"ISRS (escitalopram, sertralina), IRSN (venlafaxina, duloxetina), pregabalina, buspirona. BZDs apenas curto prazo.",tips:["A preocupa\u00e7\u00e3o n\u00e3o resolve problemas \u2014 ela os amplifica","T\u00e9cnicas de respira\u00e7\u00e3o e grounding ajudam na hora","Limite o consumo de cafe\u00edna","Exerc\u00edcio f\u00edsico regular tem evid\u00eancia t\u00e3o forte quanto medicamento"]},
+
+{n:"Transtorno de P\u00e2nico",b:"ansied",c11:"6B01",c10:"F41.0",d:"Ataques recorrentes e inesperados de medo intenso (ataques de p\u00e2nico) acompanhados de sintomas f\u00edsicos intensos e medo de novos ataques. O ataque de p\u00e2nico N\u00c3O \u00e9 perigoso \u2014 \u00e9 extremamente desconfort\u00e1vel, mas n\u00e3o causa morte, infarto ou loucura.",s:["Taquicardia, palpita\u00e7\u00f5es","Falta de ar, sensa\u00e7\u00e3o de sufocamento","Tontura, tremores","Medo de morrer ou enlouquecer","Formigamento","N\u00e1usea","Medo de ter novos ataques (ansiedade antecipatoria)"],tx:"TCC (exposi\u00e7\u00e3o interoceptiva), ISRS, psicoeducac\u00e3o. Aprender que o ataque n\u00e3o \u00e9 perigoso \u00e9 o primeiro passo terapeutico.",med:"ISRS (paroxetina, sertralina), IRSN, clonazepam (curto prazo para estabiliza\u00e7\u00e3o). BZD n\u00e3o deve ser tratamento de longo prazo.",tips:["O ataque de p\u00e2nico SEMPRE passa \u2014 dura 10-20 minutos no m\u00e1ximo","Respire devagar: 4s inspira, 4s segura, 6s expira","N\u00e3o v\u00e1 ao pronto-socorro a cada ataque \u2014 isso refor\u00e7a o ciclo","Evitar situa\u00e7\u00f5es por medo piora o quadro"]},
+
+{n:"Fobia Social (Ansiedade Social)",b:"ansied",c11:"6B04",c10:"F40.1",d:"Medo intenso e persistente de situa\u00e7\u00f5es sociais onde a pessoa pode ser avaliada ou julgada. N\u00e3o \u00e9 timidez \u2014 \u00e9 medo paralisante que causa evita\u00e7\u00e3o e preju\u00edzo funcional.",s:["Medo intenso de falar em p\u00fablico","Evita\u00e7\u00e3o de situa\u00e7\u00f5es sociais","Ansiedade antecipatoria dias antes de eventos","Medo de ser humilhado ou julgado","Rubor facial, tremor, sudorese em situa\u00e7\u00f5es sociais"],tx:"TCC (exposi\u00e7\u00e3o gradual), ISRS, treinamento de habilidades sociais.",med:"ISRS (sertralina, paroxetina, escitalopram). Propranolol para ansiedade de performance (off-label).",tips:["Evitar situa\u00e7\u00f5es aumenta o medo \u2014 exposi\u00e7\u00e3o gradual \u00e9 o caminho","A maioria das pessoas n\u00e3o est\u00e1 prestando tanta aten\u00e7\u00e3o em voc\u00ea quanto imagina"]},
+
+{n:"Fobia Espec\u00edfica",b:"ansied",c11:"6B03",c10:"F40.2",d:"Medo intenso e desproporcional de um objeto ou situa\u00e7\u00e3o espec\u00edfica (animais, alturas, sangue, avi\u00f5es, espa\u00e7os fechados). O mais trat\u00e1vel dos transtornos de ansiedade.",s:["Medo intenso ao encontrar o est\u00edmulo f\u00f3bico","Evita\u00e7\u00e3o do est\u00edmulo","Reconhecimento de que o medo \u00e9 desproporcional","Ansiedade antecipatoria"],tx:"Exposi\u00e7\u00e3o gradual (terapia de exposi\u00e7\u00e3o) \u2014 tratamento mais eficaz. Pode melhorar em poucas sess\u00f5es.",med:"Geralmente n\u00e3o necess\u00e1rio. BZD pontual em casos espec\u00edficos (ex: voo).",tips:["Terapia de exposi\u00e7\u00e3o funciona em 80-90% dos casos","Quanto mais voc\u00ea evita, mais o medo cresce"]},
+
+{n:"Agorafobia",b:"ansied",c11:"6B02",c10:"F40.0",d:"Medo ou ansiedade intensa em situa\u00e7\u00f5es onde escapar ou obter ajuda seria dif\u00edcil (transporte p\u00fablico, multid\u00f5es, espa\u00e7os abertos ou fechados). Pode levar a isolamento extremo.",s:["Medo de sair de casa sozinho","Evita\u00e7\u00e3o de transporte p\u00fablico, shopping, multid\u00f5es","Necessidade de acompanhante para sair","Medo de ter ataque de p\u00e2nico em local p\u00fablico"],tx:"TCC com exposi\u00e7\u00e3o gradual, ISRS.",med:"ISRS. BZD pode ser necess\u00e1rio inicialmente para facilitar a exposi\u00e7\u00e3o.",tips:["Come\u00e7e com pequenos passos: saia na porta, depois na cal\u00e7ada, depois na esquina","Ter um acompanhante ajuda no in\u00edcio mas o objetivo \u00e9 a autonomia"]},
+
+{n:"Ansiedade de Separa\u00e7\u00e3o",b:"ansied",c11:"6B05",c10:"F93.0",d:"Medo excessivo de se separar de figuras de apego. No CID-11, aplica-se a crian\u00e7as E adultos (antes era restrito \u00e0 inf\u00e2ncia).",s:["Medo desproporcional de separa\u00e7\u00e3o de figuras de apego","Preocupa\u00e7\u00e3o com perda ou dano a entes queridos","Resist\u00eancia em ficar sozinho"],tx:"TCC, exposi\u00e7\u00e3o gradual, terapia familiar.",med:"ISRS se necess\u00e1rio.",tips:["Em adultos, pode se manifestar como dificuldade de ficar sozinho ou viajar"]},
+
+// TOC
+{n:"Transtorno Obsessivo-Compulsivo (TOC)",b:"toc",c11:"6B20",c10:"F42",d:"Presen\u00e7a de obsess\u00f5es (pensamentos indesejados e intrusivos) e/ou compuls\u00f5es (comportamentos repetitivos para aliviar a ansiedade). N\u00e3o \u00e9 \u0027mania de limpeza\u0027 \u2014 \u00e9 sofrimento intenso causado por pensamentos que a pessoa n\u00e3o controla.",s:["Pensamentos obsessivos (contamina\u00e7\u00e3o, d\u00favida, simetria, agress\u00e3o, sexuais)","Rituais compulsivos (lavar, verificar, contar, ordenar)","Reconhecimento de que os pensamentos s\u00e3o irracionais (mas n\u00e3o consegue parar)","Tempo gasto: geralmente 1h+ por dia"],tx:"TCC com Exposi\u00e7\u00e3o e Preven\u00e7\u00e3o de Resposta (EPR) \u2014 padr\u00e3o-ouro. ISRS em doses altas. Combina\u00e7\u00e3o \u00e9 mais eficaz.",med:"ISRS em ALTAS doses (fluoxetina 40-80mg, sertralina 200mg, fluvoxamina 300mg). Clomipramina. Augmenta\u00e7\u00e3o com antipsic\u00f3tico se refrat\u00e1rio.",tips:["O pensamento obsessivo N\u00c3O \u00e9 quem voc\u00ea \u00e9","Fazer o ritual PIORA o TOC a longo prazo","EPR \u00e9 desconfort\u00e1vel mas \u00e9 o tratamento mais eficaz","N\u00e3o pe\u00e7a reasseguramento \u2014 isso \u00e9 uma compuls\u00e3o"]},
+
+{n:"Transtorno Dismor\u00f3fico Corporal",b:"toc",c11:"6B21",c10:"F45.2",d:"Preocupa\u00e7\u00e3o excessiva com defeitos percebidos na apar\u00eancia f\u00edsica que n\u00e3o s\u00e3o observ\u00e1veis ou parecem m\u00ednimos para os outros. Causa sofrimento intenso e comportamentos repetitivos (checar espelho, evitar situa\u00e7\u00f5es sociais).",s:["Foco obsessivo em defeito percebido (pele, nariz, cabelo, corpo)","Checagem repetitiva no espelho ou evita\u00e7\u00e3o total","Compara\u00e7\u00e3o constante com outros","Busca por procedimentos est\u00e9ticos"],tx:"TCC (EPR adaptada), ISRS em doses altas. Cirurgia est\u00e9tica N\u00c3O resolve.",med:"ISRS (fluoxetina, escitalopram). Doses similares ao TOC.",tips:["Procedimentos est\u00e9ticos geralmente pioram o quadro \u2014 o foco muda para outra \u00e1rea","Limite o tempo em frente ao espelho"]},
+
+{n:"Transtorno de Acumula\u00e7\u00e3o",b:"toc",c11:"6B24",c10:"(novo no CID-11)",d:"Dificuldade persistente de descartar posses independentemente do valor real, causando acumula\u00e7\u00e3o que compromete o uso dos espa\u00e7os. N\u00e3o \u00e9 pregui\u00e7a \u2014 \u00e9 sofrimento real ao descartar.",s:["Incapacidade de descartar objetos","Ambientes lotados e inutiliz\u00e1veis","Sofrimento intenso ao pensar em jogar fora","Isolamento social por vergonha do ambiente"],tx:"TCC adaptada para acumula\u00e7\u00e3o, ISRS, interven\u00e7\u00e3o motivacional.",med:"ISRS (resposta parcial). Venlafaxina.",tips:["Comece descartando 5 itens por dia, n\u00e3o tente tudo de uma vez","Pedir ajuda profissional \u00e9 fundamental"]},
+
+// ESTRESSE
+{n:"Transtorno de Estresse P\u00f3s-Traum\u00e1tico (TEPT)",b:"estresse",c11:"6B40",c10:"F43.1",d:"Resposta prolongada a evento traum\u00e1tico. A pessoa revive o trauma involuntariamente, evita lembretes e vive em estado de hipervigilancia. N\u00e3o \u00e9 fraqueza \u2014 \u00e9 uma resposta do c\u00e9rebro a algo que superou a capacidade de processamento.",s:["Flashbacks e pesadelos do trauma","Evita\u00e7\u00e3o de lembretes do evento","Hipervigilancia e sobressalto exagerado","Altera\u00e7\u00f5es negativas de humor e cogni\u00e7\u00e3o","Irritabilidade e rea\u00e7\u00f5es emocionais intensas"],tx:"TCC focada no trauma, EMDR, terapia de exposi\u00e7\u00e3o prolongada, ISRS. Psicoeducac\u00e3o sobre trauma.",med:"ISRS (sertralina, paroxetina). Prazosina para pesadelos. N\u00c3O usar BZD (piora progn\u00f3stico).",tips:["O que voc\u00ea sente \u00e9 uma resposta NORMAL a uma situa\u00e7\u00e3o ANORMAL","Evitar n\u00e3o resolve \u2014 processar o trauma com ajuda profissional sim","Benzodiazep\u00ednicos (Rivotril) n\u00e3o s\u00e3o indicados para TEPT"]},
+
+{n:"TEPT Complexo",b:"estresse",c11:"6B41",c10:"(novo no CID-11)",d:"Forma mais grave de TEPT, resultante de traumas prolongados ou repetidos (abus\u00f5es, viol\u00eancia dom\u00e9stica, guerra). Al\u00e9m dos sintomas do TEPT, inclui dificuldades na regula\u00e7\u00e3o emocional, autoconceito negativo e problemas relacionais.",s:["Todos os sintomas do TEPT","Dificuldade de regula\u00e7\u00e3o emocional (explos\u00f5es, dissociacao, entorpecimento)","Autoconceito negativo persistente (vergonha, culpa)","Dificuldade em manter relacionamentos"],tx:"Terapia por fases (estabiliza\u00e7\u00e3o > processamento > reintegra\u00e7\u00e3o). EMDR, terapia esquem\u00e1tica.",med:"ISRS, estabilizadores de humor se necessario.",tips:["Tratamento \u00e9 mais longo que no TEPT simples \u2014 paciencia","Estabiliza\u00e7\u00e3o emocional vem ANTES de processar traumas"]},
+
+{n:"Transtorno de Luto Prolongado",b:"estresse",c11:"6B42",c10:"(novo no CID-11)",d:"Resposta de luto persistente e incapacitante ap\u00f3s a morte de algu\u00e9m pr\u00f3ximo, durando pelo menos 6 meses al\u00e9m das normas culturais. Diferente do luto normal \u2014 a pessoa fica \u0027presa\u0027 na perda.",s:["Saudade intensa e persistente do falecido","Preocupa\u00e7\u00e3o excessiva com o falecido ou circunst\u00e2ncias da morte","Dificuldade de aceitar a perda","Incapacidade de retomar a vida","Dura\u00e7\u00e3o m\u00ednima de 6 meses"],tx:"Terapia de luto complicado, TCC adaptada.",med:"Antidepressivos se depress\u00e3o comorbida.",tips:["Luto n\u00e3o tem prazo, mas se voc\u00ea est\u00e1 \u0027preso\u0027 h\u00e1 meses, busque ajuda","N\u00e3o se cobre por n\u00e3o ter \u0027superado\u0027"]},
+
+{n:"Transtorno de Ajustamento",b:"estresse",c11:"6B43",c10:"F43.2",d:"Rea\u00e7\u00e3o emocional desproporcional a um evento estressor identificado (mudan\u00e7a de emprego, separa\u00e7\u00e3o, doen\u00e7a). Surge em at\u00e9 3 meses e resolve em at\u00e9 6 meses ap\u00f3s cessar o estressor.",s:["Ansiedade, depress\u00e3o ou misto ap\u00f3s estressor identificado","Preju\u00edzo funcional desproporcional","Dura\u00e7\u00e3o limitada"],tx:"Psicoterapia breve, suporte social. Medicac\u00e3o raramente necess\u00e1ria.",med:"Apenas se sintomas intensos (ISRS, BZD curto prazo).",tips:["A maioria melhora com o tempo e com suporte","Identificar e trabalhar o estressor \u00e9 chave"]},
+
+// DISSOCIATIVOS
+{n:"Transtorno Dissociativo de Identidade",b:"dissoc",c11:"6B64",c10:"F44.81",d:"Presen\u00e7a de dois ou mais estados de personalidade distintos (alter identidades). A pessoa pode experimentar lacunas de mem\u00f3ria, sensa\u00e7\u00e3o de n\u00e3o ser dona de suas a\u00e7\u00f5es, e vozes internas. Quase sempre resultado de trauma grave na inf\u00e2ncia.",s:["M\u00faltiplos estados de identidade","Amn\u00e9sia para eventos do dia a dia","Sensa\u00e7\u00e3o de despersonaliza\u00e7\u00e3o","Vozes internas","Comportamentos que a pessoa n\u00e3o reconhece como seus"],tx:"Psicoterapia de longo prazo focada em integra\u00e7\u00e3o e processamento de trauma.",med:"N\u00e3o h\u00e1 medicamento espec\u00edfico. Tratar comorbidades.",tips:["N\u00e3o \u00e9 \u0027loucura\u0027 ou \u0027inven\u00e7\u00e3o\u0027 \u2014 \u00e9 resposta de sobreviv\u00eancia a trauma extremo","O objetivo do tratamento pode ser coopera\u00e7\u00e3o entre partes, n\u00e3o necessariamente fus\u00e3o"]},
+
+// ALIMENTARES
+{n:"Anorexia Nervosa",b:"aliment",c11:"6B80",c10:"F50.0",d:"Restri\u00e7\u00e3o alimentar que leva a peso significativamente baixo, com medo intenso de ganhar peso e distor\u00e7\u00e3o da imagem corporal. Tem a maior taxa de mortalidade entre os transtornos psiqui\u00e1tricos.",s:["Restri\u00e7\u00e3o alimentar severa","Medo intenso de ganhar peso","Distor\u00e7\u00e3o da imagem corporal","Exerc\u00edcio excessivo","Amenorreia, queda de cabelo, intoler\u00e2ncia ao frio"],tx:"Equipe multidisciplinar (psiquiatra, nutricionista, psic\u00f3logo). Interna\u00e7\u00e3o se IMC perigosamente baixo. TCC-E, FBT (crian\u00e7as/adolescentes).",med:"Olanzapina (ganho de peso, redu\u00e7\u00e3o de ansiedade). Fluoxetina para bulimia. ISRS para ansiedade/depress\u00e3o comorbida.",tips:["N\u00e3o comente sobre peso ou apar\u00eancia \u2014 nem elogios","Tratamento \u00e9 de longo prazo \u2014 reca\u00eddas s\u00e3o comuns","N\u00e3o \u00e9 sobre vaidade \u2014 \u00e9 sobre controle e sofrimento"]},
+
+{n:"Bulimia Nervosa",b:"aliment",c11:"6B81",c10:"F50.2",d:"Epis\u00f3dios recorrentes de compuls\u00e3o alimentar seguidos de comportamentos compensat\u00f3rios (v\u00f4mito, laxantes, exerc\u00edcio excessivo). O peso pode ser normal.",s:["Compuls\u00e3o alimentar recorrente","V\u00f4mito autoinduzido ou uso de laxantes","Preocupa\u00e7\u00e3o excessiva com forma corporal","Vergonha e segredo sobre os comportamentos"],tx:"TCC-E, ISRS (fluoxetina 60mg). Nutricionista.",med:"Fluoxetina 60mg/dia (dose alta, \u00fanico ISRS com evid\u00eancia espec\u00edfica).",tips:["O ciclo restri\u00e7\u00e3o-compuls\u00e3o-purga se autoalimenta","Comer regularmente (mesmo sem vontade) quebra o ciclo"]},
+
+{n:"Transtorno de Compuls\u00e3o Alimentar",b:"aliment",c11:"6B82",c10:"(novo no CID-11)",d:"Epis\u00f3dios recorrentes de comer em excesso com sensa\u00e7\u00e3o de perda de controle, SEM comportamentos compensat\u00f3rios (diferente da bulimia). Causa sofrimento significativo.",s:["Comer rapidamente at\u00e9 desconforto","Comer grandes quantidades sem fome f\u00edsica","Sentimento de culpa e vergonha ap\u00f3s","Comer escondido","Sensa\u00e7\u00e3o de perda de controle"],tx:"TCC, terapia interpessoal, lisdexanfetamina (aprovada para TCA nos EUA).",med:"Lisdexanfetamina, topiramato (off-label), ISRS.",tips:["N\u00e3o \u00e9 falta de for\u00e7a de vontade \u2014 \u00e9 um transtorno m\u00e9dico","Dietas restritivas pioram a compuls\u00e3o"]},
+
+// SUBST\u00c2NCIAS
+{n:"Transtorno por Uso de \u00c1lcool",b:"subst",c11:"6C40",c10:"F10",d:"Padr\u00e3o de uso de \u00e1lcool que causa preju\u00edzo ou sofrimento, podendo evoluir para depend\u00eancia. A depend\u00eancia envolve toler\u00e2ncia (precisar de mais para o mesmo efeito), abstin\u00eancia (sintomas ao parar) e perda de controle.",s:["Dificuldade de controlar o consumo","Toler\u00e2ncia aumentada","S\u00edndrome de abstin\u00eancia (tremor, sudorese, ansiedade, convuls\u00f5es)","Continuar usando apesar de preju\u00edzos","Neglig\u00eanciar responsabilidades"],tx:"Desintoxica\u00e7\u00e3o supervisionada (NUNCA parar \u00e1lcool abruptamente se depend\u00eancia grave \u2014 risco de convuls\u00e3o/delirium tremens). Naltrexona, acamprosato, dissulfiram. AA, CAPS AD.",med:"Naltrexona (reduz craving), acamprosato (manuten\u00e7\u00e3o), dissulfiram (avers\u00e3o). BZD para abstin\u00eancia aguda.",tips:["Abstin\u00eancia de \u00e1lcool pode ser FATAL \u2014 desintoxica\u00e7\u00e3o supervisionada","CAPS AD oferece tratamento gratuito e especializado","Reca\u00edda faz parte do processo \u2014 n\u00e3o \u00e9 fracasso"]},
+
+{n:"Transtorno por Uso de Subst\u00e2ncias (Geral)",b:"subst",c11:"6C40-6C4G",c10:"F10-F19",d:"O CID-11 classifica transtornos por uso de 18 classes de subst\u00e2ncias diferentes (incluindo cannabis, opi\u00f3ides, coca\u00edna, estimulantes, nicotina, cafe\u00edna). Cada uma segue o mesmo modelo: uso nocivo > padr\u00e3o nocivo > depend\u00eancia.",s:["Perda de controle sobre o uso","Toler\u00e2ncia e abstin\u00eancia","Preju\u00edzo em \u00e1reas da vida","Uso continuado apesar de consequ\u00eancias"],tx:"Varia por subst\u00e2ncia. Desintoxica\u00e7\u00e3o, TCC, entrevista motivacional, grupos de apoio, CAPS AD.",med:"Varia: metadona/buprenorfina (opi\u00f3ides), TRN/vareniclina (nicotina), naltrexona (\u00e1lcool/opi\u00f3ides).",tips:["Depend\u00eancia n\u00e3o \u00e9 falha moral \u2014 \u00e9 condi\u00e7\u00e3o m\u00e9dica","Tratamento \u00e9 gratuito no CAPS AD e na rede SUS"]},
+
+{n:"Transtorno por Jogos Eletr\u00f4nicos (Gaming Disorder)",b:"subst",c11:"6C51",c10:"(novo no CID-11)",d:"Padr\u00e3o de uso de jogos eletr\u00f4nicos (online ou offline) com perda de controle, prioridade crescente sobre outras atividades, e continua\u00e7\u00e3o apesar de preju\u00edzos. Dura\u00e7\u00e3o m\u00ednima de 12 meses.",s:["Perda de controle sobre o tempo de jogo","Prioridade crescente dos jogos sobre vida social/trabalho/estudos","Continuar jogando apesar de preju\u00edzos evidentes","Preju\u00edzo funcional significativo"],tx:"TCC, terapia familiar, reestrutura\u00e7\u00e3o de rotina.",med:"N\u00e3o h\u00e1 medicamento espec\u00edfico. Tratar comorbidades (TDAH, depress\u00e3o).",tips:["N\u00e3o \u00e9 jogar muito que define o transtorno \u2014 \u00e9 a perda de controle e o preju\u00edzo","A maioria dos jogadores N\u00c3O tem este transtorno"]},
+
+// PERSONALIDADE
+{n:"Transtorno de Personalidade",b:"person",c11:"6D10",c10:"F60",d:"No CID-11, todos os tipos de transtorno de personalidade (borderline, narcisista, etc.) foram ELIMINADOS como categorias separadas. Agora existe um \u00fanico diagn\u00f3stico dimensional: gravidade (leve, moderado, grave) + tra\u00e7os proeminentes.",s:["Padr\u00f5es persistentes de dificuldade no funcionamento interpessoal e/ou autoconceito","Rigidez e falta de adapta\u00e7\u00e3o","Sofrimento ou preju\u00edzo funcional significativo","Tra\u00e7os: afetividade negativa, desapego, dissocialidade, desinibic\u00e3o, anankastia, padr\u00e3o borderline"],tx:"Psicoterapia de longo prazo (DBT para padr\u00e3o borderline, terapia esquem\u00e1tica). Medicamentos s\u00f3 para sintomas espec\u00edficos.",med:"N\u00e3o h\u00e1 medicamento para TP em si. ISRS (ansiedade/depress\u00e3o), estabilizadores (impulsividade), antipsic\u00f3ticos baixa dose (distor\u00e7\u00f5es cognitivas).",tips:["O CID-11 mudou radicalmente esta classifica\u00e7\u00e3o \u2014 n\u00e3o existem mais tipos","Padr\u00e3o borderline foi mantido como qualificador especial","Tratamento existe e funciona \u2014 TP n\u00e3o \u00e9 senten\u00e7a"]},
+
+// IMPULSOS
+{n:"Transtorno de Comportamento Sexual Compulsivo",b:"impuls",c11:"6C72",c10:"(novo no CID-11)",d:"Padr\u00e3o persistente de incapacidade de controlar impulsos sexuais repetitivos, causando sofrimento ou preju\u00edzo funcional. N\u00e3o \u00e9 classificado como vicio/depend\u00eancia.",s:["Atividade sexual repetitiva como foco central","Tentativas malsucedidas de controlar","Continuar apesar de consequ\u00eancias negativas","Sofrimento significativo"],tx:"TCC, terapia de grupo, entrevista motivacional.",med:"ISRS (redu\u00e7\u00e3o de impulso), naltrexona (off-label).",tips:["Existe tratamento eficaz \u2014 busque profissional sem vergonha"]},
+
+// NEUROCOGNITIVOS
+{n:"Dem\u00eancia (Alzheimer)",b:"neurocog",c11:"6D80",c10:"F00",d:"Decl\u00ednio progressivo das fun\u00e7\u00f5es cognitivas (mem\u00f3ria, linguagem, racioc\u00ednio) causado pela doen\u00e7a de Alzheimer. A forma mais comum de dem\u00eancia. Afeta principalmente idosos mas pode ter in\u00edcio precoce.",s:["Perda progressiva de mem\u00f3ria recente","Desorientac\u00e3o temporal e espacial","Dificuldade de linguagem","Dificuldade com tarefas habituais","Altera\u00e7\u00f5es de comportamento e personalidade"],tx:"Anticolinester\u00e1sicos (donepezila, rivastigmina), memantina. Estimula\u00e7\u00e3o cognitiva, suporte ao cuidador, adapta\u00e7\u00f5es ambientais.",med:"Donepezila 5-10mg, rivastigmina (patch), memantina. N\u00e3o curam, retardam a progress\u00e3o.",tips:["Diagn\u00f3stico precoce permite melhor planejamento","Cuidador tamb\u00e9m precisa de suporte e descanso","Estimula\u00e7\u00e3o cognitiva e social retarda decl\u00ednio"]},
+
+// GRAVIDEZ
+{n:"Depress\u00e3o P\u00f3s-Parto",b:"gravid",c11:"6E20",c10:"F53",d:"Epis\u00f3dio depressivo que ocorre durante a gravidez ou nas primeiras semanas/meses ap\u00f3s o parto. Diferente do baby blues (que dura poucos dias e \u00e9 leve). Afeta ~15% das m\u00e3es.",s:["Humor deprimido persistente ap\u00f3s o parto","Dificuldade de v\u00ednculo com o beb\u00ea","Culpa excessiva por n\u00e3o sentir alegria","Choro frequente","Pensamentos de que o beb\u00ea estaria melhor sem ela","Altera\u00e7\u00f5es de sono e apetite al\u00e9m do esperado"],tx:"Psicoterapia (TCC, interpessoal), ISRS (sertralina \u00e9 considerada segura na amamenta\u00e7\u00e3o).",med:"Sertralina (1a escolha na amamenta\u00e7\u00e3o), paroxetina. Brexanolona (neuroesteroid IV, aprovada nos EUA).",tips:["N\u00e3o \u00e9 culpa sua \u2014 \u00e9 uma condi\u00e7\u00e3o m\u00e9dica","Pedir ajuda n\u00e3o te faz m\u00e3e pior \u2014 te faz m\u00e3e corajosa","Baby blues dura dias; se persistir, busque ajuda"]}
+];
+
+// RIGHTS
+var RIGHTS=[
+{t:"Lei 10.216/2001 (Reforma Psiqui\u00e1trica)",d:"Base de todos os direitos em sa\u00fade mental no Brasil. Garante tratamento humanizado, preferencia por tratamento comunit\u00e1rio, prote\u00e7\u00e3o contra abuso, e direito \u00e0 informa\u00e7\u00e3o sobre a doen\u00e7a e tratamento.",who:"Toda pessoa com transtorno mental.",steps:["Voc\u00ea tem direito ao melhor tratamento dispon\u00edvel no SUS","Tratamento deve ser no ambiente MENOS restritivo poss\u00edvel","Interna\u00e7\u00e3o s\u00f3 quando recursos comunit\u00e1rios forem insuficientes","CAPS (Centro de Aten\u00e7\u00e3o Psicossocial) \u00e9 a porta de entrada","Seus dados m\u00e9dicos s\u00e3o confidenciais"]},
+{t:"CAPS - Atendimento Gratuito",d:"Centros de Aten\u00e7\u00e3o Psicossocial oferecem atendimento multidisciplinar gratuito para transtornos mentais graves e uso de subst\u00e2ncias.",who:"Pessoas com transtornos mentais graves ou uso de subst\u00e2ncias.",steps:["Procure o CAPS mais pr\u00f3ximo da sua resid\u00eancia","N\u00e3o precisa de encaminhamento \u2014 procura direta","CAPS I, II, III (adultos), CAPSi (crian\u00e7as), CAPSad (\u00e1lcool/drogas)","CAPS III funciona 24 horas e tem leitos","Atendimento inclui: psiquiatra, psic\u00f3logo, assistente social, TO"]},
+{t:"BPC-LOAS (Benef\u00edcio Assistencial)",d:"Um sal\u00e1rio m\u00ednimo mensal para pessoas com defici\u00eancia (incluindo transtorno mental incapacitante) em situa\u00e7\u00e3o de baixa renda.",who:"Pessoa com transtorno mental grave + renda familiar per capita < 1/4 do sal\u00e1rio m\u00ednimo.",steps:["Re\u00fana: RG, CPF, laudo m\u00e9dico atualizado com CID","Atualize o Cad\u00danico no CRAS do seu munic\u00edpio","Agende per\u00edcia no INSS (telefone 135 ou app Meu INSS)","A avalia\u00e7\u00e3o \u00e9 biopsicossocial (n\u00e3o s\u00f3 o diagn\u00f3stico)","Se negado: recurso administrativo (30 dias) ou Defensoria P\u00fablica"]},
+{t:"Plano de Sa\u00fade - Cobertura Obrigat\u00f3ria",d:"Planos de sa\u00fade s\u00e3o obrigados a cobrir tratamento psiqui\u00e1trico e psicol\u00f3gico SEM limite de sess\u00f5es (RN 541/ANS, 2022).",who:"Todo benefici\u00e1rio de plano de sa\u00fade.",steps:["Obtenha prescri\u00e7\u00e3o m\u00e9dica especificando os tratamentos","Solicite ao plano: psicoterapia, psiquiatria, TO, fono","N\u00c3O h\u00e1 limite de sess\u00f5es desde 2022","Se negarem: reclame na ANS (0800-701-9656) e Procon","A\u00e7\u00e3o judicial via Defensoria tem alto \u00edndice de sucesso"]},
+{t:"Isen\u00e7\u00e3o de Imposto de Renda",d:"Aposentados e pensionistas com aliena\u00e7\u00e3o mental (psicoses graves, dem\u00eancias) s\u00e3o isentos de IR sobre proventos.",who:"Aposentados/pensionistas com laudo de aliena\u00e7\u00e3o mental.",steps:["Condi\u00e7\u00f5es qualific\u00e1veis: psicoses cr\u00f4nicas graves, dem\u00eancias, defici\u00eancia intelectual grave","Obtenha laudo m\u00e9dico detalhado","Solicite \u00e0 fonte pagadora (INSS ou \u00f3rg\u00e3o p\u00fablico)","Laudo oficial n\u00e3o \u00e9 obrigat\u00f3rio (S\u00famula 598 STJ)","N\u00c3O se aplica a trabalhadores ativos \u2014 apenas inativos"]},
+{t:"Aposentadoria por Invalidez",d:"Para incapacidade total e permanente. Adicional de 25% se necessitar assist\u00eancia permanente.",who:"Pessoa com transtorno mental grave que cause incapacidade total e permanente para o trabalho.",steps:["Requer per\u00edcia m\u00e9dica do INSS","Para aliena\u00e7\u00e3o mental: n\u00e3o exige car\u00eancia m\u00ednima de contribui\u00e7\u00e3o","Adicional de 25% para grande invalidez (esquizofrenia grave, dem\u00eancia)","Agende pelo 135 ou app Meu INSS"]},
+{t:"Cotas para PcD (Lei 8.213/1991)",d:"Empresas com 100+ funcion\u00e1rios devem reservar 2-5% das vagas para PcD. Transtornos mentais graves qualificam.",who:"Pessoa com transtorno mental com laudo que configure defici\u00eancia.",steps:["Tenha laudo m\u00e9dico atualizado","100-200 funcion\u00e1rios: 2% | 201-500: 3% | 501-1000: 4% | 1000+: 5%","Cadastre-se em sites de emprego inclusivo","Concursos p\u00fablicos: 5% das vagas reservadas"]},
+{t:"Programa De Volta Para Casa",d:"Aux\u00edlio financeiro para egressos de interna\u00e7\u00e3o psiqui\u00e1trica prolongada (2+ anos).",who:"Egressos de interna\u00e7\u00e3o psiqui\u00e1trica de longa perman\u00eancia.",steps:["Requisi\u00e7\u00e3o via CAPS ou hospital psiqui\u00e1trico","Benefici\u00e1rio recebe aux\u00edlio mensal (R$412 em 2024)","Visa reintegra\u00e7\u00e3o comunit\u00e1ria","Acompanhamento pelo CAPS"]},
+{t:"Prote\u00e7\u00e3o Trabalhista",d:"Trabalhadores com transtornos mentais relacionados ao trabalho t\u00eam prote\u00e7\u00f5es especiais.",who:"Trabalhadores cujo transtorno mental tem nexo com o trabalho.",steps:["NTEP presume nexo causal quando h\u00e1 correla\u00e7\u00e3o estat\u00edstica entre CID e atividade econ\u00f4mica","Estabilidade de 12 meses ap\u00f3s retorno de aux\u00edlio-doen\u00e7a acident\u00e1rio","S\u00famula 443 TST: presun\u00e7\u00e3o de discrimina\u00e7\u00e3o para doen\u00e7as estigmatizantes","NR-1 atualizada (2024): empresas devem incluir riscos psicossociais no PGR","Fiscaliza\u00e7\u00e3o efetiva a partir de maio/2026"]}
+];
+
+// RENDER
+var curFilter=null,curTab="home",subStack=[];
+function goTab(t){curTab=t;document.querySelectorAll(".pg").forEach(function(e){e.classList.remove("a")});document.getElementById("pg"+t.charAt(0).toUpperCase()+t.slice(1)).classList.add("a");document.querySelectorAll(".bn-i").forEach(function(e){e.classList.toggle("a",e.getAttribute("data-t")===t)});document.getElementById("bkBtn").style.display="none";document.getElementById("topT").textContent="Psicoeduca\u00e7\u00e3o";if(t==="rights")renderRights();if(t==="favs")renderFavs();window.scrollTo(0,0)}
+
+function render(){renderFilters();renderList()}
+function renderFilters(){var h='<div class="fp'+(curFilter===null?" a":"")+'" onclick="setF(null)">Todos</div>';BK.forEach(function(b){h+='<div class="fp'+(curFilter===b.id?" a":"")+'" onclick="setF(\''+b.id+'\')">'+b.ic+" "+b.nm.split(" ")[0]+"</div>"});document.getElementById("filters").innerHTML=h}
+function setF(f){curFilter=f;renderFilters();renderList()}
+function doSearch(){var v=document.getElementById("sIn").value;document.getElementById("clBtn").style.display=v.length>0?"block":"none";renderList()}
+function clSearch(){document.getElementById("sIn").value="";document.getElementById("clBtn").style.display="none";renderList();document.getElementById("sIn").focus()}
+
+function renderList(){
+var q=norm(document.getElementById("sIn").value);
+var list=DX;
+if(curFilter)list=list.filter(function(d){return d.b===curFilter});
+if(q.length>1)list=list.filter(function(d){return norm(d.n).indexOf(q)!==-1||norm(d.c11).indexOf(q)!==-1||norm(d.c10).indexOf(q)!==-1||norm(d.d).indexOf(q)!==-1||norm(d.b).indexOf(q)!==-1||(d.s&&d.s.some(function(s){return norm(s).indexOf(q)!==-1}))});
+document.getElementById("cnt").textContent=list.length+" diagn\u00f3stico"+(list.length!==1?"s":"");
+var h="";
+list.forEach(function(d){
+var bk=BK.find(function(b){return b.id===d.b});
+h+='<div class="cd an" onclick="openDx(\''+d.c11+'\')" style="cursor:pointer;border-left:4px solid '+(bk?bk.cl:"#888")+'">';
+h+='<div class="cd-t"><span>'+((bk?bk.ic:"")|| "")+'</span><span style="flex:1">'+d.n+'</span>';
+h+='<button class="fav'+(isFv(d.n)?" v":"")+'" onclick="togFav(\''+esc(d.n)+'\',event)">'+(isFv(d.n)?"\u2605":"\u2606")+"</button></div>";
+h+='<div class="cid"><span class="c11">CID-11: '+d.c11+'</span><span class="c10">CID-10: '+d.c10+"</span></div>";
+h+='<div class="cd-p" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+d.d+"</div></div>";
+});
+if(!list.length)h='<div style="text-align:center;padding:40px;color:var(--tl)"><div style="font-size:32px;margin-bottom:8px">&#128269;</div><p>Nenhum diagn\u00f3stico encontrado</p></div>';
+document.getElementById("dList").innerHTML=h;
+}
+function esc(s){return s.replace(/'/g,"\\'")}
+
+function openDx(c11){
+var d=DX.find(function(x){return x.c11===c11});if(!d)return;
+var bk=BK.find(function(b){return b.id===d.b});
+var h='<div class="cd" style="border-left:4px solid '+(bk?bk.cl:"#888")+'">';
+h+='<div class="cd-t"><span style="font-size:22px">'+(bk?bk.ic:"")+'</span><span style="flex:1">'+d.n+'</span>';
+h+='<button class="fav'+(isFv(d.n)?" v":"")+'" onclick="togFav(\''+esc(d.n)+'\',event)">'+(isFv(d.n)?"\u2605":"\u2606")+"</button></div>";
+h+='<div class="cid"><span class="c11">CID-11: '+d.c11+'</span><span class="c10">CID-10: '+d.c10+"</span></div>";
+if(bk)h+='<div style="margin-top:4px"><span class="tag tg-b">'+bk.nm+"</span></div>";
+h+="</div>";
+
+h+='<div class="det"><div class="ds"><h4>&#128214; O que \u00e9?</h4><div class="nb">'+d.d+"</div></div>";
+
+if(d.s&&d.s.length){h+='<div class="ds"><h4>&#127919; Sintomas Principais</h4><div class="st-list">';d.s.forEach(function(s){h+='<span class="st">'+s+"</span>"});h+="</div></div>"}
+
+if(d.tx){h+='<div class="ds"><h4>&#128138; Tratamento</h4><div class="nb">'+d.tx+"</div></div>"}
+if(d.med){h+='<div class="ds"><h4>&#128138; Medicamentos (Vis\u00e3o Geral)</h4><div class="nb" style="border-color:var(--ac)">'+d.med+"</div></div>"}
+
+if(d.tips&&d.tips.length){h+='<div class="ds"><h4>&#128161; Dicas Pr\u00e1ticas</h4>';d.tips.forEach(function(t){h+='<div class="cd" style="padding:10px 14px;margin:0 0 6px"><div class="cd-p">\u2714\ufe0f '+t+"</div></div>"});h+="</div>"}
+
+h+='<div class="ds"><h4>&#9878;\ufe0f Seus Direitos</h4><div class="nb">Pessoas com diagn\u00f3stico psiqui\u00e1trico t\u00eam direitos garantidos pela Lei 10.216/2001 e legisla\u00e7\u00e3o complementar. Consulte a aba Direitos para detalhes sobre BPC-LOAS, cobertura de plano de sa\u00fade, prote\u00e7\u00e3o trabalhista e mais.</div></div>';
+
+h+="</div>";
+
+document.getElementById("detContent").innerHTML=h;
+goTab2("detail",d.n);
+}
+
+function goTab2(t,title){
+document.querySelectorAll(".pg").forEach(function(e){e.classList.remove("a")});
+document.getElementById("pg"+t.charAt(0).toUpperCase()+t.slice(1)).classList.add("a");
+document.getElementById("bkBtn").style.display="block";
+document.getElementById("topT").textContent=title||"";
+subStack.push(t);window.scrollTo(0,0);
+}
+function goBack(){
+if(subStack.length>0){subStack.pop();goTab("home")}
+}
+
+function renderRights(){
+var h="";RIGHTS.forEach(function(r,i){
+h+='<div class="ex" id="r'+i+'"><div class="exp-h" onclick="togR('+i+')"><span class="et">'+r.t+'</span><span class="ea">\u25bc</span></div>';
+h+='<div class="ex-b"><div style="margin-bottom:10px"><strong>Quem:</strong> '+r.who+"</div>";
+h+='<div style="margin-bottom:10px">'+r.d+"</div>";
+h+='<div style="font-weight:700;font-size:12px;margin-bottom:6px;color:var(--p)">PASSO A PASSO:</div><div class="rl">';
+r.steps.forEach(function(s){h+='<div class="right-step"><p>'+s+"</p></div>"});
+h+="</div></div></div>"});
+document.getElementById("rightsList").innerHTML=h;
+}
+function togR(i){document.getElementById("r"+i).classList.toggle("o")}
+
+function renderFavs(){
+var list=DX.filter(function(d){return isFv(d.n)});
+if(!list.length){document.getElementById("favList").innerHTML="";document.getElementById("favEmpty").style.display="block";return}
+document.getElementById("favEmpty").style.display="none";
+var h="";list.forEach(function(d){
+var bk=BK.find(function(b){return b.id===d.b});
+h+='<div class="cd an" onclick="openDx(\''+d.c11+'\')" style="cursor:pointer;border-left:4px solid '+(bk?bk.cl:"#888")+'">';
+h+='<div class="cd-t">'+d.n+'<button class="fav v" onclick="togFav(\''+esc(d.n)+'\',event)">\u2605</button></div>';
+h+='<div class="cid"><span class="c11">'+d.c11+'</span><span class="c10">'+d.c10+"</span></div></div>"});
+document.getElementById("favList").innerHTML=h;
+}
+
+render();
+</script>
+</body>
+</html>

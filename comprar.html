@@ -152,7 +152,8 @@
         "story-tracker":    { name: "StoryTracker", icon: "📰", bg: "#181820", cat: "Notícias", apk: "dl/StoryTracker-Intel.apk", web: "dl/story-tracker.html" },
         "guia-psicofarm":   { name: "Guia Psicofarmacológico", icon: "💉", bg: "#0d1f20", cat: "Saúde", apk: "dl/GuiaPsicofarm.apk", web: "dl/guia-psicofarmacologico.html" },
         "autismo-facil":    { name: "Autismo Fácil", icon: "🧩", bg: "#1a1814", cat: "Saúde", apk: "dl/AutismoFacil.apk", web: "dl/autismo-facil.html" },
-        "bundle":           { name: "Pacote Completo (10 apps)", icon: "🌱", bg: "#141e14", cat: "Todos", apk: null, web: null, isBundle: true }
+        "psicoeducacao":    { name: "Entendendo Transtornos Psiquiátricos", icon: "🧠", bg: "#1a1520", cat: "Saúde", apk: "dl/Psicoeducacao.apk", web: "dl/psicoeducacao.html" },
+        "bundle":           { name: "Pacote Completo (11 apps)", icon: "🌱", bg: "#141e14", cat: "Todos", apk: null, web: null, isBundle: true }
     };
 
     // ===== CODE VALIDATION =====
@@ -200,13 +201,13 @@
         // Bundle pricing
         if (app.isBundle) {
             document.querySelector('.price-big').textContent = 'R$ 50,00';
-            document.querySelector('.price-sub').innerHTML = 'Pagamento único · Todos os 10 apps<br><s style="color:var(--text3)">De R$ 100,00</s> — Economize R$ 50,00';
+            document.querySelector('.price-sub').innerHTML = 'Pagamento único · Todos os 11 apps<br><s style="color:var(--text3)">De R$ 110,00</s> — Economize R$ 60,00';
             document.querySelector('.price-note').textContent = 'Inclui APK + Web App de cada um dos 9 aplicativos';
             document.querySelector('.pix-value strong').textContent = 'R$ 50,00';
         }
 
         const price = app.isBundle ? 'R$50' : 'R$10';
-        const waMsg = encodeURIComponent(`Olá! Fiz o Pix de ${price} para ${app.isBundle ? 'o Pacote Completo (10 apps)' : 'o app "' + app.name + '"'}. Segue comprovante:`);
+        const waMsg = encodeURIComponent(`Olá! Fiz o Pix de ${price} para ${app.isBundle ? 'o Pacote Completo (11 apps)' : 'o app "' + app.name + '"'}. Segue comprovante:`);
         document.getElementById('waLink').href = `https://wa.me/5511961820112?text=${waMsg}`;
 
         // For bundle, show all downloads when code is valid

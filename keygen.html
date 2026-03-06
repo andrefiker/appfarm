@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Códigos — App Farm Admin</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Segoe UI',system-ui,sans-serif;background:#111;color:#eee;padding:20px;min-height:100vh}
+        h1{font-size:1.3rem;margin-bottom:20px;color:#8ab87a}
+        .row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:end}
+        label{display:block;font-size:.75rem;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em}
+        select,input{background:#1a1a1a;border:1px solid #333;border-radius:6px;padding:10px;color:#eee;font-size:.9rem}
+        select{min-width:200px}
+        input[type=number]{width:80px}
+        button{padding:10px 20px;background:#6b8f5e;color:#fff;border:none;border-radius:6px;font-size:.9rem;cursor:pointer}
+        button:hover{background:#8ab87a}
+        .codes{background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:16px;margin-top:16px;font-family:monospace;font-size:.85rem;line-height:2;white-space:pre-wrap;max-height:400px;overflow-y:auto}
+        .copy-btn{margin-top:10px;background:#333;color:#aaa;font-size:.8rem}
+        .copy-btn:hover{background:#444;color:#eee}
+        .note{font-size:.78rem;color:#666;margin-top:16px;line-height:1.6}
+    </style>
+</head>
+<body>
+    <h1>🔑 Gerador de Códigos — App Farm</h1>
+    <div class="row">
+        <div>
+            <label>App</label>
+            <select id="appSelect">
+                <option value="clinica-facil">Clínica Fácil</option>
+                <option value="interacoes">Interações Medicamentosas</option>
+                <option value="prescripta">Prescripta</option>
+                <option value="quit-tracker">Eliminador de Vícios</option>
+                <option value="pare-de-fumar">Pare de Fumar</option>
+                <option value="orcamento">Orçamento Pessoal</option>
+                <option value="vocab-builder">Teste de Vocabulário</option>
+                <option value="story-tracker">StoryTracker</option>
+            </select>
+        </div>
+        <div>
+            <label>Código nº (1-500)</label>
+            <input type="number" id="seedStart" value="1" min="1" max="500">
+        </div>
+        <div>
+            <label>Quantidade</label>
+            <input type="number" id="qty" value="5" min="1" max="50">
+        </div>
+        <button onclick="generate()">Gerar</button>
+    </div>
+    <div class="codes" id="output">Selecione o app e clique em "Gerar"</div>
+    <button class="copy-btn" onclick="copyAll()">📋 Copiar todos</button>
+    <div class="note">
+        <strong>Como usar:</strong> Gere códigos e envie ao cliente após confirmar o Pix.<br>
+        Cada código é único por app. O número (1-500) é o "seed" — anote qual enviou para cada cliente.<br>
+        Exemplo: Cliente João comprou Clínica Fácil → envie código nº 1. Cliente Maria → nº 2. E assim por diante.<br>
+        <strong>Importante:</strong> Não compartilhe esta página. O link é só para você (admin).
+    </div>
+    <script>
+    const SECRET = "appfarm2026x";
+
+    function hashCode(str) {
+        let h = 0;
+        for (let i = 0; i < str.length; i++) {
+            h = ((h << 5) - h + str.charCodeAt(i)) | 0;
+        }
+        return Math.abs(h);
+    }
+
+    function generateCode(appSlug, seed) {
+        const raw = SECRET + appSlug + seed;
+        const h = hashCode(raw);
+        const hex = h.toString(16).toUpperCase().padStart(8, '0');
+        return hex.slice(0, 4) + '-' + hex.slice(4, 8);
+    }
+
+    function generate() {
+        const app = document.getElementById('appSelect');
+        const appSlug = app.value;
+        const appName = app.options[app.selectedIndex].text;
+        const start = parseInt(document.getElementById('seedStart').value);
+        const qty = parseInt(document.getElementById('qty').value);
+        
+        let out = `=== ${appName} ===\n\n`;
+        for (let i = start; i < start + qty; i++) {
+            out += `#${String(i).padStart(3, '0')}  ${generateCode(appSlug, i.toString())}\n`;
+        }
+        document.getElementById('output').textContent = out;
+    }
+
+    function copyAll() {
+        navigator.clipboard.writeText(document.getElementById('output').textContent);
+    }
+    </script>
+</body>
+</html>

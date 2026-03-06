@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adquirir App — App Farm</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{--bg:#0a0c10;--card:#12151c;--card2:#181c25;--border:#222839;--text:#e8eaf0;--text2:#8b92a8;--text3:#5a6178;--accent:#6b8f5e;--accent-l:#8ab87a;--green:#4a7a3f;--red:#c46b5a;--blue:#5a7ec4;--radius:12px;--font-d:'DM Serif Display',Georgia,serif;--font:'Outfit',system-ui,sans-serif}
+        body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+        .topbar{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+        .topbar a{color:var(--text3);text-decoration:none;font-size:.85rem}
+        .topbar h1{font-family:var(--font-d);font-size:1.2rem;font-weight:400}
+        .container{max-width:480px;margin:0 auto;padding:24px 20px}
+        .app-header{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+        .app-icon{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0}
+        .app-header h2{font-family:var(--font-d);font-size:1.4rem;font-weight:400}
+        .app-header .cat{font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em}
+        .price-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;text-align:center;margin-bottom:20px}
+        .price-big{font-family:var(--font-d);font-size:2.4rem;color:var(--accent-l);margin-bottom:4px}
+        .price-sub{font-size:.85rem;color:var(--text3)}
+        .price-note{font-size:.75rem;color:var(--text3);margin-top:8px;font-style:italic}
+        .section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px}
+        .section-title{font-family:var(--font-d);font-size:1.05rem;font-weight:400;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+        .step{display:flex;gap:12px;margin-bottom:16px}
+        .step:last-child{margin-bottom:0}
+        .step-num{width:28px;height:28px;border-radius:50%;background:rgba(107,143,94,.15);color:var(--accent-l);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:600;flex-shrink:0;margin-top:2px}
+        .step-text{font-size:.88rem;color:var(--text2);line-height:1.6}
+        .step-text strong{color:var(--text)}
+        .pix-area{text-align:center;padding:16px 0}
+        .pix-key{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-family:monospace;font-size:.9rem;color:var(--accent-l);cursor:pointer;display:inline-block;transition:all .2s;position:relative;word-break:break-all}
+        .pix-key:hover{border-color:var(--accent)}
+        .pix-key::after{content:'📋 Copiar';position:absolute;top:-8px;right:-8px;background:var(--accent);color:#fff;font-family:var(--font);font-size:.65rem;padding:2px 8px;border-radius:100px;font-weight:500;opacity:0;transition:opacity .2s}
+        .pix-key:hover::after{opacity:1}
+        .pix-copied{font-size:.8rem;color:var(--accent-l);margin-top:8px;opacity:0;transition:opacity .3s}
+        .pix-copied.show{opacity:1}
+        .pix-value{font-size:.85rem;color:var(--text2);margin-top:12px}
+        .pix-value strong{color:var(--text);font-size:1rem}
+        .whatsapp-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:#25d366;color:#fff;border-radius:100px;text-decoration:none;font-weight:500;font-size:.9rem;margin-top:16px;transition:all .2s}
+        .whatsapp-btn:hover{background:#20bd5a;box-shadow:0 4px 20px rgba(37,211,102,.3)}
+        .whatsapp-btn svg{width:18px;height:18px}
+        .unlock-section{margin-top:20px}
+        .unlock-form{display:flex;gap:8px}
+        .unlock-input{flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;color:var(--text);font-family:var(--font);font-size:.95rem;outline:none;letter-spacing:2px;text-transform:uppercase;text-align:center}
+        .unlock-input:focus{border-color:var(--accent)}
+        .unlock-btn{padding:12px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:var(--font);font-size:.9rem;font-weight:500;cursor:pointer;transition:background .2s}
+        .unlock-btn:hover{background:var(--accent-l)}
+        .unlock-result{margin-top:12px;padding:14px;border-radius:8px;font-size:.88rem;display:none}
+        .unlock-success{background:rgba(107,143,94,.1);border:1px solid rgba(107,143,94,.2);color:var(--accent-l)}
+        .unlock-error{background:rgba(196,107,90,.1);border:1px solid rgba(196,107,90,.2);color:var(--red)}
+        .download-links{display:flex;flex-direction:column;gap:10px;margin-top:16px;display:none}
+        .dl-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;border-radius:10px;text-decoration:none;font-weight:500;font-size:.9rem;transition:all .2s}
+        .dl-apk{background:var(--accent);color:#fff}
+        .dl-apk:hover{background:var(--accent-l);box-shadow:0 4px 20px rgba(107,143,94,.3)}
+        .dl-web{background:var(--blue);color:#fff}
+        .dl-web:hover{box-shadow:0 4px 20px rgba(90,126,196,.3)}
+        .dl-btn svg{width:18px;height:18px}
+        .guarantee{text-align:center;padding:16px;font-size:.78rem;color:var(--text3);line-height:1.6;border-top:1px solid var(--border);margin-top:20px}
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <a href="./">← App Farm</a>
+        <h1>Adquirir App</h1>
+        <div></div>
+    </div>
+    <div class="container">
+        <div class="app-header" id="appHeader">
+            <div class="app-icon" id="appIcon"></div>
+            <div>
+                <div class="cat" id="appCat"></div>
+                <h2 id="appName">App</h2>
+            </div>
+        </div>
+
+        <div class="price-card">
+            <div class="price-big">R$ 10,00</div>
+            <div class="price-sub">Pagamento único · Acesso permanente</div>
+            <div class="price-note">Inclui APK para Android + versão Web App</div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">Como comprar</div>
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-text">Faça um <strong>Pix de R$ 10,00</strong> para a chave abaixo</div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-text">Envie o <strong>comprovante via WhatsApp</strong> com o nome do app</div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-text">Receba seu <strong>código de acesso</strong> e baixe o app</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">💳 Pix</div>
+            <div class="pix-area">
+                <div class="pix-key" id="pixKey" onclick="copyPix()">andrefiker@gmail.com</div>
+                <div class="pix-copied" id="pixCopied">✓ Chave copiada!</div>
+                <div class="pix-value">Valor: <strong>R$ 10,00</strong></div>
+            </div>
+            <div style="text-align:center">
+                <a class="whatsapp-btn" id="waLink" href="#" target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                    Enviar comprovante
+                </a>
+            </div>
+        </div>
+
+        <div class="section unlock-section">
+            <div class="section-title">🔑 Já tem um código?</div>
+            <div class="unlock-form">
+                <input type="text" class="unlock-input" id="codeInput" placeholder="XXXX-XXXX" maxlength="9" autocomplete="off" spellcheck="false">
+                <button class="unlock-btn" onclick="validateCode()">Liberar</button>
+            </div>
+            <div class="unlock-result" id="unlockResult"></div>
+            <div class="download-links" id="downloadLinks">
+                <a class="dl-btn dl-apk" id="dlApk" download>
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Baixar APK (Android)
+                </a>
+                <a class="dl-btn dl-web" id="dlWeb" target="_blank">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                    Abrir Web App
+                </a>
+            </div>
+        </div>
+
+        <div class="guarantee">
+            🔒 Pagamento 100% via Pix · Acesso permanente após compra<br>
+            Dúvidas? Fale conosco no WhatsApp
+        </div>
+    </div>
+
+    <script>
+    // ===== APP DATA =====
+    const apps = {
+        "clinica-facil":    { name: "Clínica Fácil", icon: "🧠", bg: "#1e1535", cat: "Saúde", apk: "dl/ClinicaFacil.apk", web: "dl/clinica-facil.html" },
+        "interacoes":       { name: "Consulta de Interações", icon: "⚕️", bg: "#1a2418", cat: "Saúde", apk: "dl/PsychMedInteracoes.apk", web: "dl/interacoes.html" },
+        "prescripta":       { name: "Prescripta", icon: "💊", bg: "#141e14", cat: "Saúde", apk: "dl/Prescripta.apk", web: "dl/prescripta.html" },
+        "quit-tracker":     { name: "Eliminador de Vícios", icon: "🌱", bg: "#1a2418", cat: "Bem-estar", apk: "dl/QuitTracker.apk", web: "dl/quit-tracker.html" },
+        "pare-de-fumar":    { name: "Pare de Fumar", icon: "🚭", bg: "#1e1818", cat: "Bem-estar", apk: "dl/PareDeFumar.apk", web: "dl/pare-de-fumar.html" },
+        "orcamento":        { name: "Orçamento Pessoal", icon: "📊", bg: "#141820", cat: "Finanças", apk: "dl/BudgetMinimalist.apk", web: "dl/orcamento.html" },
+        "vocab-builder":    { name: "Teste de Vocabulário", icon: "📚", bg: "#1e1420", cat: "Educação", apk: "dl/VocabBuilder.apk", web: "dl/vocab-builder.html" },
+        "story-tracker":    { name: "StoryTracker", icon: "📰", bg: "#181820", cat: "Notícias", apk: "dl/StoryTracker-Intel.apk", web: "dl/story-tracker.html" }
+    };
+
+    // ===== CODE VALIDATION =====
+    // Codes are generated: HMAC-like hash of (appSlug + secret)
+    // André generates codes with the keygen page (keygen.html)
+    const SECRET = "appfarm2026x";
+
+    function hashCode(str) {
+        let h = 0;
+        for (let i = 0; i < str.length; i++) {
+            h = ((h << 5) - h + str.charCodeAt(i)) | 0;
+        }
+        return Math.abs(h);
+    }
+
+    function generateValidCode(appSlug, seed) {
+        const raw = SECRET + appSlug + seed;
+        const h = hashCode(raw);
+        const hex = h.toString(16).toUpperCase().padStart(8, '0');
+        return hex.slice(0, 4) + '-' + hex.slice(4, 8);
+    }
+
+    function isValidCode(appSlug, code) {
+        // Check code against 500 possible seeds (André can generate up to 500 codes per app)
+        for (let i = 1; i <= 500; i++) {
+            if (generateValidCode(appSlug, i.toString()) === code.toUpperCase().trim()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // ===== INIT =====
+    const params = new URLSearchParams(window.location.search);
+    const appSlug = params.get('app') || 'clinica-facil';
+    const app = apps[appSlug];
+
+    if (app) {
+        document.getElementById('appName').textContent = app.name;
+        document.getElementById('appCat').textContent = app.cat;
+        document.getElementById('appIcon').textContent = app.icon;
+        document.getElementById('appIcon').style.background = app.bg;
+        document.getElementById('dlApk').href = app.apk;
+        document.getElementById('dlWeb').href = app.web;
+        document.title = `Adquirir ${app.name} — App Farm`;
+        
+        const waMsg = encodeURIComponent(`Olá! Fiz o Pix de R$10 para o app "${app.name}". Segue comprovante:`);
+        document.getElementById('waLink').href = `https://wa.me/5511999999999?text=${waMsg}`;
+    }
+
+    function copyPix() {
+        const key = document.getElementById('pixKey').textContent;
+        navigator.clipboard.writeText(key).then(() => {
+            const el = document.getElementById('pixCopied');
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 2000);
+        });
+    }
+
+    function validateCode() {
+        const code = document.getElementById('codeInput').value.trim();
+        const result = document.getElementById('unlockResult');
+        const links = document.getElementById('downloadLinks');
+
+        if (!code) return;
+
+        if (isValidCode(appSlug, code)) {
+            result.className = 'unlock-result unlock-success';
+            result.textContent = '✓ Código válido! Downloads liberados.';
+            result.style.display = 'block';
+            links.style.display = 'flex';
+        } else {
+            result.className = 'unlock-result unlock-error';
+            result.textContent = '✕ Código inválido. Verifique e tente novamente.';
+            result.style.display = 'block';
+            links.style.display = 'none';
+        }
+    }
+
+    document.getElementById('codeInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') validateCode();
+    });
+
+    // Auto-format code input
+    document.getElementById('codeInput').addEventListener('input', function() {
+        let v = this.value.replace(/[^a-fA-F0-9]/g, '').toUpperCase();
+        if (v.length > 4) v = v.slice(0, 4) + '-' + v.slice(4, 8);
+        this.value = v;
+    });
+    </script>
+</body>
+</html>

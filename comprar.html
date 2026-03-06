@@ -29,12 +29,12 @@
         .step-text{font-size:.88rem;color:var(--text2);line-height:1.6}
         .step-text strong{color:var(--text)}
         .pix-area{text-align:center;padding:16px 0}
-        .pix-key{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-family:monospace;font-size:.9rem;color:var(--accent-l);cursor:pointer;display:inline-block;transition:all .2s;position:relative;word-break:break-all}
-        .pix-key:hover{border-color:var(--accent)}
-        .pix-key::after{content:'📋 Copiar';position:absolute;top:-8px;right:-8px;background:var(--accent);color:#fff;font-family:var(--font);font-size:.65rem;padding:2px 8px;border-radius:100px;font-weight:500;opacity:0;transition:opacity .2s}
-        .pix-key:hover::after{opacity:1}
-        .pix-copied{font-size:.8rem;color:var(--accent-l);margin-top:8px;opacity:0;transition:opacity .3s}
-        .pix-copied.show{opacity:1}
+        .pix-key-row{display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:8px}
+        .pix-key{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-family:monospace;font-size:.9rem;color:var(--accent-l);word-break:break-all}
+        .pix-copy-btn{padding:10px 18px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:var(--font);font-size:.82rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s;display:flex;align-items:center;gap:6px}
+        .pix-copy-btn:hover{background:var(--accent-l)}
+        .pix-copy-btn.copied{background:#25d366}
+        .pix-copied{font-size:.8rem;color:var(--accent-l);margin-top:4px;min-height:20px}
         .pix-value{font-size:.85rem;color:var(--text2);margin-top:12px}
         .pix-value strong{color:var(--text);font-size:1rem}
         .whatsapp-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:#25d366;color:#fff;border-radius:100px;text-decoration:none;font-weight:500;font-size:.9rem;margin-top:16px;transition:all .2s}
@@ -99,8 +99,11 @@
         <div class="section">
             <div class="section-title">💳 Pix</div>
             <div class="pix-area">
-                <div class="pix-key" id="pixKey" onclick="copyPix()">andrefiker@gmail.com</div>
-                <div class="pix-copied" id="pixCopied">✓ Chave copiada!</div>
+                <div class="pix-key-row">
+                    <div class="pix-key" id="pixKey">andrefiker@gmail.com</div>
+                    <button class="pix-copy-btn" id="pixCopyBtn" onclick="copyPix()">📋 Copiar</button>
+                </div>
+                <div class="pix-copied" id="pixCopied"></div>
                 <div class="pix-value">Valor: <strong>R$ 10,00</strong></div>
             </div>
             <div style="text-align:center">
@@ -199,10 +202,17 @@
 
     function copyPix() {
         const key = document.getElementById('pixKey').textContent;
+        const btn = document.getElementById('pixCopyBtn');
+        const msg = document.getElementById('pixCopied');
         navigator.clipboard.writeText(key).then(() => {
-            const el = document.getElementById('pixCopied');
-            el.classList.add('show');
-            setTimeout(() => el.classList.remove('show'), 2000);
+            btn.textContent = '✓ Copiado!';
+            btn.classList.add('copied');
+            msg.textContent = '✓ Chave copiada — cole no app do banco';
+            setTimeout(() => {
+                btn.innerHTML = '📋 Copiar';
+                btn.classList.remove('copied');
+                msg.textContent = '';
+            }, 3000);
         });
     }
 

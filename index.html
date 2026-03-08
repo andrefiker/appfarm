@@ -950,7 +950,7 @@
             <p class="hero-desc">Ferramentas para profissionais de saúde mental, educação e produtividade. Feitas por quem vive a clínica.</p>
             <div class="hero-stats">
                 <div class="hero-stat">
-                    <div class="number" id="appCount">13</div>
+                    <div class="number" id="appCount">14</div>
                     <div class="label">Apps</div>
                 </div>
                 <div class="hero-stat">
@@ -980,13 +980,13 @@
         <div class="bundle-card">
             <div>
                 <div class="bundle-badge">🔥 Melhor valor</div>
-                <h3>Pacote Completo — Todos os 13 apps</h3>
+                <h3>Pacote Completo — Todos os 14 apps</h3>
                 <div class="bundle-desc">Acesse todo o ecossistema App Farm: 10 ferramentas clínicas, financeiras, educacionais e de bem-estar. APK + Web App inclusos.</div>
             </div>
             <div class="bundle-pricing">
-                <div class="bundle-old-price">De R$ 130,00</div>
+                <div class="bundle-old-price">De R$ 140,00</div>
                 <div class="bundle-new-price">R$ 100,00</div>
-                <div class="bundle-save">Economize R$ 30,00</div>
+                <div class="bundle-save">Economize R$ 40,00</div>
                 <a href="comprar.html?app=bundle" class="bundle-btn">Comprar pacote</a>
             </div>
         </div>
@@ -997,7 +997,7 @@
         <div class="tier-header">
             <div class="tier-icon" style="background: rgba(107, 143, 94, 0.12)">🏥</div>
             <h2>Para Profissionais de Saúde Mental</h2>
-            <span class="tier-count">6 apps</span>
+            <span class="tier-count">7 apps</span>
         </div>
         <p class="tier-desc">Prontuário, agenda, testes, prescrições, interações e farmacologia — tudo que o psicólogo e psiquiatra precisam no consultório.</p>
         <div class="apps-grid" id="appsGridClinical"></div>
@@ -1298,6 +1298,33 @@
             note: "Psicoeducação é a primeira linha de tratamento. Este app coloca informação de qualidade na mão de quem mais precisa: o paciente."
         },
         {
+            name: "PsychMD",
+            description: "Guia psiquiátrico completo: navegador de sintomas, 20+ medicamentos com interações, autoavaliações validadas (PHQ-9, GAD-7, AUDIT), condições explicadas e perguntas para levar ao médico.",
+            category: "Saúde",
+            icon: "💊",
+            iconBg: "#0f1419",
+            tags: ["Psiquiatria", "Medicamentos", "Android", "Web App"],
+            price: "R$ 10,00",
+            slug: "psychmd",
+            available: true,
+            longDescription: "Você sai do consultório e esquece o que o médico disse sobre seu medicamento. Ou está em sessão e o paciente pergunta sobre efeitos colaterais de um ISRS. O PsychMD é a referência que resolve isso: navegador de sintomas guiado que ajuda a entender o que está sentindo, guias completos sobre cada condição psiquiátrica (depressão, ansiedade, bipolar, TEPT, TOC, TDAH, pânico, fobias, esquizofrenia), autoavaliações validadas (PHQ-9 para depressão, GAD-7 para ansiedade, AUDIT para uso de álcool) com apuração automática e interpretação, e um banco de 20+ medicamentos psiquiátricos organizados por classe (ISRS, IRSN, benzodiazepínicos, estabilizadores, antipsicóticos, estimulantes) com dose, mecanismo, efeitos colaterais, interações e tempo para efeito. O verificador de interações cruza seus medicamentos e alerta riscos. Inclui lista de perguntas prontas para levar à próxima consulta e acesso rápido a linhas de crise (CVV 188, SAMU 192). 100% offline.",
+            features: [
+                "Navegador de sintomas — exploração guiada do que você está sentindo, sem autodiagnóstico",
+                "20+ medicamentos psiquiátricos — dose, mecanismo, efeitos, interações e tempo para efeito",
+                "6 classes de medicamentos — ISRS, IRSN, benzodiazepínicos, estabilizadores de humor, antipsicóticos e estimulantes",
+                "Verificador de interações — adicione seus medicamentos e veja se interagem entre si",
+                "PHQ-9 (depressão) — autoavaliação validada com apuração e interpretação automática",
+                "GAD-7 (ansiedade) — rastreamento de ansiedade generalizada com classificação de gravidade",
+                "AUDIT (álcool) — avaliação de padrão de uso de álcool com 10 questões",
+                "Condições psiquiátricas explicadas — depressão, bipolar, TAG, pânico, TOC, TEPT, TDAH, fobias e mais",
+                "Perguntas para o médico — lista pronta de perguntas para sua próxima consulta psiquiátrica",
+                "Cada medicamento com nome comercial — Zoloft, Lexapro, Rivotril, Seroquel, Ritalina, Venvanse e mais",
+                "Linha de crise acessível — CVV 188 e SAMU 192 sempre visíveis",
+                "100% offline — consulte no consultório, hospital ou em qualquer lugar sem internet"
+            ],
+            note: "A informação que deveria estar na bula, mas que ninguém consegue ler. Agora no seu bolso, em linguagem humana."
+        },
+        {
             name: "Life RPG",
             description: "Transforme sua vida em um jogo. Ganhe XP em 8 domínios, mantenha streaks, complete quests, acompanhe metas com micro-passos e veja sua evolução em um radar chart.",
             category: "Produtividade",
@@ -1377,7 +1404,7 @@
     ];
 
     // ===== TIER CLASSIFICATION =====
-    const clinicalSlugs = ['clinica-facil', 'interacoes', 'prescripta', 'guia-psicofarm', 'autismo-facil', 'psicoeducacao'];
+    const clinicalSlugs = ['clinica-facil', 'interacoes', 'prescripta', 'guia-psicofarm', 'autismo-facil', 'psicoeducacao', 'psychmd'];
 
     // ===== RENDER =====
     function renderApps() {

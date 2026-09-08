@@ -5,11 +5,13 @@ import { createClient } from 'redis';
 import { WebSocketServer } from 'ws';
 
 const PORT = Number(process.env.PORT || 3000);
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'https://quiet-knight-live-v2xp3y.v2.appdeploy.ai';
+const FRONTEND_ORIGIN = new URL(process.env.FRONTEND_ORIGIN || 'https://quiet-knight-live-v2xp3y.v2.appdeploy.ai').origin;
+const BUILD = 'qk-server-2026-09-08-r2';
+const log = (event, fields = {}) => console.log(JSON.stringify({event,...fields}));
 const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 const ROOM_TTL = 60 * 60 * 24 * 7;
 const redis = createClient({ url: REDIS_URL });
-redis.on('error', err => console.error('[redis]', err?.message || err));
+redis.on('error', () => console.error('[redis] connection error'));
 await redis.connect();
 
 const sockets = new Map();
@@ -46,7 +48,9 @@ async function loadRoom(code) {
 }
 
 async function saveRoom(room) {
-  await redis.set(roomKey(room.code), JSON.stringify(room), { EX: ROOM_TTL });
+  const saved = await redis.eval(`local current = redis.call('GET',KEYS[1]); if ARGV[1] == '0' then if current then return 0 end else if not current or cjson.decode(current).version ~= tonumber(ARGV[1]) then return 0 end end; redis.call('SET',KEYS[1],ARGV[2],'EX',ARGV[3]); redis.call('PUBLISH','qk:updates',ARGV[4]); return 1`, { keys:[roomKey(room.code)], arguments:[String(room.version-1),JSON.stringify(room),String(ROOM_TTL),JSON.stringify(publicRoom(room))] });
+  if (!saved) { const error = new Error('Room changed; retry from the current position'); error.code = 'QK_CONFLICT'; throw error; }
+  log('room.saved',{room:room.code,version:room.version,status:room.status});
 }
 
 function gameFromMoves(moves) {
@@ -62,6 +66,7 @@ function deriveStatus(game) {
 }
 
 function broadcast(code, payload) {
+  log('room.broadcast',{room:code,version:payload.version});
   const set = sockets.get(code);
   if (!set) return;
   const message = JSON.stringify({ type: 'room.update', room: payload });
@@ -72,6 +77,11 @@ function broadcast(code, payload) {
   }
   if (!set.size) sockets.delete(code);
 }
+
+const subscriber = redis.duplicate();
+subscriber.on('error', () => console.error('[redis] subscription connection error'));
+await subscriber.connect();
+await subscriber.subscribe('qk:updates', message => { try { const view=JSON.parse(message); broadcast(view.code,view); } catch {} });
 
 function corsHeaders(origin) {
   const allowed = origin === FRONTEND_ORIGIN || origin === 'http://localhost:5173' || origin === 'http://127.0.0.1:5173';
@@ -85,6 +95,7 @@ function corsHeaders(origin) {
 }
 
 function send(res, status, data, origin) {
+  log('http.response',{status,room:data?.room?.code,role:data?.role,version:data?.room?.version});
   res.writeHead(status, { ...corsHeaders(origin), 'Content-Type': 'application/json; charset=utf-8' });
   res.end(JSON.stringify(data));
 }
@@ -107,8 +118,7 @@ async function createRoom() {
     if (await redis.exists(roomKey(code))) continue;
     const game = new Chess();
     const room = { code, white_token: randomUUID(), black_token: null, black_join_digest: null, moves: [], fen: game.fen(), turn: 'w', status: 'waiting', winner: null, version: 1, created_at: Date.now() };
-    await saveRoom(room);
-    return room;
+    try { await saveRoom(room); return room; } catch(error) { if(error.code !== 'QK_CONFLICT') throw error; }
   }
   throw new Error('room_create_failed');
 }
@@ -116,7 +126,7 @@ async function createRoom() {
 async function handleApi(req, res, url) {
   const origin = req.headers.origin || '';
   if (req.method === 'OPTIONS') return send(res, 204, {}, origin);
-  if (req.method === 'GET' && url.pathname === '/health') return send(res, 200, { ok: true, service: 'quiet-knight-live' }, origin);
+  if (req.method === 'GET' && url.pathname === '/health') { const healthy=redis.isReady&&subscriber.isReady; return send(res,healthy?200:503,{ok:healthy,service:'quiet-knight-live',build:BUILD},origin); }
   if (req.method === 'POST' && url.pathname === '/rooms') {
     const room = await createRoom();
     return send(res, 200, { room: publicRoom(room), seat_token: room.white_token, role: 'white' }, origin);
@@ -145,7 +155,6 @@ async function handleApi(req, res, url) {
       room.version += 1;
       await saveRoom(room);
       const view = publicRoom(room);
-      broadcast(code, view);
       return send(res, 200, { room: view, seat_token: room.black_token, role: 'black' }, origin);
     }
     return send(res, 200, { room: publicRoom(room), seat_token: null, role: 'spectator' }, origin);
@@ -170,7 +179,6 @@ async function handleApi(req, res, url) {
     room.version += 1;
     await saveRoom(room);
     const view = publicRoom(room);
-    broadcast(code, view);
     return send(res, 200, { room: view }, origin);
   }
 
@@ -181,7 +189,6 @@ async function handleApi(req, res, url) {
     room.version += 1;
     await saveRoom(room);
     const view = publicRoom(room);
-    broadcast(code, view);
     return send(res, 200, { room: view }, origin);
   }
 
@@ -196,7 +203,6 @@ async function handleApi(req, res, url) {
     room.version += 1;
     await saveRoom(room);
     const view = publicRoom(room);
-    broadcast(code, view);
     return send(res, 200, { room: view }, origin);
   }
 
@@ -205,13 +211,15 @@ async function handleApi(req, res, url) {
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+  log('http.request',{method:req.method,path:url.pathname});
   handleApi(req, res, url).catch(err => {
-    console.error('[request]', err?.stack || err);
+    if (err?.code === 'QK_CONFLICT') return send(res,409,{error:'Room changed; retry from the current position'},req.headers.origin||'');
+    log('http.error',{name:err?.name||'Error'});
     send(res, 500, { error: 'Server error' }, req.headers.origin || '');
   });
 });
 
-const wss = new WebSocketServer({ noServer: true });
+const wss = new WebSocketServer({ noServer: true, maxPayload: 2048 });
 server.on('upgrade', async (req, socket, head) => {
   try {
     const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
@@ -221,11 +229,16 @@ server.on('upgrade', async (req, socket, head) => {
     if (!room) return socket.destroy();
     wss.handleUpgrade(req, socket, head, ws => {
       ws.roomCode = code;
+      log('ws.connected',{room:code,version:room.version});
       const set = sockets.get(code) || new Set();
       set.add(ws);
       sockets.set(code, set);
       ws.send(JSON.stringify({ type: 'room.update', room: publicRoom(room) }));
+      ws.on('message', async raw => {
+        try { const message=JSON.parse(String(raw)); if(message.type!=='room.sync')return; const latest=await loadRoom(code); if(latest&&ws.readyState===1)ws.send(JSON.stringify({type:'room.update',room:publicRoom(latest)})); } catch {}
+      });
       ws.on('close', () => {
+        log('ws.disconnected',{room:code});
         set.delete(ws);
         if (!set.size) sockets.delete(code);
       });
@@ -236,4 +249,4 @@ server.on('upgrade', async (req, socket, head) => {
   }
 });
 
-server.listen(PORT, '0.0.0.0', () => console.log(`Quiet Knight server listening on ${PORT}`));
+server.listen(PORT, '0.0.0.0', () => log('server.listening',{port:PORT,build:BUILD,origin:FRONTEND_ORIGIN}));

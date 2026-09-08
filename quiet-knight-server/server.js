@@ -8,7 +8,7 @@ import {IdentityStore,IdentityError,publicPlayer,terminal} from './identity.js';
 
 const PORT = Number(process.env.PORT || 3000);
 const FRONTEND_ORIGIN = new URL(process.env.FRONTEND_ORIGIN || 'https://quiet-knight-live-v2xp3y.v2.appdeploy.ai').origin;
-const BUILD = 'qk-server-2026-09-08-r4-knight-id';
+const BUILD = 'qk-server-2026-09-08-r5-table-presence';
 const log = (event, fields = {}) => console.log(JSON.stringify({event,...fields}));
 const identities=new IdentityStore();
 await identities.migrate().then(()=>log('identity.storage',{ready:identities.ready,migration:identities.ready?1:0})).catch(()=>log('identity.unavailable'));
@@ -98,7 +98,13 @@ function broadcast(code, payload) {
     } else set.delete(ws);
   }
   if (!set.size) sockets.delete(code);
+  void loadRoom(code).then(room=>{if(room)resolveSeats(room);}).catch(()=>{});
 }
+
+function roleFor(room,digest){return digest&&digest===hash(room.white_token)?'white':digest&&room.black_token&&digest===hash(room.black_token)?'black':'spectator';}
+function tablePresence(code){const set=sockets.get(code)||[];return{white:[...set].some(ws=>ws.readyState===1&&ws.seatRole==='white'),black:[...set].some(ws=>ws.readyState===1&&ws.seatRole==='black')};}
+function publishPresence(code){const presence=tablePresence(code);const data=JSON.stringify({type:'presence.update',...presence});for(const ws of sockets.get(code)||[])if(ws.readyState===1)ws.send(data);}
+function resolveSeats(room){for(const ws of sockets.get(room.code)||[]){if(ws.readyState!==1||!ws.seatDigest)continue;ws.seatRole=roleFor(room,ws.seatDigest);ws.send(JSON.stringify({type:'seat.role',role:ws.seatRole,game_number:room.game_number||1,room_version:room.version}));}publishPresence(room.code);}
 
 const subscriber = redis.duplicate();
 subscriber.on('error', () => console.error('[redis] subscription connection error'));
@@ -311,14 +317,28 @@ server.on('upgrade', async (req, socket, head) => {
       const set = sockets.get(code) || new Set();
       set.add(ws);
       sockets.set(code, set);
+      ws.alive=true;ws.seatRole='spectator';ws.on('pong',()=>{ws.alive=true;});
       ws.send(JSON.stringify({ type: 'room.update', room: publicRoom(room) }));
+      ws.send(JSON.stringify({type:'presence.update',...tablePresence(code)}));
       ws.on('message', async raw => {
-        try { const message=JSON.parse(String(raw)); if(message.type!=='room.sync')return; const latest=await loadRoom(code); if(latest&&ws.readyState===1)ws.send(JSON.stringify({type:'room.update',room:publicRoom(latest)})); } catch {}
+        try {
+          const message=JSON.parse(String(raw));
+          if(message.type==='presence.hello'){
+            if(Date.now()-(ws.lastHello||0)<1000)return;ws.lastHello=Date.now();
+            const token=typeof message.seat_token==='string'&&message.seat_token.length<=128?message.seat_token:'';
+            const latest=await loadRoom(code);if(!latest||ws.readyState!==1)return;
+            ws.seatDigest=token?hash(token):null;ws.seatRole=roleFor(latest,ws.seatDigest);
+            ws.send(JSON.stringify({type:'seat.role',role:ws.seatRole,game_number:latest.game_number||1,room_version:latest.version}));publishPresence(code);return;
+          }
+          if(message.type!=='room.sync')return;
+          const latest=await loadRoom(code);if(latest&&ws.readyState===1){ws.send(JSON.stringify({type:'room.update',room:publicRoom(await settleRoom(latest))}));resolveSeats(latest);}
+        }catch{}
       });
       ws.on('close', () => {
         log('ws.disconnected',{room:code});
         set.delete(ws);
         if (!set.size) sockets.delete(code);
+        else publishPresence(code);
       });
       ws.on('error', () => {});
     });
@@ -326,5 +346,8 @@ server.on('upgrade', async (req, socket, head) => {
     socket.destroy();
   }
 });
+
+const pingTimer=setInterval(()=>{for(const ws of wss.clients){if(ws.alive===false){ws.terminate();continue;}ws.alive=false;try{ws.ping();}catch{ws.terminate();}}},20000);
+pingTimer.unref();
 
 server.listen(PORT, '0.0.0.0', () => log('server.listening',{port:PORT,build:BUILD,origin:FRONTEND_ORIGIN}));

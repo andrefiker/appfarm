@@ -25,7 +25,8 @@ export function gameRecord(room){
 }
 export class IdentityStore{
  constructor({connectionString=process.env.DATABASE_URL,pool}={}){
-  this.pool=pool||(connectionString?new pg.Pool({connectionString,max:5,connectionTimeoutMillis:2500,idleTimeoutMillis:30000,statement_timeout:5000,application_name:'quiet-knight'}):null);
+  const testSchema=process.env.NODE_ENV==='test'&&/^qk_verify_[a-f0-9]+$/.test(process.env.QK_TEST_SCHEMA||'')?process.env.QK_TEST_SCHEMA:null;
+  this.pool=pool||(connectionString?new pg.Pool({connectionString,...(testSchema?{options:`-c search_path=${testSchema}`} : {}),max:5,connectionTimeoutMillis:2500,idleTimeoutMillis:30000,statement_timeout:5000,application_name:'quiet-knight'}):null);
   this.pool?.on('error',()=>console.error('[identity] database connection error'));
   this.ready=false;
  }

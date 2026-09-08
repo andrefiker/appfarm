@@ -3,7 +3,7 @@ import { randomBytes } from 'node:crypto';
 import { WebSocket } from 'ws';
 import { Chess } from 'chess.js';
 import { createClient } from 'redis';
-const base = 'https://quiet-knight-server-production.up.railway.app';
+const base = process.env.QK_VERIFY_BASE || 'https://quiet-knight-server-production.up.railway.app';
 const origin = 'https://quiet-knight-live-v2xp3y.v2.appdeploy.ai';
 const clients = [];
 let redis;
@@ -16,7 +16,7 @@ async function request(path, body, expected = 200) {
   return response.json();
 }
 async function socket(code) {
-  const ws = new WebSocket(base.replace('https:', 'wss:') + '/ws?room=' + code, { origin, handshakeTimeout: 7000 });
+  const ws = new WebSocket(base.replace(/^http/, 'ws') + '/ws?room=' + code, { origin, handshakeTimeout: 7000 });
   const messages = [];
   ws.on('message', value => { try { messages.push(JSON.parse(value)); } catch {} });
   ws.on('error', () => {});
@@ -81,4 +81,3 @@ try {
   pass('COMPLETE', {code, note:'Backend HTTP/WS/Redis test only; not a browser or phone test.'});
 } catch(error) { console.error(JSON.stringify({acceptance:'FAIL',name:error.message}));process.exitCode=1; }
 finally {clearTimeout(timeout);for(const ws of clients)ws.terminate();if(redis?.isOpen)await redis.quit();}
-

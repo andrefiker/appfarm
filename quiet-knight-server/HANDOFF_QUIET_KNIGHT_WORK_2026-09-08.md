@@ -1,3 +1,68 @@
+# WORK TAKEOVER UPDATE — 2026-09-08, approximately 16:07 UTC
+
+## CURRENT TRUTH — NOT FINISHED
+Andre reports the last TWO deployments still opened to a white screen on his phone when opened from ChatGPT. This newest report overrides any apparent success below. Do NOT claim the Android/PWA white screen is fixed. No app was deleted, replaced, or rolled back. Further frontend deployments are paused pending isolation of the real startup failure. The next useful distinction is the deployment-card/in-app opening versus opening the same plain URL directly in Chrome.
+
+## Applied resources
+- AppDeploy existing app: quiet-knight-live-v2xp3y
+- Current applied frontend: v19, snapshot 1788883310605
+- v18: 1788882631535; original v17 preserved: 1788881592889.
+- Same public frontend URL: https://quiet-knight-live-v2xp3y.v2.appdeploy.ai/
+- Railway current successful server deployment: 036ac6d2-a6da-4dbd-a8a0-e2e4e1973a24
+- Deployed GitHub source commit: d1332884fd380aed96fb24c7c0416912a0c5a5d8
+- Runtime build: qk-server-2026-09-08-r2, port 3000, normalized frontend origin confirmed by runtime log.
+- Redis instance unchanged: deployment eca0ab1e-606a-4800-aa1e-e089afa508e0.
+- IMPORTANT: Redis has NO VOLUME. Server replacement persistence was tested, Redis replacement persistence was NOT. Do not restart/redeploy Redis until a verified backup/migration preserves existing room keys and TTLs.
+- The temporary preDeployCommand node verify-live.js was removed from service configuration after tests; [] applies on next deployment. No recurring task was created.
+
+## What changed
+AppDeploy:
+- vite.config.ts: build-generated SW with content-derived version, complete precache list and embedded built offline HTML.
+- public/sw.js: complete install before activation, migrate Quiet Knight caches while retaining old hashed assets for already open clients, navigation network-first with validated assets, fallback to embedded offline HTML; no Railway caching.
+- index.html: dark static loading/retry fallback and own icon.
+- src/App.tsx: render error boundary preserving saves/seats.
+- src/use-room-realtime.ts: current-socket-only proof of Live, heartbeat room.sync with watchdog, bounded retries, stale-close isolation, monotonic versions; HTTP cannot establish Live.
+- src/network.ts: GET no longer sends unnecessary JSON Content-Type.
+- src/GameApp.tsx: build label and one bounded retry for a join rejected by concurrent state update; same join key retained.
+- src/pieces.tsx, src/game.css: existing top-down 2.5D artwork kept, stronger ivory/ebony material contrast, base highlights/shadow, subtle wood grain; no images generated.
+- tests/tests.txt: existing five workflows updated; one sanity marker kept.
+
+GitHub (only quiet-knight-server folder):
+- server.js: Redis atomic compare/version/set/publish prevents concurrent overwrite; Redis pub/sub broadcasts across server instances; room.sync returns fresh WS snapshot; structured logs omit tokens; health checks Redis/subscriber readiness; normalize CORS origin; WS payload bound.
+- verify-live.js: bounded live HTTP + two independent WS clients + direct Redis assertions and chess-rule edge cases.
+- This handoff updated.
+
+## Evidence actually obtained
+Work browser:
+- v17 rendered in fresh browser; v18 and v19 rendered on reload.
+- Played local White e4, computer answered h6; reload and v18->v19 preserved saved game and resume.
+- v19 displayed Computer files saved for offline play.
+- Desktop board measured 592x592, 64 equal cells, no horizontal overflow; screenshot visually inspected.
+- AppDeploy QA returned mobile/desktop screenshots, no errors, but e2e_tests:null. Do NOT count that as the five workflows passing.
+- Work Browser rejected Railway public /health with ERR_BLOCKED_BY_CLIENT. A frontend room-create failed in browser while Railway logs showed the HTTP POST succeeded. Therefore no genuine two-browser frontend acceptance was completed here.
+- Browser API exposes neither independent contexts nor offline emulation. Actual offline browser reload, physical Android/PWA upgrade, Black local game, and remaining UI regression steps are not certified.
+- Deployed HTML includes an AppDeploy-injected synchronous external Axios script BEFORE application module execution. This is a concrete startup dependency and a plausible blank-screen suspect, NOT a confirmed cause on Andre's device.
+- AppDeploy injects into the served offline HTML too. v19 embeds CLEAN built HTML in SW so offline fallback no longer depends on that served HTML. Host online bootstrap still has injected script.
+- AppDeploy frontend error logs remain empty; this does not disprove phone failure.
+
+Backend integration in Railway predeploy:
+- Final run PASS: public r2 health and CORS/preflight; create/read; same-key Black recovery; spectator; initial room.update on TWO separate WS clients; e4/e5 broadcasts; out-of-turn/spectator denial; Nf3 then socket reconnect; seat recovery; real Redis key and TTL=604800; resignation/rematch; room.sync fresh response; concurrent join recovery; exactly one of two simultaneous White moves accepted; en passant; both promotions; capture of a promoted queen; Fool's Mate checkmate.
+- Final main test room 47PLUT; additional test rooms W4GRG9 (concurrency), VQ7YWB (en passant), DPXMVH (promotion), 7PHU4U (mate).
+- Earlier run confirmed room 2EK3SX version 7 survived chess SERVER replacement. This says nothing about Redis container durability.
+
+Local deterministic runtime checks:
+- Node VM exercised exact v19 hook and SW source: socket proof/heartbeat, offline-online recovery, retired socket events, stale version rejection, seven attempts then exhaustion, precache completion, old-cache migration, retained previous hashed assets, embedded-shell fallback with room query, Railway bypass. Passed.
+- These are simulations of lifecycle behavior, not physical phone or real offline-browser proof.
+
+## Deployment process findings
+Railway redeploy tool reused original commit/image 3291292f...; GitHub commits did not auto-deploy.
+Railway agent deployServiceTool with an explicit commit correctly built and deployed current source. Use explicit source commit and inspect runtime build, rather than assuming redeploy means latest main.
+No Railway/GitHub/AppDeploy resources were deleted.
+
+---
+
+# ORIGINAL V17 HANDOFF (historical context below)
+
 # QUIET KNIGHT LIVE — COMPLETE HANDOFF FOR CHATGPT WORK
 
 Date: 2026-09-08

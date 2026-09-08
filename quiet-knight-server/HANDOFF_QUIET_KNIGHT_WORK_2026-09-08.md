@@ -1,3 +1,24 @@
+# MATERIAL POINTS + AUDIO UPDATE — 2026-09-08
+Current applied frontend: v22, snapshot 1788887695868. Same existing app and URL. Previous v21 snapshot 1788884724376 preserved.
+
+User requested conventional piece points, each player's material sum, the difference, and working sound.
+- Added Material panel: totals of pieces CURRENTLY ON BOARD; pawn 1, knight/bishop 3, rook 5, queen 9, king 0 (excluded, not valueless). Initial 39 each. Graphical expandable legend and advantage such as White +9. This is material, not an engine evaluation or victory score.
+- src/chess-view-model.ts exports materialValues/materialTotals. FEN-derived rendered position handles captures, en passant, promotion and captured promoted pieces; existing history-based lost-piece rows unchanged.
+- New src/chess-audio.ts Web Audio hook: audible midrange synthesized move click, distinct capture/check patterns, await context resume with bounded timeout, user-gesture activation, resource cleanup and mute. No external sound assets, remains offline-capable.
+- Replaced previous very quiet low-frequency (340->90Hz / gain .07) sound path, which skipped playback if context was not already running.
+- Visible Sound on/off button on game screen. Settings: persisted volume 20-100 default80, Test sound explicitly enables sound and plays it, truthful ready/blocked status. Existing muted preference remains respected.
+- src/GameApp.tsx, src/chess-ui.tsx, src/game.css and existing tests updated. No engine/rules, Railway/backend, Redis, networking, SW or room/seat changes.
+
+Verification:
+- Deterministic exact-source checks PASS: initial39/39, en passant39/38, recapture38/38, promotion46/33 then41/41, capture of promoted queen subtracts9, king exclusion; awaited audio resume, synthesized move/capture/check voice scheduling, muted no-play, explicit test, blocked resume and cleanup.
+- Actual deployed Work browser: saved Black game resumed; material39/39. Enabled Sound on, expanded correct piece-value legend, played ...d5; computer Bb5+. Test sound showed Sound ready with80% volume and offline-files-ready status.
+- Played ...Qd7 deliberately to exercise capture; computer Bxd7+ captured Black queen. UI showed White39 / Black30, White+9, and a graphical Black lost queen. Screenshot inspected, 64 squares, no horizontal overflow.
+- Reload/resume preserves material totals and enabled sound.
+- AppDeploy ready with no frontend/network QA errors, e2e_tests null (not full workflow certification).
+- Physical audibility on Andre's phone, Android PWA/offline reload, and two-client multiplayer were not retested in Work. User can test via Settings > Test sound with media volume up; browser playback readiness is not proof of physical speaker audibility.
+
+---
+
 # WORK TAKEOVER UPDATE — 2026-09-08, design completion
 
 ## CURRENT USER CONFIRMATION — CHROME WORKS
@@ -21,7 +42,7 @@ Andre then authorized the design overhaul. It is now deployed on the same app an
 
 ## Applied resources
 - AppDeploy existing app: quiet-knight-live-v2xp3y
-- Current applied frontend: v21, snapshot 1788884724376; v19 baseline preserved: 1788883310605
+- Current applied frontend: v22, snapshot 1788887695868; v21 design baseline preserved: 1788884724376; v19: 1788883310605
 - v18: 1788882631535; original v17 preserved: 1788881592889.
 - Same public frontend URL: https://quiet-knight-live-v2xp3y.v2.appdeploy.ai/
 - Railway current successful server deployment: 036ac6d2-a6da-4dbd-a8a0-e2e4e1973a24

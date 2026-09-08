@@ -1,3 +1,52 @@
+# CURRENT OVERRIDE — v28 Stockfish deployment (2026-09-08 19:30 UTC)
+
+Andre explicitly authorized replacing the weak computer opponent with Stockfish via Railway, then waived the earlier deployment prohibition. This supersedes older instructions below that forbid Stockfish in that pass.
+
+## Current production
+
+- AppDeploy Quiet Knight Live / quiet-knight-live-v2xp3y
+- URL: https://quiet-knight-live-v2xp3y.v2.appdeploy.ai/
+- v28, snapshot 1788895430651, build QK • v28 • Stockfish
+- Frontend rollback: v27 / 1788891840145 (v26 / 1788890862747 also available).
+- Railway deployment: 64b5827d-ad54-4692-bac4-1cf35273f6e2, SUCCESS
+- Server build: qk-server-2026-09-08-r3-stockfish
+- Deployed source commit: f2b8e46d59168f6b48790ba9b697973372c4461f, main, merged PR https://github.com/andrefiker/appfarm/pull/3
+- Source root /quiet-knight-server; explicit Dockerfile builder; port3000 and frontend origin verified in runtime.
+- Previous server rollback: 036ac6d2-a6da-4dbd-a8a0-e2e4e1973a24 / d1332884fd380aed96fb24c7c0416912a0c5a5d8.
+- Redis unchanged: deployment eca0ab1e-606a-4800-aa1e-e089afa508e0. No attached persistent volume; do not restart it casually.
+
+## What changed
+
+Real, unmodified Stockfish18 in a native child on the EXISTING Railway server; no new service or stack. Official release digest verified locally and in build logs. Source and license retained in container; attribution and source links in Settings.
+App levels1–10 map to native skills0,2,4,7,9,11,14,16,18,20. No Elo claims. One process/thread,32MB hash,80–650ms search budget,3s process deadline, bounded admission and cancellation. See STOCKFISH.md and stockfish.js.
+GET /computer/health and POST /computer/move are separate from rooms. Full legal history plus expected FEN validated; reply legality checked server and frontend.
+Frontend stockfish-client.ts and use-computer-opponent.ts request Stockfish when online, retry busy responses at most twice with5.5s total timeout, reject retired/reset responses, and retain cached custom worker offline. A failed online request shows a visible local fallback notice. Player bar and diagnostics identify actual engine; next online turn retries Stockfish.
+No board/art/audio/multiplayer-hook or service-worker behavior changes in v28. Five substantive AppDeploy workflows retained; exactly one sanity test. Computer workflow updated.
+
+## Actually verified this pass
+
+- Native Stockfish18 locally: all ten skill settings produce legal replies; White Qxf7# and Black Qh4# mate in one; invalid history/UCI injection/FEN mismatch rejected; terminal position; busy protection; cancellation/recovery; deadline; missing executable. Node event loop max26ms observed during native search. Local complete request times~0.6–1.4s including cold process launch.
+- TypeScript check and production Vite build pass.
+- Deterministic frontend hook tests: successful remote response, leaving and reset stale-reply guards, explicit fallback, offline zero remote request, online recovery.
+- Existing deterministic reconnect/diagnostics/resume suite passes.
+- Exact built SW mock: complete precache, computer worker asset included, old asset survival, offline navigation and Railway bypass pass. This is NOT a physical offline relaunch test.
+- AppDeploy ready, frontend/backend errors empty, QA network errors empty. e2e_tests=null, NOT a passed E2E suite.
+- Actual public app in browser: v28 renders; play Black at level10 -> Stockfish White e4; human e5 -> Stockfish Nf3; reload and Resume saved computer game preserves position.
+- Actual public app: play White at level1 -> e4, Stockfish Black c6. UI identifies Stockfish18. Railway logs corroborate skill20 (~890ms) and skill0 (~325ms).
+- Actual Settings diagnostics: v28, r3-stockfish, Computer Stockfish18; no seat credentials.
+- Existing synthetic live room7DRH3L survived server replacement with White ownership and full prior e4,e5,Nf3,Nc6 history. First resume attempt failed generically despite server HTTP200; manual retry succeeded, authoritative WS Live. White Nc3 saved/broadcast version7. Do not conceal the initial retry.
+
+## Explicit limitations / remaining checks
+
+- Executor direct public API tests were blocked by network approval cancellation. Full verify-live.js including Redis could not run from this executor; Railway agent lacks container execution and direct Redis-query tools. The substantive suite remains intact in GitHub.
+- Two isolated browser contexts not available through current Work browser tooling; no fresh two-phone certification in this pass. Existing live seat/move test and runtime activity verified, but not a new White/Black two-browser exchange.
+- Real Android lock/background return, PWA icon relaunch, airplane-mode saved-game reply, audible audio and native Share remain physical checks.
+- Browser diagnostics still show SW ready=false and Offline files not yet saved. This was a known v26/v27 readiness discrepancy; v28 leaves SW unchanged. Do not claim this browser is prepared for offline play. Investigate cache readiness with visible diagnostics before claiming offline certification.
+- Railway agent discardStagedChangesTool reported old patch discarded, then deployed exact commit with source/build changes. Direct connector still reported old patch before deployment, then a NEW staged patch f1bcba9f-75fb-40af-a8b1-10803eea6146 afterwards, containing FRONTEND_ORIGIN,PORT,REDIS_URL names and empty visible config. Values inaccessible. User waived the stop rule, but this is NOT proven clean. Deployed Dockerfile/source/port confirmed, Redis unchanged. Future agents must distinguish committed config from this remaining staging discrepancy.
+- v26/v27 follow-up documentation and full authored (not executed) two-context Playwright acceptance remain in draft PR2 https://github.com/andrefiker/appfarm/pull/2.
+
+---
+
 # NOTIFICATION CHIME UPDATE — 2026-09-08
 Current applied frontend: v25, snapshot 1788888649201. User requested sound more like a WhatsApp notification. Replaced the wooden click with an original locally synthesized soft two-note sine chime (988->1319Hz, second note at85ms, total about305ms). Capture uses784->1047Hz; check adds1568Hz. Gentle8ms attack,210ms decay; mute/volume/activation/cleanup/offline behavior unchanged. Settings > Test sound previews it. Only audio synthesis, build label and existing sound test expectations changed; v24 reconnect and80ms motion retained. Deployment ready with no QA frontend/network errors; physical listening on the user device not verified. No audio asset downloaded or image generated.
 

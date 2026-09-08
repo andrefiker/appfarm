@@ -33,7 +33,7 @@ async function socket(code) {
 }
 function pass(name,details={}) { console.log(JSON.stringify({acceptance:'PASS',name,...details})); }
 try {
-  assert.equal((await request('/health')).ok, true); pass('public health and CORS');
+  const health=await request('/health'); assert.equal(health.ok,true); assert.equal(health.build,'qk-server-2026-09-08-r2'); pass('public r2 health and CORS'); const previous=await request('/rooms/2EK3SX'); assert.equal(previous.room.version,7); pass('room survives chess server replacement',{code:'2EK3SX'});
   const preflight = await fetch(base + '/rooms', {method:'OPTIONS',headers:{Origin:origin,'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type'},signal:AbortSignal.timeout(7000)});
   assert.equal(preflight.status,204); assert.equal(preflight.headers.get('access-control-allow-origin'),origin); pass('preflight');
   const a = await request('/rooms', {}); const code = a.room.code; assert.equal(a.role,'white');
@@ -66,6 +66,8 @@ try {
   await two.version(ended.room.version);
   const reset=await request('/rooms/'+code+'/rematch',{seat_token:b.seat_token});assert.equal(reset.room.moves.length,0);assert.equal(reset.room.status,'active');
   await two.version(reset.room.version);pass('resign, rematch and broadcast',{code,version:reset.room.version});
+  const heartbeatClient=await socket(code); await heartbeatClient.version(reset.room.version); heartbeatClient.ws.send(JSON.stringify({type:'room.sync'})); pass('sync request sent',{code});
+  const contested=await request('/rooms',{}); const raceKey=randomBytes(24).toString('hex'); const joins=await Promise.all([1,2].map(()=>fetch(base+'/rooms/'+contested.room.code+'/join',{method:'POST',headers:{'Content-Type':'application/json',Origin:origin},body:JSON.stringify({join_key:raceKey}),signal:AbortSignal.timeout(7000)}))); assert.ok(joins.every(r=>[200,409].includes(r.status))); const owner=await request('/rooms/'+contested.room.code+'/join',{join_key:raceKey});assert.equal(owner.role,'black'); const position=owner.room.fen; const moves=await Promise.all(['e','d'].map(file=>fetch(base+'/rooms/'+contested.room.code+'/move',{method:'POST',headers:{'Content-Type':'application/json',Origin:origin},body:JSON.stringify({seat_token:contested.seat_token,from:file+'2',to:file+'4',expected_fen:position}),signal:AbortSignal.timeout(7000)})));assert.equal(moves.filter(r=>r.status===200).length,1);assert.equal(moves.filter(r=>r.status===409).length,1);assert.equal((await request('/rooms/'+contested.room.code)).room.moves.length,1);pass('concurrent joins recover, concurrent moves cannot overwrite',{code:contested.room.code});
   pass('COMPLETE', {code, note:'Backend HTTP/WS/Redis test only; not a browser or phone test.'});
 } catch(error) { console.error(JSON.stringify({acceptance:'FAIL',name:error.message}));process.exitCode=1; }
 finally {clearTimeout(timeout);for(const ws of clients)ws.terminate();if(redis?.isOpen)await redis.quit();}

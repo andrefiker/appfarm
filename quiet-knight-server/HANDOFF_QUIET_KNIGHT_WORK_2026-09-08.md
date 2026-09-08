@@ -1,3 +1,8 @@
+# NOTIFICATION CHIME UPDATE — 2026-09-08
+Current applied frontend: v25, snapshot 1788888649201. User requested sound more like a WhatsApp notification. Replaced the wooden click with an original locally synthesized soft two-note sine chime (988->1319Hz, second note at85ms, total about305ms). Capture uses784->1047Hz; check adds1568Hz. Gentle8ms attack,210ms decay; mute/volume/activation/cleanup/offline behavior unchanged. Settings > Test sound previews it. Only audio synthesis, build label and existing sound test expectations changed; v24 reconnect and80ms motion retained. Deployment ready with no QA frontend/network errors; physical listening on the user device not verified. No audio asset downloaded or image generated.
+
+---
+
 # FOREGROUND RECONNECT + FASTER MOVES — 2026-09-08
 Current applied frontend: v24, snapshot 1788888211593; v23 timing snapshot 1788887961851; v22 material/audio snapshot 1788887695868.
 

@@ -1,3 +1,72 @@
+# Reliability and product polish implementation — 2026-09-08
+This addendum supersedes older CURRENT/verified statements below. Existing resources were preserved. This is a deployed frontend improvement with explicit remaining acceptance gates, not Android certification.
+
+## Current production and rollback
+- AppDeploy app: quiet-knight-live-v2xp3y
+- URL: https://quiet-knight-live-v2xp3y.v2.appdeploy.ai/
+- Applied: v27, snapshot 1788891840145
+- Visible label: QK • v27 • Quieter play
+- Initial rollback: v25, 1788888649201
+- First group rollback: v26, 1788890862747 (Resume + diagnostics)
+- Railway server deployment unchanged: 036ac6d2-a6da-4dbd-a8a0-e2e4e1973a24
+- Deployed server commit unchanged: d1332884fd380aed96fb24c7c0416912a0c5a5d8
+- Backend health build: qk-server-2026-09-08-r2
+- Redis deployment unchanged: eca0ab1e-606a-4800-aa1e-e089afa508e0, SUCCESS, redis:7-alpine, observed Redis 7.4.11. No volume; RDB snapshot exists on ephemeral /data; no durable replacement protection added.
+
+## Shipped frontend changes
+1. Settings Copy diagnostics. Explicit allowlisted plain text; health fetch and SW status bounded; safe realtime getter with readyState, last authoritative update age, retry count/reason and paused state. Report remains selectable if clipboard fails. No seat tokens, join keys/digests or Redis credentials included.
+2. Home Resume live game, one qk-last-live-room pointer. Remember only when White/Black owns a persisted seat. Existing qk-seat-CODE and idempotent join remain. Spectators do not become resume targets. A 404 clears only the stale pointer, not saved seats or computer data.
+3. Ten distinct custom-engine profiles: random first level; changing error probability/noise/depth; level 9 has 45-centipawn noise, level 10 zero. Alpha-beta search, complete iterative-deepening iterations, 120 ms search budget and 5,000-node ceiling. Worker keeps calculation off the UI thread; failure/watchdog invokes the bounded local fallback; cleanup retires stale workers. No Stockfish or Elo claims.
+4. Mobile material totals/advantage compressed; graphical expandable legend, captured rows and collapsed history preserved. Existing pieces, board size, palette and top-down geometry unchanged.
+5. Native Share invite where available, Copy invite retained, cancellation quiet and errors fall back to copy/manual invite field.
+6. Own moves use a short synthesized tick; incoming computer/opponent moves retain original soft two-note chime, with lower capture and higher check cues. Mute/volume/activation/test/cleanup preserved.
+7. Offline precache automatically includes the new computer-worker asset. Service-worker cache/activation/fetch logic was NOT rewritten.
+8. Confirmed unimported src/realtime-controller.ts is marked legacy. AppDeploy backend modules still import one another and retain platform routes; comments explicitly identify them as legacy scaffolding and point maintainers to Railway authority. No deletion or route replacement.
+
+## Actual verification in this pass
+- TypeScript noEmit and Vite production builds passed.
+- Both staged AppDeploy deployments reached ready with empty frontend/backend error arrays. E2E result was null, NOT a pass.
+- Actual cloud browser rendered v26 then v27; no framework overlay/white viewport. Console inspection showed browser-extension metadata errors, no relevant application error in the inspected entries. Desktop screenshot preserved visual identity; 64-square board geometry was checked.
+- Browser Actor A created room 7DRH3L, White, Live. Node protocol Actor B joined Black; this was NOT a second browser. A changed Seat open to Opponent without refresh.
+- A UI e2-e4 arrived at backend; B protocol e7-e5 appeared in A without refresh; A UI g1-f3 arrived at backend.
+- A navigated away; B protocol b8-c6 committed; returning A restored same room, White, Nc6 and Live. Railway logs show versions 1–6 saved/broadcast and a fresh ws.connected at version 6. This tests navigation/page-return, not Android lock/suspend for two minutes.
+- A left to home, reloaded home, used Resume live game and retained White/room. Upgrade to v27 also retained the seat and latest position.
+- Diagnostics generated/copied a legible report including backend build, room/version and Live/readyState 1, with no credentials.
+- Local level-10 White game made e4 and received computer Nc6. Reload + Resume saved computer game restored it. Black orientation and computer White reply also exercised.
+- Engine benchmark: old levels 9/10 opening ~1,277/~1,267 ms. New tested opening/middlegame/mating-position choices across 10 levels max 125 ms in this Node environment, excluding page/worker startup. Legal moves asserted. Seeded opening choices differed for level 9 (7 choices/8 seeds) while level 10 was deterministic. These measurements are not low-end Android benchmarks.
+- Deterministic exact-source tests preserved hidden pause, retired socket guards, latest version reconciliation, heartbeat/watchdog, retry exhaustion/recovery, freeze/resume/pagehide/pageshow and cleanup. Also tested owned-seat pointer/404 clearing isolation, diagnostics field allowlist, audio activation/mute/voice distinction/resource cleanup, share payload/fallback/cancel, material 39/39, en passant, promotion and promoted-queen subtraction.
+- Built-SW harness exercised complete precache, embedded offline shell with room query, old hashed asset migration, worker asset inclusion and Railway bypass. This is deterministic source testing, not network-disabled browser/PWA relaunch.
+
+## Unresolved gates — do not conceal
+- Browser tooling here exposes tabs only, not independent contexts/offline emulation/CDP. The true two-browser suite below was authored and syntax checked, NOT executed. Black browser reload recovery is not newly verified here.
+- Physical Android 2+ minute background/lock, PWA icon relaunch, native share sheet and audible sounds remain manual acceptance.
+- Offline UI reported Computer files saved for offline play, but Copy diagnostics reported controller cache readiness false after both upgrades (v26 build 4512efd1012752bf and v27 build 4606e9454a5147f8). This is a concrete readiness discrepancy; investigate controller versus active worker/cache status before claiming offline certification. No network-disabled relaunch was possible here. A direct public SW fetch was blocked/cancelled by the environment, so do not infer its network response.
+- Current worker copies historical hashed assets forward. Bounded-generation retention is deferred until a real three-build/open-client/offline-upgrade test can be run. Do not remove offline mode to avoid this work.
+- Railway patch d88b1c20-726b-4d73-a15d-9cc5575ca3e4 remains STAGED with three pending variables: FRONTEND_ORIGIN, PORT, REDIS_URL. Tools expose names but cannot compare staged/running values. Neither accepted nor discarded. No Railway mutations were made.
+- Redis persistence migration is deferred: no verified binary backup/restore path, no safe basis to replace active Redis. Read REDIS_DURABILITY_PLAN_2026-09-08.md before any action.
+
+## Durable acceptance workflow and continuity
+New code/docs are in branch quiet-knight-polish-2026-09-08, all inside quiet-knight-server/. Main and the deployed Railway backend were left unchanged to avoid triggering production while the staged patch is unresolved.
+- frontend-acceptance/package.json
+- frontend-acceptance/playwright.config.js
+- frontend-acceptance/live.spec.js
+- frontend-acceptance/README.md
+- REDIS_DURABILITY_PLAN_2026-09-08.md
+
+The runner uses separate browser.newContext() profiles and five substantive tests with one sanity marker. It covers UI invite/seat/moves/resume/diagnostics, network and Chromium lifecycle, offline closed-page computer resume, captures/material/en passant, promotion/resignation/rematch and share/copy. Clipboard/share are fixture stubs; do not call them physical native-share/audio certification. Traces/storage exports are disabled to avoid leaking seat credentials. Existing backend verify-live.js and package.json are unchanged.
+
+AppDeploy tests/tests.txt retains five substantive workflows and exactly one [sanity], updated for shipped behavior.
+
+## Andre’s short physical checklist
+A. Two phones: create/open invite; A White, B Black, both Live; e4/e5/Nf3 without refresh.
+B. Lock A for 2+ minutes; legal move on B; return A to same White seat, latest move, Live.
+C. Fully close installed PWA; open its icon; Resume live game restores room/seat.
+D. Prepare files, save computer game; airplane mode; close/reopen PWA; resume and get local reply.
+E. Media volume audible; Test sound; own move clicks, incoming move chimes.
+
+---
+# Earlier continuity and historical evidence (may be superseded above)
+
 # NOTIFICATION CHIME UPDATE — 2026-09-08
 Current applied frontend: v25, snapshot 1788888649201. User requested sound more like a WhatsApp notification. Replaced the wooden click with an original locally synthesized soft two-note sine chime (988->1319Hz, second note at85ms, total about305ms). Capture uses784->1047Hz; check adds1568Hz. Gentle8ms attack,210ms decay; mute/volume/activation/cleanup/offline behavior unchanged. Settings > Test sound previews it. Only audio synthesis, build label and existing sound test expectations changed; v24 reconnect and80ms motion retained. Deployment ready with no QA frontend/network errors; physical listening on the user device not verified. No audio asset downloaded or image generated.
 

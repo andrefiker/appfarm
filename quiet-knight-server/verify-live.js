@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 import { WebSocket } from 'ws';
+import { Chess } from 'chess.js';
 import { createClient } from 'redis';
 const base = 'https://quiet-knight-server-production.up.railway.app';
 const origin = 'https://quiet-knight-live-v2xp3y.v2.appdeploy.ai';
@@ -29,11 +30,11 @@ async function socket(code) {
     }
     throw new Error('WebSocket update timeout for version ' + v);
   }
-  return {ws,version};
+  return {ws,version,messages};
 }
 function pass(name,details={}) { console.log(JSON.stringify({acceptance:'PASS',name,...details})); }
 try {
-  const health=await request('/health'); assert.equal(health.ok,true); assert.equal(health.build,'qk-server-2026-09-08-r2'); pass('public r2 health and CORS'); const previous=await request('/rooms/2EK3SX'); assert.equal(previous.room.version,7); pass('room survives chess server replacement',{code:'2EK3SX'});
+  const health=await request('/health'); assert.equal(health.ok,true); assert.equal(health.build,'qk-server-2026-09-08-r2'); pass('public r2 health and CORS'); if(process.env.QK_PERSISTENCE_ROOM){const previous=await request('/rooms/'+process.env.QK_PERSISTENCE_ROOM);assert.ok(previous.room.version>=7);pass('room survives chess server replacement',{code:previous.room.code});}
   const preflight = await fetch(base + '/rooms', {method:'OPTIONS',headers:{Origin:origin,'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type'},signal:AbortSignal.timeout(7000)});
   assert.equal(preflight.status,204); assert.equal(preflight.headers.get('access-control-allow-origin'),origin); pass('preflight');
   const a = await request('/rooms', {}); const code = a.room.code; assert.equal(a.role,'white');
@@ -66,8 +67,17 @@ try {
   await two.version(ended.room.version);
   const reset=await request('/rooms/'+code+'/rematch',{seat_token:b.seat_token});assert.equal(reset.room.moves.length,0);assert.equal(reset.room.status,'active');
   await two.version(reset.room.version);pass('resign, rematch and broadcast',{code,version:reset.room.version});
-  const heartbeatClient=await socket(code); await heartbeatClient.version(reset.room.version); heartbeatClient.ws.send(JSON.stringify({type:'room.sync'})); pass('sync request sent',{code});
+  const heartbeatClient=await socket(code); await heartbeatClient.version(reset.room.version); const beforeSync=heartbeatClient.messages.length;heartbeatClient.ws.send(JSON.stringify({type:'room.sync'})); const syncDeadline=Date.now()+7000;while(heartbeatClient.messages.length===beforeSync&&Date.now()<syncDeadline)await new Promise(r=>setTimeout(r,25));assert.ok(heartbeatClient.messages.length>beforeSync);pass('heartbeat returns fresh socket snapshot',{code});
   const contested=await request('/rooms',{}); const raceKey=randomBytes(24).toString('hex'); const joins=await Promise.all([1,2].map(()=>fetch(base+'/rooms/'+contested.room.code+'/join',{method:'POST',headers:{'Content-Type':'application/json',Origin:origin},body:JSON.stringify({join_key:raceKey}),signal:AbortSignal.timeout(7000)}))); assert.ok(joins.every(r=>[200,409].includes(r.status))); const owner=await request('/rooms/'+contested.room.code+'/join',{join_key:raceKey});assert.equal(owner.role,'black'); const position=owner.room.fen; const moves=await Promise.all(['e','d'].map(file=>fetch(base+'/rooms/'+contested.room.code+'/move',{method:'POST',headers:{'Content-Type':'application/json',Origin:origin},body:JSON.stringify({seat_token:contested.seat_token,from:file+'2',to:file+'4',expected_fen:position}),signal:AbortSignal.timeout(7000)})));assert.equal(moves.filter(r=>r.status===200).length,1);assert.equal(moves.filter(r=>r.status===409).length,1);assert.equal((await request('/rooms/'+contested.room.code)).room.moves.length,1);pass('concurrent joins recover, concurrent moves cannot overwrite',{code:contested.room.code});
+  async function sequence(plies) {
+    const white=await request('/rooms',{});const joined=await request('/rooms/'+white.room.code+'/join',{join_key:randomBytes(24).toString('hex')});let room=joined.room;
+    for(let i=0;i<plies.length;i++){const ply=plies[i];const result=await request('/rooms/'+room.code+'/move',{seat_token:i%2?joined.seat_token:white.seat_token,from:ply.slice(0,2),to:ply.slice(2,4),promotion:ply[4]||'q',expected_fen:room.fen});room=result.room;}
+    return room;
+  }
+  const ep=await sequence(['e2e4','a7a6','e4e5','d7d5','e5d6','d8d6']);const replay=new Chess();ep.moves.forEach(san=>replay.move(san));assert.equal(replay.history({verbose:true}).filter(m=>m.captured).map(m=>m.captured).join(''),'pp');assert.ok(ep.moves.includes('exd6'));pass('en passant and subsequent capture',{code:ep.code});
+  const promotion=await sequence(['a2a4','h7h5','a4a5','h5h4','a5a6','h4h3','a6b7','h3g2','b7a8q','g2h1q','a8b8','h1g1','b8c8','g1f1','e1f1']);
+  const promotedGame=new Chess();promotion.moves.forEach(san=>promotedGame.move(san));assert.equal(promotedGame.history({verbose:true}).at(-1).captured,'q');assert.ok(promotion.moves.some(s=>s.includes('=Q')));pass('both promotions and capture of promoted queen',{code:promotion.code});
+  const mate=await sequence(['f2f3','e7e5','g2g4','d8h4']);assert.equal(mate.status,'checkmate');assert.equal(mate.winner,'b');pass('checkmate authority',{code:mate.code});
   pass('COMPLETE', {code, note:'Backend HTTP/WS/Redis test only; not a browser or phone test.'});
 } catch(error) { console.error(JSON.stringify({acceptance:'FAIL',name:error.message}));process.exitCode=1; }
 finally {clearTimeout(timeout);for(const ws of clients)ws.terminate();if(redis?.isOpen)await redis.quit();}

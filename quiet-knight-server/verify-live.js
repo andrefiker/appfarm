@@ -34,7 +34,7 @@ async function socket(code) {
 }
 function pass(name,details={}) { console.log(JSON.stringify({acceptance:'PASS',name,...details})); }
 try {
-  const health=await request('/health'); assert.equal(health.ok,true); assert.equal(health.build,'qk-server-2026-09-08-r2'); pass('public r2 health and CORS'); if(process.env.QK_PERSISTENCE_ROOM){const previous=await request('/rooms/'+process.env.QK_PERSISTENCE_ROOM);assert.ok(previous.room.version>=7);pass('room survives chess server replacement',{code:previous.room.code});}
+  const health=await request('/health'); assert.equal(health.ok,true); assert.equal(health.build,process.env.QK_EXPECTED_BUILD||'qk-server-2026-09-08-r3-stockfish'); pass('public health and CORS'); if(process.env.QK_PERSISTENCE_ROOM){const previous=await request('/rooms/'+process.env.QK_PERSISTENCE_ROOM);assert.ok(previous.room.version>=7);pass('room survives chess server replacement',{code:previous.room.code});}
   const preflight = await fetch(base + '/rooms', {method:'OPTIONS',headers:{Origin:origin,'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type'},signal:AbortSignal.timeout(7000)});
   assert.equal(preflight.status,204); assert.equal(preflight.headers.get('access-control-allow-origin'),origin); pass('preflight');
   const a = await request('/rooms', {}); const code = a.room.code; assert.equal(a.role,'white');
@@ -81,3 +81,4 @@ try {
   pass('COMPLETE', {code, note:'Backend HTTP/WS/Redis test only; not a browser or phone test.'});
 } catch(error) { console.error(JSON.stringify({acceptance:'FAIL',name:error.message}));process.exitCode=1; }
 finally {clearTimeout(timeout);for(const ws of clients)ws.terminate();if(redis?.isOpen)await redis.quit();}
+

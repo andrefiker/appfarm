@@ -3,11 +3,14 @@ import { createHash, randomUUID } from 'node:crypto';
 import { Chess } from 'chess.js';
 import { createClient } from 'redis';
 import { WebSocketServer } from 'ws';
+import { StockfishService, EngineError } from './stockfish.js';
 
 const PORT = Number(process.env.PORT || 3000);
 const FRONTEND_ORIGIN = new URL(process.env.FRONTEND_ORIGIN || 'https://quiet-knight-live-v2xp3y.v2.appdeploy.ai').origin;
-const BUILD = 'qk-server-2026-09-08-r2';
+const BUILD = 'qk-server-2026-09-08-r3-stockfish';
 const log = (event, fields = {}) => console.log(JSON.stringify({event,...fields}));
+const computer = new StockfishService();
+await computer.probe().then(() => log('computer.ready', computer.status())).catch(() => log('computer.unavailable'));
 const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 const ROOM_TTL = 60 * 60 * 24 * 7;
 const redis = createClient({ url: REDIS_URL });
@@ -127,6 +130,25 @@ async function handleApi(req, res, url) {
   const origin = req.headers.origin || '';
   if (req.method === 'OPTIONS') return send(res, 204, {}, origin);
   if (req.method === 'GET' && url.pathname === '/health') { const healthy=redis.isReady&&subscriber.isReady; return send(res,healthy?200:503,{ok:healthy,service:'quiet-knight-live',build:BUILD},origin); }
+  if (req.method === 'GET' && url.pathname === '/computer/health') return send(res, computer.ready ? 200 : 503, computer.status(), origin);
+  if (req.method === 'POST' && url.pathname === '/computer/move') {
+    const controller = new AbortController();
+    const closed = () => { if (!res.writableEnded) controller.abort(); };
+    res.once('close', closed);
+    try {
+      let input;
+      try { input = await bodyJson(req); } catch { return send(res, 400, { error: 'Invalid computer request' }, origin); }
+      const result = await computer.move(input, controller.signal);
+      if (res.destroyed) return;
+      log('computer.move', { engine: result.engine, level: result.level, skill: result.skill, elapsed_ms: result.elapsed_ms });
+      return send(res, 200, result, origin);
+    } catch (error) {
+      if (res.destroyed) return;
+      const status = error instanceof EngineError ? error.status : 503;
+      if (status === 429) res.setHeader('Retry-After', '1');
+      return send(res, status, { error: error instanceof EngineError ? error.message : 'Stockfish unavailable' }, origin);
+    } finally { res.off('close', closed); }
+  }
   if (req.method === 'POST' && url.pathname === '/rooms') {
     const room = await createRoom();
     return send(res, 200, { room: publicRoom(room), seat_token: room.white_token, role: 'white' }, origin);

@@ -1,3 +1,33 @@
+# FOREGROUND RECONNECT + FASTER MOVES — 2026-09-08
+Current applied frontend: v24, snapshot 1788888211593; v23 timing snapshot 1788887961851; v22 material/audio snapshot 1788887695868.
+
+Latest user priority: when leaving the game screen/backgrounding the app, it disconnects and does not reconnect.
+Concrete source bug reproduced: old use-room-realtime.ts set halted=true after retries exhausted; BOTH online and visibility return handlers exited when halted, so normal user return/network recovery could never restart. Background timers could exhaust retries. A suspended old socket could also remain apparently OPEN/CONNECTING on return.
+
+v24 repair:
+- Pause hidden/pagehide/freeze connection and cancel all retry/heartbeat/watchdog timers.
+- On foreground/pageshow/focus/resume, retire old socket, reset bounded retry budget and open fresh socket for the SAME room. Return event burst coalesced for 1s.
+- Network restoration also resets exhausted retry state. No background retry churn. Foreground failures still stop after initial+6 retries.
+- Only a current socket room.update establishes Live; highest version and retired-callback guards remain. No HTTP read/join/seat reset introduced.
+- New truthful hidden status Paused (return reconnects immediately).
+- Same src/use-room-realtime.ts API. Build label v24, existing reconnect tests extended. No Railway/Redis/backend changes.
+
+v23 retained:
+- Piece-slide animation 190ms ->80ms.
+- Artificial computer delay280ms ->80ms. Search depth/difficulty and rules unchanged. Reduced-motion override preserved.
+- Material totals, value legend, volume/test audio and saved games retained.
+
+Evidence:
+- Deterministic exact old-source regression reproduces permanent exhausted state after online/foreground.
+- Exact new-source tests PASS: long background without timer/retry consumption, fresh socket return, missed state version8 recovery, Syncing until authoritative snapshot, stale callback/version guard, burst-event coalescing, bounded7 attempts, foreground AND network restart after exhaustion, pagehide/pageshow BFCache, freeze/resume, initially hidden page, offline/online, focus replacement of stuck socket, full cleanup.
+- AppDeploy ready, no QA frontend/network errors, e2e_tests null.
+- Read final remote source: hook exactly matches tested source, CSS80ms and computer80ms present.
+- Actual deployed Work browser rendered v24, resumed saved Black game with White39/Black30 (+9), retained Sound on, and accepted king selection in check.
+- Last optional browser step failed because Work exec-server transport disconnected; no fallback browser used.
+- Physical Android/PWA background recovery, actual phone audibility, and real two-browser multiplayer remain to be confirmed by Andre. Do not claim a physical-device test passed. Earlier user confirmation that Chrome multiplayer worked applies to the baseline before this newly reported lifecycle failure.
+
+---
+
 # MATERIAL POINTS + AUDIO UPDATE — 2026-09-08
 Current applied frontend: v22, snapshot 1788887695868. Same existing app and URL. Previous v21 snapshot 1788884724376 preserved.
 

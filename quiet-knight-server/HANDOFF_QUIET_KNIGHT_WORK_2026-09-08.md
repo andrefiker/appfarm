@@ -1,3 +1,65 @@
+# CURRENT IMPLEMENTATION CHECKPOINT — v33 Knight ID / table presence (2026-09-08 23:53 UTC)
+
+This is an IN-PROGRESS implementation checkpoint, not the final report. Andre's newest 61-section Reliability + Identity + Distinctive Product Pass overrides older restrictions below. Deployments and additive Railway Postgres are explicitly authorized. Optional passwordless Knight IDs and Quiet Points are now intended. Preserve guests, Stockfish, the existing board identity, URL and Redis room authority. Do not invoke image generation. Do not delete existing resources or touch unrelated appfarm projects.
+
+## Exact state
+- AppDeploy quiet-knight-live-v2xp3y: v33 / 1788911551563 / QK • v33 • At the table; terminal ready, QA frontend/network errors empty, E2E null (NOT a passed frontend E2E).
+- URL https://quiet-knight-live-v2xp3y.v2.appdeploy.ai/
+- Rollback v32 / 1788910640743 (Knight ID UI), v31 / 1788909175142 (offline cache repair), original v28 / 1788895430651.
+- Railway server deployment 743ce873-7afa-41b1-8bee-6c8f031e7c2e SUCCESS, build qk-server-2026-09-08-r5-table-presence, source commit 02e9c1f866ac9eefdb44f09d147067b42530280d on main. Previous r4 deployment 1dda5656-860c-4b97-b778-5d32deaa47f0 / commit 93d1b3de15761be58a819cbde4e133e4dfb63b34. Original Stockfish rollback f2b8e46d59168f6b48790ba9b697973372c4461f.
+- Same Dockerfile builder/root /quiet-knight-server/domain/process port3000.
+- New Postgres service de1e91d1-4de8-4984-8225-b17e3b61d734; official ghcr.io/railwayapp-templates/postgres-ssl:18, actual PostgreSQL18.6; deployment 52fd82d2-bb3a-4d16-8cbb-4d142ac56fab SUCCESS.
+- Persistent postgres-volume e6c3c959-cc46-488b-8402-56582c36bf6a, 500MB, iad, mounted /var/lib/postgresql/data. PGDATA explicitly /var/lib/postgresql/data/pgdata. Real SQL acceptance confirms data_directory is inside the mount. No public database proxy. DATABASE_URL is a Railway reference; do not expose its rendered value.
+- Schema migration1 in schema.sql; tables qk_players, qk_games, qk_migrations.
+- Redis service/deployment unchanged eca0ab1e-606a-4800-aa1e-e089afa508e0, no attached volume. DO NOT restart it casually.
+- The old staged patch was actually committed with isolated Postgres creation; direct get_status proved clean. Subsequent source edits repeatedly restage existing variable names, values hidden. Last server commit succeeded and direct status again showed no staged changes. Trust direct tools over agent narratives.
+
+## Offline root cause fixed
+v29/v30 added safe read-only cache diagnostics. In actual browser cache.keys contained current JS/CSS but cache.match(bare URL) missed them. Cached static responses have Vary: Accept-Encoding, Origin. v31 uses ignoreVary:true ONLY for existing public same-origin static cache lookups (readiness, navigation preparation, static fallback, asset migration). URL identity remains exact; Railway APIs remain bypassed.
+Actual browser v31 reported build464d408eb55fdb96, ready=true, marker=true, expected6, missing empty, and Computer files saved for offline play after reload. v32 also prepared successfully. No seat/local-save clearing or forced reload.
+Current cache retention still copies all historical asset hashes. This remains a planned bounded-generation cleanup, not finished.
+Files: src/cache-diagnostics.ts, src/diagnostics.ts, public/sw.js. Diagnostics only allowlisted static paths/header names, never cache body or credentials.
+
+## Implemented so far
+- Optional device-bound Knight ID, unique case-insensitive 3–20-character handle; server-generated32-byte credential, only SHA256 hash stored in Postgres. Bearer HTTP header, never URL. qk-player-token-v1 locally. Profile and guest-mode preference separate. Guest mode preserves credential, does not delete seats.
+- Passkeys NOT implemented. UI says this ID lives on the device and storage loss can lose access. Work browser disallows passkey interaction; do not pretend recovery exists.
+- Device profile/stats, Quiet Points, recent records returned by GET /players/me; small Home chip and profile dialog. Recent final-board viewing still pending.
+- Knight ID assigned on new White/Black seat only; seat resumes bypass identity authentication and association remains frozen. Existing qk-seat-CODE and qk-last-live-room retained.
+- Completed result ledger unique(room_code,game_number). game_number defaults1 for old rooms. Atomic PG transaction locks game/pair/players, records result and awards win3/draw1/loss0. First3 scored games for two distinct IDs within rolling24h; further games casual. Guests/self/computer get no points. Redis final state is saved before scoring; pending record retried on room read/heartbeat/rematch; identified rematch waits if result not durably recorded.
+- Same/swap-color rematches swap actual seat tokens, player associations and join digests, increment game_number; original join key resumes correct new color. WS seat.role confirms role/game_number; frontend locks moves until role belongs to current game.
+- Presence via presence.hello body, only credential digest retained on socket; public presence.update booleans. Spectators excluded. Server ping/pong20s, terminate after missing next pong. Current presence aggregation is within the currently configured single server replica; do not scale replicas without adding distributed presence.
+- v33 presence label, quiet two-tap synthesized arrival knock with30s dedup and no initial-hydration knock, optional head-to-head sheet, Swap colors primary and Same colors secondary.
+- Stockfish18 move endpoint/limits preserved; log field app_level avoids Railway severity collision.
+
+## Actually exercised
+- Real production browser v32: created synthetic TableCheck0908 Knight ID (do not reserve Andre's handle), reload recovered it with0points; created room HT3ZY3 with named White seat; Live. Existing room7DRH3L retained White and version7 across backend replacements; diagnostics r4 and Live after automatic reconnect.
+- Online Stockfish still returned legal moves after each backend upgrade; runtime logs confirm.
+- Real Postgres verify-identity.js runs in a random isolated SQL schema and removes only its own fixtures. Passes uniqueness/auth/hash/recovery, win/draw/loss, concurrent duplicate recording, five simultaneous games competing for three scoring slots, rolling-window expiry, self/guest exclusion, legal result/history, head-to-head, migration idempotency and mounted data_directory.
+- predeploy.js now explicitly runs verify-identity.js THEN verify-server.js. Do NOT use a chained preDeployCommand: logs for the earlier string only proved first script. Current preDeployCommand is ["node predeploy.js"] and final predeploy.complete marker proves both.
+- verify-server.js starts candidate HTTP/WS server on loopback39173 with isolated PG schema but real existing Redis, creates fresh synthetic rooms (never occupied user seats), and runs preserved verify-live.js in full. All pass: health/CORS/preflight, create/join/idempotent Black/spectator, immediate2socket snapshots, e4/e5 propagation, authority guards, reconnect/seat resume, Redis7dayTTL, resign/rematch, heartbeat, concurrent joins/moves, en passant, both promotions/captured promoted queen/checkmate.
+- Extended HTTP tests pass: two Knight IDs attach, winner3/loser0, idempotent reads, swap/same rematches, Black join-key recovery after swap, actual move authorization after swap, presence away/return/spectator exclusion/private roles, fourth-game casual.
+- Evidence from deployment743ce873: backend test room WC696P; scoring test room SJMMPC, first game ledger UUID dec212fd-a999-49bb-9185-08d279eec7a9, game_number4 casual. These identity/ledger fixtures were removed with their isolated SQL schema, so this UUID is test evidence, not a production history record.
+- Frontend deterministic lifecycle suite passes; additional protocol test proves presence/role messages cannot set Live, token is body-only, stale role/retired socket ignored, return re-identifies seat.
+- Vite production build and TypeScript pass; exact built SW mock passes complete shell+computer-worker cache, invite-query fallback, old assets and Railway bypass.
+
+## Explicit remaining work — continue implementation
+1. Real-browser v33 verification after applied update; fresh TWO isolated frontend contexts and Android physical backgrounding remain unverified (available Work browser tabs share storage; no claim of two-phone certification).
+2. Zen Table persisted, board/bars/status prominent, controls revealable; retain exit/settings/reconnect/resign.
+3. Game-so-far factual summary; selection lift2–3px/haptic, short settle/reduced motion; quiet idle dim secondary UI with wake on touch/move/presence/warning.
+4. Walnut(default), Library, Midnight, Rain CSS atmospheres; never tilt/shrink/redesign board or replace pieces.
+5. PGN/FEN export; minimal code-native result postcard, native file share/download/text fallback.
+6. Bounded postgame Quiet Review using existing native Stockfish only, completed valid histories, finite deadline/maxplies, one engine job, cancellation, no multiplayer mutation, <=3 meaningful moments, cached by ledger ID.
+7. Tiny table memory: IDs from ledger, guests local; view final position. Recent ID records exist but final-position action not connected yet.
+8. Bounded SW asset-generation retention current+previous; verify safe upgrades/offline. Do not cache Railway/online engine responses.
+9. Redis durability evaluation without restarting existing Redis; preserve active data or leave unchanged with exact procedure.
+10. Trace legacy imports, quarantine only confirmed inactive AppDeploy realtime/backend.
+11. Optional strong offline Stockfish pack ONLY after ordinary network-disabled relaunch verified. Otherwise scoped follow-up; preserve lighter local fallback. Passkeys optional, no passwords/email mandatory.
+12. Full regression and exact final report distinguishing actual/deterministic/notphysical; physical checklist live e4/e5/Nf3,2min lock-return,ID3/0,swap,fourth casual,PWA resume,airplane-mode saved-game local reply,Stockfish1/10bothcolors,audio,Zen.
+
+Do not add accounts as a gate, matchmaking/chat/leaderboards/ads/subscriptions/ratings/achievements or live engine eval. Quiet Points are continuity, not Elo. Preserve actual-history capture accounting and on-board material39each. Keep five substantive AppDeploy workflows with exactly one [sanity].
+
+---
+
 # CURRENT OVERRIDE — v28 Stockfish deployment (2026-09-08 19:30 UTC)
 
 Andre explicitly authorized replacing the weak computer opponent with Stockfish via Railway, then waived the earlier deployment prohibition. This supersedes older instructions below that forbid Stockfish in that pass.

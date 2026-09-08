@@ -1,11 +1,27 @@
-# WORK TAKEOVER UPDATE — 2026-09-08, approximately 16:07 UTC
+# WORK TAKEOVER UPDATE — 2026-09-08, design completion
 
-## CURRENT TRUTH — NOT FINISHED
-Andre reports the last TWO deployments still opened to a white screen on his phone when opened from ChatGPT. This newest report overrides any apparent success below. Do NOT claim the Android/PWA white screen is fixed. No app was deleted, replaced, or rolled back. Further frontend deployments are paused pending isolation of the real startup failure. The next useful distinction is the deployment-card/in-app opening versus opening the same plain URL directly in Chrome.
+## CURRENT USER CONFIRMATION — CHROME WORKS
+Andre explicitly corrected the report: "No! In chrome everything thing works even multiplayer!" The white-screen report concerns opening from ChatGPT's deployment preview/in-app context. Do NOT treat the Chrome frontend or multiplayer as currently broken based on the older report. The precise preview-specific cause is not proven. No app was deleted, replaced, rolled back, or unpublished.
+
+Andre then authorized the design overhaul. It is now deployed on the same app and URL. Continue to preserve the working Railway transport, custom computer engine, offline shell, saves and seats.
+
+## DESIGN OVERHAUL — completed 2026-09-08
+- AppDeploy current applied version: v21, snapshot 1788884724376. v20 first visual pass: 1788884558765. The in-app design build label remains QK v20; v21 is its compact-mobile/accessibility refinement.
+- Rebuilt welcome screen with editorial serif heading, code-native knight/king display, clear friend/computer choices, compact phone composition.
+- Refined deep teal background, honey/walnut grain, thin frame, large satin ivory and ebony pieces; redrew knight profile and mane, stronger material shading on all six piece kinds.
+- Refined desktop playing-table hierarchy, captured trays, touch controls, settings switches and promotion-choice styling. Board remains top-down, square, 8x8, no coordinates, 1.12x artwork without silhouette clipping.
+- Changed only src/chess-ui.tsx, src/game.css, src/pieces.tsx, src/GameApp.tsx (build label only), tests/tests.txt. Existing five workflows retained, exactly one sanity marker. No image generation or external artwork/fonts.
+- No Railway, Redis, networking, chess engine, capture calculation, service-worker or save/seat logic changes in this design turn.
+- Verified actual deployed browser: saved White game survived v19->v20->v21; played g1-f3, computer replied f7-f6; selection/legal targets worked; numbered history and position survived reload; New game -> Keep playing preserved position; sound preference survived reload; Black computer game oriented Black at bottom, computer opened e3, Your move appeared.
+- Desktop board measured 630x630, 64 equal cells, no horizontal overflow. Visually inspected desktop home/table/settings and AppDeploy mobile home screenshot, then shortened mobile art to improve control reach.
+- Final AppDeploy QA snapshot reports no frontend/network errors; e2e_tests is still null, so do not claim the full five-workflow suite ran.
+- UI reports Computer files saved for offline play. Actual offline-browser/PWA launch and physical-phone upgrade were NOT retested in Work. Multiplayer was confirmed by Andre before this visual update; no new two-context frontend multiplayer test was possible in Work.
+- Browser error entries inspected were Work extension metadata errors, not app-origin stacks.
+- The earlier evidence below remains useful, but historical guesses about Chrome white screens must defer to Andre's explicit correction above.
 
 ## Applied resources
 - AppDeploy existing app: quiet-knight-live-v2xp3y
-- Current applied frontend: v19, snapshot 1788883310605
+- Current applied frontend: v21, snapshot 1788884724376; v19 baseline preserved: 1788883310605
 - v18: 1788882631535; original v17 preserved: 1788881592889.
 - Same public frontend URL: https://quiet-knight-live-v2xp3y.v2.appdeploy.ai/
 - Railway current successful server deployment: 036ac6d2-a6da-4dbd-a8a0-e2e4e1973a24

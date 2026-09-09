@@ -22,7 +22,24 @@ function normalizedOwners(owners: OwnerState): OwnerState { return Object.fromEn
 
 export class TableService {
   constructor(private readonly store: Store, readonly tableId = 'main') {}
-  async initialize(): Promise<void> { await this.store.transaction(async (client) => { if (await this.store.loadForUpdate(client, this.tableId)) return; const state = createGame('HOLD_EM_NO_LIMIT', [{ id: 'lobby-0', seat: 0 }, { id: 'lobby-1', seat: 1 }]); await client.query('insert into poker_tables(id,version,state,owners) values($1,0,$2,$3)', [this.tableId, JSON.stringify(state), JSON.stringify({})]); }); }
+  async initialize(): Promise<void> {
+    await this.store.transaction(async (client) => {
+      const existing = await this.store.loadForUpdate(client, this.tableId);
+      if (existing) {
+        // A cold Vercel instance is a server recovery, not an opportunity to
+        // execute a backlog of human timeouts. Retain every card and wager but
+        // grant the current actor a fresh normal window when the saved one has
+        // already elapsed.
+        if (!betweenHands(existing.state) && existing.state.actorId && (existing.deadline === null || existing.deadline <= Date.now())) {
+          const owners = ownersOf(existing.owners);
+          await this.store.save(client, { ...existing, version: existing.version + 1, deadline: this.deadline(existing.state, owners) });
+        }
+        return;
+      }
+      const state = createGame('HOLD_EM_NO_LIMIT', [{ id: 'lobby-0', seat: 0 }, { id: 'lobby-1', seat: 1 }]);
+      await client.query('insert into poker_tables(id,version,state,owners) values($1,0,$2,$3)', [this.tableId, JSON.stringify(state), JSON.stringify({})]);
+    });
+  }
   private view(table: StoredTable, guestId: string | null): PlayerTableView { const entries = new Map<number, SeatOwner>(); for (const [seat, owner] of Object.entries(ownersOf(table.owners))) entries.set(Number(seat), owner); const ownSeat = Object.entries(ownersOf(table.owners)).find(([, owner]) => owner.guestId === guestId)?.[0]; const base = publicView(table.id, table.version, table.state, entries, table.deadline, table.nextVariant as Variant | null); return playerView(base, table.state, ownSeat === undefined ? null : Number(ownSeat)); }
   async snapshot(guestId: string | null): Promise<PlayerTableView> { await this.advanceDue(); return this.store.transaction(async (client) => { const table = await this.store.loadForUpdate(client, this.tableId); if (!table) throw new Error('missing_table'); return this.view(table, guestId); }); }
   private deadline(state: GameState, owners: OwnerState, now = Date.now()): number | null { if (!state.actorId) return null; const actor = state.players.find((player) => player.id === state.actorId); return now + (actor && owners[String(actor.seat)]?.bot ? 1_000 : 30_000); }

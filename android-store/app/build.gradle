@@ -1,0 +1,46 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.andrefiker.appfarmwrapper'
+    compileSdk 35
+
+    defaultConfig {
+        minSdk 26
+        targetSdk 35
+        versionCode 1
+        versionName '1.0.0'
+    }
+
+    flavorDimensions 'app'
+    productFlavors {
+        quietKnight {
+            dimension 'app'
+            applicationId 'com.andrefiker.quietknight.appfarm'
+            resValue 'string', 'app_name', 'Quiet Knight'
+            buildConfigField 'String', 'HOME_URL', '"https://quiet-knight-live-v2xp3y.v2.appdeploy.ai/"'
+        }
+        performanceCourse {
+            dimension 'app'
+            applicationId 'com.andrefiker.psicologiadesempenho.appfarm'
+            resValue 'string', 'app_name', 'Psicologia do Desempenho'
+            buildConfigField 'String', 'HOME_URL', '"https://psicologia-do-desempenho-sob-pressao-zsc3or.v2.appdeploy.ai/"'
+        }
+        appFarm {
+            dimension 'app'
+            applicationId 'com.andrefiker.appfarm'
+            resValue 'string', 'app_name', 'AppFarm'
+            buildConfigField 'String', 'HOME_URL', '"https://appfarm-g7745u.v2.appdeploy.ai/"'
+        }
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}

@@ -93,7 +93,21 @@ export function createPokerServer(databaseUrl = process.env.DATABASE_URL ?? '') 
       });
     } catch { socket.destroy(); }
   });
-  return { server, tick, close: async () => { await new Promise<void>((resolve) => server.close(() => resolve())); await store.pool.end(); } };
+  // A warm Vercel WebSocket instance needs to progress bot decisions and turn
+  // deadlines without a client having to make a second request. Correctness
+  // still comes from Neon: every invocation calls tick() before serving and a
+  // cold instance can therefore resume the committed hand safely.
+  const scheduler = setInterval(() => { void tick().then(publish).catch(() => undefined); }, 1_000);
+  scheduler.unref();
+  return {
+    server,
+    tick,
+    close: async () => {
+      clearInterval(scheduler);
+      await new Promise<void>((resolve) => server.close(() => resolve()));
+      await store.pool.end();
+    }
+  };
 }
 
 export const poker = createPokerServer();

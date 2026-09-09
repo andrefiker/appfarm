@@ -1,0 +1,44 @@
+# Tests
+
+## Spectator snapshot [sanity]
+Viewport: mobile (375x667)
+Covers: public spectator view, hidden-card boundary, permanent table entry
+Description: A fresh visitor sees a public table without any player card face.
+Steps:
+1. Open the permanent table URL.
+Expected: A spectator table appears without any private card face.
+
+## Seat and bot
+Viewport: mobile (375x667)
+Covers: guest credential, human seat claim, bot seat, authoritative state refresh
+Description: A guest can claim a seat and add a bot using server-authorized commands.
+Steps:
+1. Open Table controls.
+2. Take the first empty seat.
+3. Add a balanced bot.
+Expected: The table shows the claimed seat and a bot seat without a client-side error.
+
+## Legal action controls
+Viewport: desktop (1280x800)
+Covers: recipient-specific private hand rendering, server-derived legal actions, final-target raise wording
+Description: A seated player sees only their own card faces and contextual legal actions.
+Steps:
+1. Observe a seated player turn.
+Expected: Only server-provided Fold, Check or Call, Bet, and Raise-to controls are rendered, and no opponent card face is shown.
+
+## Draw selection
+Viewport: mobile (375x667)
+Covers: queued variant, Draw card selection, explicit stand-pat/replacement confirmation
+Description: Draw selection is a visible, explicit confirmation flow.
+Steps:
+1. Queue Five-Card Draw between hands.
+2. Tap cards during the draw phase.
+Expected: Selected cards lift and the confirmation labels either Keep all 5 or Replace N cards.
+
+## Reconnect view
+Viewport: mobile (375x667)
+Covers: guest reconnect, durable snapshot recovery, WebSocket reconnect fallback
+Description: Refresh requests the actual current snapshot.
+Steps:
+1. Reload the table.
+Expected: The interface reconnects and displays the current table state.

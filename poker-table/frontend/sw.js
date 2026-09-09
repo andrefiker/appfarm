@@ -1,0 +1,1 @@
+self.addEventListener('install',e=>e.waitUntil(caches.open('poker-static-v1').then(c=>c.addAll(['./','./index.html','./styles.css','./app.js','./manifest.webmanifest']))));self.addEventListener('fetch',e=>{if(new URL(e.request.url).origin===location.origin&&e.request.method==='GET')e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)))})

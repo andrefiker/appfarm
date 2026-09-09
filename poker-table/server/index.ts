@@ -1,17 +1,6 @@
-import { createHash, randomBytes, randomUUID } from 'node:crypto';
-import { createServer } from 'node:http';
-import { WebSocketServer } from 'ws';
-import { Store } from './store.js'; import { TableService } from './table.js'; import type { Command } from './protocol.js';
-const hash = (token: string) => createHash('sha256').update(token).digest('hex');
-const store = new Store(process.env.DATABASE_URL ?? '');
-const table = new TableService(store); const tickets = new Map<string, { guestId: string; expires: number }>();
-function bearer(request: import('node:http').IncomingMessage): string | null { const value = request.headers.authorization; return value?.startsWith('Bearer ') ? value.slice(7) : null; }
-async function guest(token: string | null, name = 'Guest'): Promise<{ token: string; guestId: string }> { if (token) { const r = await store.pool.query('select guest_id from poker_guests where token_hash=$1', [hash(token)]); if (r.rowCount) return { token, guestId: r.rows[0]!.guest_id }; } const fresh = randomBytes(32).toString('base64url'); const guestId = randomUUID(); await store.pool.query('insert into poker_guests(token_hash,guest_id,name) values($1,$2,$3)', [hash(fresh), guestId, name.slice(0, 24)]); return { token: fresh, guestId }; }
-const server = createServer(async (req, res) => { try { const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`); res.setHeader('content-type', 'application/json'); res.setHeader('access-control-allow-origin', process.env.FRONTEND_ORIGIN ?? 'http://localhost:5173'); res.setHeader('access-control-allow-headers', 'authorization,content-type'); if (req.method === 'OPTIONS') { res.writeHead(204).end(); return; } if (url.pathname === '/health') { res.end(JSON.stringify({ ok: true })); return; }
-  if (req.method === 'POST' && url.pathname === '/api/session') { const body = await new Promise<string>((resolve) => { let raw=''; req.on('data', (x) => raw += x); req.on('end', () => resolve(raw)); }); const g = await guest(bearer(req), JSON.parse(body || '{}').name); const ticket = randomBytes(24).toString('base64url'); tickets.set(ticket, { guestId: g.guestId, expires: Date.now() + 60_000 }); res.end(JSON.stringify({ credential: g.token, websocketTicket: ticket, expiresIn: 60 })); return; }
-  const token = bearer(req); const g = token ? await guest(token) : null; if (req.method === 'GET' && url.pathname === '/api/table') { res.end(JSON.stringify(await table.snapshot(g?.guestId ?? null))); return; }
-  if (req.method === 'POST' && url.pathname === '/api/command') { if (!g) throw new Error('unauthenticated'); const body = await new Promise<string>((resolve) => { let raw=''; req.on('data', (x) => raw += x); req.on('end', () => resolve(raw)); }); res.end(JSON.stringify(await table.command(g.guestId, JSON.parse(body) as Command))); return; }
-  res.writeHead(404).end(JSON.stringify({ error: 'not_found' }));
-} catch (error) { const message = error instanceof Error ? error.message : 'server_error'; res.writeHead(message === 'unauthenticated' ? 401 : 409).end(JSON.stringify({ error: message })); } });
-const wss = new WebSocketServer({ noServer: true }); server.on('upgrade', (req, socket, head) => { const ticket = new URL(req.url ?? '/', 'http://localhost').searchParams.get('ticket'); const record = ticket ? tickets.get(ticket) : undefined; if (!record || record.expires < Date.now()) { socket.destroy(); return; } tickets.delete(ticket!); wss.handleUpgrade(req, socket, head, (ws) => { ws.on('message', async (raw) => { try { const command = JSON.parse(raw.toString()) as Command; ws.send(JSON.stringify(await table.command(record.guestId, command))); } catch (error) { ws.send(JSON.stringify({ error: error instanceof Error ? error.message : 'server_error' })); } }); }); });
-await store.migrate(); await table.initialize(); setInterval(async () => { try { await table.startIfReady(); await table.botTurn(); } catch (error) { console.error('turn loop failed', error); } }, 1000); server.listen(Number(process.env.PORT ?? 3000), () => console.log('poker server listening'));
+import server, { poker } from './app.js';
+
+await poker.tick();
+const timer = setInterval(() => { void poker.tick(); }, 1_000);
+timer.unref();
+server.listen(Number(process.env.PORT ?? 3000), () => console.log('poker server listening'));

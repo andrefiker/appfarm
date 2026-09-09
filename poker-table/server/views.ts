@@ -1,10 +1,14 @@
 import { legalActions, type GameState } from '../engine/index.js';
 import type { BotObservation, PlayerTableView, PublicTableView, PublicSeat } from './protocol.js';
 
-export type SeatOwner = Readonly<{ guestId: string; name: string; bot: boolean; connected: boolean }>;
+export type SeatOwner = Readonly<{ guestId: string; name: string; bot: boolean; connected: boolean; pending?: boolean; sitOut?: boolean }>;
 const cards = (items: readonly { id: string; rank: string; suit: string }[]) => items.map(({ id, rank, suit }) => ({ id, rank, suit }));
 export function publicView(tableId: string, version: number, state: GameState, owners: ReadonlyMap<number, SeatOwner>, deadline: number | null, nextVariant: GameState['variant'] | null): PublicTableView {
-  const seats: PublicSeat[] = state.players.map((p) => { const o = owners.get(p.seat); return Object.freeze({ seat: p.seat, name: o?.name ?? `Seat ${p.seat + 1}`, stack: p.stack, roundCommitted: p.roundCommitted, dealer: p.seat === state.buttonSeat, folded: p.folded, allIn: p.allIn, connected: o?.connected ?? false, bot: o?.bot ?? false, cards: p.inHand ? p.hand.length : 0 }); });
+  const playerBySeat = new Map(state.players.map((p) => [p.seat, p]));
+  const seats: PublicSeat[] = [...new Set([...playerBySeat.keys(), ...owners.keys()])].sort((a, b) => a - b).map((seat) => {
+    const p = playerBySeat.get(seat); const o = owners.get(seat);
+    return Object.freeze({ seat, name: o?.name ?? `Seat ${seat + 1}`, stack: p?.stack ?? 1000, roundCommitted: p?.roundCommitted ?? 0, dealer: p?.seat === state.buttonSeat, folded: p?.folded ?? false, allIn: p?.allIn ?? false, connected: o?.connected ?? false, bot: o?.bot ?? false, cards: p?.inHand ? p.hand.length : 0 });
+  });
   return Object.freeze({ protocolVersion: 1, tableId, stateVersion: version, handId: state.handNumber, actorId: state.actorId ?? null, serverTime: Date.now(), deadline, phase: state.phase, variant: state.variant, nextVariant, buttonSeat: state.buttonSeat, actorSeat: state.actorId ? state.players.find((p) => p.id === state.actorId)?.seat ?? null : null, currentBet: state.currentBet, pot: state.players.reduce((n, p) => n + p.totalCommitted, 0), board: cards(state.board), seats: Object.freeze(seats), status: state.actorId ? 'ACTION REQUIRED' : state.phase === 'INTERMISSION' ? 'WAITING FOR NEXT HAND' : state.phase, results: state.results.map((r) => ({ pot: r.pot.amount, winners: r.winners, payouts: r.payouts })) });
 }
 export function playerView(base: PublicTableView, state: GameState, seat: number | null): PlayerTableView {

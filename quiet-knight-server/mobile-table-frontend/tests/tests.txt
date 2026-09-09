@@ -72,3 +72,7 @@ Steps:
 Expected: Promotions and cancellation work; resignation reaches both clients; rematch preserves the same room and seats, restores 32 pieces with White to move, and clears captured rows and history, and restores material totals to 39 each.
 
 
+
+
+
+Post-game additions to workflow 5 — Covers: viewer-specific loss text, /players/me durable history, scored record, final-position reuse. After checkmate and resignation, only the losing owned viewer sees exactly You tried your best! And failed miserably... below the ordinary result. Check both human colors, winner, draw, spectator, waiting room and computer defeat; all non-losers must not see it. Open Knight ID: summary uses durable player totals, not the recent list. Game history displays all eligible returned games (current API maximum eight), opponent, viewer result/color, moves, awarded points and date. A scored win shows +3, draw +1, loss +0; casual shows No points. Exclude self-play and rows without two distinct Knight IDs. Reload profile and select a row: same durable result/final board; Copy PGN/FEN and postcard remain available. Computer play must not affect the multiplayer record. Guest play still works. Quiet Review is held and has no new live action.

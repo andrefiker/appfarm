@@ -17,7 +17,7 @@ Preparation, already completed locally:
 
 Release remains blocked:
 
-1. Restore Railway configuration-agent availability; its discard call returned “Agent usage limit reached. Update your limit in usage settings.”
+1. Use direct Railway tools only. The owner now prohibits Railway Agent and any quota-limited infrastructure agent. Do not restore/retry that route. Proceed with production infrastructure changes only when a direct tool exposes the exact change and supports verifying it.
 2. Inspect current running and staged state. Do not accept mixed patch 3b485ae1-3c4f-4677-a2d0-dacdef826ffc. It includes an unintended Postgres delta. Clear only unapplied changes using supported tools, verify running configuration/deployment IDs unchanged, then stage only intended server source. Preserve PORT, FRONTEND_ORIGIN, REDIS_URL and DATABASE_URL privately.
 3. Apply `review-server-gate.patch` to the held backend test file. It strengthens the existing real-Redis/isolated-Postgres acceptance: scored checkmate, cached repeat, unchanged room fields, public player statistics and all ledger fields except the intended review cache. This additional gate is syntax/apply checked, NOT executed against SQL. Run it before deployment.
 4. Run existing predeploy gates and native `verify-review.js`. Copy `verify-review-matrix.js` beside quiet-review.js and run with a valid STOCKFISH_PATH. Matrix was executed locally this continuation; it does not certify HTTP, SQL or production caching.
@@ -25,3 +25,13 @@ Release remains blocked:
 6. Render and test the rebased frontend candidate on an approved preview, then deploy to the SAME AppDeploy app only after its gate passes. Preserve v37 / 1788920004629 as immediate rollback and v36 / 1788913697012 as earlier rollback.
 
 Do not deploy this frontend while the production backend lacks /computer/review. Do not treat the build/input tests as rendered candidate QA. No passkey implementation or database migration is included.
+
+## Latest operating instruction — direct tools only
+
+The owner's newer instruction supersedes agent-restoration wording in older reports. Use Quiet Knight Release Gate, AppDeploy, GitHub and direct Railway operations. No Railway Agent or quota-limited infrastructure agent calls. No production infrastructure mutation unless a direct tool exposes and verifies the exact change.
+
+Fresh direct checks on 2026-09-09 still show AppDeploy v37 / 1788920004629, server deployment 743ce873-7afa-41b1-8bee-6c8f031e7c2e at commit 02e9c1f866ac9eefdb44f09d147067b42530280d, and unchanged Postgres/Redis deployment IDs. AppDeploy reports ready and empty frontend/backend error arrays; E2E is null. This check did not rerun browser or engine acceptance.
+
+The mixed patch 3b485ae1-3c4f-4677-a2d0-dacdef826ffc remains STAGED with 21 changes. Direct service configuration separates running and staged fields, but variable values are redacted (valuesRedacted=true). Installed direct tools expose no staged-change discard and no existing-service source-commit update. update_service explicitly excludes source changes. accept_deploy commits ALL environment changes; redeploy does not expose an exact source/config change selection. Neither is an acceptable substitute for isolation of the intended release.
+
+No agent call, variable/configuration mutation, accept, redeployment or production source edit was made in this direct-only check. The next prerequisite is a supported direct operation that can safely remove/isolate the mixed staging and select the intended server source with verifiable before/after state. Keep the candidate held meanwhile. Do not seek credentials in logs or use a dashboard/API workaround to evade these limits.

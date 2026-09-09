@@ -1,3 +1,11 @@
+# Quiet Knight v37 — released after rendered staging QA
+
+Current state: AppDeploy **v37 / 1788920004629**, rollback **v36 / 1788913697012**. See [the final release evidence](QA_RELEASE_2026-09-09.md) for measured mobile/desktop results, screenshots, actual production Stockfish reply, and explicit multiplayer/physical-device limitations.
+
+The following is the preserved pre-preview report; its held status and rendering blockers are historical.
+
+---
+
 # Quiet Knight mobile-table candidate — held, not deployed
 
 Observed 2026-09-09 UTC. This is a continuation of the existing AppDeploy project, not a replacement app. Do not merge this branch into the Railway deployment branch as part of the frontend release.

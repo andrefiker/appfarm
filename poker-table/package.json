@@ -1,0 +1,17 @@
+{
+  "name": "poker-table",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.18.0" },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "rm -rf .build && tsc --outDir .build --noEmit false --allowImportingTsExtensions false && node --test .build/tests/*.test.js",
+    "verify": "npm run typecheck && npm test",
+    "build:server": "tsc --outDir .server-build --noEmit false --allowImportingTsExtensions false",
+    "start": "node .server-build/server/index.js",
+    "dev": "node --watch --import tsx server/index.ts"
+  },
+  "dependencies": { "pg": "^8.13.1", "ws": "^8.18.0" },
+  "devDependencies": { "typescript": "5.9.3", "@types/node": "24.10.1", "@types/pg": "^8.11.10", "@types/ws": "^8.5.13", "tsx": "^4.19.2" }
+}

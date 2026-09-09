@@ -4,7 +4,12 @@ import type { GameState } from '../engine/index.js';
 export type StoredTable = Readonly<{ id: string; version: number; state: GameState; owners: Record<string, unknown>; nextVariant: string | null; deadline: number | null }>;
 export class Store {
   readonly pool: Pool;
-  constructor(url: string) { this.pool = new Pool({ connectionString: url, max: 5, ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined }); }
+  constructor(url: string) {
+    // Neon presents a publicly trusted TLS endpoint. Be explicit about the
+    // strongest libpq mode rather than relying on pg's legacy `require` alias.
+    const connectionString = url.replace(/([?&])sslmode=(?:prefer|require|verify-ca)(?=&|$)/, '$1sslmode=verify-full');
+    this.pool = new Pool({ connectionString, max: 5 });
+  }
   async migrate(): Promise<void> { await this.pool.query(`create table if not exists poker_tables (id text primary key, version bigint not null, state jsonb not null, owners jsonb not null default '{}'::jsonb, next_variant text, deadline timestamptz, updated_at timestamptz not null default now()); create table if not exists poker_guests (token_hash text primary key, guest_id uuid not null, name text not null, created_at timestamptz not null default now()); create table if not exists poker_ws_tickets (ticket_hash text primary key, guest_id uuid not null, expires_at timestamptz not null, consumed_at timestamptz); create table if not exists poker_receipts (table_id text not null, action_id text not null, version bigint not null, response jsonb not null, created_at timestamptz not null default now(), primary key(table_id, action_id)); create table if not exists poker_hand_results (table_id text not null, hand_number integer not null, result jsonb not null, created_at timestamptz not null default now(), primary key(table_id, hand_number));`); }
   async transaction<T>(fn: (client: PoolClient) => Promise<T>): Promise<T> { const c = await this.pool.connect(); try { await c.query('begin'); const out = await fn(c); await c.query('commit'); return out; } catch (error) { await c.query('rollback'); throw error; } finally { c.release(); } }
   async loadForUpdate(c: PoolClient, id: string): Promise<StoredTable | null> { const r = await c.query('select id, version, state, owners, next_variant, extract(epoch from deadline)*1000 as deadline from poker_tables where id=$1 for update', [id]); if (!r.rowCount) return null; const x = r.rows[0]!; return { id: x.id, version: Number(x.version), state: x.state as GameState, owners: x.owners as Record<string, unknown>, nextVariant: x.next_variant, deadline: x.deadline === null ? null : Number(x.deadline) }; }

@@ -1,0 +1,27 @@
+--- a/verify-server.js
++++ b/verify-server.js
+@@ -47,12 +47,21 @@
+  await req(`/rooms/${code}/resign`,{seat_token:created.seat_token});
+  const fourth=await req(`/rooms/${code}/rematch`,{seat_token:created.seat_token,colors:'swap',game_number:3});assert.equal(fourth.room.game_number,4);assert.equal(fourth.room.points_policy.eligible,false);
+  const casual=await req(`/rooms/${code}/resign`,{seat_token:created.seat_token});assert.equal(casual.room.score_event.scored,false);assert.equal(casual.room.score_event.white_points,0);assert.equal(casual.room.score_event.black_points,0);
+- // Review a genuinely completed guest checkmate, then confirm ledger cache and no room mutation.
+- const reviewRoom=await req('/rooms',{}),reviewBlack=await req(`/rooms/${reviewRoom.room.code}/join`,{join_key:randomBytes(24).toString('hex')});let finish;
++ // Review a scored completed checkmate. Snapshot public player stats and the
++ // complete ledger excluding only its deliberately writable review cache.
++ const reviewA=await req('/players',{handle:'ReviewWhite'},null,201),reviewB=await req('/players',{handle:'ReviewBlack'},null,201);
++ const reviewRoom=await req('/rooms',{},reviewA.credential),reviewBlack=await req(`/rooms/${reviewRoom.room.code}/join`,{join_key:randomBytes(24).toString('hex')},reviewB.credential);let finish;
+  for(const[i,move]of ['f2f3','e7e5','g2g4','d8h4'].entries())finish=await req(`/rooms/${reviewRoom.room.code}/move`,{seat_token:i%2?reviewBlack.seat_token:reviewRoom.seat_token,from:move.slice(0,2),to:move.slice(2,4)});
++ assert.equal(finish.room.score_event.white_points,0);assert.equal(finish.room.score_event.black_points,3);
++ const playersBefore=(await admin.query(`SELECT id,handle,quiet_points,scored_games,wins,draws,losses,current_win_streak,best_win_streak FROM ${schema}.qk_players ORDER BY id`)).rows;
++ const ledgerBefore=(await admin.query(`SELECT to_jsonb(g)-'review' AS record FROM ${schema}.qk_games g ORDER BY id`)).rows;
++ const roomBefore=(await req(`/rooms/${reviewRoom.room.code}`)).room;
+  const reviewed=await req('/computer/review',{game_id:finish.room.score_event.id});assert.ok(reviewed.moments.length<=3);assert.equal(reviewed.cached,false);
+  const cached=await req('/computer/review',{game_id:finish.room.score_event.id});assert.equal(cached.cached,true);assert.deepEqual(cached.moments,reviewed.moments);
+- assert.equal((await req(`/rooms/${reviewRoom.room.code}`)).room.version,finish.room.version);
++ const roomAfter=(await req(`/rooms/${reviewRoom.room.code}`)).room;
++ for(const field of ['fen','moves','status','winner','version','game_number','score_event','white_player','black_player'])assert.deepEqual(roomAfter[field],roomBefore[field],`Review changed room ${field}`);
++ assert.deepEqual((await admin.query(`SELECT id,handle,quiet_points,scored_games,wins,draws,losses,current_win_streak,best_win_streak FROM ${schema}.qk_players ORDER BY id`)).rows,playersBefore,'Review changed player stats');
++ assert.deepEqual((await admin.query(`SELECT to_jsonb(g)-'review' AS record FROM ${schema}.qk_games g ORDER BY id`)).rows,ledgerBefore,'Review changed completed-game ledger');
+  await delay(100);assert.ok(one.messages.some(m=>m.type==='room.update'&&m.room.score_event?.id===event));assert.ok(back.messages.some(m=>m.type==='room.update'&&m.room.game_number===4));
+  console.log(JSON.stringify({event:'server.acceptance',passed:true,room:code,game_number:4,first_game_id:event,pair_cap:'fourth casual',checks:['full verify-live','HTTP Knight ID','seat association','win points','idempotent reads','same and swap rematch','join-key recovery after swap','actual color authorization','socket updates']}));
+ }finally{clearTimeout(deadline);for(const s of sockets)s.terminate();if(child&&child.exitCode===null&&child.signalCode===null){const exited=once(child,'exit').catch(()=>{});child.kill('SIGTERM');await Promise.race([exited,delay(2000)]);if(child.exitCode===null&&child.signalCode===null)child.kill('SIGKILL');}await admin.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`);await admin.end();}

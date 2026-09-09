@@ -1,0 +1,31 @@
+{
+  "app": "quiet-knight-live-v2xp3y",
+  "version": "v37",
+  "snapshot": "1788920004629",
+  "files": {
+    "src/GameApp.tsx": {
+      "v37_sha256": "ae83da7003b0095a8867d35406e758c0392bb68e6a8d9706159a684d1cbb10ab",
+      "candidate_sha256": "ebd8e0e24570d8a59a3b3cca61d4616f4c4eb2a995fed64be5070b67bd3f9a8f"
+    },
+    "src/diagnostics.ts": {
+      "v37_sha256": "022262f07ca2b0671d20adee30c2ee91fe083a95db74b53e8f66db6f37178397",
+      "candidate_sha256": "f7f012bc47c4ed3b7bd1ef0e8ccd33a9357ba14088274fca4d2d42ee292e6c4d"
+    },
+    "src/game-record.ts": {
+      "v37_sha256": "125521cef8d289b6fc5da697308a120f18a9a44b629c4858476872a807287e0b",
+      "candidate_sha256": "d9a900846ff5aedabc9f1f3a96ef374c996039b3a72fc112a46ba6a533950428"
+    },
+    "src/game-keepsake.tsx": {
+      "v37_sha256": "e866f60eacc5da464126fd9a830c8e190851dcbdf4b1934de64864d2aae7beef",
+      "candidate_sha256": "0ba744f091e035123efaf3cc01aceca26f908a166c9f68df585673b239bc5f0a"
+    },
+    "src/game.css": {
+      "v37_sha256": "4a382ff31f521460d28be4bf36ff5e8e63265a9342c6e4e2f569d51d21d337e0",
+      "candidate_sha256": "83d0e1288af5e43c647e5b570519916299ea09fc3eae4882ed2bf183427b4aa0"
+    },
+    "src/quiet-review.tsx": {
+      "v37_sha256": null,
+      "candidate_sha256": "2395ae76d61997099384441a0d6766bfb02e1048ee2504b1872cf1ee4efd1db0"
+    }
+  }
+}

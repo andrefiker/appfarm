@@ -6,7 +6,7 @@
   "engines": { "node": ">=22.18.0" },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "rm -rf .build && tsc --outDir .build --noEmit false --allowImportingTsExtensions false && node --test .build/tests/*.test.js",
+    "test": "rm -rf .build && tsc --outDir .build --noEmit false --allowImportingTsExtensions false && node --test .build/tests/*.test.js .build/server/*.test.js",
     "verify": "npm run typecheck && npm test",
     "build:server": "tsc --outDir .server-build --noEmit false --allowImportingTsExtensions false",
     "start": "node .server-build/server/index.js",

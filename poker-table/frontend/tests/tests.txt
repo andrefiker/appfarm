@@ -37,8 +37,8 @@ Expected: Selected cards lift and the confirmation labels either Keep all 5 or R
 
 ## Reconnect view
 Viewport: mobile (375x667)
-Covers: guest reconnect, durable snapshot recovery, WebSocket reconnect fallback
-Description: Refresh requests the actual current snapshot.
+Covers: guest reconnect, durable snapshot recovery, WebSocket reconnect fallback, static-only PWA cache
+Description: Refresh requests the actual current snapshot while the installable shell keeps game responses off the static cache.
 Steps:
 1. Reload the table.
-Expected: The interface reconnects and displays the current table state.
+Expected: The interface reconnects and displays the current table state; no authenticated table response is cached for offline play.

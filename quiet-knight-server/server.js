@@ -5,10 +5,11 @@ import { createClient } from 'redis';
 import { WebSocketServer } from 'ws';
 import { StockfishService, EngineError } from './stockfish.js';
 import {IdentityStore,IdentityError,publicPlayer,terminal} from './identity.js';
+import {quietReview} from './quiet-review.js';
 
 const PORT = Number(process.env.PORT || 3000);
 const FRONTEND_ORIGIN = new URL(process.env.FRONTEND_ORIGIN || 'https://quiet-knight-live-v2xp3y.v2.appdeploy.ai').origin;
-const BUILD = 'qk-server-2026-09-08-r5-table-presence';
+const BUILD = 'qk-server-2026-09-09-r6-quiet-review';
 const log = (event, fields = {}) => console.log(JSON.stringify({event,...fields}));
 const identities=new IdentityStore();
 await identities.migrate().then(()=>log('identity.storage',{ready:identities.ready,migration:identities.ready?1:0})).catch(()=>log('identity.unavailable'));
@@ -39,6 +40,8 @@ function publicRoom(room) {
     winner: room.winner,
     version: room.version,
     created_at: room.created_at,
+    started_at:room.started_at||room.created_at,
+    ended_at:room.ended_at||null,
     game_number: room.game_number||1,
     white_player:room.white_player||null,
     black_player:room.black_player||null,
@@ -144,6 +147,7 @@ async function createRoom(player=null) {
   for (let attempt = 0; attempt < 20; attempt += 1) {
     const code = makeCode();
     if (await redis.exists(roomKey(code))) continue;
+    if (identities.ready && await identities.usedRoomCode(code)) continue;
     const game = new Chess();
     const room = { code, white_token: randomUUID(), black_token: null, white_join_digest:null, black_join_digest: null, white_player:publicPlayer(player),black_player:null,game_number:1, moves: [], fen: game.fen(), turn: 'w', status: 'waiting', winner: null, version: 1, created_at: Date.now() };
     try { await saveRoom(room); return room; } catch(error) { if(error.code !== 'QK_CONFLICT') throw error; }
@@ -156,6 +160,17 @@ async function handleApi(req, res, url) {
   if (req.method === 'OPTIONS') return send(res, 204, {}, origin);
   if (req.method === 'GET' && url.pathname === '/health') { const healthy=redis.isReady&&subscriber.isReady; return send(res,healthy?200:503,{ok:healthy,service:'quiet-knight-live',build:BUILD},origin); }
   if (req.method === 'GET' && url.pathname === '/computer/health') return send(res, computer.ready ? 200 : 503, computer.status(), origin);
+  if(req.method==='POST'&&url.pathname==='/computer/review'){
+    const controller=new AbortController();const closed=()=>{if(!res.writableEnded)controller.abort();};res.once('close',closed);
+    try{
+      const input=await bodyJson(req);let history=input,saved=null;
+      if(input.game_id!==undefined){if(typeof input.game_id!=='string'||!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(input.game_id))return send(res,400,{error:'Invalid completed game ID'},origin);saved=await identities.completed(input.game_id);if(!saved)return send(res,404,{error:'Completed game not found'},origin);if(saved.review)return send(res,200,{...saved.review,cached:true},origin);history=saved;}
+      const result=await quietReview(computer,history,controller.signal,{allowResignation:Boolean(saved)});if(res.destroyed)return;
+      if(saved)await identities.cacheReview(saved.id,result);
+      log('computer.review',{elapsed_ms:result.elapsed_ms,moments:result.moments.length,game_id:saved?.id});
+      return send(res,200,{...result,cached:false},origin);
+    }catch(error){if(res.destroyed)return;const status=error instanceof EngineError||error instanceof IdentityError?error.status:503;return send(res,status,{error:error instanceof EngineError||error instanceof IdentityError?error.message:'Quiet Review is temporarily unavailable'},origin);}finally{res.off('close',closed);}
+  }
   if(req.method==='GET'&&url.pathname==='/players/health')return send(res,200,await identities.health(),origin);
   if(req.method==='POST'&&url.pathname==='/players'){
     const rateKey='qk:id-create:'+hash(String(req.headers['x-forwarded-for']||req.socket.remoteAddress).split(',')[0]);

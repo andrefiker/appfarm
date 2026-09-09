@@ -54,6 +54,9 @@ export class IdentityStore{
   await c.query('COMMIT');return rows[0];
  }catch(e){await c.query('ROLLBACK').catch(()=>{});throw e;}finally{c.release();}}
  async recent(playerId){this.required();return(await this.pool.query('SELECT id,room_code,game_number,white_player_id,black_player_id,white_handle,black_handle,result,ended_reason,final_fen,moves,ended_at,scored,score_reason,white_points,black_points FROM qk_games WHERE white_player_id=$1 OR black_player_id=$1 ORDER BY ended_at DESC LIMIT 8',[playerId])).rows;}
+ async completed(id){this.required();return(await this.pool.query('SELECT id,moves,final_fen,ended_reason,review FROM qk_games WHERE id=$1',[id])).rows[0]||null;}
+ async usedRoomCode(code){this.required();return(await this.pool.query('SELECT 1 FROM qk_games WHERE room_code=$1 LIMIT 1',[code])).rowCount>0;}
+ async cacheReview(id,review){this.required();await this.pool.query('UPDATE qk_games SET review=$2 WHERE id=$1 AND review IS NULL',[id,JSON.stringify(review)]);}
  async headToHead(a,b){this.required();const {rows}=await this.pool.query("SELECT count(*) FILTER(WHERE (white_player_id=$1 AND result='1-0') OR (black_player_id=$1 AND result='0-1'))::int AS wins,count(*) FILTER(WHERE (white_player_id=$2 AND result='1-0') OR (black_player_id=$2 AND result='0-1'))::int AS losses,count(*) FILTER(WHERE result='1/2-1/2')::int AS draws FROM qk_games WHERE LEAST(white_player_id,black_player_id)=LEAST($1::uuid,$2::uuid) AND GREATEST(white_player_id,black_player_id)=GREATEST($1::uuid,$2::uuid)",[a,b]);return rows[0];}
  async health(){if(!this.pool||!this.ready)return{available:false,migration:0};try{const {rows}=await this.pool.query('SELECT max(version)::int AS version FROM qk_migrations');return{available:true,migration:rows[0].version};}catch{return{available:false,migration:0};}}
  async close(){await this.pool?.end();}

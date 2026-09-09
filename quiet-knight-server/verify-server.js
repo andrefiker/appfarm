@@ -9,7 +9,7 @@ const schema='qk_verify_'+randomUUID().replaceAll('-','');
 const admin=new pg.Pool({connectionString:process.env.DATABASE_URL,max:1,connectionTimeoutMillis:3000});
 const base='http://127.0.0.1:39173';
 const origin='https://quiet-knight-live-v2xp3y.v2.appdeploy.ai';
-const env={...process.env,NODE_ENV:'test',QK_TEST_SCHEMA:schema,PORT:'39173',QK_VERIFY_BASE:base,QK_EXPECTED_BUILD:'qk-server-2026-09-08-r5-table-presence'};
+const env={...process.env,NODE_ENV:'test',QK_TEST_SCHEMA:schema,PORT:'39173',QK_VERIFY_BASE:base,QK_EXPECTED_BUILD:'qk-server-2026-09-09-r6-quiet-review'};
 let child;const sockets=[];const deadline=setTimeout(()=>{console.error('Candidate server acceptance exceeded deadline');process.exit(1);},110000);
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
 async function req(path,body,token,status=200){const response=await fetch(base+path,{method:body===undefined?'GET':'POST',headers:{Origin:origin,'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(8000)});assert.equal(response.status,status,path);return response.json();}
@@ -47,6 +47,12 @@ try{
  await req(`/rooms/${code}/resign`,{seat_token:created.seat_token});
  const fourth=await req(`/rooms/${code}/rematch`,{seat_token:created.seat_token,colors:'swap',game_number:3});assert.equal(fourth.room.game_number,4);assert.equal(fourth.room.points_policy.eligible,false);
  const casual=await req(`/rooms/${code}/resign`,{seat_token:created.seat_token});assert.equal(casual.room.score_event.scored,false);assert.equal(casual.room.score_event.white_points,0);assert.equal(casual.room.score_event.black_points,0);
+ // Review a genuinely completed guest checkmate, then confirm ledger cache and no room mutation.
+ const reviewRoom=await req('/rooms',{}),reviewBlack=await req(`/rooms/${reviewRoom.room.code}/join`,{join_key:randomBytes(24).toString('hex')});let finish;
+ for(const[i,move]of ['f2f3','e7e5','g2g4','d8h4'].entries())finish=await req(`/rooms/${reviewRoom.room.code}/move`,{seat_token:i%2?reviewBlack.seat_token:reviewRoom.seat_token,from:move.slice(0,2),to:move.slice(2,4)});
+ const reviewed=await req('/computer/review',{game_id:finish.room.score_event.id});assert.ok(reviewed.moments.length<=3);assert.equal(reviewed.cached,false);
+ const cached=await req('/computer/review',{game_id:finish.room.score_event.id});assert.equal(cached.cached,true);assert.deepEqual(cached.moments,reviewed.moments);
+ assert.equal((await req(`/rooms/${reviewRoom.room.code}`)).room.version,finish.room.version);
  await delay(100);assert.ok(one.messages.some(m=>m.type==='room.update'&&m.room.score_event?.id===event));assert.ok(back.messages.some(m=>m.type==='room.update'&&m.room.game_number===4));
  console.log(JSON.stringify({event:'server.acceptance',passed:true,room:code,game_number:4,first_game_id:event,pair_cap:'fourth casual',checks:['full verify-live','HTTP Knight ID','seat association','win points','idempotent reads','same and swap rematch','join-key recovery after swap','actual color authorization','socket updates']}));
 }finally{clearTimeout(deadline);for(const s of sockets)s.terminate();if(child&&child.exitCode===null&&child.signalCode===null){const exited=once(child,'exit').catch(()=>{});child.kill('SIGTERM');await Promise.race([exited,delay(2000)]);if(child.exitCode===null&&child.signalCode===null)child.kill('SIGKILL');}await admin.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`);await admin.end();}

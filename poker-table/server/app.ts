@@ -95,7 +95,14 @@ export function createPokerServer(databaseUrl = process.env.DATABASE_URL ?? '') 
         console.info('poker websocket upgrade: connected');
         const previous = connections.get(guestId); if (previous && previous !== websocket) previous.close(4001, 'control_replaced');
         connections.set(guestId, websocket);
-        void table.snapshot(guestId).then((snapshot) => websocket.send(JSON.stringify(snapshot)));
+        void table.snapshot(guestId).then((snapshot) => {
+          if (websocket.readyState !== websocket.OPEN) return;
+          websocket.send(JSON.stringify(snapshot));
+          console.info('poker websocket snapshot: sent');
+        }).catch((error) => {
+          console.error('poker websocket snapshot failed', error instanceof Error ? error.message : error);
+          websocket.close(1011, 'snapshot_failed');
+        });
         websocket.on('close', () => { if (connections.get(guestId) === websocket) connections.delete(guestId); });
         websocket.on('message', async (raw) => {
           try {

@@ -82,11 +82,17 @@ export function createPokerServer(databaseUrl = process.env.DATABASE_URL ?? '') 
       try {
         const allowedOrigin = process.env.FRONTEND_ORIGIN ?? 'http://localhost:5173';
         if (request.headers.origin !== allowedOrigin) { rejectUpgrade(403, 'forbidden_origin'); return; }
+        console.info('poker websocket upgrade: origin accepted');
         await tick();
+        console.info('poker websocket upgrade: tick completed');
         const ticket = new URL(request.url ?? '/', `http://${request.headers.host ?? 'localhost'}`).searchParams.get('ticket');
+        if (ticket) console.info('poker websocket upgrade: ticket present');
         const guestId = ticket ? await store.consumeTicket(hash(ticket)) : null;
+        console.info(`poker websocket upgrade: ticket ${guestId ? 'consumed' : 'missing'}`);
         if (!guestId) { rejectUpgrade(401, 'invalid_ticket'); return; }
+        console.info('poker websocket upgrade: handing off');
         wss.handleUpgrade(request, socket, head, (websocket) => {
+        console.info('poker websocket upgrade: connected');
         const previous = connections.get(guestId); if (previous && previous !== websocket) previous.close(4001, 'control_replaced');
         connections.set(guestId, websocket);
         void table.snapshot(guestId).then((snapshot) => websocket.send(JSON.stringify(snapshot)));

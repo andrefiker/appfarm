@@ -72,13 +72,21 @@ export function createPokerServer(databaseUrl = process.env.DATABASE_URL ?? '') 
   });
 
   const wss = new WebSocketServer({ noServer: true, maxPayload: 256 * 1024 });
-  server.on('upgrade', async (request, socket, head) => {
-    try {
-      await tick();
-      const ticket = new URL(request.url ?? '/', `http://${request.headers.host ?? 'localhost'}`).searchParams.get('ticket');
-      const guestId = ticket ? await store.consumeTicket(hash(ticket)) : null;
-      if (!guestId) { socket.destroy(); return; }
-      wss.handleUpgrade(request, socket, head, (websocket) => {
+  server.on('upgrade', (request, socket, head) => {
+    const rejectUpgrade = (status: number, reason: string) => {
+      console.warn(`poker websocket rejected: ${reason}`);
+      socket.write(`HTTP/1.1 ${status} ${reason}\r\nConnection: close\r\n\r\n`);
+      socket.destroy();
+    };
+    void (async () => {
+      try {
+        const allowedOrigin = process.env.FRONTEND_ORIGIN ?? 'http://localhost:5173';
+        if (request.headers.origin !== allowedOrigin) { rejectUpgrade(403, 'forbidden_origin'); return; }
+        await tick();
+        const ticket = new URL(request.url ?? '/', `http://${request.headers.host ?? 'localhost'}`).searchParams.get('ticket');
+        const guestId = ticket ? await store.consumeTicket(hash(ticket)) : null;
+        if (!guestId) { rejectUpgrade(401, 'invalid_ticket'); return; }
+        wss.handleUpgrade(request, socket, head, (websocket) => {
         const previous = connections.get(guestId); if (previous && previous !== websocket) previous.close(4001, 'control_replaced');
         connections.set(guestId, websocket);
         void table.snapshot(guestId).then((snapshot) => websocket.send(JSON.stringify(snapshot)));
@@ -90,8 +98,12 @@ export function createPokerServer(databaseUrl = process.env.DATABASE_URL ?? '') 
             if (websocket.readyState === websocket.OPEN) websocket.send(JSON.stringify(response));
           } catch (error) { if (websocket.readyState === websocket.OPEN) websocket.send(JSON.stringify({ error: error instanceof Error ? error.message : 'server_error' })); }
         });
-      });
-    } catch { socket.destroy(); }
+        });
+      } catch (error) {
+        console.error('poker websocket upgrade failed', error instanceof Error ? error.message : error);
+        rejectUpgrade(500, 'upgrade_failed');
+      }
+    })();
   });
   // A warm Vercel WebSocket instance needs to progress bot decisions and turn
   // deadlines without a client having to make a second request. Correctness

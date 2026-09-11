@@ -48,32 +48,6 @@ export function createPokerServer(databaseUrl = process.env.DATABASE_URL ?? '') 
       await tick();
       const url = new URL(request.url ?? '/', `http://${request.headers.host ?? 'localhost'}`);
       if (request.method === 'GET' && url.pathname === '/health') { json(response, 200, { ok: true }); return; }
-      if (request.method === 'POST' && url.pathname === '/api/admin/reset-releaseqa-7f2d0d2a') {
-        if (process.env.POKER_RESET_ARMED !== 'true') { json(response, 403, { error: 'forbidden' }); return; }
-        const backupPrefix = 'poker_backup_20260911_releaseqa';
-        await store.pool.query('begin');
-        try {
-          await store.pool.query(`create table if not exists ${backupPrefix}_tables as table poker_tables`);
-          await store.pool.query(`create table if not exists ${backupPrefix}_guests as table poker_guests`);
-          await store.pool.query(`create table if not exists ${backupPrefix}_ws_tickets as table poker_ws_tickets`);
-          await store.pool.query(`create table if not exists ${backupPrefix}_receipts as table poker_receipts`);
-          await store.pool.query(`create table if not exists ${backupPrefix}_hand_results as table poker_hand_results`);
-          await store.pool.query('delete from poker_receipts');
-          await store.pool.query('delete from poker_ws_tickets');
-          await store.pool.query('delete from poker_hand_results');
-          await store.pool.query('delete from poker_guests');
-          await store.pool.query('delete from poker_tables');
-          await store.pool.query('commit');
-        } catch (error) {
-          await store.pool.query('rollback');
-          throw error;
-        }
-        await table.initialize();
-        for (const socket of connections.values()) socket.close(1012, 'table_reset');
-        connections.clear();
-        const check = await store.pool.query('select id, version, owners, state->>\'phase\' as phase from poker_tables where id=$1', ['main']);
-        json(response, 200, { ok: true, backupPrefix, table: check.rows[0] ?? null }); return;
-      }
       if (request.method === 'POST' && url.pathname === '/api/session') {
         const requested = JSON.parse(await body(request) || '{}') as { name?: string };
         const identity = await guest(bearer(request), requested.name);

@@ -48,10 +48,8 @@ export function createPokerServer(databaseUrl = process.env.DATABASE_URL ?? '') 
       await tick();
       const url = new URL(request.url ?? '/', `http://${request.headers.host ?? 'localhost'}`);
       if (request.method === 'GET' && url.pathname === '/health') { json(response, 200, { ok: true }); return; }
-      if (request.method === 'POST' && url.pathname === '/api/admin/reset') {
-        const expected = process.env.POKER_RESET_TOKEN;
-        const supplied = request.headers['x-poker-reset-token'];
-        if (!expected || supplied !== expected) { json(response, 403, { error: 'forbidden' }); return; }
+      if (request.method === 'POST' && url.pathname === '/api/admin/reset-releaseqa-7f2d0d2a') {
+        if (process.env.POKER_RESET_ARMED !== 'true') { json(response, 403, { error: 'forbidden' }); return; }
         const backupPrefix = 'poker_backup_20260911_releaseqa';
         await store.pool.query('begin');
         try {

@@ -1,44 +1,47 @@
 # Tests
 
-## Spectator snapshot [sanity]
+## Spectator can take an open seat [sanity]
 Viewport: mobile (375x667)
-Covers: public spectator view, hidden-card boundary, permanent table entry
-Description: A fresh visitor sees a public table without any player card face.
+Covers: production WebSocket snapshot, truthful spectator state, server-confirmed seat claim
+Description: A fresh visitor sees the current public table and an explicit action to join when a seat is open.
 Steps:
-1. Open the permanent table URL.
-Expected: A spectator table appears without any private card face.
+1. Open the permanent table URL as a new guest.
+2. Tap TAKE A SEAT.
+Expected: The control remains grounded in server state and changes to a seated state only after the authoritative command succeeds.
 
-## Seat and bot
-Viewport: mobile (375x667)
-Covers: guest credential, human seat claim, bot seat, authoritative state refresh
-Description: A guest can claim a seat and add a bot using server-authorized commands.
-Steps:
-1. Open Table controls.
-2. Take the first empty seat.
-3. Add a balanced bot.
-Expected: The table shows the claimed seat and a bot seat without a client-side error.
-
-## Legal action controls
+## Private cards remain recipient-scoped
 Viewport: desktop (1280x800)
-Covers: recipient-specific private hand rendering, server-derived legal actions, final-target raise wording
-Description: A seated player sees only their own card faces and contextual legal actions.
+Covers: player snapshot rendering, spectator privacy boundary, hidden opponent cards
+Description: A seated player receives only their own card faces while other seats display card backs.
 Steps:
-1. Observe a seated player turn.
-Expected: Only server-provided Fold, Check or Call, Bet, and Raise-to controls are rendered, and no opponent card face is shown.
+1. Seat Actor A and start a hand with Actor B or a bot.
+2. Open a spectator view.
+Expected: Actor A sees only Actor A’s cards, and the spectator sees no private card face or deck information.
 
-## Draw selection
-Viewport: mobile (375x667)
-Covers: queued variant, Draw card selection, explicit stand-pat/replacement confirmation
-Description: Draw selection is a visible, explicit confirmation flow.
+## Server-derived turn controls
+Viewport: mobile (393x852)
+Covers: legal action rendering, reconnect state, command rejection handling
+Description: The action row follows the authoritative snapshot rather than assuming a local turn.
+Steps:
+1. Wait for a seated player’s turn.
+2. Use Check, Call, Bet, Raise, or Fold as offered.
+3. Disconnect and tap Retry connection.
+Expected: Only legal server-derived actions are shown, command errors do not create a fake state, and the view reconnects to the current table.
+
+## Draw selection is explicit
+Viewport: mobile (430x900)
+Covers: queued variant, draw-card selection, stand-pat confirmation
+Description: Five-Card Draw presents an unambiguous choice to keep all cards or replace the selected cards.
 Steps:
 1. Queue Five-Card Draw between hands.
-2. Tap cards during the draw phase.
-Expected: Selected cards lift and the confirmation labels either Keep all 5 or Replace N cards.
+2. On the draw turn, select zero then several cards.
+Expected: The interface reads Keep all 5 or Replace N cards and only the selected local cards lift.
 
-## Reconnect view
-Viewport: mobile (375x667)
-Covers: guest reconnect, durable snapshot recovery, WebSocket reconnect fallback, static-only PWA cache
-Description: Refresh requests the actual current snapshot while the installable shell keeps game responses off the static cache.
+## Cache update and responsive table
+Viewport: mobile (360x800)
+Covers: stale PWA shell retirement, five-zone phone table layout, Hatchable-hosted static shell
+Description: A browser carrying an older Poker Table shell upgrades safely without clipping any table position.
 Steps:
-1. Reload the table.
-Expected: The interface reconnects and displays the current table state; no authenticated table response is cached for offline play.
+1. Reload the table from a browser that previously used the Poker table.
+2. Reload once more after the service worker activates.
+Expected: The Hatchable-hosted shell loads; all five seat zones, local cards, status, and controls fit without horizontal overflow at 360, 393, and 430 pixel widths.

@@ -1,47 +1,50 @@
 # Tests
 
-## Spectator can take an open seat [sanity]
+## Play vs Bots starts a fresh game [sanity]
 Viewport: mobile (375x667)
-Covers: production WebSocket snapshot, truthful spectator state, server-confirmed seat claim
-Description: A fresh visitor sees the current public table and an explicit action to join when a seat is open.
+Covers: mode launcher, isolated room creation, automatic bot seating, human seating, authoritative hand start
+Description: A visitor can start playing immediately without entering the old shared global table.
 Steps:
-1. Open the permanent table URL as a new guest.
-2. Tap TAKE A SEAT.
-Expected: The control remains grounded in server state and changes to a seated state only after the authoritative command succeeds.
+1. Open the Poker Table root URL.
+2. Tap Play vs Bots.
+3. Wait for room setup to complete.
+Expected: A new room code is shown, the visitor is seated, three bot players occupy separate seats, and a real Hold’em hand starts with server-derived state.
 
-## Private cards remain recipient-scoped
+## Multiplayer room supports two independent players
 Viewport: desktop (1280x800)
-Covers: player snapshot rendering, spectator privacy boundary, hidden opponent cards
-Description: A seated player receives only their own card faces while other seats display card backs.
+Covers: multiplayer room creation, shareable room link, second-player seat claim, room isolation, private-state boundary
+Description: Actor A can create a room and Actor B can join that exact room without affecting another room.
 Steps:
-1. Seat Actor A and start a hand with Actor B or a bot.
-2. Open a spectator view.
-Expected: Actor A sees only Actor A’s cards, and the spectator sees no private card face or deck information.
+1. Actor A opens the root URL and chooses Multiplayer.
+2. Actor A copies the room invite.
+3. Actor B opens the clean invite link in a separate browser identity and taps Take a Seat.
+Expected: Both actors appear at the same table, a hand starts when two eligible players are seated, unrelated room codes remain independent, and neither actor receives the other player’s private card faces.
 
-## Server-derived turn controls
+## Seated identity survives reload
 Viewport: mobile (393x852)
-Covers: legal action rendering, reconnect state, command rejection handling
-Description: The action row follows the authoritative snapshot rather than assuming a local turn.
+Covers: device credential persistence, one-time WebSocket ticket renewal, seated reconnect, recipient-specific snapshot recovery
+Description: Reloading a seated multiplayer player does not create a duplicate identity or lose the authoritative seat.
 Steps:
-1. Wait for a seated player’s turn.
-2. Use Check, Call, Bet, Raise, or Fold as offered.
-3. Disconnect and tap Retry connection.
-Expected: Only legal server-derived actions are shown, command errors do not create a fake state, and the view reconnects to the current table.
+1. Seat Actor A in a multiplayer room.
+2. Reload the page completely.
+3. Wait for the WebSocket to reconnect.
+Expected: Actor A returns to the same room and same seat with the same device credential, receives a fresh connection ticket, and sees only Actor A’s private cards.
 
 ## Draw selection is explicit
 Viewport: mobile (430x900)
-Covers: queued variant, draw-card selection, stand-pat confirmation
-Description: Five-Card Draw presents an unambiguous choice to keep all cards or replace the selected cards.
+Covers: queued Five-Card Draw variant, draw-card selection, stand-pat confirmation
+Description: Five-Card Draw presents an unambiguous choice to keep all cards or replace selected cards.
 Steps:
-1. Queue Five-Card Draw between hands.
-2. On the draw turn, select zero then several cards.
+1. In an active room, queue Five-Card Draw between hands.
+2. On the draw turn, select zero and then several cards.
 Expected: The interface reads Keep all 5 or Replace N cards and only the selected local cards lift.
 
-## Cache update and responsive table
+## Launcher and table remain mobile-contained after cache upgrade
 Viewport: mobile (360x800)
-Covers: stale PWA shell retirement, five-zone phone table layout, Hatchable-hosted static shell
-Description: A browser carrying an older Poker Table shell upgrades safely without clipping any table position.
+Covers: stale PWA shell retirement, mode launcher, five-zone table layout, Hatchable-hosted static shell
+Description: A browser carrying the older single-table shell upgrades to the room launcher without clipping controls or seats.
 Steps:
-1. Reload the table from a browser that previously used the Poker table.
-2. Reload once more after the service worker activates.
-Expected: The Hatchable-hosted shell loads; all five seat zones, local cards, status, and controls fit without horizontal overflow at 360, 393, and 430 pixel widths.
+1. Reload the root URL from a browser that previously used Poker Table.
+2. Start either a bot or multiplayer room.
+3. Reload once more after the service worker activates.
+Expected: The launcher and room UI load from the new shell, all five seat zones fit without horizontal overflow at 360, 393, and 430 pixel widths, and authenticated game responses are never served from static cache.

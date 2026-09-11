@@ -3,6 +3,6 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
-RUN npm run build:server
+RUN npm run verify && npm run build:server
 ENV NODE_ENV=production
 CMD ["npm", "start"]

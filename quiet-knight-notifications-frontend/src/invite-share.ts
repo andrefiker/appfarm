@@ -1,0 +1,2 @@
+export async function shareInvite(code:string,url:string):Promise<'shared'|'cancelled'|'copy'>{if(typeof navigator.share!=='function')return 'copy';try{await navigator.share({title:'Quiet Knight',text:`Join my Quiet Knight game · Room ${code}`,url});return 'shared';}catch(error){return (error as {name?:string})?.name==='AbortError'?'cancelled':'copy';}}
+

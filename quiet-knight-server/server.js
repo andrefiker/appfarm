@@ -5,13 +5,16 @@ import { createClient } from 'redis';
 import { WebSocketServer } from 'ws';
 import { StockfishService, EngineError } from './stockfish.js';
 import {IdentityStore,IdentityError,publicPlayer,terminal} from './identity.js';
+import {PushService,PushError,movePushPlan,nudgePlan} from './push-notifications.js';
 
 const PORT = Number(process.env.PORT || 3000);
 const FRONTEND_ORIGIN = new URL(process.env.FRONTEND_ORIGIN || 'https://quiet-knight-live-v2xp3y.v2.appdeploy.ai').origin;
-const BUILD = 'qk-server-2026-09-08-r5-table-presence';
+const BUILD = 'qk-server-2026-09-12-r7-move-notifications';
 const log = (event, fields = {}) => console.log(JSON.stringify({event,...fields}));
 const identities=new IdentityStore();
-await identities.migrate().then(()=>log('identity.storage',{ready:identities.ready,migration:identities.ready?1:0})).catch(()=>log('identity.unavailable'));
+await identities.migrate().then(()=>log('identity.storage',{ready:identities.ready,migration:identities.ready?2:0})).catch(()=>log('identity.unavailable'));
+const pushes=new PushService({pool:identities.ready?identities.pool:null,logger:log});
+log('push.storage',pushes.status());
 const computer = new StockfishService();
 await computer.probe().then(() => log('computer.ready', computer.status())).catch(() => log('computer.unavailable'));
 const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
@@ -105,6 +108,12 @@ function roleFor(room,digest){return digest&&digest===hash(room.white_token)?'wh
 function tablePresence(code){const set=sockets.get(code)||[];return{white:[...set].some(ws=>ws.readyState===1&&ws.seatRole==='white'),black:[...set].some(ws=>ws.readyState===1&&ws.seatRole==='black')};}
 function publishPresence(code){const presence=tablePresence(code);const data=JSON.stringify({type:'presence.update',...presence});for(const ws of sockets.get(code)||[])if(ws.readyState===1)ws.send(data);}
 function resolveSeats(room){for(const ws of sockets.get(room.code)||[]){if(ws.readyState!==1||!ws.seatDigest)continue;ws.seatRole=roleFor(room,ws.seatDigest);ws.send(JSON.stringify({type:'seat.role',role:ws.seatRole,game_number:room.game_number||1,room_version:room.version}));}publishPresence(room.code);}
+function sendToRole(code,role,payload){for(const ws of sockets.get(code)||[])if(ws.readyState===1&&ws.seatRole===role)try{ws.send(JSON.stringify(payload));}catch{}}
+
+async function rateLimitNudge(room,seatToken){
+  const key=`qk:nudge:${room.code}:${room.game_number||1}:${hash(seatToken).slice(0,24)}`;
+  return Number(await redis.eval(`if redis.call('EXISTS',KEYS[1]..':cooldown')==1 then return -1 end; local count=redis.call('INCR',KEYS[1]..':window'); if count==1 then redis.call('EXPIRE',KEYS[1]..':window',1800) end; if count>3 then return -2 end; redis.call('SET',KEYS[1]..':cooldown','1','EX',120); return count`,{keys:[key],arguments:[]}));
+}
 
 const subscriber = redis.duplicate();
 subscriber.on('error', () => console.error('[redis] subscription connection error'));
@@ -156,6 +165,12 @@ async function handleApi(req, res, url) {
   if (req.method === 'OPTIONS') return send(res, 204, {}, origin);
   if (req.method === 'GET' && url.pathname === '/health') { const healthy=redis.isReady&&subscriber.isReady; return send(res,healthy?200:503,{ok:healthy,service:'quiet-knight-live',build:BUILD},origin); }
   if (req.method === 'GET' && url.pathname === '/computer/health') return send(res, computer.ready ? 200 : 503, computer.status(), origin);
+  if(req.method==='GET'&&url.pathname==='/push/public-key')return send(res,pushes.available?200:503,{supported:pushes.available,public_key:pushes.available?pushes.publicKey:null},origin);
+  if(req.method==='POST'&&(url.pathname==='/push/subscribe'||url.pathname==='/push/unsubscribe')){
+    const input=await bodyJson(req);const code=normalizeCode(input.room_code);const room=await loadRoom(code);
+    if(!room)return send(res,404,{error:'Room not found'},origin);
+    try{return send(res,200,url.pathname.endsWith('/subscribe')?await pushes.subscribe(room,input.seat_token,input.subscription):await pushes.unsubscribe(room,input.seat_token,input.endpoint),origin);}catch(error){if(error instanceof PushError)return send(res,error.status,{error:error.message},origin);throw error;}
+  }
   if(req.method==='GET'&&url.pathname==='/players/health')return send(res,200,await identities.health(),origin);
   if(req.method==='POST'&&url.pathname==='/players'){
     const rateKey='qk:id-create:'+hash(String(req.headers['x-forwarded-for']||req.socket.remoteAddress).split(',')[0]);
@@ -192,7 +207,7 @@ async function handleApi(req, res, url) {
     const room = await createRoom(player);
     return send(res, 200, { room: publicRoom(room), seat_token: room.white_token, role: 'white' }, origin);
   }
-  const match = url.pathname.match(/^\/rooms\/([A-Z0-9]{6})(?:\/(join|move|resign|rematch))?$/i);
+  const match = url.pathname.match(/^\/rooms\/([A-Z0-9]{6})(?:\/(join|move|resign|rematch|nudge))?$/i);
   if (!match) return send(res, 404, { error: 'Not found' }, origin);
   const code = normalizeCode(match[1]);
   const action = match[2] || '';
@@ -230,6 +245,14 @@ async function handleApi(req, res, url) {
   const color = seatToken === room.white_token ? 'w' : seatToken && seatToken === room.black_token ? 'b' : null;
   if (!color) return send(res, 403, { error: 'You do not own a seat in this game' }, origin);
 
+  if(action==='nudge'){
+    let plan;try{plan=nudgePlan(room,color,input.request_id);}catch(error){if(error instanceof PushError)return send(res,error.status,{error:error.message},origin);throw error;}
+    const limited=await rateLimitNudge(room,seatToken);if(limited<0)return send(res,429,{error:'Give them a minute.'},origin);
+    const targetRole=plan.targetColor==='w'?'white':'black';sendToRole(room.code,targetRole,{type:'opponent.nudge',event_id:plan.eventId,room_code:room.code,message:'Your opponent nudged you.'});
+    void pushes.deliver(room,plan,'nudge').catch(()=>log('push.failure',{kind:'nudge',status:'internal'}));
+    return send(res,200,{ok:true,message:'Nudge sent.'},origin);
+  }
+
   if (action === 'move') {
     if (room.status !== 'active') return send(res, 409, { error: 'Game is not active' }, origin);
     if (room.turn !== color) return send(res, 409, { error: 'Not your turn' }, origin);
@@ -245,6 +268,7 @@ async function handleApi(req, res, url) {
     if(terminal(room))room.ended_at=Date.now();
     room.version += 1;
     await saveRoom(room);
+    const pushPlan=movePushPlan(room,color);if(pushPlan)void pushes.deliver(room,pushPlan,'move').catch(()=>log('push.failure',{kind:'move',status:'internal'}));
     room=await settleRoom(room);
     const view = publicRoom(room);
     return send(res, 200, { room: view }, origin);
@@ -297,6 +321,7 @@ const server = http.createServer((req, res) => {
   log('http.request',{method:req.method,path:url.pathname});
   handleApi(req, res, url).catch(err => {
     if(err instanceof IdentityError)return send(res,err.status,{error:err.message},req.headers.origin||'');
+    if(err instanceof PushError)return send(res,err.status,{error:err.message},req.headers.origin||'');
     if (err?.code === 'QK_CONFLICT') return send(res,409,{error:'Room changed; retry from the current position'},req.headers.origin||'');
     log('http.error',{name:err?.name||'Error'});
     send(res, 500, { error: 'Server error' }, req.headers.origin || '');

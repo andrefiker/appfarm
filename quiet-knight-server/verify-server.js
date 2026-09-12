@@ -1,16 +1,17 @@
 // Pre-deploy gate: candidate HTTP/WS server, real Redis, isolated real-Postgres identity schema.
 import assert from 'node:assert/strict';
-import {randomBytes,randomUUID} from 'node:crypto';
+import {createHash,randomBytes,randomUUID} from 'node:crypto';
 import {spawn} from 'node:child_process';
 import {once} from 'node:events';
 import pg from 'pg';
 import {WebSocket} from 'ws';
+import {createClient} from 'redis';
 const schema='qk_verify_'+randomUUID().replaceAll('-','');
 const admin=new pg.Pool({connectionString:process.env.DATABASE_URL,max:1,connectionTimeoutMillis:3000});
 const base='http://127.0.0.1:39173';
 const origin='https://quiet-knight-live-v2xp3y.v2.appdeploy.ai';
-const env={...process.env,NODE_ENV:'test',QK_TEST_SCHEMA:schema,PORT:'39173',QK_VERIFY_BASE:base,QK_EXPECTED_BUILD:'qk-server-2026-09-08-r5-table-presence'};
-let child;const sockets=[];const deadline=setTimeout(()=>{console.error('Candidate server acceptance exceeded deadline');process.exit(1);},110000);
+const env={...process.env,NODE_ENV:'test',QK_TEST_SCHEMA:schema,PORT:'39173',QK_VERIFY_BASE:base,QK_EXPECTED_BUILD:'qk-server-2026-09-12-r7-move-notifications',VAPID_PUBLIC_KEY:'',VAPID_PRIVATE_KEY:''};
+let child,redis;const sockets=[];const deadline=setTimeout(()=>{console.error('Candidate server acceptance exceeded deadline');process.exit(1);},110000);
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
 async function req(path,body,token,status=200){const response=await fetch(base+path,{method:body===undefined?'GET':'POST',headers:{Origin:origin,'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(8000)});assert.equal(response.status,status,path);return response.json();}
 function run(file){return new Promise((resolve,reject)=>{const p=spawn(process.execPath,[file],{env,stdio:['ignore','pipe','pipe']});let out='';p.stdout.on('data',b=>{out+=b;});p.stderr.resume();p.on('exit',code=>{if(code===0){console.log(out.trim());resolve();}else reject(new Error(file+' failed; credential-bearing assertion details suppressed'));});p.on('error',reject);});}
@@ -31,7 +32,19 @@ try{
  const spectator=await socket(code,'invalid');await delay(100);assert.ok(spectator.messages.some(m=>m.type==='seat.role'&&m.role==='spectator'));
  two.ws.close();await delay(150);assert.ok(one.messages.some(m=>m.type==='presence.update'&&m.white&&!m.black));
  const back=await socket(code,joined.seat_token);await delay(120);assert.ok(back.messages.some(m=>m.type==='seat.role'&&m.role==='black'));
+ redis=createClient({url:process.env.REDIS_URL});redis.on('error',()=>{});await redis.connect();
+ const beforeNudge=await req(`/rooms/${code}`);await req(`/rooms/${code}/nudge`,{seat_token:joined.seat_token,request_id:randomUUID()});await delay(60);
+ assert.ok(one.messages.some(m=>m.type==='opponent.nudge'&&m.room_code===code));
+ assert.equal((await req(`/rooms/${code}`)).room.fen,beforeNudge.room.fen);assert.equal((await req(`/rooms/${code}`)).room.version,beforeNudge.room.version);
+ await req(`/rooms/${code}/nudge`,{seat_token:joined.seat_token,request_id:randomUUID()},undefined,429);
+ await req(`/rooms/${code}/nudge`,{seat_token:created.seat_token,request_id:randomUUID()},undefined,409);
+ await req(`/rooms/${code}/nudge`,{seat_token:'spectator',request_id:randomUUID()},undefined,403);
+ const waiting=await req('/rooms',{},a.credential);await req(`/rooms/${waiting.room.code}/nudge`,{seat_token:waiting.seat_token,request_id:randomUUID()},undefined,409);
+ const nudgeKey=`qk:nudge:${code}:1:${createHash('sha256').update(joined.seat_token).digest('hex').slice(0,24)}`;
+ for(let i=0;i<2;i++){await redis.del(nudgeKey+':cooldown');await req(`/rooms/${code}/nudge`,{seat_token:joined.seat_token,request_id:randomUUID()});}
+ await redis.del(nudgeKey+':cooldown');await req(`/rooms/${code}/nudge`,{seat_token:joined.seat_token,request_id:randomUUID()},undefined,429);
  const ended=await req(`/rooms/${code}/resign`,{seat_token:joined.seat_token});assert.equal(ended.room.score_event.white_points,3);assert.equal(ended.room.score_event.black_points,0);
+ await req(`/rooms/${code}/nudge`,{seat_token:created.seat_token,request_id:randomUUID()},undefined,409);
  const event=ended.room.score_event.id;
  for(let i=0;i<3;i++)await req(`/rooms/${code}`);
  assert.equal((await req('/players/me',undefined,a.credential)).player.quiet_points,3);
@@ -48,5 +61,5 @@ try{
  const fourth=await req(`/rooms/${code}/rematch`,{seat_token:created.seat_token,colors:'swap',game_number:3});assert.equal(fourth.room.game_number,4);assert.equal(fourth.room.points_policy.eligible,false);
  const casual=await req(`/rooms/${code}/resign`,{seat_token:created.seat_token});assert.equal(casual.room.score_event.scored,false);assert.equal(casual.room.score_event.white_points,0);assert.equal(casual.room.score_event.black_points,0);
  await delay(100);assert.ok(one.messages.some(m=>m.type==='room.update'&&m.room.score_event?.id===event));assert.ok(back.messages.some(m=>m.type==='room.update'&&m.room.game_number===4));
- console.log(JSON.stringify({event:'server.acceptance',passed:true,room:code,game_number:4,first_game_id:event,pair_cap:'fourth casual',checks:['full verify-live','HTTP Knight ID','seat association','win points','idempotent reads','same and swap rematch','join-key recovery after swap','actual color authorization','socket updates']}));
-}finally{clearTimeout(deadline);for(const s of sockets)s.terminate();if(child&&child.exitCode===null&&child.signalCode===null){const exited=once(child,'exit').catch(()=>{});child.kill('SIGTERM');await Promise.race([exited,delay(2000)]);if(child.exitCode===null&&child.signalCode===null)child.kill('SIGKILL');}await admin.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`);await admin.end();}
+ console.log(JSON.stringify({event:'server.acceptance',passed:true,room:code,game_number:4,first_game_id:event,pair_cap:'fourth casual',checks:['full verify-live','HTTP Knight ID','seat association','win points','idempotent reads','same and swap rematch','join-key recovery after swap','actual color authorization','socket updates','nudge seat and turn authority','nudge room immutability','two-minute cooldown','three-per-thirty-minute cap']}));
+}finally{clearTimeout(deadline);for(const s of sockets)s.terminate();if(redis?.isOpen)await redis.quit();if(child&&child.exitCode===null&&child.signalCode===null){const exited=once(child,'exit').catch(()=>{});child.kill('SIGTERM');await Promise.race([exited,delay(2000)]);if(child.exitCode===null&&child.signalCode===null)child.kill('SIGKILL');}await admin.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`);await admin.end();}

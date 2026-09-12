@@ -1,0 +1,97 @@
+# Tests
+
+## Test 1 - Open an invite, recover the same seat, and exchange moves [sanity]
+Viewport: mobile (375x667)
+Covers: Railway room creation, direct invite join, Redis-backed idempotent join credentials, initial Railway room read, Railway WebSocket live updates, move validation, board geometry
+Description: Checks the actual second-phone workflow instead of just app startup.
+Steps:
+1. Actor A chooses Create live game and copies the invite. On Web Share capable phones, Share invite is primary and Copy invite remains available. Verify the native share receives the direct room URL, cancellation is quiet, and denial/unavailable API falls back to copy.
+2. Actor B in a separate browser context opens that exact invite. Verify joining ends with a board, not a permanent Please wait screen.
+3. Reload B using the same URL. Verify B recovers Black, not a spectator, while A remains White.
+4. Verify both connection labels say Live and A sees Opponent or the friend’s Knight ID, not Seat open. A and B must report Opponent at the table; spectators do not count as present.
+5. Leave A to the menu, choose Resume live game, then reload the home URL and resume again. Verify the same White seat and room; spectator-only rooms must not become a resume target. An expired remembered room clears only that pointer with a graceful message.
+6. A plays e2-e4. B sees it without refresh and plays e7-e5. A sees e5 and plays g1-f3.
+Expected: First viewport follows opponent strip, nearly full-width board, own strip, compact state and contextual action. Detailed material legend, history, exports and preferences are inside Table controls. Compact current-board material points are visible beside captured-piece rows in both normal and Zen modes. Captured-piece rows remain visible below the table actions in BOTH normal and Zen mode. Verify 390x844 and 360x800: no horizontal clipping, equal squares, close/Escape/backdrop behavior and accessible 44px controls. The sheet scrolls to diagnostics without scrolling the underlying board; closing restores normal scrolling. Both display the same room, 1. e4 e5 2. Nf3, Black to move, and correct owned seats. The honey-and-walnut board is square, has exactly 8 equal rows and columns, fills the mobile width without horizontal overflow, and shows complete ivory/ebony piece silhouettes. Captured rows are readable directly on the table in both normal and Zen mode. No coordinate labels return. A failed join returns an actionable error rather than leaving the UI locked indefinitely.
+
+## Test 2 - Recover connection loss without accepting stale moves
+Viewport: mobile (375x667)
+Covers: offline detection, bounded Railway WebSocket reconnect, authoritative socket reconciliation, heartbeat timeout, retired-socket event guard, manual reconnect, spectator and turn guardrails, refresh and seat preservation, Android background return, exhausted-retry recovery, page freeze and BFCache restore
+Description: Confirms recovery and permission boundaries on the real shared room.
+Setup:
+1. A creates a room; B joins as Black; C joins as spectator.
+Steps:
+1. A plays e2-e4 and attempts d2-d4 before B replies. C also attempts a move.
+2. Disconnect A from the network. Verify its position remains visible and its label says Offline, not Live.
+3. B plays e7-e5 while A is disconnected.
+4. Restore A's network. Verify A returns to Live and shows e5 without a page reload.
+5. A plays g1-f3, making Black next to move. Switch A to another app or lock the screen for at least two minutes. While A is away, play b8-c6 with B. A must pause hidden-page retry timers. B sees Opponent stepped away while A is hidden, then Opponent at the table on return. At most one quiet synthesized knock plays per arrival, none on initial hydration or within a 30-second reconnect burst. Return to A: it must open a fresh socket for the SAME room, retain White and show B’s latest move. Live appears only after that new socket snapshot. Repeat with screen off/on, browser back/forward cache restoration and page freeze/resume. Consecutive focus/pageshow/visibility events must not keep replacing the new connection. A late message or close from the old socket must not disturb it or overwrite newer state.
+6. Exhaust A’s bounded connection attempts while foregrounded. Restore the network or background and return to A: a NEW bounded attempt sequence must begin automatically, even after Connection unavailable. Suppress messages on an open socket and confirm heartbeat timeout still triggers recovery.
+7. Open Table controls, expand Preferences & diagnostics and Copy diagnostics. Verify the copied plain text has current frontend/backend builds, room/version, socket status, update age, retries/reason, page/PWA and offline status, with no seat tokens, join keys or credentials. If clipboard is denied the selectable report remains available.
+8. Open A's Table controls, expand Preferences & diagnostics and choose Reconnect now. Verify it rejoins the same room and seat. B still sees the same game.
+Expected: Out-of-turn and spectator moves never apply. Offline play is not submitted to a shared room. Live appears only after the Railway WebSocket delivers an authoritative room update. Repeated failed retries stop with Connection unavailable and a manual reconnect option rather than an infinite loop.
+
+## Test 3 - Offline computer game, storage, and both colors
+Viewport: mobile (375x667)
+Covers: offline shell and asset caching, safe service-worker activation, read-only cache inventory in Copy diagnostics, immutable assets with Vary headers remain retrievable for readiness and offline reload, saved computer progress, resume, local engine, preferences, local reset, mobile interaction, redesigned home controls, settings switches, large sculpted pieces, move and capture sounds, gesture audio activation, volume/mute persistence, responsive piece motion and computer reply, Railway /computer/move and /computer/health, Stockfish strength levels, explicit local fallback, cancellation and stale-reply guard
+Description: Offline capability must be exercised by reloading with the network disabled. Also upgrade a v17 or v18 prepared browser to the current build without clearing local storage: verify the new offline shell is complete, only current and previous shell dependencies are retained; orphaned historical hashes are removed, saved games survive, room query parameters survive, and a missing script yields a visible recovery screen instead of a blank viewport. The service worker must embed the built offline shell directly; offline launch must require no external scripts even if the host injects scripts into served HTML.
+Steps:
+1. Open Table controls, expand Preferences & diagnostics and Copy diagnostics: verify Cache inspection reports registration states, shell cache names and only allowed static asset paths; no stored seat, identity, join or authentication values. Opening diagnostics must not delete or repair caches. Open online, verify the redesigned welcome screen has readable Create live game, Room code, Join, difficulty slider, Play White and Play Black controls without horizontal overflow. Select level 1 and Play White. Play e2-e4 and allow the computer to reply. Verify /computer/move responds with engine Stockfish 18 and skill 0, the reply is legal, and the player bar identifies Stockfish 18. GET /computer/health reports available with ten skills. Neither endpoint is cached. Pieces settle promptly with a short transition; there is no extra cosmetic pause before computer calculation. Selected difficulty, legal moves, history and saved position remain correct; reduced-motion preference disables the slide.
+2. Open Table controls, expand Preferences & diagnostics. Enable Move sounds, set Sound volume to 80%, and press Test sound with device media volume up and site unmuted. Verify Sound ready and a soft, brief two-note notification chime. An incoming capture uses a lower two-note variation; your own capture uses a lower click. Check adds a short higher note. Mute, make a move, verify silence; enable using the visible Sound off button and verify a human move plays a brief click and the computer reply plays the soft two-note notification chime. After background/foreground, the next tap must reactivate audio. Reload and verify sound and volume settings persist. Verify build QK Games remembered and Computer files saved for offline play.
+3. Inspect the current build precache includes the computer-worker asset. Disable network access, close/reopen the page or installed app, and choose Resume saved computer game. Verify the saved position returns and a legal move still gets a computer response from the explicitly labelled Local engine offline, without a Railway request.
+4. Choose New game then Keep playing. Verify no reset. Repeat and confirm New game. Verify a starting position with no lost pieces.
+5. Compare online levels 1–10: map to Stockfish skills 0,2,4,7,9,11,14,16,18,20; verify level 10 can find a simple mate in one. Requests have bounded timeouts; busy responses retry at most twice. Block Railway computer requests: show a truthful local fallback notice and allow a legal local reply. Restore access: the next computer turn uses Stockfish. Verify leaving or resetting during calculation cannot append a stale reply. Offline calculation remains in the existing worker, with a bounded failure fallback. No Elo claim.
+6. In Settings enable Zen Table. Confirm the board, player bars, turn, exit, settings and reconnect stay usable. Table controls opens the same sheet in normal and Zen modes; Close table controls or Escape returns focus to its trigger. Resign remains available during active human play. Change Walnut/Library/Midnight/Rain atmosphere and reload: theme and Zen persist without changing square geometry or piece silhouettes. Select a piece: a small lift and light haptic, legal targets remain visible; reduced motion removes the lift. Wait three minutes: secondary controls dim, board and turn stay crisp. Tap, receive a move, or trigger connection warning: controls wake. Expand The game so far: move number, current material, actual capture count and last SAN match history, with no engine evaluation. Change sound and haptics, leave to the menu, and choose Play Black while offline. Verify Black is at the bottom and the computer moves White.
+Expected: The cached game loads and plays offline after preparation, preferences and local progress persist when storage is available, and no service-worker activation forces a room reload. Shared-room APIs are not cached or presented as current while offline.
+
+## Test 4 - Capture accounting including en passant
+Viewport: desktop (1280x800)
+Covers: move-history replay, en passant, White lost and Black lost, live capture synchronization, numbered notation, reload persistence, material totals and advantage, conventional graphical piece values
+Description: Confirms captured-piece rows still reflect actual captures.
+Setup:
+1. A creates a live game and B joins.
+Steps:
+1. Alternate e2-e4, a7-a6, e4-e5, d7-d5, e5-d6 (en passant).
+2. Verify one black pawn under Black lost and none under White lost on both clients. Material must read White 39 pts, Black 38 pts, White +1. Expand Piece values: pawn 1, knight 3, bishop 3, rook 5, queen 9; king excluded.
+3. Black plays Qd8xd6. Verify one white pawn under White lost, White 38 pts / Black 38 pts and Equal material.
+4. Open Table controls and move history. Copy PGN and Copy FEN: verify headers use Quiet Knight, real player handles or White/Black guest fallback, correct result, and authoritative SAN including exd6 and Qxd6. Clipboard denial leaves selectable text. Refresh A.
+Expected: Mobile material totals and advantage fit a compact line, with graphical Piece values and explanation expandable. History remains collapsed initially. Both sides retain the same position and show one lost pawn of each color, including after reload. History contains exd6 and Qxd6. The desktop board and sidebar align without clipping; all six piece types are visually distinct.
+
+## Test 5 - Promotion, cancellation, resignation, and rematch
+Viewport: desktop (1280x800)
+Covers: promotion dialog, promotion capture accounting, destructive-action confirmation, resign and rematch routes, shared end state, captured/history reset, optional Knight ID, hashed device credential, handle uniqueness, Quiet Points, guest mode, recent games and score idempotency
+Description: Checks rule-sensitive controls without any production test backdoor. Before the room, create distinct Knight IDs on A and B. Confirm case-insensitive handle collisions are rejected, reload preserves the ID, the Home chip stays small, and Settings diagnostics contains only public identity fields. Guest mode must still allow computer and live play. A game that predates ID creation retains its original guest association. After a scored resignation verify winner +3 and loser +0, reload does not award twice, and the fourth same-pair finished game within 24 hours is visibly casual with zero points. Draw is +1 each; computer, guest, and same-ID games give no points. The real-Postgres suite separately races scoring transactions.
+Setup:
+1. A creates a live game and B joins.
+Steps:
+1. Alternate a2-a4, h7-h5, a4-a5, h5-h4, a5-a6, h4-h3, a6xb7, h3xg2.
+2. A plays b7xa8 and chooses Queen; B plays g2xh1 and chooses Queen.
+3. Verify both lost rows contain one pawn and rook. Promotion alone is not counted as a loss. After White promotes: White 46, Black 33, White +13. After Black promotes: 41 each, Equal material. Promoted queens contribute 9 to their current side; capturing a promoted queen subtracts 9 from that side.
+4. A chooses Resign, then Keep playing. Verify the position remains. A chooses Resign again and Confirm resign.
+5. Verify both clients show Black wins. A chooses Rematch then Swap colors. Verify game_number increments, A becomes Black and B becomes White, both boards orient correctly, B can play e4 and A is rejected for playing White. Reload both and recover the swapped roles using existing seat tokens and Black’s original join key. Finish and choose Same colors; roles stay unchanged and game_number increments again. Expand Your games together and confirm wins/losses/draws include casual games.
+6. After the finished game choose Preview postcard and Share game. Verify the card uses the actual final board and existing piece artwork, names, result, move count and date, with no credentials or hosted image. File-capable Web Share uses a local PNG; cancellation is quiet; download/text fallback works. For a guest, Home remembers only a small local list and Last game opens a read-only final board. A Knight ID profile uses recent completed ledger records; final viewing must not change the current live room or seat.
+Expected: Promotions and cancellation work; resignation reaches both clients; rematch preserves the same room and seats, restores 32 pieces with White to move, and clears captured rows and history, and restores material totals to 39 each.
+
+
+
+
+
+Post-game additions to workflow 5 — Covers: viewer-specific loss text, /players/me durable history, scored record, final-position reuse. After checkmate and resignation, only the losing owned viewer sees exactly You tried your best! And failed miserably... below the ordinary result. Check both human colors, winner, draw, spectator, waiting room and computer defeat; all non-losers must not see it. Open Knight ID: summary uses durable player totals, not the recent list. Game history displays all eligible returned games (current API maximum eight), opponent, viewer result/color, moves, awarded points and date. A scored win shows +3, draw +1, loss +0; casual shows No points. Exclude self-play and rows without two distinct Knight IDs. Reload profile and select a row: same durable result/final board; Copy PGN/FEN and postcard remain available. Computer play must not affect the multiplayer record. Guest play still works. Quiet Review is held and has no new live action.
+
+## Test 6 - Opt-in move notifications and Nudge [held candidate]
+Viewport: 390x844, 360px mobile width, and desktop
+Covers: explicit notification permission, installed-iOS guidance, authoritative move trigger, service-worker foreground suppression and click recovery, deterministic push dedupe, server-side Nudge authority and rate limits
+Steps:
+1. Use two isolated installed-PWA/browser profiles. Both own real seats in the same active human room and explicitly enable Move notifications in Table controls. No permission request may appear before pressing Enable.
+2. Background A. B plays a legal committed move. Verify exactly one A notification: Quiet Knight / B moved. Your turn. Tap it and verify the same room, saved seat, and latest position. Repeat in reverse after A moves.
+3. Keep the recipient's relevant room visible and focused. Verify the normal live update is used without a duplicate OS notification.
+4. Try an illegal move, stale expected FEN, reconnect, reload, room.sync, spectator activity, resignation, and a checkmating move. Verify none creates a false Your turn notification. Retry the same committed event and verify worker/server dedupe.
+5. While B is to move, A sees secondary Nudge in Table controls. Send it; B receives A is waiting for your move, or the restrained foreground toast. Immediately repeat and verify Give them a minute. Space accepted attempts and verify a fourth within 30 minutes is rejected.
+6. Verify Nudge is absent or rejected for spectator, own turn, waiting room, computer game, and finished game. Confirm FEN, room version, game number, score, Quiet Points, and ledger result are unchanged.
+7. Exercise swap-color rematch. Notifications and Nudge must follow the people represented by the current seat tokens, not stale color labels.
+8. Re-run the mandatory PWA cache/offline workflow and confirm the computer worker, saved local game, saved room seat, Knight ID, Zen, atmosphere, and bounded current/previous caches survive.
+Expected: Push is best-effort and never blocks or rolls back chess. Notification URLs contain only the room code, never seat/join/Knight credentials.
+
+
+Capture visibility correction: During normal live and computer play, White lost and Black lost rows remain visible below the contextual actions without opening Table controls. After e4 d5 exd5 Qxd5, each row shows a pawn of the lost color. Swapping orientation must not reverse ownership. Zen must also keep both capture rows visible directly on the table. Toggle Zen on and off and reload: the rows remain visible in each state. No duplicate capture rows when controls open. Long capture histories wrap without horizontal overflow.
+
+Material visibility: New game shows White 39 pts and Black 39 pts. After e4 d5 exd5, Black is 38 and White is 39 with White +1. After Qxd5, both are 38. Capture rows retain the lost pieces, while totals count current pieces. Zen and reload preserve visible totals. These points never alter Knight ID Quiet Points.

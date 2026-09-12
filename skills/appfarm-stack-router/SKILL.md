@@ -1,7 +1,8 @@
 ---
 name: appfarm-stack-router
 description: Route Andre's app/game builds to the smallest correct stack. Railway Hobby and Hatchable are paid and authorized; AppDeploy is used on the free tier.
-version: 2026-09-11
+metadata:
+  version: 2026-09-12
 ---
 
 # AppFarm Stack Router
@@ -21,10 +22,41 @@ Ordinary use within the existing Railway Hobby and Hatchable plans is not a cost
 
 Choose the smallest correct stack. Do not combine platforms simply because they are available.
 
+## AppDeploy role
+
+Prefer AppDeploy for:
+
+- frontend-first React/Vite apps;
+- PWAs and client-heavy products;
+- fast public frontend deployment;
+- versioned snapshots, rendered QA, and rollback;
+- existing healthy frontends already owned by AppDeploy.
+
+Do not migrate a healthy AppDeploy frontend merely because another provider exists.
+
+## Railway role
+
+Prefer Railway for:
+
+- authoritative multiplayer and WebSockets;
+- long-running Node services;
+- native binaries such as Stockfish;
+- Postgres when server ownership is required;
+- Redis only when realtime coordination justifies it;
+- explicit backend deployment control.
+
+Use direct Railway tools. Railway Agent, Railway AI Agent, and quota-limited infrastructure agents are not part of the required workflow. If a direct tool cannot expose and verify an exact production change, hold that change instead of improvising.
+
+## Hatchable role
+
+Prefer Hatchable for new apps when it can cleanly own the whole product: frontend, backend, database, auth, storage, email, simple full-stack workflows, deployment, and hosting.
+
+Hatchable may be the standalone stack. Do not automatically add AppDeploy or Railway when Hatchable already owns the requirements correctly.
+
 ## Lane A — local, static, offline-first, or single-player PWA
 
 Default:
-- AppDeploy frontend/PWA on the free tier.
+- AppDeploy frontend/PWA on the free tier, or Hatchable alone when it cleanly owns the product.
 - GitHub source.
 - No Railway, Hatchable backend, Postgres, or Redis unless a concrete requirement appears.
 
@@ -63,6 +95,17 @@ Hatchable may still be used for a separate admin/support surface if that materia
 - Phone portrait is the primary browser-game target unless the project says otherwise.
 - Prefer PWA installation, obvious next actions, large touch targets, low clutter, and resilient reconnect behavior.
 
+## Stack examples
+
+- Simple local browser game: AppDeploy alone, or Hatchable alone when it cleanly owns it.
+- Simple full-stack personal app: Hatchable alone when the requirements fit.
+- Frontend plus authoritative multiplayer: AppDeploy plus Railway.
+- Rules-heavy multiplayer with persistence: AppDeploy plus a Railway authoritative server and Postgres; add Redis only when justified.
+- Native binary or long-running server workload: Railway.
+- Existing successful production app: preserve provider ownership unless migration has a concrete, verified benefit.
+
+Sharing `andrefiker/appfarm` is fine, but every app must have a separate top-level source directory, separate runtime resources, separate databases where appropriate, and separate Redis services or namespaces where appropriate. Never let one app deployment mutate Quiet Knight.
+
 ## Testing and release
 
 Before production:
@@ -71,6 +114,7 @@ Before production:
 - Test deployed behavior, not only local code.
 - For multiplayer, test separate identities, reconnect, invalid actions, and private-state isolation.
 - Record a known-good rollback target.
+- For Quiet Knight, apply the Quiet Knight Release Gate before these generic rules. Never migrate Quiet Knight to Hatchable as cleanup.
 
 After production:
 - Record commit.
@@ -82,6 +126,7 @@ After production:
 ## Execution style
 
 For substantial Work implementation:
+- Use GPT-5.6 Sol with High reasoning, and keep that model/reasoning level throughout the bounded goal when the environment exposes that choice.
 - Prefer one bounded end-to-end goal.
 - Plan, build, test, repair, and advance through internal gates without stopping after every stage.
 - Allow up to 3 credible repair attempts for the same underlying failure.

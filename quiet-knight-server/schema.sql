@@ -25,4 +25,29 @@ CREATE TABLE IF NOT EXISTS qk_games(
 CREATE INDEX IF NOT EXISTS qk_games_pair_time ON qk_games(LEAST(white_player_id,black_player_id),GREATEST(white_player_id,black_player_id),ended_at DESC) WHERE scored;
 CREATE INDEX IF NOT EXISTS qk_games_white_recent ON qk_games(white_player_id,ended_at DESC);
 CREATE INDEX IF NOT EXISTS qk_games_black_recent ON qk_games(black_player_id,ended_at DESC);
+CREATE TABLE IF NOT EXISTS qk_push_subscriptions(
+ id uuid PRIMARY KEY,
+ player_id uuid REFERENCES qk_players(id) ON DELETE SET NULL,
+ room_code text NOT NULL,
+ seat_identity_digest text NOT NULL CHECK(length(seat_identity_digest)=64),
+ endpoint text NOT NULL UNIQUE,
+ p256dh text NOT NULL,
+ auth text NOT NULL,
+ created_at timestamptz NOT NULL DEFAULT now(),
+ updated_at timestamptz NOT NULL DEFAULT now(),
+ last_success_at timestamptz,
+ expires_at timestamptz,
+ disabled_at timestamptz
+);
+CREATE INDEX IF NOT EXISTS qk_push_room_seat ON qk_push_subscriptions(room_code,seat_identity_digest) WHERE disabled_at IS NULL;
+CREATE TABLE IF NOT EXISTS qk_push_events(
+ event_id text PRIMARY KEY,
+ event_kind text NOT NULL CHECK(event_kind IN ('move','nudge')),
+ room_code text NOT NULL,
+ game_number integer NOT NULL CHECK(game_number>0),
+ room_version integer NOT NULL CHECK(room_version>0),
+ created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS qk_push_events_created ON qk_push_events(created_at);
 INSERT INTO qk_migrations(version) VALUES(1) ON CONFLICT DO NOTHING;
+INSERT INTO qk_migrations(version) VALUES(2) ON CONFLICT DO NOTHING;

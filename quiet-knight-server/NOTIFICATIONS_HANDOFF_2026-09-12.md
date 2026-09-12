@@ -14,6 +14,8 @@ The notification runtime is **HELD**. Production was not changed.
 
 Branch: `quiet-knight-notifications-2026-09-12`
 
+Prepared implementation commit: `eaa6470c0aa3779f6ffe085d9c4a3c83653593d3` (the branch may contain a later report-only continuity commit).
+
 Backend changes are based directly on the deployed server commit, not current main, so Quiet Review is not mixed into this candidate. The matching frontend directory is an export of authoritative AppDeploy v41 with the candidate changes applied.
 
 ### Backend

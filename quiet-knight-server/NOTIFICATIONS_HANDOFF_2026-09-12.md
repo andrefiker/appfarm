@@ -63,6 +63,7 @@ Redis service `5fd21ffb-9a38-4f13-884c-bdd41d9eb88b` was not restarted, migrated
 - Real Railway predeploy passed push-unit, identity/Postgres, and server HTTP/WebSocket/Redis suites.
 - Live server acceptance exchanged e4/e5 over authoritative HTTP/WebSocket state, recovered seats, preserved seven-day room TTL, and exercised resign/rematch, concurrency, en passant, promotion, and checkmate.
 - The live server emitted post-commit opponent delivery plans with zero current subscriptions. This proves trigger/target execution but not phone delivery.
+- Continued production observation showed multiple committed moves targeting White and Black correctly, but every delivery still reported `subscriptions:0` and `sent:0`. No phone has completed the notification opt-in yet.
 - AppDeploy v42 reached ready with no reported frontend or network errors and produced mobile and desktop QA screenshots.
 - Production rendered `QK • Your move`, created a real room, reached Live, exposed the notification setting in Table controls, kept the board square with no horizontal overflow, and kept 39/39 material plus both captured-piece rows visible in normal and Zen modes.
 - Production Play Black rendered the Black-at-bottom board, identified Stockfish 18 at level 5, and received an online `POST /computer/move` response with HTTP 200 in 719 ms.

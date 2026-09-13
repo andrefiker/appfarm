@@ -15,7 +15,13 @@ assert.ok(hook.indexOf("Notification.requestPermission()") > hook.indexOf("const
 assert.ok(app.includes("Enable move notifications"));
 assert.ok(app.includes("Quiet Knight can tell you when your opponent moves while the table is"));
 assert.ok(app.includes("Your opponent nudged you."));
+assert.ok(app.includes("Delivered at table."));
+assert.ok(app.includes("Notification sent."));
+assert.ok(app.includes("They haven't enabled notifications."));
+assert.ok(!app.includes('data?.message || "Nudge sent."'));
 assert.ok(app.includes("room.turn !== me"));
+assert.ok(hook.includes("(!ios() || standalone())"));
+assert.ok(hook.includes("Add Quiet Knight to your Home Screen to receive move notifications."));
 assert.ok(ui.includes("{p.canNudge ?"));
 assert.ok(worker.includes("assets/computer-worker-"));
 assert.ok(!worker.includes("__QK_"));

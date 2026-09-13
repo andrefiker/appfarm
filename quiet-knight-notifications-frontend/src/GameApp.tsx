@@ -670,14 +670,22 @@ export default function GameApp() {
         seat_token: seatToken,
         request_id: crypto.randomUUID(),
       });
-      setMessage(data?.message || "Nudge sent.");
+      setMessage(
+        data?.delivered && data?.delivery === "table"
+          ? "Delivered at table."
+          : data?.delivered && data?.delivery === "push"
+            ? "Notification sent."
+            : data?.recipient_live === false && data?.push_available === false
+              ? "They haven't enabled notifications."
+              : "Notification unavailable right now.",
+      );
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response
         ?.status;
       setMessage(
         status === 429
           ? "Give them a minute."
-          : failureText(err, "The nudge could not be sent."),
+          : failureText(err, "The nudge could not be delivered."),
       );
     } finally {
       endRequest();
@@ -814,7 +822,7 @@ export default function GameApp() {
         </p>
         {notifications.iosInstallRequired ? (
           <small>
-            On iPhone and iPad, install Quiet Knight to your Home Screen first.
+            Add Quiet Knight to your Home Screen to receive move notifications.
           </small>
         ) : null}
         {notifications.detail ? (

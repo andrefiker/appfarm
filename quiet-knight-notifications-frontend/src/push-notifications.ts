@@ -38,6 +38,11 @@ function supported() {
     (!ios() || standalone())
   );
 }
+function permission() {
+  return "Notification" in window
+    ? Notification.permission
+    : "unavailable";
+}
 function applicationKey(value: string) {
   const padded =
     value.replace(/-/g, "+").replace(/_/g, "/") +
@@ -71,7 +76,7 @@ export function useMoveNotifications(
       if (!supported())
         throw new Error(
           ios() && !standalone()
-            ? "Install Quiet Knight to your Home Screen to enable notifications on this device."
+            ? "Add Quiet Knight to your Home Screen to receive move notifications."
             : "This browser does not support move notifications.",
         );
       if (Notification.permission !== "granted")
@@ -111,7 +116,7 @@ export function useMoveNotifications(
       if (!supported())
         throw new Error(
           ios() && !standalone()
-            ? "Install Quiet Knight to your Home Screen to enable notifications on this device."
+            ? "Add Quiet Knight to your Home Screen to receive move notifications."
             : "This browser does not support move notifications.",
         );
       let permission = Notification.permission;
@@ -130,12 +135,10 @@ export function useMoveNotifications(
       remember(ENABLED, "true");
       if (!stored(ENABLED_AT)) remember(ENABLED_AT, new Date().toISOString());
       setState("on");
-      setDetail(
-        "Quiet Knight will notify this device when your opponent moves.",
-      );
+      setDetail("Move notifications are enabled for this device.");
     } catch (error) {
       setState(
-        Notification.permission === "denied"
+        permission() === "denied"
           ? "blocked"
           : supported()
             ? "off"
@@ -224,7 +227,7 @@ export function useMoveNotifications(
     diagnostics: {
       supported: supported(),
       permission:
-        "Notification" in window ? Notification.permission : "unavailable",
+        permission(),
       subscribed: state === "on",
       age,
       lastResult,

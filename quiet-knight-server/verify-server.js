@@ -12,7 +12,7 @@ const admin=new pg.Pool({connectionString:process.env.DATABASE_URL,max:1,connect
 const base='http://127.0.0.1:39173';
 const prefix=`qk:verify:${schema}:`;
 const origin='https://quiet-knight-live-v2xp3y.v2.appdeploy.ai';
-const env={...process.env,NODE_ENV:'test',QK_TEST_SCHEMA:schema,PORT:'39173',QK_VERIFY_BASE:base,QK_EXPECTED_BUILD:'qk-server-2026-09-13-r9-authoritative-clock',VAPID_PUBLIC_KEY:'',VAPID_PRIVATE_KEY:''};
+const env={...process.env,NODE_ENV:'test',QK_TEST_SCHEMA:schema,PORT:'39173',QK_VERIFY_BASE:base,QK_EXPECTED_BUILD:'qk-server-2026-09-13-r10-mutual-pause',VAPID_PUBLIC_KEY:'',VAPID_PRIVATE_KEY:''};
 let child,redis,nudgeKey;const sockets=[],testRooms=[];const deadline=setTimeout(()=>{console.error('Candidate server acceptance exceeded deadline');process.exit(1);},110000);
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
 async function req(path,body,token,status=200){const response=await fetch(base+path,{method:body===undefined?'GET':'POST',headers:{Origin:origin,'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(8000)});assert.equal(response.status,status,path);return response.json();}

@@ -6,6 +6,10 @@ const timeKey = color => color === 'w' ? 'white_time_ms' : 'black_time_ms';
 
 export function resetClock(room, now) {
   Object.assign(room, {time_control:{initial_ms:INITIAL_MS,increment_ms:0}, white_time_ms:INITIAL_MS, black_time_ms:INITIAL_MS, clock_running_color:room.status === 'active' ? 'w' : null, turn_started_at:room.status === 'active' ? now : null, flagged_color:null});
+  clearPause(room);
+}
+export function clearPause(room) {
+  room.clock_paused=false; room.pause_request=null; room.pause_id=null; room.pause_started_at=null;
 }
 export function deadline(room) {
   return timed(room) && room.status === 'active' && ['w','b'].includes(room.clock_running_color) && Number.isFinite(room.turn_started_at)
@@ -18,6 +22,7 @@ export function stopClock(room, now) {
   if (!timed(room)) return;
   if (room.clock_running_color) room[timeKey(room.clock_running_color)] = remaining(room,room.clock_running_color,now);
   room.clock_running_color=null; room.turn_started_at=null;
+  clearPause(room);
 }
 export function moveClock(room, now) {
   if (!timed(room)) return;

@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import {Chess} from 'chess.js';
 import {resetClock,deadline} from './clock.js';
+import {verifyPauseServer} from './verify-pause-server.js';
 
 // Called only by the isolated pre-deploy server suite. No fixture endpoint exists.
 export async function verifyClockServer({req,redis,socket,testRooms,restart,prefix}) {
+  await verifyPauseServer({req,redis,socket,testRooms,restart,prefix});
   const delay=ms=>new Promise(r=>setTimeout(r,ms));
   const raw=async code=>JSON.parse(await redis.get(prefix+'room:'+code));
   const saveFixture=async room=>{await redis.set(prefix+'room:'+room.code,JSON.stringify(room),{EX:604800});const due=deadline(room);if(due!==null)await redis.zAdd(prefix+'clock-deadlines',{score:due,value:room.code});};

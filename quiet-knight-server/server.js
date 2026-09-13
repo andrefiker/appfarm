@@ -10,7 +10,7 @@ import {resetClock,deadline,flagClock,moveClock,stopClock,timed} from './clock.j
 
 const PORT = Number(process.env.PORT || 3000);
 const FRONTEND_ORIGIN = new URL(process.env.FRONTEND_ORIGIN || 'https://quiet-knight-live-v2xp3y.v2.appdeploy.ai').origin;
-const BUILD = 'qk-server-2026-09-13-r9-authoritative-clock';
+const BUILD = 'qk-server-2026-09-13-r10-mutual-pause';
 const log = (event, fields = {}) => console.log(JSON.stringify({event,...fields}));
 const identities=new IdentityStore();
 await identities.migrate().then(()=>log('identity.storage',{ready:identities.ready,migration:identities.ready?3:0})).catch(()=>log('identity.unavailable'));
@@ -42,7 +42,7 @@ function publicRoom(room) {
     fen: room.fen,
     turn: room.turn,
     status: room.status,
-    ...(timed(room)?{time_control:room.time_control,white_time_ms:room.white_time_ms,black_time_ms:room.black_time_ms,clock_running_color:room.clock_running_color,turn_started_at:room.turn_started_at,flagged_color:room.flagged_color}:{}),
+    ...(timed(room)?{time_control:room.time_control,white_time_ms:room.white_time_ms,black_time_ms:room.black_time_ms,clock_running_color:room.clock_running_color,turn_started_at:room.turn_started_at,flagged_color:room.flagged_color,clock_paused:room.clock_paused===true,pause_request:room.pause_request||null,pause_id:room.pause_id||null,pause_started_at:room.pause_started_at||null}:{}),
     server_now:Date.now(),
     winner: room.winner,
     version: room.version,
@@ -225,7 +225,7 @@ async function handleApi(req, res, url) {
     const room = await createRoom(player);
     return send(res, 200, { room: publicRoom(room), seat_token: room.white_token, role: 'white' }, origin);
   }
-  const match = url.pathname.match(/^\/rooms\/([A-Z0-9]{6})(?:\/(join|move|resign|rematch|nudge))?$/i);
+  const match = url.pathname.match(/^\/rooms\/([A-Z0-9]{6})(?:\/(join|move|resign|rematch|nudge|pause))?$/i);
   if (!match) return send(res, 404, { error: 'Not found' }, origin);
   const code = normalizeCode(match[1]);
   const action = match[2] || '';
@@ -266,7 +266,37 @@ async function handleApi(req, res, url) {
   const color = seatToken === room.white_token ? 'w' : seatToken && seatToken === room.black_token ? 'b' : null;
   if (!color) return send(res, 403, { error: 'You do not own a seat in this game' }, origin);
 
+  if (action === 'pause') {
+    const now=Date.now();
+    room=await expireRoom(room,now);
+    if(room.status!=='active'||!timed(room)||!room.black_token)return send(res,409,{error:'Only an active timed game can be paused',room:publicRoom(room)},origin);
+    if(input.game_number!==(room.game_number||1)||input.expected_version!==room.version)return send(res,409,{error:'The table changed. Please try again.',room:publicRoom(room)},origin);
+    const choice=input.action;
+    if(choice==='request'){
+      if(room.clock_paused||room.pause_request)return send(res,409,{error:'A pause is already active or requested',room:publicRoom(room)},origin);
+      room.pause_request={id:randomUUID(),by:color,at:now};
+    }else if(choice==='resume'){
+      if(!room.clock_paused||input.pause_id!==room.pause_id)return send(res,409,{error:'That pause is no longer active',room:publicRoom(room)},origin);
+      room.clock_paused=false;room.pause_id=null;room.pause_started_at=null;room.pause_request=null;
+      room.clock_running_color=room.turn;room.turn_started_at=now;
+    }else if(['accept','decline','cancel'].includes(choice)){
+      const pending=room.pause_request;
+      if(!pending||input.request_id!==pending.id)return send(res,409,{error:'That pause request is no longer pending',room:publicRoom(room)},origin);
+      if((choice==='cancel')!==(pending.by===color))return send(res,403,{error:'Only the other player can answer this request'},origin);
+      if(choice==='accept'){
+        stopClock(room,now);
+        room.clock_paused=true;room.pause_id=pending.id;room.pause_started_at=now;
+      }
+      room.pause_request=null;
+    }else return send(res,400,{error:'Choose request, accept, decline, cancel or resume'},origin);
+    room.version++;
+    await saveRoom(room);
+    log('clock.pause',{room:room.code,action:choice,game_number:room.game_number||1});
+    return send(res,200,{room:publicRoom(room)},origin);
+  }
+
   if(action==='nudge'){
+    if(room.clock_paused)return send(res,409,{error:'The game is paused'},origin);
     let plan;try{plan=nudgePlan(room,color,input.request_id);}catch(error){if(error instanceof PushError)return send(res,error.status,{error:error.message},origin);throw error;}
     const limited=await rateLimitNudge(room,seatToken);if(limited<0)return send(res,429,{error:'Give them a minute.'},origin);
     const targetRole=plan.targetColor==='w'?'white':'black';
@@ -279,6 +309,7 @@ async function handleApi(req, res, url) {
 
   if (action === 'move') {
     if (room.status !== 'active') return send(res, 409, { error: 'Game is not active' }, origin);
+    if (room.clock_paused) return send(res,409,{error:'The game is paused. Resume before moving.',room:publicRoom(room)},origin);
     if (room.turn !== color) return send(res, 409, { error: 'Not your turn' }, origin);
     if (input.expected_fen && input.expected_fen !== room.fen) return send(res, 409, { error: 'Board changed; refresh and try again' }, origin);
     const game = gameFromMoves(room.moves);

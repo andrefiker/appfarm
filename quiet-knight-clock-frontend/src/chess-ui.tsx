@@ -402,6 +402,7 @@ function PlayerBar({
 }
 export type GameSurfaceProps = {
   clock?: ClockState;
+  pauseControls?: React.ReactNode;
   viewerLost?: boolean;
   tableSettings?: React.ReactNode;
   onCloseControls?: () => void;
@@ -558,7 +559,7 @@ export function GameSurface(p: GameSurfaceProps) {
             name={playerName(top)}
             detail={detail(top)}
             presence={top !== p.me ? p.presenceLabel : undefined}
-            active={!p.ended && !p.waiting && p.turn === top}
+            active={!p.ended && !p.waiting && !p.clock?.clock_paused && p.turn === top}
             yours={top === p.me}
           />
           <ChessBoard {...p.board} />
@@ -567,7 +568,7 @@ export function GameSurface(p: GameSurfaceProps) {
             clock={p.clock}
             name={playerName(bottom)}
             detail={detail(bottom)}
-            active={!p.ended && !p.waiting && p.turn === bottom}
+            active={!p.ended && !p.waiting && !p.clock?.clock_paused && p.turn === bottom}
             yours={bottom === p.me}
           />
         </section>
@@ -585,6 +586,7 @@ export function GameSurface(p: GameSurfaceProps) {
           {p.ended && !p.spectator && !p.waiting && p.viewerLost ? (
             <p className="loss-message">{LOSS_MESSAGE}</p>
           ) : null}
+          {p.pauseControls}
           <div className="table-toolbar">
             <button
               type="button"
@@ -792,15 +794,15 @@ export function HomeSurface({
       </header>
       <div className="home-layout">
         <section className="home-intro">
-          <p className="intro-caption">A little quiet. A great game.</p>
+          <p className="intro-caption">CHESS, AT YOUR PACE</p>
           <h1>
-            Make time
+            Your next
             <br />
-            for your <em>next move.</em>
+            <em>good move.</em>
           </h1>
           <p className="intro-description">
-            A friend across the world.
-            <br />A moment all to yourself.
+            A friend across the table. Or a game of your own.
+            <br />Settle in. Play beautifully.
           </p>
           <div className="home-art" aria-hidden="true">
             <div className="display-board">
@@ -828,13 +830,13 @@ export function HomeSurface({
           {identity}
           <section className="home-section friend-section">
             <div className="section-heading">
-              <h2>Across the table</h2>
+              <h2>Play a friend</h2>
               <span className="mode-mark">
                 <i />
-                With a friend
+                10 + 0
               </span>
             </div>
-            <p>One room. Two players. Your next good game.</p>
+            <p>Ten minutes each. Share a room and make your move.</p>
             <button
               type="button"
               className="primary wide"
@@ -883,7 +885,7 @@ export function HomeSurface({
           </section>
           <section className="home-section computer-section">
             <div className="section-heading">
-              <h2>A game for yourself</h2>
+              <h2>Play the computer</h2>
               <span className="mode-mark">Computer</span>
             </div>
             <p>Stockfish online. Choose your strength and side.</p>

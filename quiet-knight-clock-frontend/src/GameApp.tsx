@@ -1,5 +1,7 @@
 import { viewerLost } from "./post-game";
 import type {ClockState} from './chess-clock';
+import { ClockControls } from './clock-controls';
+import type { PauseAction } from './clock-controls';
 import { GameExports, GamePostcard, FinalPosition } from "./game-keepsake";
 import { recentTables, rememberTable } from "./game-record";
 import type { GameRecord } from "./game-record";
@@ -65,7 +67,7 @@ type Modal =
   | "resign"
   | "invite"
   | null;
-const BUILD = "QK • Ten quiet minutes";
+const BUILD = "QK • A moment of quiet";
 function roleColor(role: Role | null): Color | null {
   return role === "white" ? "w" : role === "black" ? "b" : null;
 }
@@ -242,6 +244,7 @@ export default function GameApp() {
   );
   const locked =
     busy ||
+    Boolean(room?.clock_paused) ||
     ended ||
     Boolean(
       room && role !== "spectator" && roleGame !== (room.game_number || 1),
@@ -255,6 +258,7 @@ export default function GameApp() {
       me &&
       role !== "spectator" &&
       room.status === "active" &&
+      !room.clock_paused &&
       room.black_joined &&
       room.turn !== me,
   );
@@ -684,6 +688,24 @@ export default function GameApp() {
       endRequest();
     }
   }
+  async function changePause(action: PauseAction) {
+    if (!room || !seatToken || !beginRequest()) return;
+    const generation = requestGeneration.current;
+    try {
+      const { data } = await api.post(`/api/rooms/${room.code}/pause`, {
+        action, seat_token: seatToken, game_number: room.game_number || 1,
+        expected_version: room.version, request_id: room.pause_request?.id,
+        pause_id: room.pause_id,
+      });
+      if (generation === requestGeneration.current) acceptRoom(data.room as RoomState);
+    } catch (error) {
+      setMessage(failureText(error, 'The pause could not be changed. Please try again.'));
+      try {
+        const { data } = await api.get(`/api/rooms/${room.code}`);
+        if (generation === requestGeneration.current) acceptRoom(data.room as RoomState);
+      } catch { /* Realtime recovery remains available. */ }
+    } finally { endRequest(); }
+  }
   async function resign() {
     if (!room || !seatToken || room.status !== "active" || !beginRequest())
       return;
@@ -748,6 +770,8 @@ export default function GameApp() {
   }
   const status = waiting
     ? "Waiting for a friend"
+    : room?.clock_paused
+      ? "Game paused"
     : room?.status === "timeout"
       ? `${room.winner === "w" ? "White" : "Black"} wins on time`
     : room?.status === "resigned"
@@ -1079,6 +1103,7 @@ export default function GameApp() {
       ) : (
         <GameSurface
           clock={room||undefined}
+          pauseControls={room && room.status === 'active' ? <ClockControls state={room} me={me} busy={busy || connection !== 'Live'} onAction={(action) => void changePause(action)} /> : null}
           viewerLost={viewerLost(
             me,
             room

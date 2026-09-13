@@ -1,0 +1,163 @@
+/* Quiet Knight — a calmer, contemporary table. Existing themes and artwork stay local. */
+:root {
+  --surface: #1b272a;
+  --text: #eef0e8;
+  --muted: #a5b2af;
+  --line: #344145;
+  --accent: #e5c997;
+  background: #111a1d;
+}
+body { background: #111a1d; }
+.qk { font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; }
+.qk button { transition: color 160ms, background 160ms, border-color 160ms, box-shadow 160ms, transform 160ms; }
+.qk button:active:not(:disabled) { transform: translateY(1px); }
+.home-shell { max-width: 1180px; padding: 28px 32px 0; }
+.home-header { padding-bottom: 23px; border-color: var(--line); }
+.wordmark { font-family: inherit; font-size: 29px; font-weight: 550; letter-spacing: -1.4px; }
+.brand-seal { width: 42px; height: 42px; padding: 4px; border-radius: 12px; background: #233135; border-color: #e5c99730; }
+.brand-stop { color: var(--accent); }
+.icon-button { background: #ffffff04; border: 1px solid #ffffff12; border-radius: 13px; }
+.home-layout { gap: 76px; padding: 54px 0 42px; align-items: center; }
+.home-intro { align-self: stretch; }
+.intro-caption { font-size: 10px; letter-spacing: .22em; color: var(--accent); margin-bottom: 18px !important; }
+.home-intro h1 { font: 500 clamp(44px, 5.4vw, 68px)/1.02 ui-sans-serif, system-ui, sans-serif; letter-spacing: -.065em; max-width: 470px; }
+.home-intro h1 em { font-family: Georgia, serif; font-weight: 400; letter-spacing: -.06em; color: var(--accent); }
+.intro-description { font-size: 14px; line-height: 1.8; margin-top: 23px !important; max-width: 350px; }
+.home-art { height: 290px; margin-top: 18px; }
+.display-board { width: 330px; height: 178px; bottom: 24px; right: 8px; border: 2px solid #ae977750; border-radius: 4px; transform: perspective(700px) rotateX(8deg) rotateZ(-5deg); box-shadow: 0 8px 0 #0b1013, 0 35px 40px #0005; }
+.hero-knight { width: 252px; height: 252px; right: 115px; bottom: 18px; }
+.hero-king { width: 224px; height: 224px; right: 2px; bottom: 58px; }
+.art-signature { font-family: inherit; font-style: normal; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #8b9995; }
+.home-play { align-self: center; }
+.home-section { padding: 24px 0 28px; }
+.friend-section { border-top: 0; padding-top: 0; }
+.home-section h2 { font: 550 25px/1.25 ui-sans-serif, system-ui, sans-serif; letter-spacing: -.7px; }
+.home-section > p { font-size: 13px; margin: 9px 0 21px; }
+.mode-mark { color: var(--accent); font-size: 10px; letter-spacing: .08em; }
+.primary, .secondary, .color-button, .danger-button { border-radius: 12px; min-height: 48px; font-size: 13px; }
+.primary { background: var(--accent); border-color: var(--accent); color: #182126; box-shadow: 0 5px 18px #0002; }
+.secondary { background: #ffffff04; border-color: #ffffff16; color: var(--text); }
+.friend-section .primary { min-height: 54px; }
+.join-label { color: var(--muted); margin-top: 18px; }
+.join-row input { min-height: 48px; border-radius: 12px; background: #080f132b; border-color: var(--line); }
+.join-row input:focus { border-color: var(--accent); }
+.computer-section { border-color: var(--line); }
+.color-choice { gap: 12px; }
+.color-button { min-height: 76px; gap: 5px; }
+.choice-w { background: #e8d7b7; color: #202629; border-color: #e8d7b7; }
+.choice-b { background: #253439; color: var(--text); border-color: #485858; }
+.choice-label { font-size: 13px; }
+.choice-label small { font-size: 9px; }
+.level-heading { margin-top: 18px; }
+.level-range::-webkit-slider-runnable-track { background: #3b4a4a; height: 4px; }
+.level-range::-webkit-slider-thumb { background: #182428; border-color: var(--accent); width: 18px; height: 18px; }
+.knight-chip { border-color: #ffffff1c; border-radius: 10px; color: var(--muted); margin-bottom: 21px; }
+.home-footer { border-color: var(--line); font-size: 11px; }
+.network-build { color: #91a19d; }
+
+/* The board owns the page. Player identity and clock share a single strip. */
+.mobile-table { padding-top: max(8px, env(safe-area-inset-top)); }
+.mobile-table .game-header { min-height: 54px; margin-bottom: 4px; }
+.mobile-table .game-title h1 { font: 550 19px ui-sans-serif, system-ui, sans-serif; letter-spacing: -.8px; color: var(--text); }
+.mobile-table .game-title { gap: 10px; }
+.mobile-table .game-title button.connection { font-size: 11px; }
+.connection-live { color: #b3c9b9; }
+.mobile-table .player-bar { height: 59px; padding: 0 12px; border-radius: 12px; transition: background 250ms; }
+.player-bar:has(.clock-active) { background: #ffffff04; }
+.player-handle { font-size: 14px; font-weight: 550; }
+.player-meta { font-size: 11px; color: var(--muted); }
+.mobile-table .board-frame { padding: 5px; border-radius: 9px; border: 1px solid #d6bc8455; background: #27302f; box-shadow: 0 3px 0 #080e10, 0 18px 44px #0005, inset 0 1px 0 #ffffff14; margin-top: 5px; margin-bottom: 5px; }
+.board { outline-color: #0008; box-shadow: 0 0 0 1px #c6a36c50; }
+.art-moving { animation-duration: 140ms; animation-timing-function: cubic-bezier(.16,.8,.3,1); }
+.square-selected::after { border-color: #f8e3ad; background: #fff2bc2e; }
+.square-last::after { background: #dac57930; box-shadow: inset 0 0 0 1px #b59e5044; }
+.target-dot { width: 18%; height: 18%; left: 41%; top: 41%; background: #243932b0; box-shadow: 0 0 0 4px #d9dda51a; }
+.chess-clock { font: 500 25px/1.2 ui-monospace, SFMono-Regular, Consolas, monospace; font-variant-numeric: tabular-nums; letter-spacing: -.08em; min-width: 5.1ch; padding: 8px 11px; border: 1px solid #ffffff10; border-radius: 10px; color: #aab7b3; background: #080f1326; transition: color 200ms, background 200ms, border-color 200ms, box-shadow 200ms; }
+.chess-clock.clock-active { color: #f2ddb6; background: #e5c99715; border-color: #e5c99760; box-shadow: 0 0 20px #e5c99708; }
+.chess-clock.clock-low { color: #ffd09d; border-color: #cd956766; }
+.chess-clock.clock-paused { border-style: dashed; color: #b9c5c1; background: #ffffff05; }
+.mobile-table .game-status { min-height: 36px; padding-top: 7px; }
+.mobile-table .game-status h2 { font-size: 14px; letter-spacing: .01em; }
+.table-toolbar { gap: 6px; border-bottom: 1px solid #ffffff09; padding-bottom: 4px; }
+.mobile-table .table-controls-toggle, .table-sound, .table-resign, .table-new { font-size: 12px; border-radius: 10px; }
+.table-controls-toggle:hover, .table-sound:hover, .table-resign:hover, .table-new:hover { background: #ffffff07; }
+.mobile-table .live-material { padding: 11px 0 8px; font-size: 12px; gap: 4px 13px; }
+.mobile-table .live-captures .loss-label { font-size: 12px; }
+.mobile-table .live-captures .loss-empty { font-size: 11px; }
+.mobile-table .live-captures .loss-row { min-height: 32px; }
+.mobile-table .live-captures .captured-panel { border-top-color: #ffffff0e; }
+.mobile-table .live-captures .captured-piece { width: 26px; height: 30px; flex-basis: 26px; }
+.tray-b:has(.captured-piece) { background: #84948c; border-radius: 6px; }
+
+.pause-idle { display: flex; justify-content: center; }
+.pause-button { appearance: none; border: 1px solid #ffffff18; border-radius: 9px; background: transparent; color: var(--muted); min-height: 44px; padding: 8px 13px; font-size: 12px; font-weight: 500; white-space: nowrap; }
+.pause-idle .pause-button { border: 0; min-height: 36px; padding: 5px 12px; }
+.pause-idle .pause-button::before { content: 'Ⅱ'; font-size: 13px; padding-right: 7px; color: var(--accent); }
+.pause-button:hover:not(:disabled) { color: var(--text); background: #ffffff08; }
+.pause-primary { border-color: #e5c99770; background: #e5c99718; color: #efdab3; }
+.pause-panel { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding: 12px 0; border-top: 1px solid #e5c99724; border-bottom: 1px solid #e5c99724; margin: 6px 0 8px; }
+.pause-panel strong { display: block; color: var(--text); font-size: 13px; font-weight: 600; }
+.pause-panel span { display: block; color: var(--muted); font-size: 11px; line-height: 1.6; margin-top: 3px; }
+.pause-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.pause-panel.is-paused strong { color: var(--accent); }
+
+.qk-dialog { background: var(--surface); border: 1px solid #a6b3ac30; border-radius: 18px; box-shadow: 0 32px 110px #0009; }
+.qk-dialog::backdrop { background: #070e11b8; backdrop-filter: blur(9px); }
+.dialog-head h2, .table-sheet .dialog-head h2 { font: 550 23px/1.2 ui-sans-serif, system-ui, sans-serif; letter-spacing: -.7px; }
+.table-sheet .dialog-head { padding-top: 20px; padding-bottom: 16px; border-bottom-color: #ffffff10; }
+.table-sheet { border-radius: 20px 20px 0 0; }
+.table-sheet .dialog-body { padding-top: 18px; }
+.preference-row { border-bottom-color: #ffffff10; }
+.notification-setting { border-color: #ffffff10; }
+.promotion-options button { border-radius: 12px; padding-bottom: 12px; }
+.qk-toast { border-radius: 13px; background: #e8d6b3; color: #182428; border-color: #f6e6c9; box-shadow: 0 12px 38px #0005; font-size: 13px; }
+
+/* Finite entrance and panel motion; no continuous animation over the board. */
+@keyframes quiet-arrive { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes quiet-sheet { from { opacity: 0; translate: 0 16px; } to { opacity: 1; translate: 0 0; } }
+.home-intro { animation: quiet-arrive 480ms both; }
+.home-play { animation: quiet-arrive 520ms 70ms both; }
+.home-art { animation: quiet-arrive 650ms 100ms both; }
+.qk-dialog[open] { animation: quiet-sheet 220ms cubic-bezier(.16,.8,.3,1) both; }
+.pause-panel { animation: quiet-arrive 180ms both; }
+@media (hover: hover) {
+  .hero-piece { transition: transform 500ms cubic-bezier(.2,.7,.3,1); }
+  .home-art:hover .hero-knight { transform: translateY(-7px) rotate(-2deg); }
+  .home-art:hover .hero-king { transform: translateY(-3px); }
+  .primary:hover:not(:disabled) { box-shadow: 0 7px 22px #0004, 0 0 0 3px #e5c99712; }
+}
+@media (min-width: 900px) {
+  .mobile-table .game-layout, .mobile-table .game-header { max-width: min(680px, calc(100dvh - 300px)); }
+  .mobile-table.zen-table .game-layout, .mobile-table.zen-table .game-header { max-width: min(740px, calc(100dvh - 270px)); }
+  .table-sheet { border-radius: 18px; }
+}
+@media (max-width: 759px) {
+  .home-shell { padding: 21px 24px 0; }
+  .wordmark { font-size: 26px; }
+  .home-header { padding-bottom: 18px; }
+  .home-layout { gap: 12px; padding: 0; }
+  .home-intro { grid-template-columns: minmax(0,1fr) 125px; column-gap: 26px; padding-top: 25px; }
+  .intro-caption { font-size: 9px; margin-bottom: 14px !important; }
+  .home-intro h1 { font-size: clamp(42px, 11vw, 56px); line-height: 1.04; }
+  .intro-description { font-size: 12px; line-height: 1.7; margin: 14px 0 8px !important; }
+  .home-art { width: 125px; height: 136px; margin: 7px 0 5px; }
+  .display-board { width: 130px; height: 74px; bottom: 19px; right: 0; }
+  .hero-knight { width: 115px; height: 115px; right: 32px; bottom: 14px; }
+  .hero-king { width: 101px; height: 101px; right: -4px; bottom: 34px; }
+  .home-section h2 { font-size: 23px; }
+  .friend-section { padding-top: 4px; }
+  .knight-chip { margin-bottom: 20px; }
+}
+@media (max-width: 380px) {
+  .home-shell { padding-left: 18px; padding-right: 18px; }
+  .mobile-table .player-bar { padding: 0 9px; }
+  .chess-clock { font-size: 23px; padding: 8px 9px; }
+  .player-signals { gap: 5px; }
+  .mobile-table .game-title h1 { font-size: 17px; }
+  .table-toolbar { gap: 1px; }
+  .mobile-table .table-controls-toggle { font-size: 11px; padding: 8px 5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .hero-piece { transform: none !important; }
+}

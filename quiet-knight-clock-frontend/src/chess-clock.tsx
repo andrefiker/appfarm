@@ -8,6 +8,9 @@ export type ClockState = {
   clock_running_color?: Color | null;
   turn_started_at?: number | null;
   server_now?: number;
+  clock_paused?: boolean;
+  pause_request?: { id: string; by: Color; at: number } | null;
+  pause_id?: string | null;
 };
 export function clockMilliseconds(
   state: ClockState,
@@ -68,7 +71,7 @@ export function ChessClock({
       role="timer"
       aria-live="off"
       aria-label={`${color === 'w' ? 'White' : 'Black'} clock ${text}`}
-      className={`chess-clock${running ? ' clock-active' : ''}${running && ms < 60000 ? ' clock-low' : ''}`}
+      className={`chess-clock${running ? ' clock-active' : ''}${state.clock_paused ? ' clock-paused' : ''}${running && ms < 60000 ? ' clock-low' : ''}`}
       title="10 minutes · no increment"
     >
       {text}

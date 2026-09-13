@@ -1,79 +1,103 @@
-# Quiet Knight notifications and Nudge handoff — 2026-09-12
+# Quiet Knight notifications and Nudge release handoff — 2026-09-13
 
 ## Release state
 
-The notification runtime is **HELD**. Production was not changed.
+Move notifications and Nudge are live in the existing Quiet Knight architecture.
 
-- AppDeploy: v41 / `1788969015839`; rollback v40 / `1788967944986`.
-- Railway server: deployment `743ce873-7afa-41b1-8bee-6c8f031e7c2e`, commit `02e9c1f866ac9eefdb44f09d147067b42530280d`, build `qk-server-2026-09-08-r5-table-presence`.
-- Railway staged patch: `3b485ae1-3c4f-4677-a2d0-dacdef826ffc`, three changes, source commit `b649bd427872dd3d652953403e2514af94b51f5c`.
-- That staged source is the held Quiet Review change. Direct Railway tools expose no existing-service source selector and accept-deploy would apply it wholesale. Do not accept it for notifications.
-- Postgres and Redis were not changed.
+- AppDeploy: v42 / `1789257319961`, label `QK • Your move`.
+- URL: https://quiet-knight-live-v2xp3y.v2.appdeploy.ai/
+- Immediate frontend rollback: v41 / `1788969015839`.
+- Railway server deployment: `1bbcadaa-0527-4c03-842e-1a40a7d15765`.
+- Railway source commit: `769bd9556306dc863691210f5bbb35c1a73feacd`.
+- Backend build: `qk-server-2026-09-12-r7-move-notifications`.
+- Health check: successful on port 3000.
+- The old mixed 21-change staged patch no longer remains. Before release it had narrowed to three source-only changes. The direct deploy resolved to the safe current main commit above; the held Quiet Review server was not shipped.
 
-## Candidate source
+## Runtime architecture
 
-Branch: `quiet-knight-notifications-2026-09-12`
+Quiet Knight remains AppDeploy frontend + Railway authoritative Node/WebSocket server + Railway Postgres + Railway Redis + native Stockfish. Hatchable was not added because a sidecar would duplicate coordination without simplifying authority.
 
-Prepared implementation commit: `eaa6470c0aa3779f6ffe085d9c4a3c83653593d3` (the branch may contain a later report-only continuity commit).
+### Postgres
 
-Backend changes are based directly on the deployed server commit, not current main, so Quiet Review is not mixed into this candidate. The matching frontend directory is an export of authoritative AppDeploy v41 with the candidate changes applied.
+Additive migration 2 is live. It adds:
 
-### Backend
+- `qk_push_subscriptions`: device-specific, endpoint-deduplicated Web Push subscriptions associated with a Knight ID when available and with a server-side seat digest for room guests.
+- `qk_push_events`: deterministic delivery-event deduplication and bookkeeping.
 
-- `push-notifications.js`: seat-bound, device-specific Web Push subscriptions; VAPID stays server-side; deterministic event IDs; 404/410 cleanup; safe logs.
-- `schema.sql`: additive migration 2 with `qk_push_subscriptions` and `qk_push_events`.
-- `server.js`: authoritative post-commit move trigger and server-authorized Nudge.
-- Nudge rate limit: two-minute cooldown and maximum three accepted nudges per rolling 30-minute window, keyed by room, game, and sender seat digest.
-- Push delivery is best-effort and detached from move correctness.
+No existing player, credential, score, game, or ledger table was rebuilt or rewritten. The production volume remains mounted at `/var/lib/postgresql/data`.
 
-Required Railway variables before release:
+### Redis
 
-- `VAPID_PUBLIC_KEY`
-- `VAPID_PRIVATE_KEY`
-- `VAPID_SUBJECT` (a valid `mailto:` or HTTPS subject)
+Redis service `5fd21ffb-9a38-4f13-884c-bdd41d9eb88b` was not restarted, migrated, replaced, or given a volume. Nudge rate-limit keys are transient and namespaced by room, game, and sender seat digest. Active-room durability remains limited if the Redis service is replaced.
 
-Do not put any VAPID private key in AppDeploy, GitHub source, logs, diagnostics, or chat.
+## Move notifications
 
-### Frontend
+- Permission is requested only after the player presses **Enable move notifications** in Table controls.
+- Unsupported and permission-blocked states are explicit; iPhone/iPad guidance requires an installed Home Screen PWA where applicable.
+- VAPID public/private keys are configured only on the Railway server. Secret values do not appear in frontend source, GitHub, diagnostics, or this handoff.
+- A subscription is device-specific and bound by the server to the submitted real seat token through a digest; raw seat tokens are not stored in the push table.
+- A legal move is validated and committed before the server plans delivery. Push failure cannot reject or roll back the move or its WebSocket broadcast.
+- Delivery targets the other person, not the mover or a spectator. Swap-color rematches follow current authenticated seat ownership rather than stale color labels.
+- The event identity is deterministic from room, game number, committed room version, and move event. Server and worker dedupe prevent repeat display.
+- Terminal moves, rejected/stale moves, reload, reconnect, room sync, resignation, and repeated room updates do not create a false “Your turn” notification.
+- A visible relevant-room client receives its normal live board update and suppresses the OS notification. Background/closed clients can receive Web Push.
+- Notification clicks open only `?room=ROOMCODE`; saved local storage recovers the seat. No seat token, join key, Knight credential, FEN, or score is placed in the URL or body.
+- Permanent Web Push 404/410 failures disable the stale endpoint safely.
 
-Candidate directory: `quiet-knight-notifications-frontend/`
+## Nudge
 
-- Permission is requested only after the explicit Enable action.
-- iPhone/iPad truthfully requires installed Home Screen PWA support.
-- Existing service worker architecture is extended, not replaced.
-- Foreground relevant-room clients suppress the OS notification.
-- Notification click opens only `?room=CODE`; seat recovery remains local.
-- Push event IDs are deduplicated in a bounded worker cache.
-- Nudge is secondary inside Table controls and is visible only while the opponent is to move.
-- Foreground Nudge uses the existing restrained toast.
+- Nudge is a secondary action inside Table controls.
+- It is available only to a seated human player in an active joined room while the opponent is to move.
+- The server independently verifies the room, real seat ownership, active status, joined opponent, other-player turn, intended target, and request ID.
+- The server enforces a minimum two-minute interval per sender/game and at most three accepted nudges in a rolling 30-minute window. Limited attempts return “Give them a minute.”
+- Foreground delivery uses “Your opponent nudged you.”; background delivery uses Web Push.
+- Nudge changes no FEN, room version, game number, score, Quiet Points, result, clock, or game ledger.
 
-## Verification completed
+## Verification
 
-- Backend syntax checks.
-- `node verify-push.js`: authoritative target, terminal suppression, handle/fallback copy, seat ownership, HTTPS subscription, deterministic dedupe, delivery bookkeeping, permanent-subscription cleanup.
-- Frontend TypeScript and production Vite build.
-- `node tests/verify-notifications.mjs`: explicit permission action, foreground suppression, background display, dedupe, safe room click, API cache bypass, computer-worker precache.
-- Existing production AppDeploy and Railway services inspected read-only.
-- Repository AppFarm stack-router skill validated with the native skill validator.
+### Actually verified
 
-Not completed:
+- Railway deployed the exact commit and passed `/health`.
+- Runtime reported identity migration 2 ready and push storage `available:true`, `configured:true`.
+- Real Railway predeploy passed push-unit, identity/Postgres, and server HTTP/WebSocket/Redis suites.
+- Live server acceptance exchanged e4/e5 over authoritative HTTP/WebSocket state, recovered seats, preserved seven-day room TTL, and exercised resign/rematch, concurrency, en passant, promotion, and checkmate.
+- The live server emitted post-commit opponent delivery plans with zero current subscriptions. This proves trigger/target execution but not phone delivery.
+- AppDeploy v42 reached ready with no reported frontend or network errors and produced mobile and desktop QA screenshots.
+- Production rendered `QK • Your move`, created a real room, reached Live, exposed the notification setting in Table controls, kept the board square with no horizontal overflow, and kept 39/39 material plus both captured-piece rows visible in normal and Zen modes.
 
-- Real Postgres migration execution.
-- Candidate server HTTP/WS/Redis predeploy suite, because no isolated non-production Postgres/Redis/native-Stockfish environment was available here.
-- Rendered candidate QA; the controlled cloud browser cannot reach the local preview, and deploying enabled controls without the backend is prohibited.
-- Real phone push delivery.
+### Deterministic / source tested
 
-## Safe release sequence after Railway is unblocked
+- Frontend TypeScript, Vite production build, and notification worker acceptance passed.
+- Worker build `b699387e7d2ac05a` precaches all six expected assets including the computer worker and keeps Railway APIs out of caches.
+- Foreground suppression, background display, safe click URL, bounded event dedupe, explicit permission action, and public-key subscription flow are covered.
+- Backend tests cover authoritative target selection, terminal suppression, seat ownership, HTTPS endpoint validation, deterministic event dedupe, delivery bookkeeping, 404/410 cleanup, Nudge authorization, room immutability, two-minute cooldown, and three-per-30-minute cap.
+- The identity suite confirmed handle uniqueness, credential recovery/rejection, guest behavior, W/D/L, score idempotency, rolling pair cap, history, H2H, additive push tables, and the persistent Postgres data directory.
 
-1. Remove or independently resolve staged patch `3b485ae1-3c4f-4677-a2d0-dacdef826ffc` without applying its held Quiet Review commit accidentally.
-2. Configure the existing server service to this candidate commit using a direct source-selecting operation that shows the exact commit before deployment.
-3. Add VAPID variables through secure secret entry or direct Railway variable tooling; never expose values.
-4. Run `node predeploy.js` against Railway's real dependencies. Confirm migration 2 and no scoring/room mutation.
-5. Deploy server; verify `/health`, `/push/public-key`, two isolated clients, e4/e5 event count, stale/illegal suppression, Nudge authority/rate limit, and rollback.
-6. Only after backend evidence is green, deploy the candidate AppDeploy files as the next normal version.
-7. Run 390×844, 360px, and desktop QA for White/Black orientation, Zen, square board, no overflow, Table controls, reduced motion, offline readiness, and safe notification click.
-8. Complete two-phone installed-PWA notification acceptance before claiming physical push delivery.
+### Physically verified
 
-## Non-negotiable preservation
+- Andre previously verified the v37-v41 multiplayer baseline between two real phones. No new physical move-push delivery is claimed by this release.
 
-Do not change scoring, pair cap, Knight ID data, Stockfish, local fallback, room authority, seat tokens, swap-rematch identity, material/capture rows, Zen, existing offline cache behavior, Postgres volume, or Redis durability in this release.
+### Not physically verified
+
+- A real receiving phone displaying a move notification.
+- Notification tap returning to the exact room and seat on an installed iOS or Android PWA.
+- Two real phones receiving one move notification in each direction.
+- Background Nudge delivery and rate-limit copy on a real receiving phone.
+- Exact 390×844 and 360px device runs. AppDeploy mobile QA and desktop production rendering passed; these precise device widths remain acceptance specifications.
+
+## AppFarm build skill
+
+The repository skill `skills/appfarm-stack-router/SKILL.md` is updated on main at commit `d172656b99db0640cc6f3847201e69e86ea839b9` and validated with the native skill validator. Native personal-skill installation was unavailable, so this is an explicit repository fallback, not a claimed installed personal skill.
+
+Its core rule is **choose the smallest correct stack**: AppDeploy for frontend-first/PWA ownership, direct Railway for authoritative multiplayer/WebSockets/native binaries/Postgres/justified Redis, and Hatchable alone for new full-stack apps it can cleanly own. Existing successful provider ownership and per-app runtime/data isolation are preserved; Quiet Knight Release Gate overrides generic AppFarm guidance for this app.
+
+## Andre's physical acceptance
+
+1. Phone A and Phone B open the same room and each explicitly enables Move notifications.
+2. Background A. B makes a legal move. A should receive one notification: **Quiet Knight — B moved. Your turn.**
+3. Tap the notification on A. It should open the same room, recover the same seat, and show the latest position.
+4. A moves, then background B. B should receive one notification.
+5. While B is to move, A uses **Nudge**. B should receive **A is waiting for your move.**
+6. A repeats Nudge immediately. A should see **Give them a minute.**
+
+Do not mark physical delivery complete until a real receiving phone passes these steps.

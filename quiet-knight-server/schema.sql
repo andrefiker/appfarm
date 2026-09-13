@@ -51,3 +51,10 @@ CREATE TABLE IF NOT EXISTS qk_push_events(
 CREATE INDEX IF NOT EXISTS qk_push_events_created ON qk_push_events(created_at);
 INSERT INTO qk_migrations(version) VALUES(1) ON CONFLICT DO NOTHING;
 INSERT INTO qk_migrations(version) VALUES(2) ON CONFLICT DO NOTHING;
+DO $$ BEGIN
+ IF NOT EXISTS (SELECT 1 FROM qk_migrations WHERE version=3) THEN
+  ALTER TABLE qk_games DROP CONSTRAINT qk_games_ended_reason_check;
+  ALTER TABLE qk_games ADD CONSTRAINT qk_games_ended_reason_check CHECK(ended_reason IN ('checkmate','draw','resigned','timeout','timeout_draw'));
+  INSERT INTO qk_migrations(version) VALUES(3);
+ END IF;
+END $$;

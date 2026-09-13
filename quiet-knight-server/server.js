@@ -6,26 +6,29 @@ import { WebSocketServer } from 'ws';
 import { StockfishService, EngineError } from './stockfish.js';
 import {IdentityStore,IdentityError,publicPlayer,terminal} from './identity.js';
 import {PushService,PushError,movePushPlan,nudgePlan} from './push-notifications.js';
+import {resetClock,deadline,flagClock,moveClock,stopClock,timed} from './clock.js';
 
 const PORT = Number(process.env.PORT || 3000);
 const FRONTEND_ORIGIN = new URL(process.env.FRONTEND_ORIGIN || 'https://quiet-knight-live-v2xp3y.v2.appdeploy.ai').origin;
-const BUILD = 'qk-server-2026-09-13-r8-capability-delivery';
+const BUILD = 'qk-server-2026-09-13-r9-authoritative-clock';
 const log = (event, fields = {}) => console.log(JSON.stringify({event,...fields}));
 const identities=new IdentityStore();
-await identities.migrate().then(()=>log('identity.storage',{ready:identities.ready,migration:identities.ready?2:0})).catch(()=>log('identity.unavailable'));
+await identities.migrate().then(()=>log('identity.storage',{ready:identities.ready,migration:identities.ready?3:0})).catch(()=>log('identity.unavailable'));
 const pushes=new PushService({pool:identities.ready?identities.pool:null,logger:log});
 log('push.storage',pushes.status());
 const computer = new StockfishService();
 await computer.probe().then(() => log('computer.ready', computer.status())).catch(() => log('computer.unavailable'));
 const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 const ROOM_TTL = 60 * 60 * 24 * 7;
+const keyPrefix=process.env.NODE_ENV==='test'&&/^qk_verify_[a-f0-9]+$/.test(process.env.QK_TEST_SCHEMA||'')?`qk:verify:${process.env.QK_TEST_SCHEMA}:`:'qk:';
+const clockIndex=keyPrefix+'clock-deadlines',updatesChannel=keyPrefix+'updates';
 const redis = createClient({ url: REDIS_URL });
 redis.on('error', () => console.error('[redis] connection error'));
 await redis.connect();
 
 const sockets = new Map();
 const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-const roomKey = code => `qk:room:${code}`;
+const roomKey = code => `${keyPrefix}room:${code}`;
 const normalizeCode = value => String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
 const makeCode = () => Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 const hash = value => createHash('sha256').update(value).digest('hex');
@@ -39,6 +42,8 @@ function publicRoom(room) {
     fen: room.fen,
     turn: room.turn,
     status: room.status,
+    ...(timed(room)?{time_control:room.time_control,white_time_ms:room.white_time_ms,black_time_ms:room.black_time_ms,clock_running_color:room.clock_running_color,turn_started_at:room.turn_started_at,flagged_color:room.flagged_color}:{}),
+    server_now:Date.now(),
     winner: room.winner,
     version: room.version,
     created_at: room.created_at,
@@ -54,15 +59,27 @@ function publicRoom(room) {
   };
 }
 
-async function loadRoom(code) {
+async function rawRoom(code) {
   const normalized = normalizeCode(code);
   if (normalized.length !== 6) return null;
   const raw = await redis.get(roomKey(normalized));
   return raw ? JSON.parse(raw) : null;
 }
 
+async function expireRoom(room, now=Date.now()) {
+  for(let attempt=0;room&&attempt<3;attempt++) {
+    const next=structuredClone(room);
+    if(!flagClock(next,now))return room;
+    next.version++;
+    try {await saveRoom(next);log('clock.flag',{room:next.code,game_number:next.game_number,winner:next.winner});return await settleRoom(next);}
+    catch(error) {if(error.code!=='QK_CONFLICT')throw error;room=await rawRoom(room.code);}
+  }
+  return room;
+}
+async function loadRoom(code) {return await expireRoom(await rawRoom(code));}
+
 async function saveRoom(room) {
-  const saved = await redis.eval(`local current = redis.call('GET',KEYS[1]); if ARGV[1] == '0' then if current then return 0 end else if not current or cjson.decode(current).version ~= tonumber(ARGV[1]) then return 0 end end; redis.call('SET',KEYS[1],ARGV[2],'EX',ARGV[3]); redis.call('PUBLISH','qk:updates',ARGV[4]); return 1`, { keys:[roomKey(room.code)], arguments:[String(room.version-1),JSON.stringify(room),String(ROOM_TTL),JSON.stringify(publicRoom(room))] });
+  const saved = await redis.eval(`local current = redis.call('GET',KEYS[1]); if ARGV[1] == '0' then if current then return 0 end else if not current or cjson.decode(current).version ~= tonumber(ARGV[1]) then return 0 end end; redis.call('SET',KEYS[1],ARGV[2],'EX',ARGV[3]); if ARGV[5] == '' then redis.call('ZREM',KEYS[2],ARGV[6]) else redis.call('ZADD',KEYS[2],ARGV[5],ARGV[6]) end; redis.call('PUBLISH',KEYS[3],ARGV[4]); return 1`, { keys:[roomKey(room.code),clockIndex,updatesChannel], arguments:[String(room.version-1),JSON.stringify(room),String(ROOM_TTL),JSON.stringify(publicRoom(room)),deadline(room)===null?'':String(deadline(room)),room.code] });
   if (!saved) { const error = new Error('Room changed; retry from the current position'); error.code = 'QK_CONFLICT'; throw error; }
   log('room.saved',{room:room.code,version:room.version,status:room.status});
 }
@@ -111,14 +128,14 @@ function resolveSeats(room){for(const ws of sockets.get(room.code)||[]){if(ws.re
 function sendToRole(code,role,payload){let delivered=0;const message=JSON.stringify(payload);for(const ws of sockets.get(code)||[])if(ws.readyState===1&&ws.seatRole===role)try{ws.send(message);delivered++;}catch{}return delivered;}
 
 async function rateLimitNudge(room,seatToken){
-  const key=`qk:nudge:${room.code}:${room.game_number||1}:${hash(seatToken).slice(0,24)}`;
+  const key=`${keyPrefix}nudge:${room.code}:${room.game_number||1}:${hash(seatToken).slice(0,24)}`;
   return Number(await redis.eval(`if redis.call('EXISTS',KEYS[1]..':cooldown')==1 then return -1 end; local count=redis.call('INCR',KEYS[1]..':window'); if count==1 then redis.call('EXPIRE',KEYS[1]..':window',1800) end; if count>3 then return -2 end; redis.call('SET',KEYS[1]..':cooldown','1','EX',120); return count`,{keys:[key],arguments:[]}));
 }
 
 const subscriber = redis.duplicate();
 subscriber.on('error', () => console.error('[redis] subscription connection error'));
 await subscriber.connect();
-await subscriber.subscribe('qk:updates', message => { try { const view=JSON.parse(message); broadcast(view.code,view); } catch {} });
+await subscriber.subscribe(updatesChannel, message => { try { const view=JSON.parse(message); broadcast(view.code,view); } catch {} });
 
 function corsHeaders(origin) {
   const allowed = origin === FRONTEND_ORIGIN || origin === 'http://localhost:5173' || origin === 'http://127.0.0.1:5173';
@@ -155,6 +172,7 @@ async function createRoom(player=null) {
     if (await redis.exists(roomKey(code))) continue;
     const game = new Chess();
     const room = { code, white_token: randomUUID(), black_token: null, white_join_digest:null, black_join_digest: null, white_player:publicPlayer(player),black_player:null,game_number:1, moves: [], fen: game.fen(), turn: 'w', status: 'waiting', winner: null, version: 1, created_at: Date.now() };
+    resetClock(room,Date.now());
     try { await saveRoom(room); return room; } catch(error) { if(error.code !== 'QK_CONFLICT') throw error; }
   }
   throw new Error('room_create_failed');
@@ -163,7 +181,7 @@ async function createRoom(player=null) {
 async function handleApi(req, res, url) {
   const origin = req.headers.origin || '';
   if (req.method === 'OPTIONS') return send(res, 204, {}, origin);
-  if (req.method === 'GET' && url.pathname === '/health') { const healthy=redis.isReady&&subscriber.isReady; return send(res,healthy?200:503,{ok:healthy,service:'quiet-knight-live',build:BUILD},origin); }
+  if (req.method === 'GET' && url.pathname === '/health') { const healthy=redis.isReady&&subscriber.isReady; return send(res,healthy?200:503,{ok:healthy,service:'quiet-knight-live',build:BUILD,commit:process.env.RAILWAY_GIT_COMMIT_SHA||null,clock:'10+0'},origin); }
   if (req.method === 'GET' && url.pathname === '/computer/health') return send(res, computer.ready ? 200 : 503, computer.status(), origin);
   if(req.method==='GET'&&url.pathname==='/push/public-key')return send(res,pushes.available?200:503,{supported:pushes.available,public_key:pushes.available?pushes.publicKey:null},origin);
   if(req.method==='POST'&&(url.pathname==='/push/subscribe'||url.pathname==='/push/unsubscribe')){
@@ -173,7 +191,7 @@ async function handleApi(req, res, url) {
   }
   if(req.method==='GET'&&url.pathname==='/players/health')return send(res,200,await identities.health(),origin);
   if(req.method==='POST'&&url.pathname==='/players'){
-    const rateKey='qk:id-create:'+hash(String(req.headers['x-forwarded-for']||req.socket.remoteAddress).split(',')[0]);
+    const rateKey=keyPrefix+'id-create:'+hash(String(req.headers['x-forwarded-for']||req.socket.remoteAddress).split(',')[0]);
     const count=await redis.incr(rateKey);if(count===1)await redis.expire(rateKey,3600);
     if(count>12)return send(res,429,{error:'Please wait before creating another Knight ID'},origin);
     const input=await bodyJson(req);return send(res,201,await identities.create(input.handle),origin);
@@ -216,6 +234,8 @@ async function handleApi(req, res, url) {
   if (req.method === 'GET' && !action) return send(res, 200, { room: publicRoom(await settleRoom(room)) }, origin);
   if (req.method !== 'POST') return send(res, 405, { error: 'Method not allowed' }, origin);
   const input = await bodyJson(req);
+  room=await expireRoom(room);
+  if(!room)return send(res,404,{error:'Room not found'},origin);
 
   if (action === 'join') {
     const seatToken = typeof input.seat_token === 'string' ? input.seat_token : '';
@@ -233,6 +253,7 @@ async function handleApi(req, res, url) {
       room.started_at=Date.now();
       room.points_policy=await identities.pairStatus(room.white_player,room.black_player);
       room.status = 'active';
+      if(timed(room)){room.clock_running_color='w';room.turn_started_at=Date.now();}
       room.version += 1;
       await saveRoom(room);
       const view = publicRoom(room);
@@ -264,10 +285,13 @@ async function handleApi(req, res, url) {
     let move;
     try { move = game.move({ from: input.from, to: input.to, promotion: input.promotion || 'q' }); } catch { move = null; }
     if (!move) return send(res, 400, { error: 'Illegal move' }, origin);
+    const moveTime=Date.now();
+    if(deadline(room)!==null&&moveTime>=deadline(room)){room=await expireRoom(room,moveTime);return send(res,409,{error:'Time expired',room:publicRoom(room)},origin);}
     room.moves.push({ from: move.from, to: move.to, promotion: move.promotion, san: move.san });
     room.fen = game.fen();
     room.turn = game.turn();
     Object.assign(room, deriveStatus(game));
+    moveClock(room,moveTime);
     if(terminal(room))room.ended_at=Date.now();
     room.version += 1;
     await saveRoom(room);
@@ -279,9 +303,12 @@ async function handleApi(req, res, url) {
 
   if (action === 'resign') {
     if (room.status !== 'active') return send(res, 409, { error: 'Game is not active' }, origin);
+    const resignTime=Date.now();
+    if(deadline(room)!==null&&resignTime>=deadline(room)){room=await expireRoom(room,resignTime);return send(res,409,{error:'Time expired',room:publicRoom(room)},origin);}
     room.status = 'resigned';
     room.winner = color === 'w' ? 'b' : 'w';
-    room.ended_at=Date.now();
+    room.ended_at=resignTime;
+    stopClock(room,room.ended_at);
     room.version += 1;
     await saveRoom(room);
     room=await settleRoom(room);
@@ -310,6 +337,7 @@ async function handleApi(req, res, url) {
     room.turn = 'w';
     room.status = room.black_token ? 'active' : 'waiting';
     room.winner = null;
+    resetClock(room,Date.now());
     room.version += 1;
     await saveRoom(room);
     const view = publicRoom(room);
@@ -377,5 +405,24 @@ server.on('upgrade', async (req, socket, head) => {
 
 const pingTimer=setInterval(()=>{for(const ws of wss.clients){if(ws.alive===false){ws.terminate();continue;}ws.alive=false;try{ws.ping();}catch{ws.terminate();}}},20000);
 pingTimer.unref();
+
+// The index is only a wake-up hint. Always re-read canonical room/version so stale
+// deadlines, rematches and concurrent requests cannot end the wrong game.
+let sweeping=false;
+const clockTimer=setInterval(async()=>{
+  if(sweeping||!redis.isReady)return;sweeping=true;
+  try{
+    const codes=await redis.zRangeByScore(clockIndex,0,Date.now(),{LIMIT:{offset:0,count:100}});
+    for(const code of codes){
+      const room=await loadRoom(code);
+      if(!room)await redis.zRem(clockIndex,code);
+    }
+  }catch{log('clock.retry');}finally{sweeping=false;}
+},250);
+clockTimer.unref();
+// Recover a missing index after restart without creating a second clock authority.
+for await (const key of redis.scanIterator({MATCH:keyPrefix+'room:*',COUNT:100})) {
+  await redis.eval(`local raw=redis.call('GET',KEYS[1]); if not raw then return 0 end; local r=cjson.decode(raw); if r.status=='active' and r.time_control and (r.clock_running_color=='w' or r.clock_running_color=='b') and type(r.turn_started_at)=='number' then local ms=r.white_time_ms; if r.clock_running_color=='b' then ms=r.black_time_ms end; redis.call('ZADD',KEYS[2],r.turn_started_at+ms,r.code) end; return 1`,{keys:[key,clockIndex],arguments:[]});
+}
 
 server.listen(PORT, '0.0.0.0', () => log('server.listening',{port:PORT,build:BUILD,origin:FRONTEND_ORIGIN}));

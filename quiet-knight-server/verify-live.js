@@ -5,6 +5,7 @@ import { Chess } from 'chess.js';
 import { createClient } from 'redis';
 const base = process.env.QK_VERIFY_BASE || 'https://quiet-knight-server-production.up.railway.app';
 const origin = 'https://quiet-knight-live-v2xp3y.v2.appdeploy.ai';
+const prefix=process.env.QK_TEST_SCHEMA?`qk:verify:${process.env.QK_TEST_SCHEMA}:`:'qk:';
 const clients = [];
 let redis;
 const timeout = setTimeout(() => { console.error('[acceptance] FAIL: overall time limit'); process.exit(1); }, 55000);
@@ -61,7 +62,7 @@ try {
   const resumed=await request('/rooms/'+code+'/join',{seat_token:b.seat_token,join_key});assert.equal(resumed.role,'black');
   pass('socket reconnect snapshot and seat recovery',{code,version:nf3.room.version});
   redis=createClient({url:process.env.REDIS_URL});redis.on('error',()=>{});await redis.connect();
-  const raw=await redis.get('qk:room:'+code);const ttl=await redis.ttl('qk:room:'+code);
+  const raw=await redis.get(prefix+'room:'+code);const ttl=await redis.ttl(prefix+'room:'+code);
   assert.equal(JSON.parse(raw).version,nf3.room.version);assert.ok(ttl>604700&&ttl<=604800);pass('real Redis room and seven-day TTL',{code,ttl});
   const ended=await request('/rooms/'+code+'/resign',{seat_token:a.seat_token});assert.equal(ended.room.winner,'b');
   await two.version(ended.room.version);

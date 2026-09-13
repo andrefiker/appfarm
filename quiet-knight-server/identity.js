@@ -2,13 +2,14 @@ import {createHash,randomBytes,randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import pg from 'pg';
 import {Chess} from 'chess.js';
+import {validTimeout} from './clock.js';
 
 export class IdentityError extends Error {constructor(status,message){super(message);this.status=status;}}
 const hash=value=>createHash('sha256').update(value).digest('hex');
 const publicColumns='id,handle,quiet_points,scored_games,wins,draws,losses,current_win_streak,best_win_streak';
 const compact=p=>p?{id:p.id,handle:p.handle,quiet_points:p.quiet_points}:null;
 const pairKey=(a,b)=>[a,b].sort().join(':');
-export const terminal=room=>['checkmate','draw','resigned'].includes(room.status);
+export const terminal=room=>['checkmate','draw','resigned','timeout','timeout_draw'].includes(room.status);
 export function gameRecord(room){
  if(!terminal(room)||!Array.isArray(room.moves)||room.moves.length>4000)throw new IdentityError(400,'A completed legal game is required');
  const game=new Chess();
@@ -16,8 +17,9 @@ export function gameRecord(room){
  if(game.fen()!==room.fen)throw new IdentityError(400,'Final position does not match history');
  if(room.status==='checkmate'&&(!game.isCheckmate()||room.winner===(game.turn())))throw new IdentityError(400,'Invalid checkmate result');
  if(room.status==='draw'&&!game.isDraw())throw new IdentityError(400,'Invalid draw result');
- if(room.status!=='draw'&&!['w','b'].includes(room.winner))throw new IdentityError(400,'Invalid winner');
- const result=room.status==='draw'?'1/2-1/2':room.winner==='w'?'1-0':'0-1';
+ if(room.status.startsWith('timeout')&&!validTimeout(room))throw new IdentityError(400,'Invalid timeout result');
+ if(!['draw','timeout_draw'].includes(room.status)&&!['w','b'].includes(room.winner))throw new IdentityError(400,'Invalid winner');
+ const result=['draw','timeout_draw'].includes(room.status)?'1/2-1/2':room.winner==='w'?'1-0':'0-1';
  const started=new Date(room.started_at||room.created_at);
  const ended=new Date(room.ended_at||Date.now());
  game.header('Event','Quiet Knight','Date',started.toISOString().slice(0,10).replaceAll('-','.'),'White',room.white_player?.handle||'White','Black',room.black_player?.handle||'Black','Result',result);

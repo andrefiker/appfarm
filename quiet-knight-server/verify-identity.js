@@ -5,6 +5,7 @@ import pg from 'pg';
 import {Chess} from 'chess.js';
 import {IdentityStore,publicPlayer} from './identity.js';
 import {PushService,movePushPlan} from './push-notifications.js';
+import {resetClock,flagClock} from './clock.js';
 if(!process.env.DATABASE_URL)throw new Error('DATABASE_URL is required for real PostgreSQL acceptance');
 const schema='qk_verify_'+randomUUID().replaceAll('-','');
 const admin=new pg.Pool({connectionString:process.env.DATABASE_URL,max:1,connectionTimeoutMillis:3000});
@@ -13,7 +14,7 @@ try{
  await admin.query(`CREATE SCHEMA ${schema}`);
  const pool=new pg.Pool({connectionString:process.env.DATABASE_URL,max:5,options:`-c search_path=${schema}`,connectionTimeoutMillis:3000,statement_timeout:7000});
  store=new IdentityStore({pool});await store.migrate();await store.migrate();
- assert.equal((await store.health()).migration,2);
+ assert.equal((await store.health()).migration,3);
  const a=await store.create('QuietA'),b=await store.create('QuietB');
  assert.equal(a.credential.length,43);assert.equal((await store.authenticate('Bearer '+a.credential)).id,a.player.id);
  await assert.rejects(store.create('quieta'),e=>e.status===409);
@@ -49,6 +50,10 @@ try{
  assert.equal((await store.pairStatus(c.player,e.player)).remaining,3);
  const mate=await store.record({...make(20,{white:c.player,black:e.player,winner:'b',status:'checkmate',sans:['f3','e5','g4','Qh4#']}),code:'MATEAA'});
  assert.equal(mate.black_points,3);assert.ok(mate.pgn.includes('[Result "0-1"]'));
+ const timedGame={...make(21,{white:c.player,black:e.player,status:'active',winner:null,sans:['e4','e5']}),code:'TIMEAA',turn:'w'};
+ resetClock(timedGame,Date.now()-600000);flagClock(timedGame,Date.now());
+ const onTime=await store.record(timedGame);assert.equal(onTime.black_points,3);assert.equal(onTime.ended_reason,'timeout');assert.ok(onTime.pgn.includes('[Result "0-1"]'));
+ assert.equal((await store.record(timedGame)).id,onTime.id);
  const delivered=[];const push=new PushService({pool,publicKey:'public-test',privateKey:'private-test',transport:{setVapidDetails:()=>{},sendNotification:async(subscription,payload)=>delivered.push({subscription,payload})}});
  const pushRoom={code:'PUSHDB',game_number:1,version:3,status:'active',turn:'b',moves:[{san:'e4'}],white_token:'white-seat',black_token:'black-seat',white_player:publicPlayer(a.player),black_player:publicPlayer(b.player)};
  const subscription={endpoint:'https://push.example/device-b',keys:{p256dh:'A'.repeat(65),auth:'B'.repeat(22)}};
@@ -58,7 +63,7 @@ try{
  await assert.rejects(push.subscribe(pushRoom,'wrong-seat',subscription),error=>error.status===403);
  const data=(await admin.query('SHOW data_directory')).rows[0].data_directory;
  if(process.env.RAILWAY_ENVIRONMENT_ID)assert.ok(data.startsWith('/var/lib/postgresql/data/'),'Postgres data must live under the attached volume');
- console.log(JSON.stringify({event:'identity.acceptance',passed:true,migration:2,checks:['handle uniqueness','credential hashing/resume/rejection','guest unchanged','win/draw/loss','concurrent idempotency','rolling pair cap','same ID excluded','legitimate endings','history','head-to-head','additive push tables','seat-bound subscription','move-event dedupe','volume data directory']}));
+ console.log(JSON.stringify({event:'identity.acceptance',passed:true,migration:3,checks:['handle uniqueness','credential hashing/resume/rejection','guest unchanged','win/draw/loss','concurrent idempotency','rolling pair cap','same ID excluded','legitimate endings','history','head-to-head','additive push tables','seat-bound subscription','move-event dedupe','volume data directory']}));
 }finally{
  await store?.close();
  // This randomly named schema was created by this exact run and contains only test fixtures.

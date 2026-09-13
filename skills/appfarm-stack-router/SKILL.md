@@ -2,7 +2,7 @@
 name: appfarm-stack-router
 description: Route Andre's app/game builds to the smallest correct stack. Railway Hobby and Hatchable are paid and authorized; AppDeploy is used on the free tier.
 metadata:
-  version: 2026-09-12
+  version: 2026-09-13
 ---
 
 # AppFarm Stack Router
@@ -46,6 +46,10 @@ Prefer Railway for:
 - explicit backend deployment control.
 
 Use direct Railway tools. Railway Agent, Railway AI Agent, and quota-limited infrastructure agents are not part of the required workflow. If a direct tool cannot expose and verify an exact production change, hold that change instead of improvising.
+
+For existing Quiet Knight backend code releases, use the connected GitHub main autodeploy. Test first, commit only intended changes under `/quiet-knight-server/**`, push/merge main, monitor Railway directly, and compare the successful deployment's metadata `commitHash` to the intended Git commit. Verify `/health`, build identifier and runtime before releasing the matching AppDeploy frontend. `source.commitSha` can be stale and is not deployed-code truth.
+
+Re-inspect current staged configuration each time. `stagedChanges: null` means there is no staged patch to discard or accept; never recreate a historical patch. Do not create configuration changes to deploy code, use Railway Agent, or use redeploy to select new source. If autodeploy fails to trigger, inspect watch paths, GitHub main connection and deployment history. Preserve Postgres volumes, Redis configuration and variable values. Accept-deploy is only for intentionally staged and fully inspected configuration changes.
 
 ## Hatchable role
 

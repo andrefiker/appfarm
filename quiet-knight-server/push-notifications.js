@@ -76,18 +76,25 @@ export class PushService {
     await this.pool.query('UPDATE qk_push_subscriptions SET disabled_at=now(),updated_at=now() WHERE endpoint=$1 AND room_code=$2 AND seat_identity_digest=$3',[endpoint,room.code,hash(owner.token)]);
     return{subscribed:false};
   }
+  async subscriptionCount(room,targetColor){
+    if(!this.available)return 0;
+    const token=targetColor==='w'?room.white_token:targetColor==='b'?room.black_token:null;if(!token)return 0;
+    const {rows}=await this.pool.query('SELECT count(*)::int AS count FROM qk_push_subscriptions WHERE room_code=$1 AND seat_identity_digest=$2 AND disabled_at IS NULL',[room.code,hash(token)]);
+    return Number(rows[0]?.count)||0;
+  }
   async hasEvent(eventId){const {rowCount}=await this.pool.query('SELECT 1 FROM qk_push_events WHERE event_id=$1',[eventId]);return rowCount>0;}
   async deliver(room,plan,kind){
-    if(!this.available||!plan)return{status:'unavailable',sent:0};
+    if(!this.available||!plan)return{status:'unavailable',subscriptions:0,sent:0};
     const claimed=await this.pool.query('INSERT INTO qk_push_events(event_id,event_kind,room_code,game_number,room_version) VALUES($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING RETURNING event_id',[plan.eventId,kind,room.code,room.game_number||1,room.version]);
-    if(!claimed.rowCount)return{status:'duplicate',sent:0};
-    const token=plan.targetColor==='w'?room.white_token:room.black_token;if(!token)return{status:'no-recipient',sent:0};
+    if(!claimed.rowCount)return{status:'duplicate',subscriptions:0,sent:0};
+    const token=plan.targetColor==='w'?room.white_token:room.black_token;if(!token)return{status:'no-recipient',subscriptions:0,sent:0};
     const {rows}=await this.pool.query('SELECT id,endpoint,p256dh,auth FROM qk_push_subscriptions WHERE room_code=$1 AND seat_identity_digest=$2 AND disabled_at IS NULL',[room.code,hash(token)]);
     const payload=JSON.stringify({kind,eventId:plan.eventId,roomCode:room.code,title:plan.title,body:plan.body});let sent=0;
     await Promise.all(rows.map(async row=>{try{
       await this.transport.sendNotification({endpoint:row.endpoint,keys:{p256dh:row.p256dh,auth:row.auth}},payload,{TTL:kind==='move'?1800:600,urgency:'normal',topic:hash(plan.eventId).slice(0,32)});
       sent++;await this.pool.query('UPDATE qk_push_subscriptions SET last_success_at=now(),updated_at=now() WHERE id=$1',[row.id]);
     }catch(error){const status=Number(error?.statusCode)||0;if(status===404||status===410)await this.pool.query('UPDATE qk_push_subscriptions SET disabled_at=now(),updated_at=now() WHERE id=$1',[row.id]);this.logger('push.failure',{kind,status:status||'transport'});}}));
-    this.logger('push.delivery',{kind,room:room.code,target:colorName(plan.targetColor),subscriptions:rows.length,sent});return{status:'attempted',sent};
+    const status=sent>0?'sent':rows.length?'failed':'no-subscription';
+    this.logger('push.delivery',{kind,room:room.code,target:colorName(plan.targetColor),subscriptions:rows.length,sent});return{status,subscriptions:rows.length,sent};
   }
 }

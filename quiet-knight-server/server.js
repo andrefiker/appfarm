@@ -9,7 +9,7 @@ import {PushService,PushError,movePushPlan,nudgePlan} from './push-notifications
 
 const PORT = Number(process.env.PORT || 3000);
 const FRONTEND_ORIGIN = new URL(process.env.FRONTEND_ORIGIN || 'https://quiet-knight-live-v2xp3y.v2.appdeploy.ai').origin;
-const BUILD = 'qk-server-2026-09-12-r7-move-notifications';
+const BUILD = 'qk-server-2026-09-13-r8-capability-delivery';
 const log = (event, fields = {}) => console.log(JSON.stringify({event,...fields}));
 const identities=new IdentityStore();
 await identities.migrate().then(()=>log('identity.storage',{ready:identities.ready,migration:identities.ready?2:0})).catch(()=>log('identity.unavailable'));
@@ -108,7 +108,7 @@ function roleFor(room,digest){return digest&&digest===hash(room.white_token)?'wh
 function tablePresence(code){const set=sockets.get(code)||[];return{white:[...set].some(ws=>ws.readyState===1&&ws.seatRole==='white'),black:[...set].some(ws=>ws.readyState===1&&ws.seatRole==='black')};}
 function publishPresence(code){const presence=tablePresence(code);const data=JSON.stringify({type:'presence.update',...presence});for(const ws of sockets.get(code)||[])if(ws.readyState===1)ws.send(data);}
 function resolveSeats(room){for(const ws of sockets.get(room.code)||[]){if(ws.readyState!==1||!ws.seatDigest)continue;ws.seatRole=roleFor(room,ws.seatDigest);ws.send(JSON.stringify({type:'seat.role',role:ws.seatRole,game_number:room.game_number||1,room_version:room.version}));}publishPresence(room.code);}
-function sendToRole(code,role,payload){for(const ws of sockets.get(code)||[])if(ws.readyState===1&&ws.seatRole===role)try{ws.send(JSON.stringify(payload));}catch{}}
+function sendToRole(code,role,payload){let delivered=0;const message=JSON.stringify(payload);for(const ws of sockets.get(code)||[])if(ws.readyState===1&&ws.seatRole===role)try{ws.send(message);delivered++;}catch{}return delivered;}
 
 async function rateLimitNudge(room,seatToken){
   const key=`qk:nudge:${room.code}:${room.game_number||1}:${hash(seatToken).slice(0,24)}`;
@@ -248,9 +248,12 @@ async function handleApi(req, res, url) {
   if(action==='nudge'){
     let plan;try{plan=nudgePlan(room,color,input.request_id);}catch(error){if(error instanceof PushError)return send(res,error.status,{error:error.message},origin);throw error;}
     const limited=await rateLimitNudge(room,seatToken);if(limited<0)return send(res,429,{error:'Give them a minute.'},origin);
-    const targetRole=plan.targetColor==='w'?'white':'black';sendToRole(room.code,targetRole,{type:'opponent.nudge',event_id:plan.eventId,room_code:room.code,message:'Your opponent nudged you.'});
-    void pushes.deliver(room,plan,'nudge').catch(()=>log('push.failure',{kind:'nudge',status:'internal'}));
-    return send(res,200,{ok:true,message:'Nudge sent.'},origin);
+    const targetRole=plan.targetColor==='w'?'white':'black';
+    const liveConnections=sendToRole(room.code,targetRole,{type:'opponent.nudge',event_id:plan.eventId,room_code:room.code,message:'Your opponent nudged you.'});
+    if(liveConnections>0){let pushAvailable=false;try{pushAvailable=(await pushes.subscriptionCount(room,plan.targetColor))>0;}catch{log('push.failure',{kind:'nudge-capability',status:'internal'});}return send(res,200,{ok:true,recipient_live:true,push_available:pushAvailable,delivered:true,delivery:'table',message:'Delivered at table.'},origin);}
+    let delivery;try{delivery=await pushes.deliver(room,plan,'nudge');}catch{log('push.failure',{kind:'nudge',status:'internal'});delivery={status:'failed',subscriptions:0,sent:0};}
+    const pushAvailable=delivery.subscriptions>0;const delivered=delivery.sent>0;
+    return send(res,200,{ok:true,recipient_live:false,push_available:pushAvailable,delivered,delivery:delivered?'push':pushAvailable?'failed':'unavailable',message:delivered?'Notification sent.':pushAvailable?'Notification unavailable right now.':"They haven't enabled notifications."},origin);
   }
 
   if (action === 'move') {

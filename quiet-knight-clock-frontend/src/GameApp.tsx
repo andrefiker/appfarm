@@ -67,7 +67,7 @@ type Modal =
   | "resign"
   | "invite"
   | null;
-const BUILD = "QK • A moment of quiet";
+const BUILD = "QK • Champagne & Obsidian";
 function roleColor(role: Role | null): Color | null {
   return role === "white" ? "w" : role === "black" ? "b" : null;
 }

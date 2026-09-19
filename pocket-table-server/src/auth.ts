@@ -104,6 +104,11 @@ export async function userFromToken(token: string | undefined): Promise<AuthUser
   return row ? Object.freeze({ id: row.id, handle: row.handle }) : undefined;
 }
 
+export async function logout(token: string | undefined): Promise<void> {
+  if (!token) return;
+  await pool.query('DELETE FROM pocket_sessions WHERE token_hash=$1', [hashToken(token)]);
+}
+
 export async function userFromRequest(req: IncomingMessage): Promise<AuthUser | undefined> {
   const header = req.headers.authorization;
   if (!header?.startsWith('Bearer ')) return undefined;

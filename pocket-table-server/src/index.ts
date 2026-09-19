@@ -6,6 +6,7 @@ import {
   consumeSocketTicket,
   issueSocketTicket,
   login,
+  logout,
   register,
   userFromRequest,
 } from './auth.js';
@@ -34,6 +35,8 @@ function send(res: ServerResponse, status: number, body: unknown): void {
   cors(res);
   res.statusCode = status;
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
   res.end(JSON.stringify(body));
 }
 
@@ -105,6 +108,14 @@ async function route(req: IncomingMessage, res: ServerResponse): Promise<void> {
   if (req.method === 'GET' && url.pathname === '/auth/me') {
     const user = await requireUser(req);
     send(res, 200, { user });
+    return;
+  }
+
+  if (req.method === 'POST' && url.pathname === '/auth/logout') {
+    const header = req.headers.authorization;
+    const token = header?.startsWith('Bearer ') ? header.slice(7) : undefined;
+    await logout(token);
+    send(res, 200, { ok: true });
     return;
   }
 

@@ -57,13 +57,14 @@ export async function withRoomLock<T>(code: string, fn: () => Promise<T>): Promi
   const prior = locks.get(code) ?? Promise.resolve();
   let release!: () => void;
   const marker = new Promise<void>(resolve => { release = resolve; });
-  locks.set(code, prior.then(() => marker));
+  const queued = prior.then(() => marker);
+  locks.set(code, queued);
   await prior;
   try {
     return await fn();
   } finally {
     release();
-    if (locks.get(code) === marker) locks.delete(code);
+    if (locks.get(code) === queued) locks.delete(code);
   }
 }
 
@@ -121,9 +122,10 @@ export async function createRoom(hostUserId: string, input: Partial<RoomSettings
     const id = randomUUID();
     const roomCode = code();
     const seed = Math.floor(Math.random() * 2_000_000_000);
+    const client = await pool.connect();
     try {
-      await pool.query('BEGIN');
-      await pool.query(
+      await client.query('BEGIN');
+      await client.query(
         `INSERT INTO pocket_rooms(
           id, code, host_user_id, variant, seats, starting_stack,
           bot_level, bot_mix, fill_bots, hand_seed
@@ -134,16 +136,18 @@ export async function createRoom(hostUserId: string, input: Partial<RoomSettings
           settings.fillBots, seed,
         ]
       );
-      await pool.query(
+      await client.query(
         'INSERT INTO pocket_room_members(room_id,user_id,seat) VALUES($1,$2,0)',
         [id, hostUserId]
       );
-      await pool.query('COMMIT');
+      await client.query('COMMIT');
       return (await loadRoom(roomCode))!;
     } catch (error) {
-      await pool.query('ROLLBACK');
+      await client.query('ROLLBACK');
       if ((error as { code?: string }).code === '23505') continue;
       throw error;
+    } finally {
+      client.release();
     }
   }
   throw new Error('Could not allocate a room code');

@@ -68,12 +68,21 @@ export async function register(handleInput: string, password: string): Promise<{
       'INSERT INTO pocket_users(id, handle, handle_lower, password_hash) VALUES($1,$2,$3,$4)',
       [id, handle, handle.toLowerCase(), passwordHash]
     );
+    const token = await createSession(id);
+    return { user: Object.freeze({ id, handle }), token };
   } catch (error) {
-    if ((error as { code?: string }).code === '23505') throw new Error('Handle already taken');
-    throw error;
+    if ((error as { code?: string }).code !== '23505') throw error;
+    const existing = await pool.query(
+      'SELECT id, handle, password_hash FROM pocket_users WHERE handle_lower=$1',
+      [handle.toLowerCase()]
+    );
+    const row = existing.rows[0] as { id: string; handle: string; password_hash: string } | undefined;
+    if (!row || !(await verifyPassword(password, row.password_hash))) {
+      throw new Error('Handle already taken');
+    }
+    const token = await createSession(row.id);
+    return { user: Object.freeze({ id: row.id, handle: row.handle }), token };
   }
-  const token = await createSession(id);
-  return { user: Object.freeze({ id, handle }), token };
 }
 
 export async function login(handleInput: string, password: string): Promise<{ user: AuthUser; token: string }> {

@@ -27,7 +27,7 @@ import { useRoomRealtime } from "./use-room-realtime";
 import { useMoveNotifications } from "./push-notifications";
 import type { Position, Motion } from "./chess-ui";
 import { PieceStyleProvider } from "./pieces";
-import type { Color, PieceStyle } from "./pieces";
+import type { Color } from "./pieces";
 import { lossesFromHistory } from "./chess-view-model";
 import { buildGame } from "./computer";
 import { useComputerOpponent } from "./use-computer-opponent";
@@ -900,20 +900,6 @@ export default function GameApp() {
           {atmospheres.map((name) => (
             <option key={name}>{name}</option>
           ))}
-        </select>
-      </label>
-      <label className="preference-row piece-style-setting">
-        <span>
-          Piece style
-          <small>A figurative court-and-war set with monarchs, clergy, cavalry and guards.</small>
-        </span>
-        <select
-          aria-label="Piece style"
-          value={table.pieceStyle}
-          onChange={(e) => table.setPieceStyle(e.target.value as PieceStyle)}
-        >
-          <option value="classic">Classic Quiet Knight</option>
-          <option value="court-army">Court &amp; Army</option>
         </select>
       </label>
       <label className="preference-row">

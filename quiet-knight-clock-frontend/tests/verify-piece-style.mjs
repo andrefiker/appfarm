@@ -21,13 +21,13 @@ for (const role of ['infantry soldier', 'palace guard', 'cleric bishop', 'standi
 assert.match(court, /horse head neck body four legs/);
 assert.match(court, /rider head torso arms legs/);
 assert.doesNotMatch(court, /FigureBase|base\)/);
-assert.match(pieces, /createContext<PieceStyle>\('classic'\)/);
+assert.match(pieces, /createContext<PieceStyle>\('court-army'\)/);
 assert.match(pieces, /style === 'court-army'/);
 assert.match(preferences, /qk-piece-style-v1/);
-assert.match(preferences, /\?['"]court-army['"]:['"]classic['"]/);
+assert.match(preferences, /pieceStyle:PieceStyle=['"]court-army['"]/);
 assert.match(app, /PieceStyleProvider style=\{table\.pieceStyle\}/);
-assert.match(app, /Classic Quiet Knight/);
-assert.match(app, /Court &amp; Army/);
+assert.doesNotMatch(app, /aria-label="Piece style"/);
+assert.doesNotMatch(app, /Classic Quiet Knight/);
 assert.match(ui, /scope=\{.board-/);
 assert.match(ui, /scope=\{.lost-/);
 assert.match(ui, /scope=\{.promotion-/);
@@ -38,12 +38,12 @@ console.log(JSON.stringify({
   event: 'frontend.piece-style.acceptance',
   passed: true,
   checks: [
-    'classic remains default',
+    'Court & Army is the universal default',
     'twelve local vector variants',
     'explicit humanoid anatomy and role silhouettes',
     'mounted rider on a four-legged horse',
     'no chess-piece pedestal geometry',
-    'local preference persistence',
+    'legacy local preferences migrate to Court & Army',
     'board/captures/promotion/final-position shared renderer',
     'no external art dependency',
   ],

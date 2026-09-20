@@ -10,7 +10,7 @@ type PieceProps = {
   scope: string;
   label?: string;
 };
-const PieceStyleContext = createContext<PieceStyle>('classic');
+const PieceStyleContext = createContext<PieceStyle>('court-army');
 export function PieceStyleProvider({
   style,
   children,

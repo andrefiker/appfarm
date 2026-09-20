@@ -108,6 +108,11 @@ body { background: #111a1d; }
 .table-sheet { border-radius: 20px 20px 0 0; }
 .table-sheet .dialog-body { padding-top: 18px; }
 .preference-row { border-bottom-color: #ffffff10; }
+.piece-style-setting > span { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.piece-style-setting small { max-width: 285px; color: var(--muted); font-size: 10px; font-weight: 400; line-height: 1.45; }
+.piece-style-setting select { max-width: 178px; }
+.court-army-art { filter: drop-shadow(0 1px 1px #0005); }
+.captured-piece .court-army-art { filter: drop-shadow(0 .5px .5px #0004); }
 .notification-setting { border-color: #ffffff10; }
 .promotion-options button { border-radius: 12px; padding-bottom: 12px; }
 .qk-toast { border-radius: 13px; background: #e8d6b3; color: #182428; border-color: #f6e6c9; box-shadow: 0 12px 38px #0005; font-size: 13px; }
@@ -156,6 +161,8 @@ body { background: #111a1d; }
   .mobile-table .game-title h1 { font-size: 17px; }
   .table-toolbar { gap: 1px; }
   .mobile-table .table-controls-toggle { font-size: 11px; padding: 8px 5px; }
+  .piece-style-setting { align-items: flex-start; gap: 9px; }
+  .piece-style-setting select { width: 100%; max-width: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }

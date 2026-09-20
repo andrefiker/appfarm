@@ -26,7 +26,8 @@ import { GameSurface, HomeSurface, Icon, PromotionChoices } from "./chess-ui";
 import { useRoomRealtime } from "./use-room-realtime";
 import { useMoveNotifications } from "./push-notifications";
 import type { Position, Motion } from "./chess-ui";
-import type { Color } from "./pieces";
+import { PieceStyleProvider } from "./pieces";
+import type { Color, PieceStyle } from "./pieces";
 import { lossesFromHistory } from "./chess-view-model";
 import { buildGame } from "./computer";
 import { useComputerOpponent } from "./use-computer-opponent";
@@ -67,7 +68,7 @@ type Modal =
   | "resign"
   | "invite"
   | null;
-const BUILD = "QK • Champagne & Obsidian";
+const BUILD = "QK • Court & Army";
 function roleColor(role: Role | null): Color | null {
   return role === "white" ? "w" : role === "black" ? "b" : null;
 }
@@ -901,6 +902,20 @@ export default function GameApp() {
           ))}
         </select>
       </label>
+      <label className="preference-row piece-style-setting">
+        <span>
+          Piece style
+          <small>A figurative court-and-war set with monarchs, clergy, cavalry and guards.</small>
+        </span>
+        <select
+          aria-label="Piece style"
+          value={table.pieceStyle}
+          onChange={(e) => table.setPieceStyle(e.target.value as PieceStyle)}
+        >
+          <option value="classic">Classic Quiet Knight</option>
+          <option value="court-army">Court &amp; Army</option>
+        </select>
+      </label>
       <label className="preference-row">
         <span>Move sounds</span>
         <input
@@ -1025,6 +1040,7 @@ export default function GameApp() {
                   ? "Resign this game?"
                   : "Your invite";
   return (
+    <PieceStyleProvider style={table.pieceStyle}>
     <>
       {screen === "home" && localMoves.length > 0 ? (
         <div className="resume-local">
@@ -1400,5 +1416,6 @@ export default function GameApp() {
         </div>
       ) : null}
     </>
+    </PieceStyleProvider>
   );
 }

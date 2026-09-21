@@ -82,6 +82,7 @@ jobs:
           QK_FRONTEND_URL: http://127.0.0.1:3000/
         run: |
           npm ci
+          npm install --no-save redis@^4.7.0
           npx playwright install --with-deps chromium
           npm test
 

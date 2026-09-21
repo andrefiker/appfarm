@@ -92,7 +92,7 @@ input::placeholder { color: rgba(246,238,220,.35); }
 .square.capture::after { inset: 6%; border: 4px solid rgba(16,59,51,.5); background: transparent; }
 .square.selected { box-shadow: inset 0 0 0 5px rgba(240,202,119,.75); }
 .square.last-move { box-shadow: inset 0 0 0 999px rgba(235,205,99,.18); }
-.piece { z-index: 1; display: block; font: clamp(30px, calc(var(--board-size) / 10), 64px)/1 Georgia, "Times New Roman", serif; transform: translateY(-1%); user-select: none; -webkit-user-select: none; }
+.piece { z-index: 1; display: block; font: clamp(34px, calc(var(--board-size) / 8.8), 67px)/1 Georgia, "Times New Roman", serif; transform: translateY(-1%); user-select: none; -webkit-user-select: none; }
 .piece.white { color: #fff7e3; text-shadow: 0 1px 0 #8d7658, 0 2px 3px rgba(0,0,0,.55); }
 .piece.black { color: #252822; text-shadow: 0 1px 0 #606356, 0 2px 3px rgba(0,0,0,.55); }
 .coordinate { position: absolute; z-index: 2; color: rgba(23,43,38,.65); font-size: clamp(8px, 2vw, 11px); font-weight: 750; pointer-events: none; }

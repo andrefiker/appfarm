@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0d2f2d" />
+    <meta name="description" content="A quiet private table for a complete 10-minute chess game." />
+    <title>Quiet Knight Lite</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main id="app" class="app-shell">
+      <section id="lobby" class="lobby" aria-labelledby="brand-title">
+        <div class="brand-mark" aria-hidden="true">♞</div>
+        <h1 id="brand-title">Quiet Knight <span>Lite</span></h1>
+        <p>A private table for tonight. Ten minutes each, no distractions.</p>
+        <button id="create-button" class="button primary">Create a game</button>
+        <div class="join-row">
+          <label for="room-input">Room code</label>
+          <div class="join-controls">
+            <input id="room-input" autocomplete="off" autocapitalize="characters" maxlength="6" placeholder="AB12CD" />
+            <button id="join-button" class="button">Join</button>
+          </div>
+        </div>
+        <p id="lobby-error" class="error" role="alert"></p>
+      </section>
+
+      <section id="table" class="table" hidden aria-live="polite">
+        <header class="table-header">
+          <a href="/" class="wordmark" aria-label="Quiet Knight Lite home"><span aria-hidden="true">♞</span> Quiet Knight</a>
+          <button id="room-button" class="room-code" title="Copy room code">Room <strong id="room-code"></strong></button>
+        </header>
+
+        <section class="player-strip opponent-strip">
+          <div>
+            <p id="opponent-name" class="player-name">Opponent</p>
+            <p id="opponent-state" class="player-state">Waiting to join</p>
+          </div>
+          <time id="opponent-clock" class="clock" datetime="PT10M">10:00</time>
+        </section>
+
+        <div id="board" class="board" role="grid" aria-label="Chess board"></div>
+
+        <section class="player-strip you-strip">
+          <div>
+            <p id="you-name" class="player-name">You</p>
+            <p id="you-state" class="player-state">White</p>
+          </div>
+          <time id="you-clock" class="clock" datetime="PT10M">10:00</time>
+        </section>
+
+        <section class="game-footer">
+          <p id="status" class="status">Waiting for your opponent…</p>
+          <div id="actions" class="actions">
+            <button id="resign-button" class="button subtle">Resign</button>
+            <button id="draw-button" class="button subtle">Offer draw</button>
+            <button id="rematch-button" class="button primary" hidden>Rematch</button>
+            <button id="share-button" class="button">Share invite</button>
+          </div>
+          <p id="table-error" class="error" role="alert"></p>
+        </section>
+      </section>
+    </main>
+
+    <dialog id="promotion-dialog" class="promotion-dialog">
+      <form method="dialog">
+        <p>Choose your promotion</p>
+        <div id="promotion-choices" class="promotion-choices"></div>
+        <button class="sr-only" value="cancel">Cancel</button>
+      </form>
+    </dialog>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

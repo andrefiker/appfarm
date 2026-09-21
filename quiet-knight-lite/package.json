@@ -1,0 +1,19 @@
+{
+  "name": "quiet-knight-lite",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Temporary Railway-only authoritative multiplayer chess",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test --test-concurrency=1 tests/*.test.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "chess.js": "^1.4.0",
+    "express": "^5.1.0",
+    "ws": "^8.18.3"
+  }
+}

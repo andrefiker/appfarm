@@ -1,3 +1,10 @@
+FROM node:24-bookworm-slim AS frontend-builder
+WORKDIR /frontend
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
+
 FROM node:24-bookworm-slim
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl libstdc++6 && rm -rf /var/lib/apt/lists/*
@@ -9,6 +16,8 @@ RUN curl -fL --retry 3 https://github.com/official-stockfish/Stockfish/releases/
 COPY package*.json ./
 RUN npm ci --omit=dev
 COPY . .
+RUN rm -rf frontend
+COPY --from=frontend-builder /frontend/dist ./public
 ENV NODE_ENV=production
 USER node
 EXPOSE 3000

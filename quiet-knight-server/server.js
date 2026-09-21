@@ -1,4 +1,7 @@
 import http from 'node:http';
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createHash, randomUUID } from 'node:crypto';
 import { Chess } from 'chess.js';
 import { createClient } from 'redis';
@@ -10,6 +13,8 @@ import {resetClock,deadline,flagClock,moveClock,stopClock,timed} from './clock.j
 
 const PORT = Number(process.env.PORT || 3000);
 const FRONTEND_ORIGIN = new URL(process.env.FRONTEND_ORIGIN || 'https://quiet-knight-live-v2xp3y.v2.appdeploy.ai').origin;
+const RAILWAY_FRONTEND_ORIGIN = 'https://quiet-knight-server-production.up.railway.app';
+const PUBLIC_DIR = fileURLToPath(new URL('./public/', import.meta.url));
 const BUILD = 'qk-server-2026-09-13-r10-mutual-pause';
 const log = (event, fields = {}) => console.log(JSON.stringify({event,...fields}));
 const identities=new IdentityStore();
@@ -138,7 +143,7 @@ await subscriber.connect();
 await subscriber.subscribe(updatesChannel, message => { try { const view=JSON.parse(message); broadcast(view.code,view); } catch {} });
 
 function corsHeaders(origin) {
-  const allowed = origin === FRONTEND_ORIGIN || origin === 'http://localhost:5173' || origin === 'http://127.0.0.1:5173';
+  const allowed = origin === FRONTEND_ORIGIN || origin === RAILWAY_FRONTEND_ORIGIN || origin === 'http://localhost:5173' || origin === 'http://127.0.0.1:5173';
   return {
     'Access-Control-Allow-Origin': allowed ? origin : FRONTEND_ORIGIN,
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
@@ -378,15 +383,69 @@ async function handleApi(req, res, url) {
   return send(res, 404, { error: 'Not found' }, origin);
 }
 
+
+const STATIC_TYPES = new Map([
+  ['.html','text/html; charset=utf-8'],
+  ['.js','text/javascript; charset=utf-8'],
+  ['.css','text/css; charset=utf-8'],
+  ['.json','application/json; charset=utf-8'],
+  ['.webmanifest','application/manifest+json; charset=utf-8'],
+  ['.svg','image/svg+xml'],
+  ['.png','image/png'],
+  ['.ico','image/x-icon'],
+  ['.txt','text/plain; charset=utf-8'],
+]);
+function isApiPath(pathname){
+  return /^(?:\/health$|\/computer(?:\/|$)|\/push(?:\/|$)|\/players(?:\/|$)|\/rooms(?:\/|$))/.test(pathname);
+}
+function staticHeaders(filePath,fallback=false){
+  const name=path.basename(filePath);
+  const ext=path.extname(filePath).toLowerCase();
+  const headers={'Content-Type':STATIC_TYPES.get(ext)||'application/octet-stream','X-Content-Type-Options':'nosniff'};
+  if(fallback||name==='index.html') headers['Cache-Control']='no-cache';
+  else if(name==='sw.js'){headers['Cache-Control']='no-cache';headers['Service-Worker-Allowed']='/';}
+  else if(name==='manifest.webmanifest') headers['Cache-Control']='no-cache';
+  else if(filePath.includes(path.sep+'assets'+path.sep)) headers['Cache-Control']='public, max-age=31536000, immutable';
+  else headers['Cache-Control']='public, max-age=3600';
+  return headers;
+}
+async function serveFrontend(req,res,url){
+  const pathname=decodeURIComponent(url.pathname);
+  const rel=pathname.replace(/^\/+/, '');
+  const root=path.resolve(PUBLIC_DIR);
+  const exact=path.resolve(PUBLIC_DIR,rel||'index.html');
+  if(exact!==path.resolve(PUBLIC_DIR,'index.html')&&!exact.startsWith(root+path.sep)){
+    res.writeHead(400,{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store'});
+    return res.end('Bad request');
+  }
+  let filePath=exact,fallback=false,body;
+  try{body=await readFile(filePath);}
+  catch(error){
+    const looksLikeAsset=/\.[A-Za-z0-9]+$/.test(pathname)||pathname.startsWith('/assets/');
+    if(error?.code!=='ENOENT'||looksLikeAsset){
+      res.writeHead(error?.code==='ENOENT'?404:500,{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store'});
+      return res.end(error?.code==='ENOENT'?'Not found':'Server error');
+    }
+    filePath=path.resolve(PUBLIC_DIR,'index.html');fallback=true;body=await readFile(filePath);
+  }
+  const headers=staticHeaders(filePath,fallback);
+  headers['Content-Length']=String(body.length);
+  res.writeHead(200,headers);
+  if(req.method==='HEAD') return res.end();
+  res.end(body);
+}
+
 const server = http.createServer((req, res) => {
   const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
   log('http.request',{method:req.method,path:url.pathname});
-  handleApi(req, res, url).catch(err => {
+  const method=req.method||'GET';
+  const task=(method==='GET'||method==='HEAD')&&!isApiPath(url.pathname)?serveFrontend(req,res,url):handleApi(req,res,url);
+  task.catch(err => {
     if(err instanceof IdentityError)return send(res,err.status,{error:err.message},req.headers.origin||'');
     if(err instanceof PushError)return send(res,err.status,{error:err.message},req.headers.origin||'');
     if (err?.code === 'QK_CONFLICT') return send(res,409,{error:'Room changed; retry from the current position'},req.headers.origin||'');
     log('http.error',{name:err?.name||'Error'});
-    send(res, 500, { error: 'Server error' }, req.headers.origin || '');
+    if(!res.headersSent)send(res,500,{error:'Server error'},req.headers.origin||'');else res.end();
   });
 });
 

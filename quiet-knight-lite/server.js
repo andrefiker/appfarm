@@ -75,15 +75,25 @@ export function createQuietKnightServer({ clockMs = START_MS, tickMs = 250 } = {
     const code = normalizeCode(url.searchParams.get('room'));
     const room = rooms.get(code);
     if (!room) return socket.destroy();
-    request.qk = { code, token: url.searchParams.get('token') || null };
+    request.qk = { code };
     wss.handleUpgrade(request, socket, head, (ws) => wss.emit('connection', ws, request));
   });
 
   wss.on('connection', (ws, request) => {
-    const { code, token } = request.qk;
-    clients.set(ws, { code, token });
+    const { code } = request.qk;
+    const identity = { code, token: null };
+    clients.set(ws, identity);
     const room = rooms.get(code);
-    if (room) sendState(ws, room, token);
+    if (room) sendState(ws, room, null);
+    ws.on('message', (raw) => {
+      try {
+        const message = JSON.parse(raw.toString());
+        if (message.type === 'authenticate' && typeof message.seatToken === 'string') {
+          identity.token = room?.roleFor(message.seatToken) === 'spectator' ? null : message.seatToken;
+          if (room) sendState(ws, room, identity.token);
+        }
+      } catch { /* Ignore malformed client frames. */ }
+    });
     ws.on('close', () => clients.delete(ws));
     ws.on('error', () => clients.delete(ws));
   });

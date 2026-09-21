@@ -98,8 +98,10 @@ function connectSocket() {
   if (socket) socket.close();
   const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
   const params = new URLSearchParams({ room: code });
-  if (seatToken) params.set('token', seatToken);
   socket = new WebSocket(`${protocol}//${location.host}/ws?${params}`);
+  socket.addEventListener('open', () => {
+    if (seatToken) socket.send(JSON.stringify({ type: 'authenticate', seatToken }));
+  });
   socket.addEventListener('message', (event) => {
     try {
       const message = JSON.parse(event.data);

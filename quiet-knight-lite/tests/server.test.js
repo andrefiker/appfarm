@@ -41,8 +41,9 @@ test('create, join, recover, spectate, sync moves, reject illegal play, timeout,
   assert.equal(spectator.seatToken, null);
   assert.deepEqual(spectator.state.legalMoves, []);
 
-  const blackSocket = new WebSocket(baseUrl.replace('http', 'ws') + `/ws?room=${created.code}&token=${joined.seatToken}`);
-  const firstBlackState = await nextState(blackSocket);
+  const blackSocket = new WebSocket(baseUrl.replace('http', 'ws') + `/ws?room=${created.code}`);
+  blackSocket.on('open', () => blackSocket.send(JSON.stringify({ type: 'authenticate', seatToken: joined.seatToken })));
+  const firstBlackState = await nextState(blackSocket, (next) => next.role === 'black');
   assert.equal(firstBlackState.role, 'black');
 
   const illegalResponse = await fetch(`${baseUrl}/api/rooms/${created.code}/move`, {
@@ -115,13 +116,17 @@ function headers(token) {
   };
 }
 
-function nextState(socket) {
+function nextState(socket, predicate = () => true) {
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => reject(new Error('Timed out waiting for WebSocket state')), 1_000);
-    socket.once('message', (data) => {
+    const onMessage = (data) => {
+      const state = JSON.parse(data.toString()).state;
+      if (!predicate(state)) return;
       clearTimeout(timeout);
-      resolve(JSON.parse(data.toString()).state);
-    });
+      socket.off('message', onMessage);
+      resolve(state);
+    };
+    socket.on('message', onMessage);
     socket.once('error', reject);
   });
 }

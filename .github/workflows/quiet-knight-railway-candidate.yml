@@ -1,0 +1,90 @@
+name: Quiet Knight Railway candidate
+
+on:
+  push:
+    branches:
+      - quiet-knight-railway-full-2026-09-21
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: qk_test
+          POSTGRES_DB: qk_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d qk_test"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build combined Node 24 + v47 frontend + Stockfish 18 image
+        run: docker build -t quiet-knight-candidate ./quiet-knight-server
+
+      - name: Backend predeploy acceptance
+        run: |
+          docker run --rm --network host \
+            -e DATABASE_URL=postgresql://postgres:qk_test@127.0.0.1:5432/qk_test \
+            -e REDIS_URL=redis://127.0.0.1:6379 \
+            quiet-knight-candidate node predeploy.js
+
+      - name: Stockfish 18 acceptance
+        run: docker run --rm quiet-knight-candidate node verify-stockfish.js
+
+      - name: Start combined candidate
+        run: |
+          docker run -d --name qk-candidate --network host \
+            -e DATABASE_URL=postgresql://postgres:qk_test@127.0.0.1:5432/qk_test \
+            -e REDIS_URL=redis://127.0.0.1:6379 \
+            -e PORT=3000 \
+            quiet-knight-candidate
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3000/health >/dev/null; then exit 0; fi
+            sleep 0.25
+          done
+          docker logs qk-candidate
+          exit 1
+
+      - name: Static hosting and cache policy smoke
+        run: |
+          set -euo pipefail
+          curl -fsS http://127.0.0.1:3000/ | grep -q "Quiet Knight"
+          curl -fsSI http://127.0.0.1:3000/ | grep -qi "cache-control: no-cache"
+          curl -fsSI http://127.0.0.1:3000/sw.js | grep -qi "cache-control: no-cache"
+          curl -fsSI http://127.0.0.1:3000/manifest.webmanifest | grep -qi "content-type: application/manifest+json"
+          curl -fsS http://127.0.0.1:3000/railway-spa-fallback | grep -q "Quiet Knight"
+          asset="$(curl -fsS http://127.0.0.1:3000/ | grep -oE '/assets/[^" ]+\.js' | head -n1)"
+          test -n "$asset"
+          curl -fsSI "http://127.0.0.1:3000$asset" | grep -qi "cache-control: public, max-age=31536000, immutable"
+          docker exec qk-candidate sh -lc "! grep -R -F 'Court & Army' /app/public"
+          docker exec qk-candidate sh -lc "test -f /app/public/offline-shell.html && test -f /app/public/sw.js && test -f /app/public/manifest.webmanifest"
+
+      - name: Browser acceptance on combined candidate
+        working-directory: quiet-knight-server/frontend-acceptance
+        env:
+          QK_FRONTEND_URL: http://127.0.0.1:3000/
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npm test
+
+      - name: Candidate logs on failure
+        if: failure()
+        run: docker logs qk-candidate || true

@@ -25,7 +25,7 @@ jobs:
       redis:
         image: redis:7
         ports:
-          - 6379:6379
+          - 16379:6379
         options: >-
           --health-cmd="redis-cli ping"
           --health-interval=5s
@@ -42,7 +42,7 @@ jobs:
         run: |
           docker run --rm --network host \
             -e DATABASE_URL=postgresql://postgres:qk_test@127.0.0.1:5432/qk_test \
-            -e REDIS_URL=redis://127.0.0.1:6379 \
+            -e REDIS_URL=redis://127.0.0.1:16379 \
             quiet-knight-candidate node predeploy.js
 
       - name: Stockfish 18 acceptance
@@ -52,7 +52,7 @@ jobs:
         run: |
           docker run -d --name qk-candidate --network host \
             -e DATABASE_URL=postgresql://postgres:qk_test@127.0.0.1:5432/qk_test \
-            -e REDIS_URL=redis://127.0.0.1:6379 \
+            -e REDIS_URL=redis://127.0.0.1:16379 \
             -e PORT=3000 \
             quiet-knight-candidate
           for i in {1..40}; do

@@ -113,7 +113,10 @@ async function table(browser) {
 async function close(...actors) {
   for (const actor of actors) {
     expect(actor.errors).toEqual([]);
-    await actor.context.close();
+    await Promise.race([
+      actor.context.close().catch(() => undefined),
+      new Promise((resolve) => setTimeout(resolve, 2000)),
+    ]);
   }
 }
 test("Two isolated app clients, moves, seat reload and home resume [sanity]", async ({

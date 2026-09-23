@@ -1,24 +1,21 @@
-# Quanto Resta — Patient Payments V2
+# Loot — patient payments
 
-Native Kotlin/Compose Android app. One patient-payment screen, Room offline working store, Supabase Auth/PostgREST sync. No clinical notes, contact data, analytics or service-role credentials. Patient aliases and amounts are sent to the `qr_` tables only after login. Local credentials use Android Keystore AES-GCM; Android backup is disabled.
+Native Android app using Kotlin, Compose, Material 3, Room, ViewModel and StateFlow. Opens directly to the monthly patient list. No sign-in, network permission, SDK telemetry, cloud synchronization, or provider key in the APK. The Android package and Room database name remain unchanged so an update signed with the same key can read existing on-device records.
 
 ## Build
 
-JDK 17, Gradle 8.9, Android SDK API 35. Run `gradle :app:testDebugUnitTest :app:lintDebug :app:assembleDebug`. Debug APK: `app/build/outputs/apk/debug/app-debug.apk`. Instrumented Room test: `gradle :app:connectedDebugAndroidTest` with a connected emulator/device.
+JDK 17, Gradle 8.9, Android SDK API 35. In this folder run `gradle :app:testDebugUnitTest :app:lintDebug :app:assembleDebug`. Debug APK: `app/build/outputs/apk/debug/app-debug.apk`. With a connected emulator run `gradle :app:connectedDebugAndroidTest` for Room persistence and an actual screen capture.
 
-## Data and month rules
+## Storage and months
 
-- `Patient`: owner ID, alias, current default monthly fee, activity/archive month, local dirty/revision flag, scrubbed deletion tombstone.
-- `PatientMonth`: UUID and unique patient/month pair, expected snapshot, paid amount, included status, explicit incomplete flag, dirty/revision. All money is integer cents.
-- Before changing a fee or archiving, the repository materializes unvisited older months using the prior fee. Changing a fee updates the selected and future month snapshots only. Back/forward navigation creates missing monthly rows with paid zero. Historical rows stay frozen.
-- Archive excludes selected and future months from totals; past months remain intact. Delete requires confirmation, twice for a patient with prior months. Deletion scrubs the local alias, removes local monthly rows and sends a scrubbed tombstone to Supabase; the database trigger removes remote months and prevents stale devices from resurrecting the record.
-- OFF on a full toggle retains the paid amount using `force_incomplete`. A later manual edit restores automatic paid >= expected behavior. This flag resolves the contradictory requirements “OFF keeps the amount” and “the toggle follows paid >= expected.”
-- Sync pushes dirty patients, then months; pulls full remote state in pages; remote writes are last-arrival-wins and local dirty rows are never overwritten by a pull. WorkManager retries with network. Account credentials are required once; the cached Room list and edits work offline afterward.
+`Patient` holds an alias, current default monthly fee, active/archive month and creation date. `PatientMonth` has a unique patient/month pair and stores expected and paid cents. Monetary amounts use integers. Opening a month creates missing rows with zero paid. Before changing a fee or archiving, earlier unvisited months are snapshotted with the previous terms. Edits to default fees affect the selected and future months; earlier months retain their amounts. Archive excludes selected and future months while retaining prior history. Permanent delete requires confirmation and scrubs the local alias and payment rows. Full OFF retains the payment using an explicit incomplete flag; manually editing a payment returns to automatic full status.
 
-## Privacy / existing app
+The database retains an owner ID from the earlier cloud version solely to keep existing local records readable. New installations generate a device-local ID. Existing local data is selected by the first non-deleted patient when the new app starts. There is no account switcher.
 
-This is a separate package and database. The expense app and its storage were not modified; the existing Android source was unavailable in this workspace. No automatic migration from the earlier budget project is claimed. The Supabase tables share an existing website project due to a free-project account limit; RLS restricts rows by authenticated owner, though project administrators and any existing service-role process have technical access. Enter aliases instead of full names.
+## Privacy and upgrade
+
+Data is stored only on this device. The earlier Supabase tables remain untouched but this version does not upload or download records, so records held **only** in Supabase will not appear automatically. Android backup is disabled. Uninstalling the app clears its local data. An APK signed with a different debug key cannot update an existing installation: do not uninstall an installation that holds unique data without exporting or migrating it first. Prefer aliases over full names. Existing expense code was not available here and was not modified.
 
 ## Rollback
 
-Delete the isolated Git branch/folder and uninstall `com.andrefiker.lootpayments` to remove local data. To roll back the backend, first export needed payment data, then drop only the `qr_patient_months`/`qr_patients` tables and `qr_` triggers/functions from the migration. Never drop unrelated website tables. A debug APK cannot update an installation signed with a different key.
+Revert this branch to commit `c5a828ddf97d76c29d082f25afcd5c10fed7c509` to restore the earlier auth/sync code. The Supabase schema was not changed for this update. Returning to an older APK requires a compatible signing key and Android version code; uninstalling removes local data.

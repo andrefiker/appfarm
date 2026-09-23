@@ -6,7 +6,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,9 +26,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -44,7 +41,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -69,8 +65,9 @@ class MainActivity : ComponentActivity() {
                 background = paper, surface = Color.White, onSurface = navy)) {
                 val vm: PatientPaymentsViewModel = viewModel()
                 val state by vm.state.collectAsStateWithLifecycle()
-                val session by vm.session.collectAsStateWithLifecycle()
-                if (session == null) LoginScreen(vm) else PatientPaymentsScreen(state, vm)
+                val ready by vm.ready.collectAsStateWithLifecycle()
+                if (ready) PatientPaymentsScreen(state, vm)
+                else Text("Carregando Loot…", modifier = Modifier.padding(28.dp), color = muted)
             }
         }
     }
@@ -87,41 +84,13 @@ private sealed interface Editor {
 }
 
 @Composable
-private fun LoginScreen(vm: PatientPaymentsViewModel) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    val message by vm.authMessage.collectAsStateWithLifecycle()
-    Column(Modifier.fillMaxSize().padding(28.dp), verticalArrangement = Arrangement.Center) {
-        Text("QUANTO RESTA", color = teal, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
-        Spacer(Modifier.height(20.dp))
-        Text("Pagamentos de pacientes", color = navy, fontSize = 28.sp, fontWeight = FontWeight.SemiBold)
-        Text("Entre uma vez. Depois, seus registros continuam disponíveis sem internet.",
-            color = muted, modifier = Modifier.padding(top = 12.dp, bottom = 24.dp))
-        OutlinedTextField(email, { email = it }, label = { Text("E-mail") }, singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email), modifier = Modifier.fillMaxWidth())
-        Spacer(Modifier.height(12.dp))
-        OutlinedTextField(password, { password = it }, label = { Text("Senha") }, singleLine = true,
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password), modifier = Modifier.fillMaxWidth())
-        if (message != null) Text(message!!, color = muted, modifier = Modifier.padding(top = 12.dp))
-        Spacer(Modifier.height(24.dp))
-        Button(enabled = email.isNotBlank() && password.length >= 6,
-            onClick = { vm.signIn(email, password, false) }, modifier = Modifier.fillMaxWidth()) { Text("Entrar") }
-        TextButton(enabled = email.isNotBlank() && password.length >= 6,
-            onClick = { vm.signIn(email, password, true) }, modifier = Modifier.fillMaxWidth()) { Text("Criar conta") }
-        Text("Use apelidos ou iniciais para identificar pacientes.", color = muted, fontSize = 12.sp,
-            modifier = Modifier.padding(top = 12.dp))
-    }
-}
-
-@Composable
 fun PatientPaymentsScreen(state: ScreenState, vm: PatientPaymentsViewModel) {
     var editor by remember { mutableStateOf<Editor?>(null) }
     val active = state.rows.filter { it.terms.active }
     val inactive = state.rows.filterNot { it.terms.active }
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
         Spacer(Modifier.height(28.dp))
-        Text("QUANTO RESTA / RECEITAS", color = teal, fontWeight = FontWeight.Bold, fontSize = 11.sp, letterSpacing = 1.4.sp)
+        Text("LOOT / RECEITAS", color = teal, fontWeight = FontWeight.Bold, fontSize = 11.sp, letterSpacing = 1.4.sp)
         Spacer(Modifier.height(18.dp))
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             TextButton(onClick = { vm.shiftMonth(-1) }, modifier = Modifier.width(44.dp)) { Text("‹", fontSize = 29.sp) }
@@ -130,8 +99,6 @@ fun PatientPaymentsScreen(state: ScreenState, vm: PatientPaymentsViewModel) {
             TextButton(onClick = { vm.shiftMonth(1) }, modifier = Modifier.width(44.dp)) { Text("›", fontSize = 29.sp) }
         }
         Text("Pagamentos de pacientes", color = muted, fontSize = 14.sp, modifier = Modifier.padding(start = 44.dp))
-        val sync by vm.syncStatus.collectAsStateWithLifecycle()
-        Text(sync, color = muted, fontSize = 11.sp, modifier = Modifier.padding(start = 44.dp, top = 4.dp))
         Spacer(Modifier.height(17.dp))
         Summary(state.totals)
         Spacer(Modifier.height(18.dp))
@@ -189,7 +156,7 @@ fun PatientPaymentsScreen(state: ScreenState, vm: PatientPaymentsViewModel) {
             dismissButton = { TextButton(onClick = { editor = null }) { Text("Cancelar") } })
         is Editor.DeleteFinal -> AlertDialog(onDismissRequest = { editor = null },
             title = { Text("Última confirmação") },
-            text = { Text("Há meses anteriores registrados. Excluir definitivamente apaga esse histórico também e sincroniza a exclusão. Deseja continuar?") },
+            text = { Text("Há meses anteriores registrados. Excluir definitivamente apaga esse histórico também. Deseja continuar?") },
             confirmButton = { TextButton(onClick = { vm.delete(action.row.patient.id); editor = null }) { Text("Excluir definitivamente", color = Color(0xFF9C4545)) } },
             dismissButton = { TextButton(onClick = { editor = null }) { Text("Manter paciente") } })
         null -> Unit

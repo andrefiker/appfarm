@@ -1,4 +1,4 @@
-name: Build Quanto Resta Patient Payments
+name: Build Loot Patient Payments
 on:
   push:
     branches: [ quanto-resta-patient-payments-v2 ]
@@ -40,7 +40,7 @@ jobs:
           if "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions "$APK" | grep -E 'READ_CONTACTS|READ_SMS|ACCESS_FINE_LOCATION'; then exit 1; fi
       - uses: actions/upload-artifact@v4
         with:
-          name: Quanto-Resta-Patient-Payments-debug-APK
+          name: Loot-Patient-Payments-debug-APK
           path: quanto-resta-patient-payments-v2/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
 
@@ -63,13 +63,10 @@ jobs:
           arch: x86_64
           profile: pixel_6
           disable-animations: true
-          script: |
-            cd quanto-resta-patient-payments-v2
-            gradle --no-daemon :app:connectedDebugAndroidTest
-            adb pull /sdcard/Android/data/com.andrefiker.lootpayments/files/patient-screen-actual.png patient-screen-actual.png
+          script: gradle -p quanto-resta-patient-payments-v2 --no-daemon :app:connectedDebugAndroidTest && adb pull /sdcard/Android/data/com.andrefiker.lootpayments/files/patient-screen-actual.png quanto-resta-patient-payments-v2/patient-screen-actual.png
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: Quanto-Resta-actual-screen
+          name: Loot-actual-screen
           path: quanto-resta-patient-payments-v2/patient-screen-actual.png
           if-no-files-found: ignore

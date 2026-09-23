@@ -31,6 +31,7 @@ class PaymentsPersistenceTest {
         var dao = db.dao()
         val created = System.currentTimeMillis()
         dao.putPatient(Patient(id, owner, "A.L.", 75000, true, null, sep.key(), created, created))
+        assertEquals(owner, dao.firstOwner())
         dao.ensureMonth(owner, sep)
         assertEquals(1, dao.months(owner, sep.key()).first().size)
         val september = dao.month(owner, id, sep.key())!!
@@ -66,10 +67,9 @@ class PaymentsPersistenceTest {
 
     @Test fun renderPatientScreenWithFakeAliases() = runBlocking {
         val owner = "33333333-3333-4333-8333-333333333333"
-        val store = SessionStore(context)
         val dao = PaymentsDatabase.get(context).dao()
         dao.clearAll()
-        store.save(UserSession(owner, "offline-test-token", "offline-test-refresh", Long.MAX_VALUE))
+        context.getSharedPreferences("loot-local-owner", 0).edit().remove("id").commit()
         val month = YearMonth.now()
         val now = System.currentTimeMillis()
         val a = "44444444-4444-4444-8444-444444444444"
@@ -92,6 +92,6 @@ class PaymentsPersistenceTest {
                 bitmap.recycle()
                 assertTrue(file.length() > 10000)
             } finally { scenario.close() }
-        } finally { store.clear(); dao.clearAll() }
+        } finally { dao.clearAll(); context.getSharedPreferences("loot-local-owner", 0).edit().remove("id").commit() }
     }
 }

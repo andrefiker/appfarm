@@ -45,6 +45,9 @@ fun YearMonth.key(): Int = year * 12 + monthValue
 
 @Dao
 interface PaymentsDao {
+    /** Reuse the on-device owner when upgrading from the sign-in build. */
+    @Query("SELECT ownerId FROM patients WHERE deletedAt IS NULL ORDER BY createdAt LIMIT 1")
+    suspend fun firstOwner(): String?
     @Query("SELECT * FROM patients WHERE ownerId = :owner AND deletedAt IS NULL ORDER BY createdAt, id")
     fun patients(owner: String): Flow<List<Patient>>
     @Query("SELECT * FROM patient_months WHERE ownerId = :owner AND monthKey = :key")

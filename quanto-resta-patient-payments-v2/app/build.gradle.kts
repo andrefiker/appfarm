@@ -12,16 +12,14 @@ android {
         applicationId = "com.andrefiker.lootpayments"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
-        buildConfigField("String", "SUPABASE_URL", "\"https://dmszzfuuojdhpwutkfpl.supabase.co\"")
-        buildConfigField("String", "SUPABASE_PUBLISHABLE_KEY", "\"sb_publishable_rTBPRRvFv-DUfrJREOaaug_do62kghE\"")
+        versionCode = 2
+        versionName = "1.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes { release { isMinifyEnabled = false } }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     kotlinOptions { jvmTarget = "17" }
-    buildFeatures { compose = true; buildConfig = true }
+    buildFeatures { compose = true }
     packaging { resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" } }
 }
 
@@ -37,8 +35,6 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
-    implementation("androidx.work:work-runtime-ktx:2.9.1")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
     ksp("androidx.room:room-compiler:2.6.1")
     debugImplementation("androidx.compose.ui:ui-tooling")
     testImplementation("junit:junit:4.13.2")

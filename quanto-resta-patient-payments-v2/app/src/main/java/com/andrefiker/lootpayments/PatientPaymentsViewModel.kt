@@ -1,6 +1,7 @@
 package com.andrefiker.lootpayments
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -22,21 +23,16 @@ data class ScreenState(val month: YearMonth, val rows: List<PatientRow>, val tot
 @OptIn(ExperimentalCoroutinesApi::class)
 class PatientPaymentsViewModel(application: Application) : AndroidViewModel(application) {
     private val dao = PaymentsDatabase.get(application).dao()
-    private val store = SessionStore(application)
-    private val remote = RemoteApi(store)
-    private val sync = SyncEngine(application, dao, store)
+    private val owner = MutableStateFlow<String?>(null)
     private val selected = MutableStateFlow(YearMonth.now())
-    val session = store.session.asStateFlow()
-    val authMessage = MutableStateFlow<String?>(null)
-    val syncStatus = SyncEngine.status.asStateFlow()
+    val ready = owner.map { it != null }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
-    val state = combine(selected, session) { month, session -> month to session }.flatMapLatest { (month, session) ->
-        if (session == null) flowOf(ScreenState.empty(month))
+    val state = combine(selected, owner) { month, id -> month to id }.flatMapLatest { (month, id) ->
+        if (id == null) flowOf(ScreenState.empty(month))
         else flow {
-            dao.ensureMonth(session.userId, month)
-            sync.request()
-            emitAll(combine(dao.patients(session.userId), dao.months(session.userId, month.key()),
-                dao.monthsAllFlow(session.userId)) { patients, months, allMonths ->
+            dao.ensureMonth(id, month)
+            emitAll(combine(dao.patients(id), dao.months(id, month.key()),
+                dao.monthsAllFlow(id)) { patients, months, allMonths ->
                 val byId = patients.associateBy { it.id }
                 val history = allMonths.groupBy { it.patientId }
                 val rows = months.mapNotNull { payment ->
@@ -48,69 +44,63 @@ class PatientPaymentsViewModel(application: Application) : AndroidViewModel(appl
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ScreenState.empty(selected.value))
 
-    init { if (session.value != null) { sync.schedulePeriodic(); sync.request() } }
-    fun shiftMonth(delta: Long) { selected.value = selected.value.plusMonths(delta) }
-    fun signIn(email: String, password: String, register: Boolean) = viewModelScope.launch {
-        authMessage.value = "Conectando…"
-        try {
-            if (register && !remote.signUp(email, password)) {
-                authMessage.value = "Confira seu e-mail para confirmar a conta. Depois, entre aqui."
-                return@launch
-            }
-            if (!register) remote.signIn(email, password)
-            authMessage.value = null
-            sync.schedulePeriodic(); sync.request()
-        } catch (_: Exception) { authMessage.value = "Não foi possível entrar. Confira conexão, e-mail e senha." }
+    init {
+        viewModelScope.launch {
+            val prefs = application.getSharedPreferences("loot-local-owner", Context.MODE_PRIVATE)
+            val id = prefs.getString("id", null) ?: dao.firstOwner() ?: UUID.randomUUID().toString()
+            check(prefs.edit().putString("id", id).commit()) { "Could not save local owner" }
+            owner.value = id
+        }
     }
+    fun shiftMonth(delta: Long) { selected.value = selected.value.plusMonths(delta) }
     fun add(name: String, amount: Long, active: Boolean) {
-        val session = session.value ?: return
+        val idOwner = owner.value ?: return
         val month = selected.value
         viewModelScope.launch {
             val id = UUID.randomUUID().toString()
             val now = System.currentTimeMillis()
-            dao.putPatient(Patient(id, session.userId, name.trim(), amount, active,
+            dao.putPatient(Patient(id, idOwner, name.trim(), amount, active,
                 if (active) null else month.key(), month.key(), now, now))
-            dao.ensureMonth(session.userId, month)
-            sync.request()
+            dao.ensureMonth(idOwner, month)
         }
     }
     fun rename(id: String, name: String) {
-        val owner = session.value?.userId ?: return
+        val owner = owner.value ?: return
         viewModelScope.launch {
             val patient = dao.patient(owner, id) ?: return@launch
             dao.putPatient(patient.copy(name = name.trim(), updatedAt = System.currentTimeMillis(),
-                revision = patient.revision + 1, dirty = true)); sync.request()
+                revision = patient.revision + 1, dirty = true))
         }
     }
     fun changeAmount(row: PatientRow, cents: Long) {
-        val owner = session.value?.userId ?: return
+        val owner = owner.value ?: return
         val month = selected.value
-        viewModelScope.launch { dao.changeDefault(owner, row.patient.id, month, cents); sync.request() }
+        viewModelScope.launch { dao.changeDefault(owner, row.patient.id, month, cents) }
     }
     fun setPaid(row: PatientRow, paid: Long) {
-        val owner = session.value?.userId ?: return
+        val owner = owner.value ?: return
         viewModelScope.launch {
             val existing = dao.month(owner, row.patient.id, row.payment.monthKey) ?: return@launch
             dao.putMonth(existing.copy(paidCents = paid, forceIncomplete = false,
-                updatedAt = System.currentTimeMillis(), revision = existing.revision + 1, dirty = true)); sync.request()
+                updatedAt = System.currentTimeMillis(), revision = existing.revision + 1, dirty = true))
         }
     }
     fun setFull(row: PatientRow, full: Boolean) {
-        val owner = session.value?.userId ?: return
+        val owner = owner.value ?: return
         viewModelScope.launch {
             val existing = dao.month(owner, row.patient.id, row.payment.monthKey) ?: return@launch
             dao.putMonth(existing.copy(paidCents = if (full) existing.expectedCents else existing.paidCents,
                 forceIncomplete = !full, updatedAt = System.currentTimeMillis(), revision = existing.revision + 1,
-                dirty = true)); sync.request()
+                dirty = true))
         }
     }
     fun setArchived(row: PatientRow, archive: Boolean) {
-        val owner = session.value?.userId ?: return
+        val owner = owner.value ?: return
         val month = selected.value
-        viewModelScope.launch { dao.setArchive(owner, row.patient.id, month, archive); sync.request() }
+        viewModelScope.launch { dao.setArchive(owner, row.patient.id, month, archive) }
     }
     fun delete(id: String) {
-        val owner = session.value?.userId ?: return
-        viewModelScope.launch { dao.erasePatient(owner, id); sync.request() }
+        val owner = owner.value ?: return
+        viewModelScope.launch { dao.erasePatient(owner, id) }
     }
 }

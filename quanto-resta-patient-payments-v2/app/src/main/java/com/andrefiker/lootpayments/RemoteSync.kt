@@ -164,6 +164,13 @@ class SyncEngine(private val context: Context, private val dao: PaymentsDao, pri
         val owner = session.userId
         status.value = "Sincronizando"
         try {
+            // Remote deletions take precedence, so an old offline device cannot re-upload their months.
+            for (json in api.all("qr_patients", session.access)) {
+                if (!json.isNull("deleted_at")) {
+                    val local = dao.patient(owner, json.getString("id"))
+                    if (local != null && local.deletedAt == null) dao.erasePatient(owner, local.id)
+                }
+            }
             val patients = dao.allPatients(owner).filter { it.dirty }
             for (p in patients) {
                 api.upsert("qr_patients", JSONObject().put("id", p.id).put("owner_user_id", owner)

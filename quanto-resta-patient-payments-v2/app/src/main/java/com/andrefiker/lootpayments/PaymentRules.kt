@@ -23,11 +23,10 @@ object Money {
             else -> { if (!trimmed.matches(Regex("[0-9]+"))) return null; trimmed }
         }
         val parts = normalized.split('.')
-        return try {
-            val whole = parts[0].toLong()
-            val fraction = if (parts.size == 1) 0L else parts[1].padEnd(2, '0').toLong()
-            Math.addExact(Math.multiplyExact(whole, 100), fraction)
-        } catch (_: ArithmeticException) { null }
+        val whole = parts[0].toLongOrNull() ?: return null
+        val fraction = if (parts.size == 1) 0L else parts[1].padEnd(2, '0').toLongOrNull() ?: return null
+        return try { Math.addExact(Math.multiplyExact(whole, 100), fraction) }
+        catch (_: ArithmeticException) { null }
     }
 
     fun format(cents: Long): String = NumberFormat.getCurrencyInstance(Locale("pt", "BR")).format(BigDecimal.valueOf(cents, 2))

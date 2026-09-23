@@ -63,7 +63,7 @@ jobs:
           arch: x86_64
           profile: pixel_6
           disable-animations: true
-          script: gradle -p quanto-resta-patient-payments-v2 --no-daemon :app:connectedDebugAndroidTest; result=$?; adb pull /sdcard/Android/data/com.andrefiker.lootpayments/files/patient-screen-actual.png quanto-resta-patient-payments-v2/patient-screen-actual.png || true; adb pull /sdcard/Android/data/com.andrefiker.lootpayments/files/expense-screen-actual.png quanto-resta-patient-payments-v2/expense-screen-actual.png || true; exit $result
+          script: gradle -p quanto-resta-patient-payments-v2 --no-daemon :app:connectedDebugAndroidTest; result=$?; adb pull /sdcard/Pictures/LootQA/patient-screen-actual.png quanto-resta-patient-payments-v2/patient-screen-actual.png || true; adb pull /sdcard/Pictures/LootQA/expense-screen-actual.png quanto-resta-patient-payments-v2/expense-screen-actual.png || true; exit $result
       - uses: actions/upload-artifact@v4
         if: always()
         with:

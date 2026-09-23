@@ -16,10 +16,11 @@ import org.junit.Test
 import org.junit.Rule
 import org.junit.runner.RunWith
 import java.time.YearMonth
-import java.io.File
-import java.io.FileOutputStream
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.content.ContentValues
+import android.os.Environment
+import android.provider.MediaStore
 
 @RunWith(AndroidJUnit4::class)
 class PaymentsPersistenceTest {
@@ -109,10 +110,18 @@ class PaymentsPersistenceTest {
             val view = activity.window.decorView
             val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
             view.draw(Canvas(bitmap))
-            val file = File(context.getExternalFilesDir(null), filename)
-            FileOutputStream(file).use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+            val values = ContentValues().apply {
+                put(MediaStore.Images.Media.DISPLAY_NAME, filename)
+                put(MediaStore.Images.Media.MIME_TYPE, "image/png")
+                put(MediaStore.Images.Media.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/LootQA")
+                put(MediaStore.Images.Media.IS_PENDING, 1)
+            }
+            val resolver = context.contentResolver
+            val image = requireNotNull(resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values))
+            resolver.openOutputStream(image)!!.use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+            resolver.update(image, ContentValues().apply { put(MediaStore.Images.Media.IS_PENDING, 0) }, null, null)
             bitmap.recycle()
-            assertTrue("Could not save $filename", file.length() > 1000)
+            assertTrue("Could not save $filename", resolver.openFileDescriptor(image, "r")!!.use { it.statSize > 1000 })
         }
     }
 }

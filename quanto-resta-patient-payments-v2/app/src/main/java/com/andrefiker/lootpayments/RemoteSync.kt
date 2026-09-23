@@ -67,6 +67,8 @@ class SessionStore(context: Context) {
             throw IllegalStateException("Could not save login")
         session.value = value
     }
+    /** Workers may rotate refresh tokens in another SessionStore instance. */
+    fun latest(): UserSession? = read().also { if (it != null && it != session.value) session.value = it }
     fun clear() { prefs.edit().remove("data").commit(); session.value = null }
 }
 
@@ -114,7 +116,7 @@ class RemoteApi(private val store: SessionStore) {
         return false
     }
     suspend fun validSession(): UserSession? {
-        val current = store.session.value ?: return null
+        val current = store.latest() ?: return null
         if (System.currentTimeMillis() < current.expiresAt - 90_000) return current
         val payload = JSONObject().put("refresh_token", current.refresh)
         val refreshed = sessionFrom(JSONObject(call("/auth/v1/token?grant_type=refresh_token", "POST", payload.toString())))
@@ -141,8 +143,10 @@ class RemoteApi(private val store: SessionStore) {
 
 class SyncEngine(private val context: Context, private val dao: PaymentsDao, private val store: SessionStore) {
     private val api = RemoteApi(store)
-    private val mutex = Mutex()
-    val status = MutableStateFlow("Local")
+    companion object {
+        private val mutex = Mutex()
+        val status = MutableStateFlow("Local")
+    }
     fun request() {
         val constraints = Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
         val work = OneTimeWorkRequestBuilder<SyncWorker>().setConstraints(constraints).build()

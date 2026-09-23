@@ -28,7 +28,7 @@ class PatientPaymentsViewModel(application: Application) : AndroidViewModel(appl
     private val selected = MutableStateFlow(YearMonth.now())
     val session = store.session.asStateFlow()
     val authMessage = MutableStateFlow<String?>(null)
-    val syncStatus = sync.status.asStateFlow()
+    val syncStatus = SyncEngine.status.asStateFlow()
 
     val state = combine(selected, session) { month, session -> month to session }.flatMapLatest { (month, session) ->
         if (session == null) flowOf(ScreenState.empty(month))
@@ -41,7 +41,7 @@ class PatientPaymentsViewModel(application: Application) : AndroidViewModel(appl
                 val history = allMonths.groupBy { it.patientId }
                 val rows = months.mapNotNull { payment ->
                     byId[payment.patientId]?.let { patient -> PatientRow(patient, payment,
-                        history[patient.id].orEmpty().any { it.monthKey < month.key() }) }
+                        history[patient.id].orEmpty().any { it.monthKey < month.key() || it.paidCents > 0 }) }
                 }.sortedWith(compareByDescending<PatientRow> { it.payment.included }.thenBy { it.patient.name.lowercase() })
                 ScreenState(month, rows, PaymentRules.totals(rows.map { it.line }))
             })

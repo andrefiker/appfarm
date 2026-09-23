@@ -271,6 +271,6 @@ private fun PatientForm(onDismiss: () -> Unit, onSave: (String, Long, Boolean) -
                 Checkbox(active, { active = it }); Text("Ativo")
             }
         } },
-        confirmButton = { TextButton(enabled = name.trim().isNotEmpty() && cents != null, onClick = { onSave(name.trim(), cents!!) }) { Text("Adicionar") } },
+        confirmButton = { TextButton(enabled = name.trim().isNotEmpty() && cents != null, onClick = { onSave(name.trim(), cents!!, active) }) { Text("Adicionar") } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } })
 }

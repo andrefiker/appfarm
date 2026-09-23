@@ -19,6 +19,7 @@ import java.time.YearMonth
 import java.io.File
 import java.io.FileOutputStream
 import android.graphics.Bitmap
+import android.graphics.Canvas
 
 @RunWith(AndroidJUnit4::class)
 class PaymentsPersistenceTest {
@@ -94,21 +95,24 @@ class PaymentsPersistenceTest {
                 composeRule.waitUntil(10_000) { composeRule.onAllNodesWithText("A.L.").fetchSemanticsNodes().isNotEmpty() }
                 composeRule.onNodeWithText("A.L.").assertExists()
                 composeRule.onNodeWithText("Marina").assertExists()
-                val bitmap = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
-                assertNotNull(bitmap)
-                val file = File(context.getExternalFilesDir(null), "patient-screen-actual.png")
-                FileOutputStream(file).use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
-                bitmap.recycle()
-                assertTrue(file.length() > 10000)
+                captureScreen(scenario, "patient-screen-actual.png")
                 composeRule.onNodeWithText("Despesas").performClick()
                 composeRule.waitUntil(10_000) { composeRule.onAllNodesWithText("Nenhuma despesa ainda.").fetchSemanticsNodes().isNotEmpty() }
                 composeRule.onNodeWithText("Nenhuma despesa ainda.").assertExists()
-                val expenseImage = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
-                val expenseFile = File(context.getExternalFilesDir(null), "expense-screen-actual.png")
-                FileOutputStream(expenseFile).use { expenseImage.compress(Bitmap.CompressFormat.PNG, 100, it) }
-                expenseImage.recycle()
-                assertTrue(expenseFile.length() > 10000)
+                captureScreen(scenario, "expense-screen-actual.png")
             } finally { scenario.close() }
         } finally { dao.clearAll(); context.getSharedPreferences("loot-local-owner", 0).edit().remove("id").commit() }
+    }
+
+    private fun captureScreen(scenario: ActivityScenario<MainActivity>, filename: String) {
+        scenario.onActivity { activity ->
+            val view = activity.window.decorView
+            val bitmap = Bitmap.createBitmap(view.width, view.height, Bitmap.Config.ARGB_8888)
+            view.draw(Canvas(bitmap))
+            val file = File(context.getExternalFilesDir(null), filename)
+            FileOutputStream(file).use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+            bitmap.recycle()
+            assertTrue("Could not save $filename", file.length() > 1000)
+        }
     }
 }

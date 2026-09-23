@@ -2,6 +2,8 @@ package com.andrefiker.lootpayments
 
 import android.content.Context
 import androidx.room.*
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.flow.Flow
 import java.time.YearMonth
 import java.util.UUID
@@ -129,13 +131,25 @@ interface PaymentsDao {
     }
 }
 
-@Database(entities = [Patient::class, PatientMonth::class], version = 1, exportSchema = false)
+/** Only adds empty tables. No legacy expense data is read or imported. */
+val MIGRATION_1_2 = object : Migration(1, 2) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("""CREATE TABLE IF NOT EXISTS `expenses` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `defaultCents` INTEGER NOT NULL, `active` INTEGER NOT NULL, `archivedFromMonth` INTEGER, `createdMonth` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))""")
+        db.execSQL("""CREATE TABLE IF NOT EXISTS `expense_months` (`id` TEXT NOT NULL, `expenseId` TEXT NOT NULL, `monthKey` INTEGER NOT NULL, `year` INTEGER NOT NULL, `month` INTEGER NOT NULL, `expectedCents` INTEGER NOT NULL, `paidCents` INTEGER NOT NULL, `included` INTEGER NOT NULL, `forceIncomplete` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`expenseId`) REFERENCES `expenses`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE)""")
+        db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_expense_months_expenseId_monthKey` ON `expense_months` (`expenseId`, `monthKey`)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_expense_months_expenseId` ON `expense_months` (`expenseId`)")
+    }
+}
+
+@Database(entities = [Patient::class, PatientMonth::class, Expense::class, ExpenseMonth::class], version = 2, exportSchema = false)
 abstract class PaymentsDatabase : RoomDatabase() {
     abstract fun dao(): PaymentsDao
+    abstract fun expenses(): ExpensesDao
     companion object {
         @Volatile private var instance: PaymentsDatabase? = null
         fun get(context: Context): PaymentsDatabase = instance ?: synchronized(this) {
             instance ?: Room.databaseBuilder(context.applicationContext, PaymentsDatabase::class.java, "qr-payments-v2.db")
+                .addMigrations(MIGRATION_1_2)
                 .build().also { instance = it }
         }
     }

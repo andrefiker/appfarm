@@ -1,4 +1,4 @@
-name: Build Loot Patient Payments
+name: Build Loot Patients and Expenses
 on:
   push:
     branches: [ quanto-resta-patient-payments-v2 ]
@@ -40,7 +40,7 @@ jobs:
           if "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions "$APK" | grep -E 'READ_CONTACTS|READ_SMS|ACCESS_FINE_LOCATION'; then exit 1; fi
       - uses: actions/upload-artifact@v4
         with:
-          name: Loot-Patient-Payments-debug-APK
+          name: Loot-Patients-Expenses-debug-APK
           path: quanto-resta-patient-payments-v2/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
 
@@ -59,14 +59,16 @@ jobs:
           gradle-version: '8.9'
       - uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 35
+          api-level: 33
           arch: x86_64
           profile: pixel_6
           disable-animations: true
-          script: gradle -p quanto-resta-patient-payments-v2 --no-daemon :app:connectedDebugAndroidTest && adb pull /sdcard/Android/data/com.andrefiker.lootpayments/files/patient-screen-actual.png quanto-resta-patient-payments-v2/patient-screen-actual.png
+          script: gradle -p quanto-resta-patient-payments-v2 --no-daemon :app:connectedDebugAndroidTest && adb pull /sdcard/Android/data/com.andrefiker.lootpayments/files/patient-screen-actual.png quanto-resta-patient-payments-v2/patient-screen-actual.png && adb pull /sdcard/Android/data/com.andrefiker.lootpayments/files/expense-screen-actual.png quanto-resta-patient-payments-v2/expense-screen-actual.png
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: Loot-actual-screen
-          path: quanto-resta-patient-payments-v2/patient-screen-actual.png
+          name: Loot-actual-screens
+          path: |
+            quanto-resta-patient-payments-v2/patient-screen-actual.png
+            quanto-resta-patient-payments-v2/expense-screen-actual.png
           if-no-files-found: ignore

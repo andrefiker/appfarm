@@ -4,11 +4,17 @@ import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.core.app.ActivityScenario
+import androidx.compose.ui.test.assertExists
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.Rule
 import org.junit.runner.RunWith
 import java.time.YearMonth
 import java.io.File
@@ -17,6 +23,7 @@ import android.graphics.Bitmap
 
 @RunWith(AndroidJUnit4::class)
 class PaymentsPersistenceTest {
+    @get:Rule val composeRule = createEmptyComposeRule()
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
     private val fileName = "qr-test.db"
     private val owner = "fake-owner-uuid"
@@ -72,25 +79,36 @@ class PaymentsPersistenceTest {
         context.getSharedPreferences("loot-local-owner", 0).edit().remove("id").commit()
         val month = YearMonth.now()
         val now = System.currentTimeMillis()
-        val a = "44444444-4444-4444-8444-444444444444"
-        val b = "55555555-5555-4555-8555-555555555555"
+        val aliases = listOf("A.L.", "Marina", "Rafael", "C.S.", "Patricia", "Bruno", "L.F.", "Tiago")
         try {
-            dao.putPatient(Patient(a, owner, "A.L.", 90000, true, null, month.key(), now, now))
-            dao.putPatient(Patient(b, owner, "Marina", 75000, true, null, month.key(), now + 1, now))
+            aliases.forEachIndexed { index, alias ->
+                dao.putPatient(Patient("fake-patient-$index", owner, alias,
+                    if (index == 0) 90000 else 75000, true, null, month.key(), now + index, now))
+            }
             dao.ensureMonth(owner, month)
-            val first = dao.month(owner, a, month.key())!!
-            val second = dao.month(owner, b, month.key())!!
+            val first = dao.month(owner, "fake-patient-0", month.key())!!
+            val second = dao.month(owner, "fake-patient-1", month.key())!!
             dao.putMonth(first.copy(paidCents = 90000))
             dao.putMonth(second.copy(paidCents = 37500))
             val scenario = ActivityScenario.launch(MainActivity::class.java)
             try {
-                Thread.sleep(1600) // allow Compose and Room's asynchronous state collection to settle
+                composeRule.waitUntil(10_000) { composeRule.onAllNodesWithText("A.L.").fetchSemanticsNodes().isNotEmpty() }
+                composeRule.onNodeWithText("A.L.").assertExists()
+                composeRule.onNodeWithText("Marina").assertExists()
                 val bitmap = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
                 assertNotNull(bitmap)
                 val file = File(context.getExternalFilesDir(null), "patient-screen-actual.png")
                 FileOutputStream(file).use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
                 bitmap.recycle()
                 assertTrue(file.length() > 10000)
+                composeRule.onNodeWithText("Despesas").performClick()
+                composeRule.waitUntil(10_000) { composeRule.onAllNodesWithText("Nenhuma despesa ainda.").fetchSemanticsNodes().isNotEmpty() }
+                composeRule.onNodeWithText("Nenhuma despesa ainda.").assertExists()
+                val expenseImage = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
+                val expenseFile = File(context.getExternalFilesDir(null), "expense-screen-actual.png")
+                FileOutputStream(expenseFile).use { expenseImage.compress(Bitmap.CompressFormat.PNG, 100, it) }
+                expenseImage.recycle()
+                assertTrue(expenseFile.length() > 10000)
             } finally { scenario.close() }
         } finally { dao.clearAll(); context.getSharedPreferences("loot-local-owner", 0).edit().remove("id").commit() }
     }

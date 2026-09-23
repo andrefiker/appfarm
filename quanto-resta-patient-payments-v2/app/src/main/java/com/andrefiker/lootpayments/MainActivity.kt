@@ -4,8 +4,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,6 +29,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
@@ -35,11 +40,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -50,12 +58,12 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-private val navy = Color(0xFF233943)
-private val teal = Color(0xFF397E79)
-private val muted = Color(0xFF687A7D)
-private val paper = Color(0xFFF8F9F5)
-private val accent = Color(0xFFE9F2EE)
-private val dateFormatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale("pt", "BR"))
+internal val navy = Color(0xFF233943)
+internal val teal = Color(0xFF397E79)
+internal val muted = Color(0xFF687A7D)
+internal val paper = Color(0xFFF8F9F5)
+internal val accent = Color(0xFFE9F2EE)
+internal val dateFormatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale("pt", "BR"))
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,8 +74,30 @@ class MainActivity : ComponentActivity() {
                 val vm: PatientPaymentsViewModel = viewModel()
                 val state by vm.state.collectAsStateWithLifecycle()
                 val ready by vm.ready.collectAsStateWithLifecycle()
-                if (ready) PatientPaymentsScreen(state, vm)
-                else Text("Carregando Loot…", modifier = Modifier.padding(28.dp), color = muted)
+                val expenses: ExpensesViewModel = viewModel()
+                var destination by rememberSaveable { mutableStateOf(0) }
+                Column(Modifier.fillMaxSize().background(paper)) {
+                    androidx.compose.foundation.layout.Box(Modifier.weight(1f)) {
+                        if (destination == 0) {
+                            if (ready) PatientPaymentsScreen(state, vm)
+                            else Text("Carregando Loot…", modifier = Modifier.padding(28.dp), color = muted)
+                        } else {
+                            val expenseState by expenses.state.collectAsStateWithLifecycle()
+                            ExpensesScreen(expenseState, expenses)
+                        }
+                    }
+                    Row(Modifier.fillMaxWidth().background(Color.White).padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        listOf("Pacientes", "Despesas").forEachIndexed { index, label ->
+                            Button(onClick = { destination = index }, modifier = Modifier.weight(1f),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = ButtonDefaults.buttonColors(containerColor = if (destination == index) teal else accent,
+                                    contentColor = if (destination == index) Color.White else navy)) {
+                                Text(label)
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -89,39 +119,48 @@ fun PatientPaymentsScreen(state: ScreenState, vm: PatientPaymentsViewModel) {
     val active = state.rows.filter { it.terms.active }
     val inactive = state.rows.filterNot { it.terms.active }
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
-        Spacer(Modifier.height(28.dp))
+        Spacer(Modifier.height(12.dp))
         Text("LOOT / RECEITAS", color = teal, fontWeight = FontWeight.Bold, fontSize = 11.sp, letterSpacing = 1.4.sp)
-        Spacer(Modifier.height(18.dp))
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            TextButton(onClick = { vm.shiftMonth(-1) }, modifier = Modifier.width(44.dp)) { Text("‹", fontSize = 29.sp) }
+            TextButton(onClick = { vm.shiftMonth(-1) }, modifier = Modifier.width(44.dp)) { Text("‹", fontSize = 27.sp) }
             Text(state.month.format(dateFormatter).replaceFirstChar { it.titlecase(Locale("pt", "BR")) },
-                modifier = Modifier.weight(1f), color = navy, fontSize = 24.sp, fontWeight = FontWeight.SemiBold)
-            TextButton(onClick = { vm.shiftMonth(1) }, modifier = Modifier.width(44.dp)) { Text("›", fontSize = 29.sp) }
+                modifier = Modifier.weight(1f), color = navy, fontSize = 21.sp, fontWeight = FontWeight.SemiBold)
+            TextButton(onClick = { vm.shiftMonth(1) }, modifier = Modifier.width(44.dp)) { Text("›", fontSize = 27.sp) }
         }
-        Text("Pagamentos de pacientes", color = muted, fontSize = 14.sp, modifier = Modifier.padding(start = 44.dp))
-        Spacer(Modifier.height(17.dp))
         Summary(state.totals)
-        Spacer(Modifier.height(18.dp))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("PACIENTES", color = muted, fontWeight = FontWeight.Bold, fontSize = 11.sp, letterSpacing = 1.sp)
-            Text("${active.size} ativos", color = muted, fontSize = 12.sp)
-        }
         Spacer(Modifier.height(9.dp))
-        LazyColumn(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(9.dp)) {
-            if (active.isEmpty()) item {
-                Text("Nenhum paciente ativo neste mês.", color = muted, modifier = Modifier.padding(vertical = 26.dp))
+        Box(Modifier.weight(1f)) {
+            LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 66.dp),
+                verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                if (active.isEmpty()) item {
+                    Text("Nenhum paciente ativo neste mês.", color = muted, modifier = Modifier.padding(vertical = 20.dp))
+                }
+                items(active, key = { it.patient.id }) { row -> CompactPaymentRow(
+                    name = row.patient.name, expected = row.payment.expectedCents,
+                    paid = row.payment.paidCents, full = row.line.full,
+                    enabled = row.terms.active && row.terms.expectedCents > 0,
+                    onName = { editor = Editor.Name(row) }, onAmount = { editor = Editor.Amount(row) },
+                    onPaid = { editor = Editor.Paid(row) }, onManage = { editor = Editor.Manage(row) },
+                    onFull = { vm.setFull(row, it) })
+                }
+                if (inactive.isNotEmpty()) {
+                    item { Text("INATIVOS", color = muted, fontSize = 11.sp, fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(top = 10.dp, bottom = 3.dp)) }
+                    items(inactive, key = { it.patient.id }) { row -> CompactPaymentRow(
+                        name = row.patient.name, expected = row.payment.expectedCents,
+                        paid = row.payment.paidCents, full = row.line.full, enabled = false,
+                        onName = { editor = Editor.Name(row) }, onAmount = { editor = Editor.Amount(row) },
+                        onPaid = { editor = Editor.Paid(row) }, onManage = { editor = Editor.Manage(row) },
+                        onFull = { vm.setFull(row, it) })
+                    }
+                }
             }
-            items(active, key = { it.patient.id }) { row -> PatientCard(row, { editor = it }) { full -> vm.setFull(row, full) } }
-            if (inactive.isNotEmpty()) {
-                item { Text("INATIVOS", color = muted, fontSize = 11.sp, fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(top = 18.dp, bottom = 5.dp)) }
-                items(inactive, key = { it.patient.id }) { row -> PatientCard(row, { editor = it }) { full -> vm.setFull(row, full) } }
+            FloatingActionButton(onClick = { editor = Editor.Add },
+                modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = 10.dp)
+                    .semantics { contentDescription = "Adicionar paciente" },
+                shape = RoundedCornerShape(15.dp), containerColor = teal, contentColor = Color.White) {
+                Text("+", fontSize = 26.sp)
             }
-            item { Spacer(Modifier.height(10.dp)) }
-        }
-        Button(onClick = { editor = Editor.Add }, modifier = Modifier.fillMaxWidth().padding(bottom = 18.dp),
-            shape = RoundedCornerShape(14.dp), colors = ButtonDefaults.buttonColors(containerColor = teal)) {
-            Text("+ Adicionar paciente", modifier = Modifier.padding(vertical = 8.dp))
         }
     }
     when (val action = editor) {
@@ -164,51 +203,55 @@ fun PatientPaymentsScreen(state: ScreenState, vm: PatientPaymentsViewModel) {
 }
 
 @Composable
-private fun Summary(totals: Totals) {
-    Card(colors = CardDefaults.cardColors(containerColor = accent), shape = RoundedCornerShape(19.dp)) {
-        Column(Modifier.fillMaxWidth().padding(18.dp)) {
-            Text("${totals.count} pacientes  ·  ${Money.format(totals.expected)} previstos", color = navy, fontSize = 14.sp)
-            Spacer(Modifier.height(12.dp))
+internal fun Summary(totals: Totals, label: String = "pacientes", paidLabel: String = "Recebido", showOverpayment: Boolean = false) {
+    val over = showOverpayment && totals.paid > totals.expected
+    Card(colors = CardDefaults.cardColors(containerColor = accent), shape = RoundedCornerShape(15.dp)) {
+        Column(Modifier.fillMaxWidth().padding(horizontal = 13.dp, vertical = 9.dp)) {
+            Text("${totals.count} $label  ·  ${Money.format(totals.expected)} previstos", color = navy, fontSize = 13.sp)
+            Spacer(Modifier.height(3.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Column { Text("RECEBIDO", color = muted, fontSize = 11.sp); Text(Money.format(totals.paid), color = teal, fontSize = 20.sp, fontWeight = FontWeight.Bold) }
-                Column(horizontalAlignment = Alignment.End) { Text("RESTANTE", color = muted, fontSize = 11.sp); Text(Money.format(totals.remaining), color = navy, fontSize = 20.sp, fontWeight = FontWeight.SemiBold) }
+                Text("$paidLabel ${Money.format(totals.paid)}", color = teal, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                Text(if (over) "A mais ${Money.format(totals.paid - totals.expected)}"
+                    else "Resta ${Money.format(totals.remaining)}", color = navy, fontSize = 13.sp)
             }
         }
     }
 }
 
+/** Shared compact row: full payments hide the redundant paid amount but remain editable. */
 @Composable
-private fun PatientCard(row: PatientRow, edit: (Editor) -> Unit, setFull: (Boolean) -> Unit) {
-    Card(colors = CardDefaults.cardColors(containerColor = Color.White), shape = RoundedCornerShape(16.dp),
+internal fun CompactPaymentRow(name: String, expected: Long, paid: Long, full: Boolean, enabled: Boolean,
+    onName: () -> Unit, onAmount: () -> Unit, onPaid: () -> Unit, onManage: () -> Unit,
+    onFull: (Boolean) -> Unit) {
+    Card(colors = CardDefaults.cardColors(containerColor = Color.White), shape = RoundedCornerShape(14.dp),
         border = BorderStroke(1.dp, Color(0xFFE6EBE8))) {
-        Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    Text(row.patient.name, color = navy, fontWeight = FontWeight.SemiBold, fontSize = 16.sp,
-                        maxLines = 1, overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.clickable { edit(Editor.Name(row)) })
-                    Text("${Money.format(row.terms.expectedCents)} / mês", color = muted, fontSize = 13.sp,
-                        modifier = Modifier.clickable { edit(Editor.Amount(row)) })
-                }
-                TextButton(onClick = { edit(Editor.Manage(row)) }) { Text("Editar", color = teal, fontSize = 12.sp) }
+        Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
+            Row(Modifier.fillMaxWidth().heightIn(min = 28.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(name, color = navy, fontWeight = FontWeight.SemiBold, fontSize = 15.sp,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f).clickable(onClick = onName))
+                Text("${Money.format(expected)} / mês", color = muted, fontSize = 13.sp,
+                    modifier = Modifier.clickable(onClick = onAmount))
             }
-            HorizontalDivider(Modifier.padding(vertical = 8.dp), color = Color(0xFFF0F2EF))
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f).clickable { edit(Editor.Paid(row)) }) {
-                    Text("PAGO", color = muted, fontSize = 10.sp, letterSpacing = 1.sp)
-                    Text(Money.format(row.payment.paidCents), color = navy, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                Box(Modifier.weight(1f).heightIn(min = 44.dp).clickable(onClick = onPaid),
+                    contentAlignment = Alignment.CenterStart) {
+                    Text(if (full) "Editar pago" else "Pago ${Money.format(paid)}", color = if (full) muted else teal,
+                        fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
-                Text("Quitado", color = muted, fontSize = 12.sp)
-                Spacer(Modifier.width(7.dp))
-                Switch(checked = row.line.full, enabled = row.terms.active && row.terms.expectedCents > 0,
-                    onCheckedChange = setFull)
+                Text(if (full) "Quitado" else "Pendente", color = muted, fontSize = 12.sp)
+                Spacer(Modifier.width(4.dp))
+                Switch(checked = full, enabled = enabled, onCheckedChange = onFull)
+                TextButton(onClick = onManage, modifier = Modifier.width(38.dp)) {
+                    Text("⋮", color = muted, fontSize = 22.sp)
+                }
             }
         }
     }
 }
 
 @Composable
-private fun TextEntry(title: String, initial: String, money: Boolean, onDismiss: () -> Unit, onSave: (String) -> Unit) {
+internal fun TextEntry(title: String, initial: String, money: Boolean, onDismiss: () -> Unit, onSave: (String) -> Unit) {
     var value by remember(title, initial) { mutableStateOf(initial) }
     val cents = if (money) Money.parse(value) else null
     val valid = if (money) cents != null else value.trim().isNotEmpty()

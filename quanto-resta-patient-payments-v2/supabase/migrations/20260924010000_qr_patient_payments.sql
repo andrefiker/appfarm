@@ -34,7 +34,7 @@ create index qr_patients_owner_idx on public.qr_patients(owner_user_id);
 create index qr_months_owner_month_idx on public.qr_patient_months(owner_user_id, year, month);
 
 -- A tombstoned patient keeps only opaque IDs. Old offline upserts cannot resurrect it.
-create function public.qr_guard_patient() returns trigger language plpgsql as $$
+create function public.qr_guard_patient() returns trigger language plpgsql set search_path = '' as $$
 begin
   if tg_op = 'UPDATE' then
     if new.owner_user_id <> old.owner_user_id or new.id <> old.id then
@@ -55,7 +55,7 @@ end $$;
 create trigger qr_guard_patient_before before insert or update on public.qr_patients
   for each row execute function public.qr_guard_patient();
 
-create function public.qr_purge_patient_months() returns trigger language plpgsql as $$
+create function public.qr_purge_patient_months() returns trigger language plpgsql set search_path = '' as $$
 begin
   if old.deleted_at is null and new.deleted_at is not null then
     delete from public.qr_patient_months where patient_id = new.id;
@@ -65,7 +65,7 @@ end $$;
 create trigger qr_purge_patient_after after update on public.qr_patients
   for each row execute function public.qr_purge_patient_months();
 
-create function public.qr_guard_month() returns trigger language plpgsql as $$
+create function public.qr_guard_month() returns trigger language plpgsql set search_path = '' as $$
 begin
   if tg_op = 'UPDATE' and (new.owner_user_id <> old.owner_user_id or new.patient_id <> old.patient_id or new.id <> old.id) then
     raise exception 'Month ownership and identity are immutable';
@@ -88,9 +88,6 @@ create policy qr_patients_insert on public.qr_patients for insert to authenticat
   with check (owner_user_id = (select auth.uid()));
 create policy qr_patients_update on public.qr_patients for update to authenticated
   using (owner_user_id = (select auth.uid())) with check (owner_user_id = (select auth.uid()));
-create policy qr_patients_delete on public.qr_patients for delete to authenticated
-  using (owner_user_id = (select auth.uid()));
-
 create policy qr_months_select on public.qr_patient_months for select to authenticated
   using (owner_user_id = (select auth.uid()));
 create policy qr_months_insert on public.qr_patient_months for insert to authenticated
@@ -100,8 +97,10 @@ create policy qr_months_update on public.qr_patient_months for update to authent
 create policy qr_months_delete on public.qr_patient_months for delete to authenticated
   using (owner_user_id = (select auth.uid()));
 
-grant select, insert, update, delete on public.qr_patients, public.qr_patient_months to authenticated;
+grant select, insert, update on public.qr_patients to authenticated;
+grant select, insert, update, delete on public.qr_patient_months to authenticated;
 revoke all on public.qr_patients, public.qr_patient_months from anon;
+revoke all on function public.qr_guard_patient(), public.qr_purge_patient_months(), public.qr_guard_month() from public;
 
 comment on table public.qr_patients is 'Pseudonymous patient billing aliases only; no clinical content.';
 comment on table public.qr_patient_months is 'Month-scoped financial snapshots in integer cents.';

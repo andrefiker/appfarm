@@ -8,7 +8,7 @@ await engine.probe(); assert.match(engine.name,/^Stockfish 18/);
 const timings=[];
 for(let level=1;level<=10;level++) { const request=input(['e4'],level), response=await engine.move(request); const game=validatePosition(request).game;assert.ok(game.move(response.move));assert.equal(response.skill,SKILLS[level-1]);assert.equal(response.fen,request.expected_fen);timings.push(response.elapsed_ms); }
 for(let level=1;level<=10;level++) { const request=input([],level), response=await engine.move(request);assert.ok(validatePosition(request).game.move(response.move)); }
-assert.deepEqual(SKILLS,[20,20,20,2,5,8,11,15,18,20]);
+assert.deepEqual(SKILLS,[20,20,20,2,5,8,14,16,18,20]);
 assert.deepEqual(BEGINNER.map(({candidates,nodes})=>[candidates,nodes]),[[6,1800],[5,3500],[4,7000]]);
 const candidates=[{rank:1,move:'e2e4',cp:100},{rank:2,move:'d2d4',cp:70},{rank:3,move:'g1f3',cp:35},{rank:4,move:'b1c3',cp:0},{rank:5,move:'a2a3',cp:-40},{rank:6,move:'h2h3',cp:-80}];
 assert.equal(selectBeginnerMove(candidates,1,()=>0.6),'b1c3');

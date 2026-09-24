@@ -12,6 +12,7 @@ import {
   materialValues,
 } from "./chess-view-model";
 import type { Losses } from "./chess-view-model";
+const computerLevelNames = ['Gentle', 'Easy', 'Casual', 'Steady', 'Club', 'Strong', 'Tough', 'Expert', 'Master', 'Stockfish'];
 export type Position = Record<string, { color: Color; type: Kind }>;
 export type Motion = {
   from: string;
@@ -470,7 +471,7 @@ export function GameSurface(p: GameSurfaceProps) {
         : "Computer");
   const detail = (color: Color) =>
     !p.online && color !== p.me
-      ? `${p.computerEngine || "Computer"} · L${p.level}`
+      ? `${p.computerEngine || "Computer"} · L${p.level} ${computerLevelNames[p.level - 1]}`
       : undefined;
   const contextual = p.online ? (
     p.waiting ? (
@@ -656,7 +657,7 @@ export function GameSurface(p: GameSurfaceProps) {
         <div className="dialog-head">
           <div>
             <h2 id="table-controls-title">Table controls</h2>
-            <p>{p.online ? `Room ${p.code}` : `Computer · Level ${p.level}`}</p>
+            <p>{p.online ? `Room ${p.code}` : `Computer · Level ${p.level} ${computerLevelNames[p.level - 1]}`}</p>
           </div>
           <button
             type="button"
@@ -893,7 +894,7 @@ export function HomeSurface({
               <label htmlFor="qk-level">Difficulty</label>
               <span>
                 Level <strong>{level}</strong>
-                <span className="level-total"> / 10</span>
+                <span className="level-total"> / 10 · {computerLevelNames[level - 1]}</span>
               </span>
             </div>
             <input

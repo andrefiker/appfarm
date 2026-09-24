@@ -3,8 +3,35 @@ import { createInterface } from 'node:readline';
 import { Chess } from 'chess.js';
 
 // One bounded native child at a time. Never run chess search on Node's event loop.
-export const SKILLS = Object.freeze([0, 2, 4, 7, 9, 11, 14, 16, 18, 20]);
-export const THINK_MS = Object.freeze([80, 100, 140, 180, 220, 260, 320, 400, 500, 650]);
+export const LEVEL_NAMES = Object.freeze(['Gentle', 'Easy', 'Casual', 'Steady', 'Club', 'Strong', 'Tough', 'Expert', 'Master', 'Stockfish']);
+// Levels 1–3 use a bounded MultiPV search at full skill, then sample its legal
+// root moves. Skill is not applied a second time to those searches.
+export const SKILLS = Object.freeze([20, 20, 20, 2, 5, 8, 11, 15, 18, 20]);
+export const THINK_MS = Object.freeze([0, 0, 0, 160, 200, 260, 320, 400, 500, 650]);
+export const BEGINNER = Object.freeze([
+  { candidates: 6, nodes: 1800, weights: [1, 2, 3, 3, 2, 1], maxLoss: 1100 },
+  { candidates: 5, nodes: 3500, weights: [4, 5, 4, 2, 1], maxLoss: 800 },
+  { candidates: 4, nodes: 7000, weights: [9, 5, 2, 1], maxLoss: 500 },
+]);
+const uciMove = raw => /^[a-h][1-8][a-h][1-8][qrbn]?$/.test(raw);
+export function selectBeginnerMove(lines, level, random = Math.random) {
+  const config = BEGINNER[level - 1];
+  if (!config || !lines.length) throw new EngineError('No candidate moves');
+  const best = lines[0];
+  const eligible = lines.filter(line => line.rank <= config.candidates && uciMove(line.move) && (
+    // A forced mate is useful, but at beginner levels it need not be found.
+    (best.mate > 0 && (line.mate > 0 || line.cp >= -300)) ||
+    (Number.isFinite(best.cp) && Number.isFinite(line.cp) && best.cp - line.cp <= config.maxLoss)
+  ));
+  const choices = eligible.length ? eligible : [best];
+  const total = choices.reduce((sum, line) => sum + config.weights[line.rank - 1], 0);
+  let draw = Math.min(1 - Number.EPSILON, Math.max(0, random())) * total;
+  for (const line of choices) {
+    draw -= config.weights[line.rank - 1];
+    if (draw < 0) return line.move;
+  }
+  return choices.at(-1).move;
+}
 export class EngineError extends Error {
   constructor(message, status = 503) { super(message); this.status = status; }
 }
@@ -24,11 +51,11 @@ export function validatePosition(input) {
 }
 
 export class StockfishService {
-  constructor({ binary = process.env.STOCKFISH_PATH || '/opt/stockfish/stockfish-ubuntu-x86-64', deadline = 3000 } = {}) {
-    this.binary = binary; this.deadline = deadline; this.busy = false; this.name = null; this.ready = false;
+  constructor({ binary = process.env.STOCKFISH_PATH || '/opt/stockfish/stockfish-ubuntu-x86-64', deadline = 3000, random = Math.random, onSelection } = {}) {
+    this.binary = binary; this.deadline = deadline; this.random = random; this.onSelection = onSelection; this.busy = false; this.name = null; this.ready = false;
     this.tokens = 8; this.refilled = Date.now();
   }
-  status() { return { available: this.ready, engine: this.name, levels: 10, skills: SKILLS, busy: this.busy }; }
+  status() { return { available: this.ready, engine: this.name, levels: 10, skills: SKILLS, names: LEVEL_NAMES, busy: this.busy }; }
   async probe() { return this.run({ level: 10, moves: [], game: new Chess(), fen: new Chess().fen() }, undefined, true); }
   async move(input, signal) {
     // Rate and capacity checks precede expensive history replay. No unbounded queue.
@@ -48,6 +75,8 @@ export class StockfishService {
     const started = Date.now();
     return new Promise((resolve, reject) => {
       let answer, failure, exiting = false, phase = 'uci', child;
+      const beginner = !probe && position.level <= 3 ? BEGINNER[position.level - 1] : null;
+      const snapshots = new Map();
       const finish = error => {
         if (exiting) return;
         exiting = true; failure = error;
@@ -73,15 +102,28 @@ export class StockfishService {
           write('setoption name Hash value 32');
           write('setoption name UCI_LimitStrength value false');
           write('setoption name Skill Level value ' + SKILLS[position.level - 1]);
+          if (beginner) write('setoption name MultiPV value ' + beginner.candidates);
           write('ucinewgame'); write('isready');
         } else if (line === 'readyok' && phase === 'ready') {
           this.ready = true; phase = 'search';
           if (probe) { answer = this.status(); return finish(); }
           write('position startpos' + (position.moves.length ? ' moves ' + position.moves.join(' ') : ''));
-          write('go movetime ' + THINK_MS[position.level - 1]);
+          write(beginner ? 'go nodes ' + beginner.nodes : 'go movetime ' + THINK_MS[position.level - 1]);
+        } else if (beginner && line.startsWith('info ') && phase === 'search') {
+          const match = line.match(/\bdepth (\d+)\b.*\bmultipv (\d+)\b.*\bscore (cp|mate) (-?\d+)\b.*\bpv ([a-h][1-8][a-h][1-8][qrbn]?)(?:\s|$)/);
+          if (!match) return;
+          const [, depthText, rankText, type, scoreText, move] = match;
+          const depth = Number(depthText), rank = Number(rankText);
+          if (rank < 1 || rank > beginner.candidates) return;
+          if (!snapshots.has(depth)) snapshots.set(depth, new Map());
+          snapshots.get(depth).set(rank, { rank, move, [type]: Number(scoreText) });
         } else if (line.startsWith('bestmove ') && phase === 'search') {
-          const raw = line.split(' ')[1];
-          if (!/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(raw)) return finish(new EngineError('Stockfish returned no legal move'));
+          const bestmove = line.split(' ')[1];
+          if (!uciMove(bestmove)) return finish(new EngineError('Stockfish returned no legal move'));
+          const complete = [...snapshots.entries()].filter(([, ranks]) => ranks.size === beginner?.candidates).sort((a, b) => b[0] - a[0])[0];
+          const candidates = complete ? [...complete[1].values()].sort((a, b) => a.rank - b.rank) : [{ rank: 1, move: bestmove, cp: 0 }];
+          const raw = beginner ? selectBeginnerMove(candidates, position.level, this.random) : bestmove;
+          if (beginner) this.onSelection?.({ level: position.level, candidates, selected: raw, complete: Boolean(complete) });
           try {
             const made = position.game.move({ from: raw.slice(0, 2), to: raw.slice(2, 4), promotion: raw[4] });
             answer = { engine: this.name, level: position.level, skill: SKILLS[position.level - 1], fen: position.fen, move: { from: made.from, to: made.to, promotion: made.promotion, san: made.san }, elapsed_ms: Date.now() - started };

@@ -2,6 +2,8 @@
 
 Native Kotlin/Jetpack Compose Android app. Two compact tabs: patient income and manual expenses. Both work offline using the same Room database. No login, categories, imported expenses, merchant rules, cloud sync or internet permission. Aliases in tests are fictional; the production expense list starts empty.
 
+The 1.3 visual pass groups rows into a continuous, divided ledger, uses a quiet status control instead of a full switch, aligns amounts, shortens whole-real display amounts, and tightens the header, summary and bottom tabs. Tap the name, monthly value, paid value, or status directly; the overflow menu still contains archive and delete. Currency editing retains cents. Data tables and business rules are unchanged from 1.2.
+
 ## Build and test
 
 JDK 17, Gradle 8.9, Android SDK API 35. In this directory run `gradle --no-daemon :app:testDebugUnitTest :app:lintDebug :app:assembleDebug`. APK: `app/build/outputs/apk/debug/app-debug.apk`. Connected device tests and screen capture: `gradle --no-daemon :app:connectedDebugAndroidTest` (API 33 emulator configured in GitHub workflow). Debug builds may have different signing certificates across runners.
@@ -18,4 +20,4 @@ Both compact lists keep patient/expense name, expected fee, paid amount when par
 
 Everything is manual and stored only on the device. Android backup remains disabled; uninstall removes local records. The older Supabase migration file remains in this branch for history, but the current APK does not use Supabase or access the network. The budget app’s previous expense data is not read.
 
-An APK signed with a different debug certificate cannot update an already installed Loot APK. Do not uninstall the installed copy if it has unique patient data; export or migrate the local database first. For a same-key update, version 2→3 keeps the patient data and creates only the empty expense tables. To roll back code, return the Git branch to `e8b7499c9dc9034e83539e4ff53f328d8926b507`. Android will not downgrade an installed database or version code directly; restore from a data backup before using an older app.
+An APK signed with a different debug certificate cannot update an already installed Loot APK. Do not uninstall the installed copy if it has unique patient data; export or migrate the local database first. For a same-key update, version 3→4 retains the Room version 2 database without a schema change. To roll back this UI pass, return the Git branch to `7a1c2e49c3c82b9c6183f6da49196e3a6c4c79db`. Android will not downgrade an installed database or version code directly; restore from a data backup before using an older app.

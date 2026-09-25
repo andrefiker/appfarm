@@ -1,6 +1,7 @@
 package com.andrefiker.lootpayments
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -61,24 +63,21 @@ fun ExpensesScreen(state: ExpensesState, vm: ExpensesViewModel) {
     var editor by remember { mutableStateOf<ExpenseEditor?>(null) }
     val active = state.rows.filter { it.payment.included }
     val inactive = state.rows.filterNot { it.payment.included }
-    Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
-        Spacer(Modifier.height(12.dp))
-        Text("LOOT / DESPESAS", color = teal, fontWeight = FontWeight.Bold, fontSize = 11.sp, letterSpacing = 1.4.sp)
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            TextButton(onClick = { vm.shiftMonth(-1) }, modifier = Modifier.width(44.dp)) { Text("‹", fontSize = 27.sp) }
-            Text(state.month.format(dateFormatter).replaceFirstChar { it.titlecase(Locale("pt", "BR")) },
-                modifier = Modifier.weight(1f), color = navy, fontSize = 21.sp, fontWeight = FontWeight.SemiBold)
-            TextButton(onClick = { vm.shiftMonth(1) }, modifier = Modifier.width(44.dp)) { Text("›", fontSize = 27.sp) }
-        }
+    Column(Modifier.fillMaxSize().padding(horizontal = 14.dp)) {
+        LootHeader("Gastos", state.month, { vm.shiftMonth(-1) }, { vm.shiftMonth(1) })
         Summary(state.totals, label = "despesas", paidLabel = "Pago", showOverpayment = true)
-        Spacer(Modifier.height(9.dp))
+        Spacer(Modifier.height(7.dp))
         Box(Modifier.weight(1f)) {
-            LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 66.dp),
-                verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            LazyColumn(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp))
+                .background(Color.White), contentPadding = PaddingValues(bottom = 88.dp)) {
                 if (state.rows.isEmpty()) item {
-                    Text("Nenhuma despesa ainda.", color = muted, modifier = Modifier.padding(vertical = 20.dp))
+                    Column(Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 24.dp)) {
+                        Text("Nenhuma despesa ainda.", color = navy, fontWeight = FontWeight.Medium, fontSize = 15.sp)
+                        Spacer(Modifier.height(4.dp))
+                        Text("Adicione a primeira despesa para começar.", color = muted, fontSize = 12.sp)
+                    }
                 } else if (active.isEmpty()) item {
-                    Text("Nenhuma despesa ativa neste mês.", color = muted, modifier = Modifier.padding(vertical = 20.dp))
+                    Text("Nenhuma despesa ativa neste mês.", color = muted, modifier = Modifier.padding(18.dp))
                 }
                 items(active, key = { it.expense.id }) { row -> CompactPaymentRow(
                     name = row.expense.name, expected = row.payment.expectedCents,
@@ -87,24 +86,26 @@ fun ExpensesScreen(state: ExpensesState, vm: ExpensesViewModel) {
                     onName = { editor = ExpenseEditor.Name(row) }, onAmount = { editor = ExpenseEditor.Amount(row) },
                     onPaid = { editor = ExpenseEditor.Paid(row) }, onManage = { editor = ExpenseEditor.Manage(row) },
                     onFull = { vm.setFull(row, it) })
+                    if (row != active.last()) HorizontalDivider(Modifier.padding(start = 14.dp), color = divider)
                 }
                 if (inactive.isNotEmpty()) {
                     item { Text("INATIVAS", color = muted, fontSize = 11.sp, fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(top = 10.dp, bottom = 3.dp)) }
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)) }
                     items(inactive, key = { it.expense.id }) { row -> CompactPaymentRow(
                         name = row.expense.name, expected = row.payment.expectedCents,
-                        paid = row.payment.paidCents, full = row.line.full, enabled = false,
+                        paid = row.payment.paidCents, full = row.line.full, enabled = false, inactive = true,
                         onName = { editor = ExpenseEditor.Name(row) }, onAmount = { editor = ExpenseEditor.Amount(row) },
                         onPaid = { editor = ExpenseEditor.Paid(row) }, onManage = { editor = ExpenseEditor.Manage(row) },
                         onFull = { vm.setFull(row, it) })
+                        HorizontalDivider(Modifier.padding(start = 14.dp), color = divider)
                     }
                 }
             }
             FloatingActionButton(onClick = { editor = ExpenseEditor.Add },
-                modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = 10.dp)
+                modifier = Modifier.align(Alignment.BottomEnd).padding(end = 8.dp, bottom = 10.dp)
                     .semantics { contentDescription = "Adicionar despesa" },
-                shape = RoundedCornerShape(15.dp), containerColor = teal, contentColor = Color.White) {
-                Text("+", fontSize = 26.sp)
+                shape = RoundedCornerShape(16.dp), containerColor = teal, contentColor = Color.White) {
+                Text("+", fontSize = 25.sp, modifier = Modifier.padding(horizontal = 17.dp))
             }
         }
     }

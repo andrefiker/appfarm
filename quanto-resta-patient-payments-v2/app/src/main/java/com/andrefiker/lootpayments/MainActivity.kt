@@ -6,10 +6,13 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -22,6 +25,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -37,6 +42,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,12 +50,23 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -58,12 +75,14 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-internal val navy = Color(0xFF233943)
-internal val teal = Color(0xFF397E79)
-internal val muted = Color(0xFF687A7D)
-internal val paper = Color(0xFFF8F9F5)
-internal val accent = Color(0xFFE9F2EE)
+internal val navy = Color(0xFF26383B)
+internal val teal = Color(0xFF3A7972)
+internal val muted = Color(0xFF607276)
+internal val paper = Color(0xFFF8F7F3)
+internal val accent = Color(0xFFE9F1ED)
+internal val divider = Color(0xFFE8EBE7)
 internal val dateFormatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale("pt", "BR"))
+internal fun ledgerMoney(cents: Long): String = Money.format(cents).replace(Regex(",00$"), "")
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -86,14 +105,17 @@ class MainActivity : ComponentActivity() {
                             ExpensesScreen(expenseState, expenses)
                         }
                     }
-                    Row(Modifier.fillMaxWidth().background(Color.White).padding(horizontal = 16.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        listOf("Pacientes", "Despesas").forEachIndexed { index, label ->
-                            Button(onClick = { destination = index }, modifier = Modifier.weight(1f),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = if (destination == index) teal else accent,
-                                    contentColor = if (destination == index) Color.White else navy)) {
-                                Text(label)
+                    HorizontalDivider(color = divider)
+                    Row(Modifier.fillMaxWidth().background(paper).padding(horizontal = 14.dp, vertical = 5.dp)) {
+                        listOf("Receitas", "Gastos").forEachIndexed { index, label ->
+                            Box(Modifier.weight(1f).height(44.dp).padding(horizontal = 4.dp)
+                                .clip(RoundedCornerShape(11.dp))
+                                .background(if (destination == index) accent else Color.Transparent)
+                                .clickable(role = Role.Tab) { destination = index }
+                                .semantics { selected = destination == index },
+                                contentAlignment = Alignment.Center) {
+                                Text(label, color = if (destination == index) teal else muted,
+                                    fontSize = 13.sp, fontWeight = if (destination == index) FontWeight.SemiBold else FontWeight.Medium)
                             }
                         }
                     }
@@ -118,20 +140,13 @@ fun PatientPaymentsScreen(state: ScreenState, vm: PatientPaymentsViewModel) {
     var editor by remember { mutableStateOf<Editor?>(null) }
     val active = state.rows.filter { it.terms.active }
     val inactive = state.rows.filterNot { it.terms.active }
-    Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
-        Spacer(Modifier.height(12.dp))
-        Text("LOOT / RECEITAS", color = teal, fontWeight = FontWeight.Bold, fontSize = 11.sp, letterSpacing = 1.4.sp)
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            TextButton(onClick = { vm.shiftMonth(-1) }, modifier = Modifier.width(44.dp)) { Text("‹", fontSize = 27.sp) }
-            Text(state.month.format(dateFormatter).replaceFirstChar { it.titlecase(Locale("pt", "BR")) },
-                modifier = Modifier.weight(1f), color = navy, fontSize = 21.sp, fontWeight = FontWeight.SemiBold)
-            TextButton(onClick = { vm.shiftMonth(1) }, modifier = Modifier.width(44.dp)) { Text("›", fontSize = 27.sp) }
-        }
+    Column(Modifier.fillMaxSize().padding(horizontal = 14.dp)) {
+        LootHeader("Receitas", state.month, { vm.shiftMonth(-1) }, { vm.shiftMonth(1) })
         Summary(state.totals)
-        Spacer(Modifier.height(9.dp))
+        Spacer(Modifier.height(7.dp))
         Box(Modifier.weight(1f)) {
-            LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(bottom = 66.dp),
-                verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            LazyColumn(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp))
+                .background(Color.White), contentPadding = PaddingValues(bottom = 88.dp)) {
                 if (active.isEmpty()) item {
                     Text("Nenhum paciente ativo neste mês.", color = muted, modifier = Modifier.padding(vertical = 20.dp))
                 }
@@ -142,24 +157,26 @@ fun PatientPaymentsScreen(state: ScreenState, vm: PatientPaymentsViewModel) {
                     onName = { editor = Editor.Name(row) }, onAmount = { editor = Editor.Amount(row) },
                     onPaid = { editor = Editor.Paid(row) }, onManage = { editor = Editor.Manage(row) },
                     onFull = { vm.setFull(row, it) })
+                    if (row != active.last()) HorizontalDivider(Modifier.padding(start = 14.dp), color = divider)
                 }
                 if (inactive.isNotEmpty()) {
                     item { Text("INATIVOS", color = muted, fontSize = 11.sp, fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(top = 10.dp, bottom = 3.dp)) }
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)) }
                     items(inactive, key = { it.patient.id }) { row -> CompactPaymentRow(
                         name = row.patient.name, expected = row.payment.expectedCents,
-                        paid = row.payment.paidCents, full = row.line.full, enabled = false,
+                        paid = row.payment.paidCents, full = row.line.full, enabled = false, inactive = true,
                         onName = { editor = Editor.Name(row) }, onAmount = { editor = Editor.Amount(row) },
                         onPaid = { editor = Editor.Paid(row) }, onManage = { editor = Editor.Manage(row) },
                         onFull = { vm.setFull(row, it) })
+                        HorizontalDivider(Modifier.padding(start = 14.dp), color = divider)
                     }
                 }
             }
             FloatingActionButton(onClick = { editor = Editor.Add },
-                modifier = Modifier.align(Alignment.BottomEnd).padding(bottom = 10.dp)
+                modifier = Modifier.align(Alignment.BottomEnd).padding(end = 8.dp, bottom = 10.dp)
                     .semantics { contentDescription = "Adicionar paciente" },
-                shape = RoundedCornerShape(15.dp), containerColor = teal, contentColor = Color.White) {
-                Text("+", fontSize = 26.sp)
+                shape = RoundedCornerShape(16.dp), containerColor = teal, contentColor = Color.White) {
+                Text("+", fontSize = 25.sp, modifier = Modifier.padding(horizontal = 17.dp))
             }
         }
     }
@@ -203,48 +220,91 @@ fun PatientPaymentsScreen(state: ScreenState, vm: PatientPaymentsViewModel) {
 }
 
 @Composable
+internal fun LootHeader(section: String, month: YearMonth, previous: () -> Unit, next: () -> Unit) {
+    Row(Modifier.fillMaxWidth().padding(top = 7.dp, bottom = 1.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text("LOOT", color = teal, fontWeight = FontWeight.Bold, fontSize = 11.sp, letterSpacing = 2.sp)
+        Spacer(Modifier.width(9.dp))
+        Box(Modifier.size(width = 1.dp, height = 12.dp).background(divider))
+        Spacer(Modifier.width(9.dp))
+        Text(section.uppercase(Locale("pt", "BR")), color = muted, fontWeight = FontWeight.Medium,
+            fontSize = 10.sp, letterSpacing = 1.4.sp)
+    }
+    Row(Modifier.fillMaxWidth().height(46.dp), horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.size(44.dp).clip(RoundedCornerShape(11.dp)).clickable(onClick = previous)
+            .semantics { contentDescription = "Mês anterior" }, contentAlignment = Alignment.Center) {
+            Text("‹", color = teal, fontSize = 27.sp)
+        }
+        Text(month.format(dateFormatter).replaceFirstChar { it.titlecase(Locale("pt", "BR")) },
+            modifier = Modifier.widthIn(min = 180.dp, max = 230.dp), textAlign = TextAlign.Center,
+            color = navy, fontSize = 20.sp, fontWeight = FontWeight.SemiBold,
+            maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Box(Modifier.size(44.dp).clip(RoundedCornerShape(11.dp)).clickable(onClick = next)
+            .semantics { contentDescription = "Próximo mês" }, contentAlignment = Alignment.Center) {
+            Text("›", color = teal, fontSize = 27.sp)
+        }
+    }
+}
+
+@Composable
 internal fun Summary(totals: Totals, label: String = "pacientes", paidLabel: String = "Recebido", showOverpayment: Boolean = false) {
     val over = showOverpayment && totals.paid > totals.expected
-    Card(colors = CardDefaults.cardColors(containerColor = accent), shape = RoundedCornerShape(15.dp)) {
-        Column(Modifier.fillMaxWidth().padding(horizontal = 13.dp, vertical = 9.dp)) {
-            Text("${totals.count} $label  ·  ${Money.format(totals.expected)} previstos", color = navy, fontSize = 13.sp)
-            Spacer(Modifier.height(3.dp))
+    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(accent)
+        .padding(horizontal = 12.dp, vertical = 8.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("$paidLabel ${Money.format(totals.paid)}", color = teal, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
-                Text(if (over) "A mais ${Money.format(totals.paid - totals.expected)}"
-                    else "Resta ${Money.format(totals.remaining)}", color = navy, fontSize = 13.sp)
+                Text("${totals.count} $label", color = muted, fontSize = 12.sp)
+                Text("Previsto ${ledgerMoney(totals.expected)}", color = navy, fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
-        }
+            Spacer(Modifier.height(2.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("$paidLabel ${ledgerMoney(totals.paid)}", color = teal, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                Text(if (over) "A mais ${ledgerMoney(totals.paid - totals.expected)}"
+                    else "Resta ${ledgerMoney(totals.remaining)}", color = navy, fontSize = 12.sp)
+            }
     }
 }
 
 /** Shared compact row: full payments hide the redundant paid amount but remain editable. */
 @Composable
 internal fun CompactPaymentRow(name: String, expected: Long, paid: Long, full: Boolean, enabled: Boolean,
+    inactive: Boolean = false,
     onName: () -> Unit, onAmount: () -> Unit, onPaid: () -> Unit, onManage: () -> Unit,
     onFull: (Boolean) -> Unit) {
-    Card(colors = CardDefaults.cardColors(containerColor = Color.White), shape = RoundedCornerShape(14.dp),
-        border = BorderStroke(1.dp, Color(0xFFE6EBE8))) {
-        Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
-            Row(Modifier.fillMaxWidth().heightIn(min = 28.dp), verticalAlignment = Alignment.CenterVertically) {
+    Column(Modifier.fillMaxWidth().background(Color.White)
+        .padding(start = 14.dp, end = 8.dp, top = 3.dp, bottom = 3.dp)) {
+        Row(Modifier.fillMaxWidth().height(30.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.weight(1f).height(30.dp).clickable(onClick = onName), contentAlignment = Alignment.CenterStart) {
                 Text(name, color = navy, fontWeight = FontWeight.SemiBold, fontSize = 15.sp,
-                    maxLines = 1, overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f).clickable(onClick = onName))
-                Text("${Money.format(expected)} / mês", color = muted, fontSize = 13.sp,
-                    modifier = Modifier.clickable(onClick = onAmount))
+                    maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.weight(1f).heightIn(min = 44.dp).clickable(onClick = onPaid),
-                    contentAlignment = Alignment.CenterStart) {
-                    Text(if (full) "Editar pago" else "Pago ${Money.format(paid)}", color = if (full) muted else teal,
-                        fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                }
-                Text(if (full) "Quitado" else "Pendente", color = muted, fontSize = 12.sp)
-                Spacer(Modifier.width(4.dp))
-                Switch(checked = full, enabled = enabled, onCheckedChange = onFull)
-                TextButton(onClick = onManage, modifier = Modifier.width(38.dp)) {
-                    Text("⋮", color = muted, fontSize = 22.sp)
-                }
+            Spacer(Modifier.width(8.dp))
+            Box(Modifier.widthIn(max = 145.dp).height(30.dp).clickable(onClick = onAmount),
+                contentAlignment = Alignment.CenterEnd) {
+                Text("${ledgerMoney(expected)} / mês", color = muted, fontSize = 12.sp,
+                    style = TextStyle(fontFeatureSettings = "tnum"), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+        }
+        Row(Modifier.fillMaxWidth().height(38.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.weight(1f).height(38.dp).clickable(onClick = onPaid)
+                .semantics { contentDescription = "Editar valor pago" }, contentAlignment = Alignment.CenterStart) {
+                Text(if (full) "Editar pago" else "Pago ${ledgerMoney(paid)}",
+                    color = if (full) muted else teal, fontSize = 12.sp,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            val status = if (inactive) "Inativo" else if (!enabled) "Sem valor" else if (full) "✓ Quitado" else "○ Pendente"
+            Box(Modifier.height(34.dp).widthIn(min = 88.dp)
+                .clip(RoundedCornerShape(9.dp))
+                .background(if (full && enabled) accent else Color(0xFFF4F4F2))
+                .clickable(enabled = enabled, role = Role.Checkbox) { onFull(!full) }
+                .semantics { contentDescription = if (full) "Quitado; toque para desmarcar" else "Pendente; toque para quitar" }
+                .padding(horizontal = 8.dp), contentAlignment = Alignment.Center) {
+                Text(status, color = if (full && enabled) teal else muted,
+                    fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
+            }
+            Box(Modifier.size(width = 36.dp, height = 38.dp).clickable(onClick = onManage)
+                .semantics { contentDescription = "Mais opções" }, contentAlignment = Alignment.Center) {
+                Text("⋮", color = muted, fontSize = 21.sp)
             }
         }
     }
@@ -252,17 +312,23 @@ internal fun CompactPaymentRow(name: String, expected: Long, paid: Long, full: B
 
 @Composable
 internal fun TextEntry(title: String, initial: String, money: Boolean, onDismiss: () -> Unit, onSave: (String) -> Unit) {
-    var value by remember(title, initial) { mutableStateOf(initial) }
-    val cents = if (money) Money.parse(value) else null
-    val valid = if (money) cents != null else value.trim().isNotEmpty()
+    var value by remember(title, initial) { mutableStateOf(TextFieldValue(initial, selection = TextRange(0, initial.length))) }
+    val focus = remember { FocusRequester() }
+    val keyboard = LocalSoftwareKeyboardController.current
+    LaunchedEffect(title, initial) { focus.requestFocus() }
+    val cents = if (money) Money.parse(value.text) else null
+    val valid = if (money) cents != null else value.text.trim().isNotEmpty()
     AlertDialog(onDismissRequest = onDismiss, title = { Text(title) },
         text = { Column {
             OutlinedTextField(value = value, onValueChange = { value = it }, singleLine = true,
                 label = { Text(if (money) "Valor em reais" else "Nome ou apelido") },
-                keyboardOptions = KeyboardOptions(keyboardType = if (money) KeyboardType.Decimal else KeyboardType.Text))
-            if (money && value.isNotBlank() && !valid) Text("Use 900 ou 900,50", color = Color(0xFF9C4545), fontSize = 12.sp)
+                modifier = Modifier.focusRequester(focus),
+                keyboardOptions = KeyboardOptions(keyboardType = if (money) KeyboardType.Decimal else KeyboardType.Text,
+                    imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { if (valid) { keyboard?.hide(); onSave(value.text) } }))
+            if (money && value.text.isNotBlank() && !valid) Text("Use 900 ou 900,50", color = Color(0xFF9C4545), fontSize = 12.sp)
         } },
-        confirmButton = { TextButton(enabled = valid, onClick = { onSave(value) }) { Text("Salvar") } },
+        confirmButton = { TextButton(enabled = valid, onClick = { keyboard?.hide(); onSave(value.text) }) { Text("Salvar") } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } })
 }
 

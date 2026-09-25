@@ -91,13 +91,17 @@ class PaymentsPersistenceTest {
             val second = dao.month(owner, "fake-patient-1", month.key())!!
             dao.putMonth(first.copy(paidCents = 90000))
             dao.putMonth(second.copy(paidCents = 37500))
+            listOf(2, 3, 4).forEach { index ->
+                val row = dao.month(owner, "fake-patient-$index", month.key())!!
+                dao.putMonth(row.copy(paidCents = row.expectedCents))
+            }
             val scenario = ActivityScenario.launch(MainActivity::class.java)
             try {
                 composeRule.waitUntil(10_000) { composeRule.onAllNodesWithText("A.L.").fetchSemanticsNodes().isNotEmpty() }
                 composeRule.onNodeWithText("A.L.").assertExists()
                 composeRule.onNodeWithText("Marina").assertExists()
                 captureScreen(scenario, "patient-screen-actual.png")
-                composeRule.onNodeWithText("Despesas").performClick()
+                composeRule.onNodeWithText("Gastos").performClick()
                 composeRule.waitUntil(10_000) { composeRule.onAllNodesWithText("Nenhuma despesa ainda.").fetchSemanticsNodes().isNotEmpty() }
                 composeRule.onNodeWithText("Nenhuma despesa ainda.").assertExists()
                 captureScreen(scenario, "expense-screen-actual.png")

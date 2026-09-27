@@ -10,9 +10,17 @@ function adb(...args) {
   if (r.status !== 0) throw new Error(`adb ${args.join(" ")} failed: ${r.stderr || r.stdout}`);
   return r.stdout.trim();
 }
-function forwardToWebView() {
-  const pid = adb("shell", "pidof", "-s", PACKAGE).trim();
-  assert.ok(pid, "app process should be running");
+async function forwardToWebView() {
+  let pid = "";
+  for (let i = 0; i < 40 && !pid; i++) {
+    const result = spawnSync("adb", ["shell", "pidof", "-s", PACKAGE], { encoding: "utf8" });
+    if (result.status === 0) pid = result.stdout.trim();
+    if (!pid) await delay(250);
+  }
+  if (!pid) {
+    const logs = spawnSync("adb", ["logcat", "-d", "-t", "300"], { encoding: "utf8" });
+    throw new Error(`App process did not start. Recent Android logs:\n${logs.stdout?.slice(-7000) ?? logs.stderr}`);
+  }
   try { adb("forward", "--remove", "tcp:9222"); } catch {}
   adb("forward", "tcp:9222", `localabstract:webview_devtools_remote_${pid}`);
 }
@@ -55,7 +63,7 @@ async function pageReady(client) {
 adb("install", "-r", APK);
 adb("shell", "am", "start", "-n", ACTIVITY);
 await delay(1200);
-forwardToWebView();
+await forwardToWebView();
 let client = await attach();
 await pageReady(client);
 
@@ -104,7 +112,7 @@ adb("shell", "am", "force-stop", PACKAGE);
 await delay(300);
 adb("shell", "am", "start", "-n", ACTIVITY);
 await delay(700);
-forwardToWebView();
+await forwardToWebView();
 client = await attach();
 await pageReady(client);
 const reopened = await client.evaluate(`({hands:document.querySelector('#hands-count').textContent, credits:document.querySelector('#credits').textContent, storage:JSON.parse(localStorage.getItem('quiet-video-poker-v1'))})`);
@@ -119,7 +127,7 @@ adb("shell", "am", "force-stop", PACKAGE);
 await delay(300);
 adb("shell", "am", "start", "-n", ACTIVITY);
 await delay(700);
-forwardToWebView();
+await forwardToWebView();
 client = await attach();
 await pageReady(client);
 assert.equal(await client.evaluate(`document.querySelector('#hands-count').textContent`), "1", "the app should restart offline with local game state intact");

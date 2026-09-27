@@ -1,0 +1,92 @@
+[
+  {
+    "name": "Start and clear a fair beginner board",
+    "sanity": true,
+    "viewport": "mobile",
+    "covers": [
+      "first-move protection",
+      "retained first-click seed coordinate",
+      "solver-verified fair generation",
+      "cell reveal",
+      "zero cascade",
+      "pan and pinch zoom",
+      "Fit Board",
+      "victory result",
+      "play again"
+    ],
+    "description": "Verifies a phone-sized fair board opens safely, responds to taps, and allows immediate replay after a win.",
+    "steps": [
+      "Choose Easy and Fair",
+      "Tap a covered cell to begin",
+      "Use visible numbers to clear safe cells and flag mines until the board is complete",
+      "Choose Play again"
+    ],
+    "expected": "The first cell and its neighbors contain no mine, the board is marked fair, the win time appears, and a fresh board is ready."
+  },
+  {
+    "name": "Flag, hint, chord, and inspect a loss",
+    "viewport": "mobile",
+    "covers": [
+      "long-press flag",
+      "flag mode",
+      "Hard and Expert board usability",
+      "pan, pinch zoom, and Fit Board",
+      "logic-only hints",
+      "number chording",
+      "mine detonation",
+      "wrong-flag display",
+      "loss inspection",
+      "retry same seed"
+    ],
+    "description": "Exercises touch actions and confirms a lost board stays visible for inspection and exact-seed retry.",
+    "steps": [
+      "Start an Expert board and pan or pinch to zoom; use Fit Board to return the full grid to view",
+      "Long-press a covered cell to flag it",
+      "Request a hint",
+      "Flag the required adjacent mines and tap a numbered cell to chord",
+      "If a mine is triggered, inspect the revealed board",
+      "Choose Retry board and compare the seed"
+    ],
+    "expected": "Flags toggle without revealing, hints identify only proven moves or say no certain move, chording follows classic rules, and Retry recreates the same seed."
+  },
+  {
+    "name": "Resume a saved game and change settings",
+    "viewport": "mobile",
+    "covers": [
+      "local save and resume",
+      "elapsed time persistence",
+      "sound and haptics toggles",
+      "high contrast",
+      "reduced motion",
+      "left-handed controls",
+      "statistics persistence"
+    ],
+    "description": "Confirms a partially played game and accessibility settings survive a reload.",
+    "steps": [
+      "Start a board and reveal several cells",
+      "Open Settings and enable high contrast and reduced motion",
+      "Reload the app",
+      "Continue the board and open statistics"
+    ],
+    "expected": "The same board state and elapsed time resume, selected settings remain enabled, and the difficulty statistics remain available."
+  },
+  {
+    "name": "Play the deterministic daily board and a shared seed",
+    "viewport": "desktop",
+    "covers": [
+      "daily deterministic board",
+      "daily completion and streak",
+      "seed view and copy",
+      "play seed",
+      "offline PWA"
+    ],
+    "description": "Verifies daily and seeded games can be reproduced and that the app shell is installable and cached for offline use.",
+    "steps": [
+      "Open Daily",
+      "Record the displayed seed and complete the fair board",
+      "Reload and open Daily again",
+      "Open Seed, copy the seed, then enter it in Play a seed"
+    ],
+    "expected": "The date's daily layout and seed recur, its completion is tracked locally, and entering the copied seed recreates that board."
+  }
+]

@@ -1,0 +1,6 @@
+{
+  "name": "Quiet Mines", "short_name": "Mines", "description": "A calm, tactile Minesweeper.",
+  "start_url": "./", "scope": "./", "display": "standalone", "orientation": "portrait",
+  "background_color": "#101918", "theme_color": "#101918",
+  "icons": [{"src":"./icons/mine.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}

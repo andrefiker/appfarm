@@ -42,8 +42,9 @@ public final class MainActivity extends Activity {
                 .build();
         webView.setWebViewClient(new WebViewClient() {
             @Override
-            public android.webkit.WebResourceResponse shouldInterceptRequest(WebView view, Uri url) {
-                return assetLoader.shouldInterceptRequest(url);
+            public android.webkit.WebResourceResponse shouldInterceptRequest(
+                    WebView view, android.webkit.WebResourceRequest request) {
+                return assetLoader.shouldInterceptRequest(request.getUrl());
             }
         });
         webView.setWebChromeClient(new WebChromeClient());

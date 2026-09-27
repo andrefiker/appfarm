@@ -6,6 +6,10 @@ android {
     namespace 'com.appfarm.quietvideopoker'
     compileSdk 35
 
+    buildFeatures {
+        buildConfig true
+    }
+
     defaultConfig {
         applicationId 'com.appfarm.quietvideopoker'
         minSdk 23

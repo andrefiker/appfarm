@@ -6,14 +6,14 @@ const ACTIVITY = `${PACKAGE}/.MainActivity`;
 const APK = process.argv[2] ?? "quiet-video-poker/android/app/build/outputs/apk/debug/app-debug.apk";
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 function adb(...args) {
-  const r = spawnSync("adb", args, { encoding: "utf8" });
-  if (r.status !== 0) throw new Error(`adb ${args.join(" ")} failed: ${r.stderr || r.stdout}`);
+  const r = spawnSync("adb", args, { encoding: "utf8", timeout: 20000 });
+  if (r.status !== 0) throw new Error(`adb ${args.join(" ")} failed: ${r.error?.message || r.stderr || r.stdout}`);
   return r.stdout.trim();
 }
 async function forwardToWebView() {
   let pid = "";
   for (let i = 0; i < 40 && !pid; i++) {
-    const result = spawnSync("adb", ["shell", "pidof", "-s", PACKAGE], { encoding: "utf8" });
+    const result = spawnSync("adb", ["shell", "pidof", "-s", PACKAGE], { encoding: "utf8", timeout: 20000 });
     if (result.status === 0) pid = result.stdout.trim();
     if (!pid) await delay(250);
   }
@@ -27,13 +27,17 @@ async function forwardToWebView() {
 async function attach() {
   let targets;
   for (let i = 0; i < 40; i++) {
-    try { targets = await (await fetch("http://127.0.0.1:9222/json/list")).json(); if (targets.some(x => x.type === "page" && x.webSocketDebuggerUrl)) break; } catch {}
+    try { targets = await (await fetch("http://127.0.0.1:9222/json/list", { signal: AbortSignal.timeout(2000) })).json(); if (targets.some(x => x.type === "page" && x.webSocketDebuggerUrl)) break; } catch {}
     await delay(250);
   }
   const target = targets?.find(x => x.type === "page" && x.webSocketDebuggerUrl);
   assert.ok(target, "debug WebView page should be present");
   const socket = new WebSocket(target.webSocketDebuggerUrl);
-  await new Promise((resolve, reject) => { socket.onopen = resolve; socket.onerror = reject; });
+  await new Promise((resolve, reject) => {
+    const timer = setTimeout(() => { socket.close(); reject(new Error("Timed out connecting to the WebView debugging socket")); }, 8000);
+    socket.onopen = () => { clearTimeout(timer); resolve(); };
+    socket.onerror = event => { clearTimeout(timer); reject(event); };
+  });
   let nextId = 1;
   const pending = new Map();
   socket.onmessage = event => {

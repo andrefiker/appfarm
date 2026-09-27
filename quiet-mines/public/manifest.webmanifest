@@ -1,6 +1,19 @@
 {
-  "name": "Quiet Mines", "short_name": "Mines", "description": "A calm, tactile Minesweeper.",
-  "start_url": "./", "scope": "./", "display": "standalone", "orientation": "portrait",
-  "background_color": "#101918", "theme_color": "#101918",
-  "icons": [{"src":"./icons/mine.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+  "name": "Minesweeper",
+  "short_name": "Minesweeper",
+  "description": "Classic Minesweeper, carefully rebuilt for touch.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#c0c0c0",
+  "theme_color": "#0b65d7",
+  "icons": [
+    {
+      "src": "./icons/mine.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
 }

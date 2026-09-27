@@ -111,6 +111,58 @@ function formatGameSeed(g) {
     : '—';
 }
 
+const SEGMENTS = {
+  '0': ['a', 'b', 'c', 'd', 'e', 'f'], '1': ['b', 'c'],
+  '2': ['a', 'b', 'g', 'e', 'd'], '3': ['a', 'b', 'g', 'c', 'd'],
+  '4': ['f', 'g', 'b', 'c'], '5': ['a', 'f', 'g', 'c', 'd'],
+  '6': ['a', 'f', 'g', 'e', 'c', 'd'], '7': ['a', 'b', 'c'],
+  '8': ['a', 'b', 'c', 'd', 'e', 'f', 'g'], '9': ['a', 'b', 'c', 'd', 'f', 'g'], '-': ['g'],
+};
+function SegmentDisplay({ value, label }) {
+  const numeric = Math.max(-99, Math.min(999, Number(value) || 0));
+  const digits = numeric < 0
+    ? `-${String(Math.abs(numeric)).padStart(2, '0')}`
+    : String(numeric).padStart(3, '0');
+  const shapes = [
+    ['a', '3,1 15,1 13,4 5,4'], ['b', '15,2 17,4 16,13 13,14 13,5'],
+    ['c', '16,16 17,17 15,28 13,26 13,17'], ['d', '5,26 13,26 15,29 3,29'],
+    ['e', '2,17 5,17 5,26 3,28 1,26'], ['f', '3,2 5,5 5,14 2,13 1,4'],
+    ['g', '5,14 13,14 15,15 13,17 5,17 3,15'],
+  ];
+  return <span className="segment-display" role="img" aria-label={`${label} ${value}`}>
+    {digits.split('').map((digit, i) => <svg viewBox="0 0 18 30" aria-hidden="true" key={`${digit}-${i}`}>
+      {shapes.map(([segment, points]) => <polygon key={segment} className={SEGMENTS[digit]?.includes(segment) ? 'lit' : ''} points={points} />)}
+    </svg>)}
+  </span>;
+}
+function ClassicFlag() {
+  return <svg viewBox="0 0 20 20" aria-hidden="true" className="classic-flag">
+    <path d="M5 16V3l11 3.5L5 11" fill="#f00" stroke="#a00" strokeWidth="1" />
+    <path d="M5 3v13" stroke="#111" strokeWidth="2" />
+    <path d="M2 17h9l-2 2H3z" fill="#111" />
+  </svg>;
+}
+function ClassicFace({ state }) {
+  return <svg viewBox="0 0 40 40" aria-hidden="true" className="classic-face-art">
+    <circle cx="20" cy="20" r="17" fill="#ffeb00" stroke="#171717" strokeWidth="2" />
+    {state === 'won' ? <g>
+      <path d="M5 15Q7 12 10 13H18Q20 13 20 16V21Q20 24 17 24H10Q6 23 5 20Z" fill="#161616" />
+      <path d="M20 16Q20 13 23 13H30Q34 13 35 16V20Q34 23 30 24H23Q20 24 20 21Z" fill="#161616" />
+      <path d="M17 17H23" stroke="#161616" strokeWidth="3" />
+      <path d="M10 28Q20 34 30 27" fill="none" stroke="#161616" strokeWidth="2.5" strokeLinecap="round" />
+    </g> : state === 'lost' ? <g>
+      <path d="m9 13 6 6m0-6-6 6m11-6 6 6m0-6-6 6" stroke="#171717" strokeWidth="2.4" strokeLinecap="round" />
+      <path d="M12 29Q20 24 28 29" fill="none" stroke="#171717" strokeWidth="2.4" strokeLinecap="round" />
+    </g> : state === 'pressed' ? <g>
+      <circle cx="13" cy="16" r="2.3" fill="#171717" /><circle cx="27" cy="16" r="2.3" fill="#171717" />
+      <ellipse cx="20" cy="28" rx="3.2" ry="4" fill="#171717" />
+    </g> : <g>
+      <circle cx="13" cy="16" r="2.4" fill="#171717" /><circle cx="27" cy="16" r="2.4" fill="#171717" />
+      <path d="M10 24Q20 34 30 24" fill="none" stroke="#171717" strokeWidth="2.3" strokeLinecap="round" />
+    </g>}
+  </svg>;
+}
+
 function App() {
   const stored = useMemo(load, []);
   const [settings, setSettings] = useState({
@@ -125,6 +177,8 @@ function App() {
   const [isVisible, setIsVisible] = useState(!document.hidden);
   const [flagMode, setFlagMode] = useState(false);
   const [panel, setPanel] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [pressedCell, setPressedCell] = useState(false);
   const [toast, setToast] = useState('');
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -195,6 +249,15 @@ function App() {
   }, [settings]);
   useEffect(() => {
     const handler = (e) => {
+      if (e.key === 'F2') {
+        e.preventDefault();
+        createFresh(difficulty);
+        setMenuOpen(false);
+      }
+      if (e.key === 'Escape') {
+        setMenuOpen(false);
+        setPanel('');
+      }
       if (
         [' ', 'ArrowUp', 'ArrowDown'].includes(e.key) &&
         e.target.closest('.board-stage')
@@ -525,6 +588,7 @@ function App() {
     e.preventDefault();
     e.stopPropagation();
     if (!game || isDone) return;
+    setPressedCell(true);
     pointer.current = {
       x: e.clientX,
       y: e.clientY,
@@ -553,7 +617,8 @@ function App() {
     }
     if (e.pointerType === 'mouse' && e.button === 2) {
       suppressTap.current = true;
-      actFlag(i);
+      if (game.board?.cells[i]?.revealed) actReveal(i);
+      else actFlag(i);
       return;
     }
     if (e.pointerType !== 'mouse')
@@ -592,6 +657,7 @@ function App() {
     }
   }
   function up(e, i) {
+    setPressedCell(false);
     activePointers.current.delete(e.pointerId);
     if (activePointers.current.size < 2) pinchStart.current = null;
     if (!pointer.current || pointer.current.id !== e.pointerId) return;
@@ -632,6 +698,7 @@ function App() {
     }
   }
   function stageUp(e) {
+    setPressedCell(false);
     if (pointer.current?.stage && pointer.current.id === e.pointerId) {
       pointer.current = null;
       setTimeout(() => setDragging(false), 20);
@@ -668,14 +735,12 @@ function App() {
   const rootClass = `app-shell${settings.leftHanded ? ' left-handed' : ''}`;
   return (
     <main className={rootClass}>
-      <header className="topbar">
+      <header className="topbar titlebar">
         <div className="brand">
           <span className="brand-mark">
             <Bomb size={18} strokeWidth={1.8} />
           </span>
-          <span>
-            quiet<span className="brand-light"> mines</span>
-          </span>
+          <span>Minesweeper</span>
         </div>
         <div className="top-actions">
           <button
@@ -694,6 +759,16 @@ function App() {
           </button>
         </div>
       </header>
+      <nav className="menu-bar" aria-label="Game menu">
+        <button aria-expanded={menuOpen} onClick={() => setMenuOpen((v) => !v)}>Game</button>
+        <button onClick={() => { setMenuOpen(false); setPanel('help'); }}>Help</button>
+        {menuOpen && <div className="menu-popover">
+          <button onClick={() => { createFresh(difficulty); setMenuOpen(false); }}>New board <kbd>F2</kbd></button>
+          <button onClick={() => { createFresh('Easy', 'daily'); setMenuOpen(false); }}>Daily board</button>
+          <button onClick={() => { setMenuOpen(false); setPanel('stats'); }}>Statistics</button>
+          <button onClick={() => { setMenuOpen(false); setPanel('settings'); }}>Settings</button>
+        </div>}
+      </nav>
       <section className="game-bar">
         <label className="difficulty-wrap">
           <span className="sr-only">Difficulty</span>
@@ -734,21 +809,17 @@ function App() {
       </section>
       <section className="readouts">
         <div className="readout mines-readout">
-          <span className="readout-label">
-            <Flag size={13} /> MINES
-          </span>
-          <strong>{String(remaining).padStart(2, '0')}</strong>
+          <SegmentDisplay value={Math.max(-99, Math.min(999, remaining))} label="Mines remaining" />
         </div>
         <button
-          className={`face-button ${game?.board?.lost ? 'sad' : game?.board?.won ? 'happy' : ''}`}
+          className={`face-button ${game?.board?.lost ? 'sad' : game?.board?.won ? 'happy' : pressedCell ? 'pressed' : ''}`}
           aria-label="New board"
           onClick={() => createFresh(difficulty)}
         >
-          <span>{game?.board?.lost ? '×' : game?.board?.won ? '✓' : '⌁'}</span>
+          <ClassicFace state={game?.board?.lost ? 'lost' : game?.board?.won ? 'won' : pressedCell ? 'pressed' : 'ready'} />
         </button>
         <div className="readout time-readout">
-          <span className="readout-label">TIME</span>
-          <strong>{formatTime(elapsed)}</strong>
+          <SegmentDisplay value={Math.min(999, elapsed)} label="Elapsed time in seconds" />
         </div>
       </section>
       <section className="board-toolbar">
@@ -830,7 +901,7 @@ function App() {
             const display = !cell ? (
               ''
             ) : flagged ? (
-              <Flag size={15} fill="currentColor" />
+              <ClassicFlag />
             ) : revealed && cell.mine ? (
               <Bomb size={16} fill="currentColor" />
             ) : revealed && cell.adjacent ? (
@@ -952,7 +1023,9 @@ function App() {
           <section className="sheet" role="dialog" aria-modal="true">
             <header>
               <h2>
-                {panel === 'settings'
+                {panel === 'help'
+                  ? 'How to play'
+                  : panel === 'settings'
                   ? 'Settings'
                   : panel === 'stats'
                     ? 'Your play'
@@ -966,6 +1039,15 @@ function App() {
                 <X size={19} />
               </button>
             </header>
+            {panel === 'help' && (
+              <div className="help-content">
+                <p><b>Reveal:</b> click or tap a covered square.</p>
+                <p><b>Flag:</b> right-click, long-press, or turn on Flag mode.</p>
+                <p><b>Chord:</b> activate a number with the matching count of adjacent flags to open its remaining neighbors.</p>
+                <p>Numbers show how many mines touch that square. Clear every safe square to win. The first square and its neighbors are protected.</p>
+                <p><b>Keyboard:</b> press F2 for a new board. On a phone, drag the board to pan and pinch to zoom.</p>
+              </div>
+            )}
             {panel === 'settings' && (
               <div className="settings-list">
                 {[

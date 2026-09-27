@@ -1,6 +1,6 @@
 # Quiet Mines
 
-Offline-first Minesweeper PWA. The app has no backend, accounts, ads, or paid features. Game state, preferences, daily attempts, and statistics stay in browser `localStorage`.
+Offline-first Minesweeper PWA with the familiar blue title bar, Game/Help menus, gray beveled cells, red digital counters, and reset face of classic Windows Minesweeper. The app has no backend, accounts, ads, or paid features. Game state, preferences, daily attempts, and statistics stay in browser `localStorage`.
 
 ## Run and test
 
@@ -20,7 +20,7 @@ npm run dev
 - `src/Game.jsx` contains the React UI, pointer/touch input, local persistence, stats, settings, and synthesized sound.
 - `public/sw.js` caches the app shell and built JS/CSS for offline use after install.
 
-Automated engine tests run with Node's built-in test runner. `tests/tests.json` contains AppDeploy end-to-end workflow coverage.
+Automated engine tests run with Node's built-in test runner. `tests/tests.json` catalogs the interaction scenarios used for browser QA.
 
 ## Android APK
 

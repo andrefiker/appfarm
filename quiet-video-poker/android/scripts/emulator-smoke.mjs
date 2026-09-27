@@ -68,21 +68,22 @@ assert.ok(firstView.action.w >= 90 && firstView.action.h >= 42, "primary action 
 
 const afterDeal = await client.evaluate(`(()=>{document.querySelector('#action-button').click();return document.querySelector('#credits').textContent})()`);
 assert.notEqual(afterDeal, firstView.credits, "deal should immediately debit the selected fictional bet");
-const before = await client.evaluate(`([...document.querySelectorAll('.playing-card')].map(x=>x.getAttribute('aria-label'))) `);
 const handResult = await client.evaluate(`(async()=>{
-  let cards=[...document.querySelectorAll('.playing-card')];
-  cards[0].click(); cards[2].click();
-  let heldBefore=[cards[0].getAttribute('aria-label'),cards[2].getAttribute('aria-label')];
+  document.querySelectorAll('.playing-card')[0].click();
+  document.querySelectorAll('.playing-card')[2].click();
+  const identity=i=>{let c=document.querySelectorAll('.playing-card')[i];return c.querySelector('.corner:not(.inverted) b').textContent+c.querySelector('.corner:not(.inverted) i').textContent};
+  let heldBefore=[identity(0),identity(2)];
+  let heldState=[0,2].map(i=>document.querySelectorAll('.playing-card')[i].getAttribute('aria-pressed'));
   document.querySelector('#action-button').click();
   await new Promise(r=>setTimeout(r,350));
-  return {message:document.querySelector('#message').textContent, hands:document.querySelector('#hands-count').textContent, credits:document.querySelector('#credits').textContent, heldBefore, heldAfter:[...document.querySelectorAll('.playing-card')].filter((_,i)=>i===0||i===2).map(x=>x.getAttribute('aria-label')), state:JSON.parse(localStorage.getItem('quiet-video-poker-v1'))};
+  return {message:document.querySelector('#message').textContent, hands:document.querySelector('#hands-count').textContent, credits:document.querySelector('#credits').textContent, heldBefore, heldState, heldAfter:[identity(0),identity(2)], state:JSON.parse(localStorage.getItem('quiet-video-poker-v1'))};
 })()`);
 assert.equal(handResult.hands, "1", "one completed hand should be recorded");
+assert.deepEqual(handResult.heldState, ["true", "true"], "the selected cards should be held before drawing");
 assert.deepEqual(handResult.heldBefore, handResult.heldAfter, "held cards should remain unchanged during draw");
 assert.equal(handResult.state.stats.creditsWagered, 1, "the hand should persist its wager");
 assert.ok(handResult.message.includes("credits") || handResult.message.includes("No win"), "the game should show its hand result");
 assert.notEqual(handResult.credits, "", "credit balance should render after draw");
-assert.equal(before.length, 5);
 
 await client.evaluate(`document.querySelector('#paytable-open').click()`);
 await delay(100);

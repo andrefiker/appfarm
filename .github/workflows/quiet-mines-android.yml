@@ -1,0 +1,70 @@
+name: Quiet Mines Android APK
+
+on:
+  push:
+    branches:
+      - quiet-mines-2026-09-27
+    paths:
+      - 'quiet-mines/**'
+      - '.github/workflows/quiet-mines-android.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: quiet-mines/package-lock.json
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Test and build the offline game
+        working-directory: quiet-mines
+        run: |
+          npm ci
+          npm test
+          npm run build
+      - name: Bundle the web app and build APK
+        working-directory: quiet-mines
+        run: |
+          mkdir -p android-wrapper/app/src/main/assets/www
+          cp -R dist/. android-wrapper/app/src/main/assets/www/
+          cd android-wrapper
+          gradle --no-daemon assembleDebug
+      - name: Verify and checksum APK
+        working-directory: quiet-mines/android-wrapper
+        run: |
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          APKSIGNER="$(find "$ANDROID_HOME/build-tools" -type f -name apksigner | sort -V | tail -n 1)"
+          test -n "$APKSIGNER"
+          "$APKSIGNER" verify --verbose "$APK"
+          sha256sum "$APK" > app-debug.apk.sha256
+          printf 'applicationId=com.andrefiker.quietmines\nversionName=1.0.0\n' > build-info.txt
+      - name: Upload installable APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: quiet-mines-android
+          path: |
+            quiet-mines/android-wrapper/app/build/outputs/apk/debug/app-debug.apk
+            quiet-mines/android-wrapper/app-debug.apk.sha256
+            quiet-mines/android-wrapper/build-info.txt
+          if-no-files-found: error
+          retention-days: 90

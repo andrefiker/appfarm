@@ -21,3 +21,7 @@ npm run dev
 - `public/sw.js` caches the app shell and built JS/CSS for offline use after install.
 
 Automated engine tests run with Node's built-in test runner. `tests/tests.json` contains AppDeploy end-to-end workflow coverage.
+
+## Android APK
+
+The source includes a minimal native Android WebView wrapper. GitHub Actions bundles the production web build into an offline installable APK on pushes to the Quiet Mines branch; the APK has no Internet permission and no backend dependency. Build instructions are in `android-wrapper/README.md`.

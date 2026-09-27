@@ -1,3 +1,5 @@
 node_modules/
 dist/
+android-wrapper/.gradle/
+android-wrapper/app/build/
 .DS_Store

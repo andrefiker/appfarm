@@ -1,4 +1,4 @@
-const CACHE = "quiet-mines-v1";
+const CACHE = "quiet-mines-v2";
 const CORE = [
   "./",
   "./index.html",

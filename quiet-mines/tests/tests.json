@@ -29,7 +29,7 @@
     "covers": [
       "long-press flag",
       "flag mode",
-      "Hard and Expert board usability",
+      "portrait Hard and Expert grids at phone sizes",
       "pan, pinch zoom, and Fit Board",
       "logic-only hints",
       "number chording",
@@ -40,7 +40,7 @@
     ],
     "description": "Exercises touch actions and confirms a lost board stays visible for inspection and exact-seed retry.",
     "steps": [
-      "Start an Expert board and pan or pinch to zoom; use Fit Board to return the full grid to view",
+      "Start an Expert board and confirm the portrait grid fits the screen; pinch to zoom or use Fit Board as needed",
       "Long-press a covered cell to flag it",
       "Request a hint",
       "Flag the required adjacent mines and tap a numbered cell to chord",

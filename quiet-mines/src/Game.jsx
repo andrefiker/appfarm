@@ -876,9 +876,10 @@ function App() {
         onContextMenu={(e) => e.preventDefault()}
       >
         <div
-          className={`board ${game?.difficulty === 'Easy' || difficulty === 'Easy' ? 'easy' : ''} ${game?.difficulty === 'Medium' || difficulty === 'Medium' ? 'medium' : ''} ${game?.difficulty === 'Hard' || difficulty === 'Hard' ? 'hard' : ''} ${config.cols > 12 ? 'wide' : ''}`}
+          className={`board ${game?.difficulty === 'Easy' || difficulty === 'Easy' ? 'easy' : ''} ${game?.difficulty === 'Medium' || difficulty === 'Medium' ? 'medium' : ''} ${game?.difficulty === 'Hard' || difficulty === 'Hard' ? 'hard' : ''} ${game?.difficulty === 'Expert' || difficulty === 'Expert' ? 'expert' : ''} ${config.cols > 14 ? 'wide' : ''}`}
           style={{
             '--cols': config.cols,
+            '--rows': config.rows,
             transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
           }}
           role="grid"

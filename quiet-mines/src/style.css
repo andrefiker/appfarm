@@ -1202,3 +1202,12 @@ body { color: #111; }
   .board-toolbar { height: 30px; }
   .bottom-bar { height: 28px; }
 }
+.board.easy { --cell: min(37px, calc((100vw - 34px) / 9)); }
+.board.medium { --cell: min(31px, calc((100vw - 34px) / 11)); }
+.board.hard { --cell: 28px; }
+.board.expert { --cell: min(25px, calc((100vw - 42px) / 14)); }
+.board.expert .n { font-size: 17px; }
+@media (max-width: 400px) {
+  .board.hard { --cell: min(28px, calc((100vw - 42px) / 12)); }
+  .board.expert { --cell: min(25px, calc((100vw - 42px) / 14)); }
+}

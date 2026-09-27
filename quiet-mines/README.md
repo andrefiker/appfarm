@@ -25,3 +25,7 @@ Automated engine tests run with Node's built-in test runner. `tests/tests.json` 
 ## Android APK
 
 The source includes a minimal native Android WebView wrapper. GitHub Actions bundles the production web build into an offline installable APK on pushes to the Quiet Mines branch; the APK has no Internet permission and no backend dependency. Build instructions are in `android-wrapper/README.md`.
+
+## Phone board sizing
+
+The larger difficulties use portrait grids to make better use of a phone screen while preserving their cell totals, mine counts, and mine density. The Expert board is 18 × 14 with 48 mines; it fits at phone width without horizontal panning on common portrait displays.

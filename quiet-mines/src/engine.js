@@ -1,8 +1,8 @@
 export const DIFFICULTIES = {
-  Easy: { rows: 8, cols: 9, mines: 10 },
-  Medium: { rows: 10, cols: 11, mines: 16 },
-  Hard: { rows: 12, cols: 14, mines: 30 },
-  Expert: { rows: 14, cols: 18, mines: 48 },
+  Easy: { rows: 9, cols: 9, mines: 10 },
+  Medium: { rows: 12, cols: 11, mines: 19 },
+  Hard: { rows: 14, cols: 12, mines: 30 },
+  Expert: { rows: 18, cols: 14, mines: 48 },
 };
 export const VERSION = '1';
 export function rngFromSeed(seed) {

@@ -42,7 +42,14 @@ async function attach() {
   };
   function send(method, params = {}) {
     const id = nextId++;
-    return new Promise((resolve, reject) => { pending.set(id, { resolve, reject }); socket.send(JSON.stringify({ id, method, params })); });
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => { pending.delete(id); reject(new Error(`Timed out waiting for WebView ${method}`)); }, 8000);
+      pending.set(id, {
+        resolve: value => { clearTimeout(timer); resolve(value); },
+        reject: error => { clearTimeout(timer); reject(error); }
+      });
+      socket.send(JSON.stringify({ id, method, params }));
+    });
   }
   async function evaluate(expression) {
     const result = await send("Runtime.evaluate", { expression, awaitPromise: true, returnByValue: true, userGesture: true });
@@ -92,6 +99,7 @@ assert.deepEqual(handResult.heldBefore, handResult.heldAfter, "held cards should
 assert.equal(handResult.state.stats.creditsWagered, 1, "the hand should persist its wager");
 assert.ok(handResult.message.includes("credits") || handResult.message.includes("No win"), "the game should show its hand result");
 assert.notEqual(handResult.credits, "", "credit balance should render after draw");
+console.log("Android QA: deal, hold, draw, result, and credits passed.");
 
 await client.evaluate(`document.querySelector('#paytable-open').click()`);
 await delay(100);
@@ -102,6 +110,7 @@ for (let i = 0; i < 20 && !modalClosed; i++) {
   if (!modalClosed) await delay(100);
 }
 assert.equal(modalClosed, true, "Android Back should close an open modal");
+console.log("Android QA: Back closed the modal.");
 await client.evaluate(`document.querySelector('#settings-open').click()`);
 assert.ok((await client.evaluate(`document.querySelector('.stats-grid').innerText`)).includes("Hands played"));
 
@@ -110,6 +119,7 @@ await delay(300);
 adb("shell", "am", "start", "-n", ACTIVITY);
 await delay(600);
 assert.equal(await client.evaluate(`document.querySelector('#hands-count').textContent`), "1", "background and resume should preserve the current UI state");
+console.log("Android QA: background and resume passed.");
 
 client.socket.close();
 adb("shell", "am", "force-stop", PACKAGE);
@@ -123,6 +133,7 @@ const reopened = await client.evaluate(`({hands:document.querySelector('#hands-c
 assert.equal(reopened.hands, "1", "hand statistics should persist after closing and reopening");
 assert.equal(reopened.storage.stats.handsPlayed, 1);
 assert.equal(reopened.credits, handResult.credits, "credits should persist after closing and reopening");
+console.log("Android QA: local credits and statistics survived reopen.");
 
 adb("shell", "svc", "wifi", "disable");
 adb("shell", "svc", "data", "disable");
@@ -138,4 +149,5 @@ assert.equal(await client.evaluate(`document.querySelector('#hands-count').textC
 const offline = await client.evaluate(`({action:document.querySelector('#action-button').textContent, origin:location.origin, moduleCount:document.querySelectorAll('script[type=module]').length})`);
 assert.equal(offline.action, "DEAL");
 assert.equal(offline.moduleCount, 0, "APK content should be bundled, with no module fetches");
+console.log("Android QA: offline relaunch passed.");
 console.log(JSON.stringify({install:"PASS", launch:"PASS", fullHand:"PASS", backgroundResume:"PASS", reopenPersistence:"PASS", offlineReopen:"PASS", backModal:"PASS", viewport:{width:firstView.width,height:firstView.height,card:firstView.cards[0],action:firstView.action}, initialCredits:firstView.credits, postHandCredits:handResult.credits, result:handResult.message, offlineOrigin:offline.origin}, null, 2));

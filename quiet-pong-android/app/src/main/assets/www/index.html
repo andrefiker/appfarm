@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#090d10" />
+  <meta name="description" content="A quiet, tactile arcade game. Offline and ready to play." />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+  <title>Quiet Pong</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main id="app" aria-label="Quiet Pong">
+    <canvas id="court" aria-label="Pong court. Drag on your half to move your paddle."></canvas>
+    <div id="menu" class="layer">
+      <div class="menu-content">
+        <div class="brand">QUIET <span>PONG</span></div>
+        <p class="tagline">A little room to play.</p>
+        <div class="menu-actions">
+          <button data-mode="cpu" class="primary">PLAY VS CPU</button>
+          <button data-mode="local">LOCAL 2P</button>
+          <button data-mode="practice">PRACTICE</button>
+        </div>
+        <div class="menu-options">
+          <label>CPU <select id="difficulty"><option value="easy">EASY</option><option value="normal" selected>NORMAL</option><option value="hard">HARD</option></select></label>
+          <label>FIRST TO <select id="target-score"><option>5</option><option selected>7</option><option>11</option></select></label>
+        </div>
+        <button id="settings-open" class="text-button">SETTINGS</button>
+        <div id="record-line" class="record-line"></div>
+      </div>
+    </div>
+    <div id="pause-layer" class="layer hidden">
+      <div class="dialog"><div class="dialog-title">TAKE YOUR TIME</div><p>The court is waiting.</p><button id="resume" class="primary">RESUME</button><button id="quit" class="text-button">QUIT TO MENU</button></div>
+    </div>
+    <div id="end-layer" class="layer hidden">
+      <div class="dialog"><div class="dialog-title" id="winner-title">YOU WIN</div><div class="final-score" id="final-score"></div><div class="longest">LONGEST RALLY <b id="longest-value">0</b></div><button id="rematch" class="primary">REMATCH</button><button id="change-mode" class="text-button">CHANGE MODE</button></div>
+    </div>
+    <div id="settings-layer" class="layer hidden">
+      <div class="dialog settings-dialog"><div class="dialog-title">SETTINGS</div>
+        <label class="setting-row">Human paddle <select id="preferred-side"><option value="left">LEFT</option><option value="right">RIGHT</option></select></label>
+        <label class="setting-row">Sound <span class="inline-setting"><input type="checkbox" id="sound-toggle" checked><input type="range" id="volume" min="0" max="100" value="55" aria-label="Volume"></span></label>
+        <label class="setting-row">Haptics <input type="checkbox" id="haptics-toggle" checked></label>
+        <button id="settings-close" class="primary">DONE</button>
+      </div>
+    </div>
+    <button id="pause-button" aria-label="Pause" class="pause-button hidden"><span></span><span></span></button>
+    <div id="toast" class="toast hidden"></div>
+  </main>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

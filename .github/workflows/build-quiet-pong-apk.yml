@@ -1,0 +1,53 @@
+name: Build Quiet Pong APK
+
+on:
+  push:
+    branches: [ codex/quiet-pong-apk-20260927 ]
+    paths:
+      - 'quiet-pong-android/**'
+      - '.github/workflows/build-quiet-pong-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: quiet-pong-android
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Install Android 35
+        run: yes | sdkmanager 'platforms;android-35' 'build-tools;35.0.0' >/dev/null
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Build debug APK
+        run: gradle --no-daemon :app:assembleDebug
+      - name: Verify and collect installable APK
+        run: |
+          set -euo pipefail
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          mkdir -p dist
+          cp "$APK" dist/Quiet-Pong-1.0.0.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging dist/Quiet-Pong-1.0.0.apk | head -n 4
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose dist/Quiet-Pong-1.0.0.apk
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: quiet-pong-android-apk
+          path: quiet-pong-android/dist/Quiet-Pong-1.0.0.apk
+          if-no-files-found: error
+          retention-days: 30

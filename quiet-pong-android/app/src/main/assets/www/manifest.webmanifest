@@ -1,0 +1,1 @@
+{"name":"Quiet Pong","short_name":"Quiet Pong","description":"A little room to play.","start_url":"./","scope":"./","display":"standalone","orientation":"landscape","background_color":"#090d10","theme_color":"#090d10","icons":[{"src":"icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}

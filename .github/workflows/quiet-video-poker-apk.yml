@@ -1,0 +1,87 @@
+name: Quiet Video Poker Android APK
+
+on:
+  push:
+    branches: [quiet-video-poker-apk-2026-09-27]
+    paths:
+      - 'quiet-video-poker/**'
+      - '.github/workflows/quiet-video-poker-apk.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Run poker and PWA tests
+        working-directory: quiet-video-poker
+        run: npm test
+
+      - name: Build production web assets
+        working-directory: quiet-video-poker
+        run: npm run build
+
+      - name: Bundle the offline Android page
+        working-directory: quiet-video-poker
+        run: node scripts/bundle-android.mjs
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android 35 build tools
+        run: yes | sdkmanager 'platforms;android-35' 'build-tools;35.0.0' >/dev/null
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Assemble debug APK
+        run: gradle --no-daemon --stacktrace -p quiet-video-poker/android :app:assembleDebug
+
+      - name: Verify APK package and signature
+        run: |
+          APK=quiet-video-poker/android/app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          BADGING=$("$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK")
+          echo "$BADGING" | head -n 6
+          echo "$BADGING" | grep -F "name='com.appfarm.quietvideopoker'"
+          PERMISSIONS=$("$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions "$APK")
+          echo "$PERMISSIONS"
+          ! echo "$PERMISSIONS" | grep -q 'android.permission.INTERNET'
+          echo "$PERMISSIONS" | grep -q 'android.permission.VIBRATE'
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
+          unzip -l "$APK" | grep 'assets/quiet-video-poker.html'
+
+      - name: Install and play through on Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          script: node quiet-video-poker/android/scripts/emulator-smoke.mjs
+
+      - name: Upload installable APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: quiet-video-poker-apk
+          path: quiet-video-poker/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30

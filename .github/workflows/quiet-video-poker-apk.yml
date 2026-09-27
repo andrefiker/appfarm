@@ -78,6 +78,11 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+      - name: Enable hardware acceleration for Android emulator
+        run: |
+          sudo chmod 666 /dev/kvm
+          test -r /dev/kvm && test -w /dev/kvm
+
       - name: Install and play through on Android emulator
         uses: reactivecircus/android-emulator-runner@v2
         timeout-minutes: 15

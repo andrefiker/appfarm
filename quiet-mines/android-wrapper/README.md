@@ -2,6 +2,8 @@
 
 Quiet Mines Android package is a small offline WebView shell around the same production build used by the PWA. The complete web app is copied into the APK at build time, so gameplay needs no network and no Android Internet permission.
 
+The portrait-screen refresh is version 1.1.0 (`com.andrefiker.quietmines.classic`). It installs alongside the earlier debug-signed package so an Android signature mismatch cannot block installation or force deletion of the previous local save.
+
 Build from the `quiet-mines/` source directory with JDK 17+, Android SDK 35, Gradle 8.9+, and Node 20+:
 
 ```sh

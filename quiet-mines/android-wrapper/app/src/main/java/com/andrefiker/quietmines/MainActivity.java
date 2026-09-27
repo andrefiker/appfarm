@@ -3,6 +3,7 @@ package com.andrefiker.quietmines;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Build;
 import android.view.View;
 import android.view.Window;
 import android.webkit.WebChromeClient;
@@ -21,9 +22,10 @@ public final class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Window window = getWindow();
-        window.setStatusBarColor(Color.rgb(16, 25, 24));
-        window.setNavigationBarColor(Color.rgb(16, 25, 24));
-        window.getDecorView().setSystemUiVisibility(0);
+        window.setStatusBarColor(Color.rgb(11, 101, 215));
+        window.setNavigationBarColor(Color.rgb(192, 192, 192));
+        window.getDecorView().setSystemUiVisibility(
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR : 0);
 
         webView = new WebView(this);
         webView.setBackgroundColor(Color.rgb(16, 25, 24));

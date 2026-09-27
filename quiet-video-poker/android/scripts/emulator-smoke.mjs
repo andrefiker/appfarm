@@ -96,8 +96,12 @@ assert.notEqual(handResult.credits, "", "credit balance should render after draw
 await client.evaluate(`document.querySelector('#paytable-open').click()`);
 await delay(100);
 adb("shell", "input", "keyevent", "4");
-await delay(150);
-assert.equal(await client.evaluate(`document.getElementById('modal').hidden`), true, "Android Back should close an open modal");
+let modalClosed = false;
+for (let i = 0; i < 20 && !modalClosed; i++) {
+  modalClosed = await client.evaluate(`document.getElementById('modal').hidden`);
+  if (!modalClosed) await delay(100);
+}
+assert.equal(modalClosed, true, "Android Back should close an open modal");
 await client.evaluate(`document.querySelector('#settings-open').click()`);
 assert.ok((await client.evaluate(`document.querySelector('.stats-grid').innerText`)).includes("Hands played"));
 

@@ -70,16 +70,6 @@ jobs:
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
           unzip -l "$APK" | grep 'assets/quiet-video-poker.html'
 
-      - name: Install and play through on Android emulator
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 35
-          target: google_apis
-          arch: x86_64
-          profile: pixel_2
-          disable-animations: true
-          script: node quiet-video-poker/android/scripts/emulator-smoke.mjs
-
       - name: Upload installable APK
         uses: actions/upload-artifact@v4
         with:
@@ -87,3 +77,14 @@ jobs:
           path: quiet-video-poker/android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30
+
+      - name: Install and play through on Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        timeout-minutes: 15
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          script: node quiet-video-poker/android/scripts/emulator-smoke.mjs

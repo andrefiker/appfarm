@@ -162,3 +162,4 @@ assert.equal(offline.action, "DEAL");
 assert.equal(offline.moduleCount, 0, "APK content should be bundled, with no module fetches");
 console.log("Android QA: offline relaunch passed.");
 console.log(JSON.stringify({install:"PASS", launch:"PASS", fullHand:"PASS", backgroundResume:"PASS", reopenPersistence:"PASS", offlineReopen:"PASS", backModal:"PASS", viewport:{width:firstView.width,height:firstView.height,card:firstView.cards[0],action:firstView.action}, initialCredits:firstView.credits, postHandCredits:handResult.credits, result:handResult.message, offlineOrigin:offline.origin}, null, 2));
+client.socket.close();

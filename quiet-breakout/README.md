@@ -45,4 +45,4 @@ cd android && gradle --no-daemon :app:assembleDebug
 - Signing: GitHub Actions debug keystore (installable debug APK; not a Play Store release signature)
 - Rollback: `main` at the parent commit recorded in the release metadata.
 
-See `QA.md` for verification boundaries and `release.json` for the source commit and package identifiers.
+See `QA.md` for verification boundaries and `release.json` for the rollback target and package identifiers.

@@ -1,4 +1,4 @@
-const CACHE='quiet-solitaire-v11';
+const CACHE='quiet-solitaire-v12';
 const CORE=['./','./index.html','./manifest.webmanifest','./src/style.css','./src/app.js','./src/engine.js','./src/interaction.js','./src/layout.js','./public/icon.svg'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));

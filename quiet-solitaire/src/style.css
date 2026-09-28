@@ -102,7 +102,7 @@
     --card-w:min(calc((100vw - 28px)/7),62px);
     --card-h:calc(var(--card-w)*1.48);
     --gap:2px;
-    --card-overlap:clamp(24px,7.2vw,30px);
+    --card-overlap:clamp(32px,8.2vw,36px);
     --felt:#13583b;
     display:flex;flex-direction:column;height:100dvh;min-height:0;overflow:hidden;
     padding:max(6px,env(safe-area-inset-top)) 8px calc(68px + var(--safe-bottom));
@@ -206,10 +206,12 @@
 .card:not(.face-down){background-color:#fbfaf6;background-image:none;border:1px solid rgba(31,39,34,.2);box-shadow:0 1px 2px rgba(0,0,0,.16)}
 .card.red{color:#ad3535}
 .card.black{color:#222824}
-.card:has(.face-art) .center-suit{opacity:.12}
+.card:has(.face-art) .center-suit{opacity:.22}
 .face-art,.card.minimal .face-art{inset:30% 18%;border:0;background:transparent}
 .face-art:before,.face-art:after,.face-crown{display:none}
 .face-letter{font-size:calc(var(--card-w)*.46);font-weight:600;text-shadow:none}
+/* Face-card initials duplicate the corner rank and collide in stacked sequences. */
+.face-art{display:none!important}
 .card.selected{box-shadow:0 0 0 2px #d7be88;transform:translateY(-4px)}
 .card.dragging{box-shadow:0 7px 12px rgba(0,0,0,.26)}
 .card.ghost-card{box-shadow:0 7px 12px rgba(0,0,0,.28)}

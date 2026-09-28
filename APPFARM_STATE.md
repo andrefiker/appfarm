@@ -105,3 +105,13 @@ Vercel:
 2. Confirm whether their APK artifacts/workflow branches still exist before resuming them.
 3. Complete or explicitly cancel the pending Railway/Lovable cleanup in its own execution task.
 4. Update this file only when meaningful state changes.
+
+
+## Quiet Breakout — 2026-09-28
+
+- New offline-first Android brick-breaker is implemented under `quiet-breakout/` on branch `quiet-breakout-1.0.0`.
+- Version 1.0.0; package `com.andrefiker.quietbreakout`; 30 distinct deterministic stage layouts; Classic, Endless, and Zen modes.
+- Source implementation commit: `8231ca154bfb6f93c37ed076381135e6e5992231`. Subsequent commits repaired the Android workflow and clarified QA/release docs.
+- GitHub Actions run `36444895566` passed tests, offline bundle build, APK packaging, package/version, signature, permission, and bundled-asset checks.
+- APK is a debug-signed, installable artifact. It was structurally inspected, but has not been installed on an emulator or phone. Browser screenshot QA was blocked by missing Chromium and inaccessible loopback.
+- Rollback target: parent commit `e237baf4be792899be670b586d68fb26901d75a6`.

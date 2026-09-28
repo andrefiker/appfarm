@@ -4,14 +4,14 @@
 
 - `npm test`: 10 test cases cover all 30 deterministic stage boards, wall reflections, paddle angle influence, horizontal-velocity floor, speed cap, high-speed brick collision, normal/tough brick scoring and damage, life loss/game over, stage clear/advance, paddle clamping, and pause/resume.
 - `npm run check`: JavaScript syntax checks pass.
-- Android workflow reruns gameplay tests, creates the local WebView bundle, builds the APK, checks package/version with `aapt`, and verifies the debug signature with `apksigner`.
+- The Android workflow reruns gameplay tests, builds the offline WebView bundle and APK, checks package/version with `aapt`, confirms the APK has no Android permissions, verifies the debug signature, and checks that bundled game assets are present.
 
-## Current environment verification
+## Verification limits
 
-- Browser preview server returns the local game files. A browser screenshot could not be captured in this build environment: Playwright is installed without its Chromium binary, and the connected Chrome session blocks access to this workspace's loopback server.
-- The current workspace has no Android SDK, Gradle, `adb`, emulator, or signing tools. GitHub Actions is the configured Android build route; no APK is claimed until its artifact is retrieved and inspected.
-- Physical-device and emulator gameplay checks remain pending the APK artifact. Automated game logic and the offline asset bundler are testable locally.
+- Interactive browser preview and screenshot testing were unavailable: the installed Playwright package has no Chromium binary, and the connected Chrome session blocks access to the workspace loopback server. Touch dragging, rapid direction changes, and visual rendering have not been manually claimed as tested.
+- This workspace has no Android SDK, Gradle, `adb`, emulator, or signing tools, so packaging ran in GitHub Actions.
+- The APK passed CI package, asset, permission, and signature checks. It has not been installed on an emulator or physical phone; background/resume and device-level gameplay remain unverified.
 
-## APK checks performed in CI
+## Build route
 
-The workflow checks that the APK exists, has package `com.andrefiker.quietbreakout`, version code `1`, version name `1.0.0`, and a valid Android debug signature. Installation/device testing is not currently automated.
+GitHub Actions uses Java 17, Android SDK 35/build-tools 35.0.0, Gradle 8.10.2, and Android Gradle Plugin 8.8.1. No backend, network permission, or runtime service is required.

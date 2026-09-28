@@ -11,11 +11,11 @@
 @media(max-width:350px){.controls{gap:0;padding:4px 2px}.control-button{font-size:9px}.primary{font-size:15px}.utility{font-size:8px}.score span{font-size:9px}}
 @media(orientation:landscape){.machine{max-width:1050px;margin:auto}.topbar{display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{margin:4px 0 2px;font-size:clamp(21px,3vw,32px);white-space:nowrap}.scoreboard{flex:1;max-width:430px;margin:0}.table{justify-content:center}.status-line{top:3px}.hand-area{transform:none}.cards,.hold-row{width:min(76vw,640px)}.playing-card{max-height:calc((100dvh - 154px - var(--safe-top) - var(--safe-bottom)));aspect-ratio:.69}.table-note{bottom:0}.controls{min-height:55px;padding:3px 6px}.control-button{height:45px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
-/* Bet changes live with the score; play actions stay in the left-handed dock. */
-.topbar .bet-controls{display:flex;align-items:center;justify-content:center;width:max-content;max-width:100%;height:44px;margin:9px auto 0;padding:2px 4px;gap:2px;border:1px solid #ecedd255;border-radius:12px;background:#0a3e2ad1}
-.topbar .bet-controls .control-button{flex:none;min-width:44px;height:38px;border-radius:8px}
-.topbar .bet-controls .max{min-width:52px;font-size:10px}
-.bet-label{min-width:33px;font-size:10px;letter-spacing:.09em;color:#d7e6d1}
+/* Explicit bet choices live with the score; play actions stay in the left-handed dock. */
+.topbar .bet-controls{display:flex;align-items:stretch;justify-content:center;width:min(100%,470px);height:49px;margin:10px auto 0;padding:3px;gap:3px;border:1px solid #ecedd255;border-radius:12px;background:#0a3e2ad1}
+.bet-option{flex:1;min-width:0;border:0;border-radius:8px;background:transparent;color:#f2e8cb;font-size:clamp(12px,3.4vw,15px);font-weight:700;font-variant-numeric:tabular-nums;cursor:pointer;touch-action:manipulation}
+.bet-option[aria-pressed="true"]{background:#e5c98e;color:#183d2b;box-shadow:0 1px 4px #001c12aa}
+.bet-option:disabled{cursor:default}.bet-option:not(:disabled):active{background:#e4dab344}
 .controls .primary{flex:1.6}.controls .hint-button{flex:1}.controls .secondary-controls{flex:2;align-self:stretch}.controls .utility{font-size:11px}.controls .utility:last-child{font-size:24px}
-@media(max-height:680px){.topbar .bet-controls{height:37px;margin-top:4px}.topbar .bet-controls .control-button{height:32px}.controls .control-button{height:49px}}
+@media(max-height:680px){.topbar .bet-controls{height:42px;margin-top:4px}.controls .control-button{height:49px}}
 @media(orientation:landscape){.topbar .bet-controls{margin:0;flex:0 0 auto}.controls .control-button{height:45px}}

@@ -10,6 +10,24 @@ export const PAYTABLE = Object.freeze([
   [CATEGORY.FULL_HOUSE, 9], [CATEGORY.FLUSH, 6], [CATEGORY.STRAIGHT, 4],
   [CATEGORY.THREE_KIND, 3], [CATEGORY.TWO_PAIR, 2], [CATEGORY.JACKS_OR_BETTER, 1],
 ]);
+export const BET_AMOUNTS = Object.freeze([100, 200, 500, 1000, 5000]);
+export const INITIAL_CREDITS = 100000;
+const OLD_BETS = Object.freeze([100, 200, 500, 1000, 5000]);
+
+export function migrateEconomy(saved) {
+  if (saved.economyVersion === 2) {
+    return { ...saved, bet: BET_AMOUNTS.includes(saved.bet) ? saved.bet : BET_AMOUNTS[0] };
+  }
+  const legacyCredits = Number.isFinite(saved.credits) && saved.credits >= 0 ? saved.credits : 1000;
+  const stats = { ...saved.stats };
+  for (const key of ["creditsWagered", "creditsWon", "largestWin"]) {
+    stats[key] = (Number.isFinite(stats[key]) && stats[key] >= 0 ? stats[key] : 0) * 100;
+  }
+  return {
+    ...saved, economyVersion: 2, credits: Math.round(legacyCredits * 100),
+    bet: OLD_BETS[saved.bet - 1] ?? BET_AMOUNTS[0], stats,
+  };
+}
 
 export function createDeck() {
   return SUITS.flatMap(suit => RANKS.map(rank => ({ rank, suit })));
@@ -74,9 +92,9 @@ export function evaluateHand(hand) {
 }
 
 export function payoutFor(category, bet) {
-  if (!Number.isInteger(bet) || bet < 1 || bet > 5) throw new Error("Bet must be between 1 and 5 credits.");
+  if (!BET_AMOUNTS.includes(bet)) throw new Error("Select a valid bet amount.");
   const base = PAYTABLE.find(([name]) => name === category)?.[1] ?? 0;
-  if (category === CATEGORY.ROYAL_FLUSH && bet === 5) return 4000;
+  if (category === CATEGORY.ROYAL_FLUSH && bet === 5000) return 800 * bet;
   return base * bet;
 }
 

@@ -3,7 +3,7 @@
 This is a thin offline WebView wrapper for the existing Quiet Video Poker game. It does not rewrite or duplicate poker rules. The CI bundle script in `../scripts/bundle-android.mjs` embeds the tested production web assets as one local HTML file before Gradle builds the app.
 
 - Application ID: `com.appfarm.quietvideopoker`
-- Version: `1.1.0` (version code 2)
+- Version: `1.2.0` (version code 3)
 - Orientation: portrait
 - Permissions: `VIBRATE` only
 - No Internet permission, backend, account, or development-server dependency

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { CATEGORY as C, createDeck, shuffleDeck, deal, drawReplacement, evaluateHand, payoutFor, recommendHolds } from "../src/engine.js";
+import { BET_AMOUNTS, INITIAL_CREDITS, CATEGORY as C, createDeck, shuffleDeck, deal, drawReplacement, evaluateHand, payoutFor, recommendHolds, migrateEconomy } from "../src/engine.js";
 
 const c = (rank, suit) => ({ rank, suit });
 const hands = {
@@ -31,18 +31,30 @@ const cases = [
 ];
 for (const [name, fixture, expected] of cases) test(name, () => assert.equal(evaluateHand(hands[fixture]).category, expected));
 
-test("one-credit 9/6 table and max-bet royal payout", () => {
-  assert.equal(payoutFor(C.ROYAL_FLUSH, 1), 250);
-  assert.equal(payoutFor(C.STRAIGHT_FLUSH, 1), 50);
-  assert.equal(payoutFor(C.FOUR_KIND, 1), 25);
-  assert.equal(payoutFor(C.FULL_HOUSE, 1), 9);
-  assert.equal(payoutFor(C.FLUSH, 1), 6);
-  assert.equal(payoutFor(C.STRAIGHT, 1), 4);
-  assert.equal(payoutFor(C.THREE_KIND, 1), 3);
-  assert.equal(payoutFor(C.TWO_PAIR, 1), 2);
-  assert.equal(payoutFor(C.JACKS_OR_BETTER, 1), 1);
-  assert.equal(payoutFor(C.ROYAL_FLUSH, 5), 4000);
-  assert.equal(payoutFor(C.FULL_HOUSE, 5), 45);
+test("all five bet choices scale the 9/6 table and the maximum royal bonus", () => {
+  assert.deepEqual(BET_AMOUNTS, [100, 200, 500, 1000, 5000]);
+  for (const bet of BET_AMOUNTS) {
+    for (const [category, multiplier] of [[C.STRAIGHT_FLUSH, 50], [C.FOUR_KIND, 25], [C.FULL_HOUSE, 9], [C.FLUSH, 6], [C.STRAIGHT, 4], [C.THREE_KIND, 3], [C.TWO_PAIR, 2], [C.JACKS_OR_BETTER, 1]]) {
+      assert.equal(payoutFor(category, bet), multiplier * bet);
+    }
+    assert.equal(payoutFor(C.ROYAL_FLUSH, bet), (bet === 5000 ? 800 : 250) * bet);
+    assert.equal(payoutFor(C.NO_WIN, bet), 0);
+  }
+  assert.throws(() => payoutFor(C.FULL_HOUSE, 300), /valid bet/);
+});
+
+test("old bankroll and statistics migrate once without wiping play history", () => {
+  const legacy = { credits: 846, bet: 4, settings: { sound: false }, stats: { handsPlayed: 12, creditsWagered: 71, creditsWon: 28, largestWin: 15, categories: { Flush: 2 } } };
+  const migrated = migrateEconomy(legacy);
+  assert.equal(INITIAL_CREDITS, 100000);
+  assert.equal(migrated.credits, 84600);
+  assert.equal(migrated.bet, 1000);
+  assert.deepEqual([migrated.stats.creditsWagered, migrated.stats.creditsWon, migrated.stats.largestWin], [7100, 2800, 1500]);
+  assert.equal(migrated.stats.handsPlayed, 12);
+  assert.equal(migrated.stats.categories.Flush, 2);
+  assert.equal(migrated.settings.sound, false);
+  assert.deepEqual(migrateEconomy(migrated), migrated);
+  assert.equal(migrateEconomy({ credits: 0, bet: 5 }).bet, 5000);
 });
 
 test("shuffling is deterministic with an injected RNG and preserves the deck", () => {

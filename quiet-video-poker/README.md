@@ -15,7 +15,7 @@ The project has no third-party dependencies. It uses native JavaScript modules, 
 
 ## Rules and controls
 
-Five cards are dealt from one Fisher–Yates shuffled 52-card deck. Tapping a card toggles its hold. DRAW replaces only discarded cards from that same deck. Payouts use the 9/6 Jacks or Better table; a five-credit royal flush pays 4,000 credits. Bet, credits, settings, and statistics stay in this browser's local storage. Settings can reset credits and statistics.
+Five cards are dealt from one Fisher–Yates shuffled 52-card deck. Tapping a card toggles its hold. DRAW replaces only discarded cards from that same deck. Bets are 100, 200, 500, 1,000, or 5,000 fictional credits. Payouts use the 9/6 Jacks or Better table; a 5,000-credit royal flush pays 4,000,000 credits. A fresh bankroll is 100,000 credits. Existing v1.1 balances and credit totals are scaled by 100 once, while hands and settings are preserved. Bet, credits, settings, and statistics stay in local storage. Settings can reset credits and statistics.
 
 The hint is a deterministic basic guide. It keeps made hands, recognizes pairs, four to a royal, four-card straight-flush draws, four-card flushes, four-card straights, and high cards. It is not an optimal strategy solver.
 
@@ -29,4 +29,4 @@ Serve the production `dist/` folder over HTTP or HTTPS and load it once. The ser
 
 ## Test coverage
 
-Hand categories, ace-low/high/wraparound straights, low-pair qualification, all base payouts, max-bet royal payout, deterministic shuffle, replacements, distinct cards, held-card identity, and hint examples are tested in `test/engine.test.js`.
+Hand categories, ace-low/high/wraparound straights, low-pair qualification, payouts for all five bets, max-bet royal payout, saved balance migration, deterministic shuffle, replacements, distinct cards, held-card identity, and hint examples are tested in `test/engine.test.js`.

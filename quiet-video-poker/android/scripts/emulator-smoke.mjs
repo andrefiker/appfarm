@@ -84,18 +84,26 @@ await forwardToWebView();
 let client = await attach();
 await pageReady(client);
 
-const firstView = await client.evaluate(`({title:document.title, width:innerWidth, height:innerHeight, scrollWidth:document.documentElement.scrollWidth, cards:[...document.querySelectorAll('.playing-card')].map(x=>{let r=x.getBoundingClientRect();return {x:r.x,w:r.width,h:r.height}}), action:(()=>{let r=document.querySelector('#action-button').getBoundingClientRect();return {x:r.x,w:r.width,h:r.height,text:document.querySelector('#action-button').textContent}})(), credits:document.querySelector('#credits').textContent})`);
+const firstView = await client.evaluate(`({title:document.title, width:innerWidth, height:innerHeight, scrollWidth:document.documentElement.scrollWidth, cards:[...document.querySelectorAll('.playing-card')].map(x=>{let r=x.getBoundingClientRect();return {x:r.x,w:r.width,h:r.height}}), action:(()=>{let r=document.querySelector('#action-button').getBoundingClientRect();return {x:r.x,w:r.width,h:r.height,text:document.querySelector('#action-button').textContent}})(), bets:[...document.querySelectorAll('.bet-option')].map(x=>({value:Number(x.dataset.bet),width:x.getBoundingClientRect().width,height:x.getBoundingClientRect().height})), credits:document.querySelector('#credits').textContent})`);
 assert.equal(firstView.title, "Quiet Video Poker");
 assert.equal(firstView.cards.length, 5);
 assert.ok(firstView.height > firstView.width, "activity should start in portrait");
 assert.ok(firstView.scrollWidth <= firstView.width + 1, "the hand and controls should fit without horizontal scroll");
 assert.ok(firstView.cards.every(c => c.w >= 60 && c.h >= 90), "playing cards should remain readable and tappable");
 assert.ok(firstView.action.w >= 90 && firstView.action.h >= 42, "primary action should have a phone-sized touch target");
+assert.deepEqual(firstView.bets.map(x => x.value), [100, 200, 500, 1000, 5000]);
+assert.ok(firstView.bets.every(x => x.width >= 45 && x.height >= 40), "all five bet choices should fit the phone");
+assert.equal(firstView.credits, "100,000");
 mkdirSync("quiet-video-poker/qa-artifacts", { recursive: true });
 writeFileSync("quiet-video-poker/qa-artifacts/portrait-ready.png", await client.screenshot());
 
+const selected = await client.evaluate(`(()=>{document.querySelector('[data-bet="500"]').click();return {bet:document.querySelector('#bet-value').textContent, selected:document.querySelector('[data-bet="500"]').getAttribute('aria-pressed'), storage:JSON.parse(localStorage.getItem('quiet-video-poker-v1'))}})()`);
+assert.equal(selected.bet, "500");
+assert.equal(selected.selected, "true");
+assert.equal(selected.storage.bet, 500);
 const afterDeal = await client.evaluate(`(()=>{document.querySelector('#action-button').click();return document.querySelector('#credits').textContent})()`);
-assert.notEqual(afterDeal, firstView.credits, "deal should immediately debit the selected fictional bet");
+assert.equal(afterDeal, "99,500", "deal should debit the selected 500-credit bet");
+assert.equal(await client.evaluate(`document.querySelector('[data-bet="500"]').disabled`), true, "bet cannot change during a hand");
 writeFileSync("quiet-video-poker/qa-artifacts/portrait-dealt.png", await client.screenshot());
 const handResult = await client.evaluate(`(async()=>{
   document.querySelectorAll('.playing-card')[0].click();
@@ -110,13 +118,14 @@ const handResult = await client.evaluate(`(async()=>{
 assert.equal(handResult.hands, "1", "one completed hand should be recorded");
 assert.deepEqual(handResult.heldState, ["true", "true"], "the selected cards should be held before drawing");
 assert.deepEqual(handResult.heldBefore, handResult.heldAfter, "held cards should remain unchanged during draw");
-assert.equal(handResult.state.stats.creditsWagered, 1, "the hand should persist its wager");
+assert.equal(handResult.state.stats.creditsWagered, 500, "the hand should persist its wager");
 assert.ok(handResult.message.includes("credits") || handResult.message.includes("No win"), "the game should show its hand result");
 assert.notEqual(handResult.credits, "", "credit balance should render after draw");
 console.log("Android QA: deal, hold, draw, result, and credits passed.");
 
 await client.evaluate(`document.querySelector('#paytable-open').click()`);
 await delay(100);
+assert.ok((await client.evaluate(`document.querySelector('.pay-table thead').textContent`)).includes("BET 500"));
 adb("shell", "input", "keyevent", "4");
 let modalClosed = false;
 for (let i = 0; i < 20 && !modalClosed; i++) {

@@ -15,16 +15,17 @@
       <header class="topbar">
         <div class="brand">Quiet Video Poker</div>
         <div class="scoreboard" aria-live="polite">
-          <div class="score"><span>CREDITS</span><strong id="credits">1,000</strong></div>
-          <div class="score"><span>BET</span><strong id="bet-value">1</strong></div>
+          <div class="score"><span>CREDITS</span><strong id="credits">100,000</strong></div>
+          <div class="score"><span>BET</span><strong id="bet-value">100</strong></div>
           <div class="score"><span>HANDS</span><strong id="hands-count">0</strong></div>
           <div class="score optional-stat"><span>NET</span><strong id="net-value">0</strong></div>
         </div>
-        <div class="bet-controls" aria-label="Bet controls">
-          <button class="control-button small" id="bet-minus" type="button" aria-label="Decrease bet">−</button>
-          <span class="bet-label">BET</span>
-          <button class="control-button small" id="bet-plus" type="button" aria-label="Increase bet">+</button>
-          <button class="control-button max" id="max-bet" type="button">MAX</button>
+        <div class="bet-controls" role="group" aria-label="Choose bet in credits">
+          <button class="bet-option" type="button" data-bet="100" aria-pressed="true">100</button>
+          <button class="bet-option" type="button" data-bet="200" aria-pressed="false">200</button>
+          <button class="bet-option" type="button" data-bet="500" aria-pressed="false">500</button>
+          <button class="bet-option" type="button" data-bet="1000" aria-pressed="false">1,000</button>
+          <button class="bet-option" type="button" data-bet="5000" aria-pressed="false">5,000</button>
         </div>
       </header>
 

@@ -1,14 +1,15 @@
-import { CATEGORY, PAYTABLE, createDeck, shuffleDeck, deal, drawReplacement, evaluateHand, payoutFor, recommendHolds } from "./engine.js";
+import { BET_AMOUNTS, INITIAL_CREDITS, PAYTABLE, createDeck, shuffleDeck, deal, drawReplacement, evaluateHand, payoutFor, recommendHolds, migrateEconomy } from "./engine.js";
 
 const STORAGE_KEY = "quiet-video-poker-v1";
 const SUIT_NAMES = { "♠": "spades", "♥": "hearts", "♦": "diamonds", "♣": "clubs" };
 const freshStats = () => ({ handsPlayed: 0, handsWon: 0, creditsWagered: 0, creditsWon: 0, largestWin: 0, categories: Object.fromEntries(PAYTABLE.map(([name]) => [name, 0])) });
-const defaults = () => ({ credits: 1000, bet: 1, settings: { sound: true, volume: 45, haptics: true }, stats: freshStats() });
+const defaults = () => ({ economyVersion: 2, credits: INITIAL_CREDITS, bet: BET_AMOUNTS[0], settings: { sound: true, volume: 45, haptics: true }, stats: freshStats() });
 function loadState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (!saved) return defaults();
-    return { ...defaults(), ...saved, settings: { ...defaults().settings, ...saved.settings }, stats: { ...freshStats(), ...saved.stats, categories: { ...freshStats().categories, ...saved.stats?.categories } } };
+    const migrated = migrateEconomy(saved);
+    return { ...defaults(), ...migrated, settings: { ...defaults().settings, ...migrated.settings }, stats: { ...freshStats(), ...migrated.stats, categories: { ...freshStats().categories, ...migrated.stats?.categories } } };
   } catch { return defaults(); }
 }
 let state = loadState();
@@ -49,7 +50,7 @@ function setMessage(text, kind = "") { ui.message.textContent = text; ui.message
 
 function render() {
   ui.credits.textContent = fmt(state.credits);
-  ui.bet.textContent = state.bet;
+  ui.bet.textContent = fmt(state.bet);
   ui.hands.textContent = fmt(state.stats.handsPlayed);
   const net = state.stats.creditsWon - state.stats.creditsWagered;
   ui.net.textContent = `${net > 0 ? "+" : ""}${fmt(net)}`;
@@ -86,9 +87,11 @@ function render() {
   ui.action.disabled = phase === "drawing" || (phase !== "draw" && state.credits < state.bet);
   ui.action.classList.toggle("draw-mode", phase === "draw");
   ui.hint.disabled = phase !== "draw";
-  $("bet-minus").disabled = phase === "draw" || state.bet <= 1;
-  $("bet-plus").disabled = phase === "draw" || state.bet >= 5;
-  $("max-bet").disabled = phase === "draw" || state.bet === 5;
+  document.querySelectorAll(".bet-option").forEach(button => {
+    const selected = Number(button.dataset.bet) === state.bet;
+    button.setAttribute("aria-pressed", String(selected));
+    button.disabled = phase === "draw" || phase === "drawing";
+  });
   animationMode = "none";
 }
 
@@ -125,8 +128,8 @@ function resolveDraw() {
   if (win > 0) {
     state.credits += win; state.stats.handsWon++; state.stats.creditsWon += win;
     state.stats.largestWin = Math.max(state.stats.largestWin, win);
-    setMessage(`${evaluated.category}  ·  +${fmt(win)} credits`, win >= 50 ? "big-win" : "win");
-    tone(win >= 50 ? 960 : 760, .22, "triangle", .18); setTimeout(() => tone(win >= 50 ? 1220 : 930, .24, "sine", .11), 100); buzz(win >= 50 ? [25, 40, 25] : 24);
+    setMessage(`${evaluated.category}  ·  +${fmt(win)} credits`, win >= state.bet * 10 ? "big-win" : "win");
+    tone(win >= state.bet * 10 ? 960 : 760, .22, "triangle", .18); setTimeout(() => tone(win >= state.bet * 10 ? 1220 : 930, .24, "sine", .11), 100); buzz(win >= state.bet * 10 ? [25, 40, 25] : 24);
   } else { setMessage("No win  ·  Ready for the next hand."); tone(330, .08, "sine", .06); }
   persist(); render();
 }
@@ -138,12 +141,11 @@ function showHint() {
 }
 function buildPayTable() {
   const current = lastResult?.category;
-  const rows = PAYTABLE.map(([name, base]) => {
-    const five = name === CATEGORY.ROYAL_FLUSH ? 4000 : base * 5;
-    return `<tr class="${current === name ? "current-win" : ""}"><th>${name}</th><td>${base}</td><td>${fmt(five)}</td></tr>`;
+  const rows = PAYTABLE.map(([name]) => {
+    return `<tr class="${current === name ? "current-win" : ""}"><th>${name}</th><td>${fmt(payoutFor(name, state.bet))}</td><td>${fmt(payoutFor(name, 5000))}</td></tr>`;
   }).join("");
   ui.modalTitle.textContent = "PAY TABLE";
-  ui.modalContent.innerHTML = `<p class="modal-note">Jacks or Better · payouts in fictional credits</p><div class="table-scroll"><table class="pay-table"><thead><tr><th>HAND</th><th>1 CREDIT</th><th>5 CREDITS</th></tr></thead><tbody>${rows}</tbody></table></div><p class="modal-footnote">A royal flush pays 4,000 credits at a 5-credit bet.</p>`;
+  ui.modalContent.innerHTML = `<p class="modal-note">Jacks or Better · payouts in fictional credits</p><div class="table-scroll"><table class="pay-table"><thead><tr><th>HAND</th><th>BET ${fmt(state.bet)}</th><th>BET 5,000</th></tr></thead><tbody>${rows}</tbody></table></div><p class="modal-footnote">A royal flush pays 4,000,000 credits on a 5,000-credit bet.</p>`;
   openModal();
 }
 function buildSettings() {
@@ -165,7 +167,7 @@ function buildSettings() {
   $("haptics-toggle").addEventListener("change", e => { state.settings.haptics = e.target.checked; persist(); });
   $("volume-slider").addEventListener("input", e => { state.settings.volume = Number(e.target.value); $("volume-label").textContent = `${state.settings.volume}%`; persist(); });
   $("reset-bankroll").addEventListener("click", () => {
-    if (!window.confirm("Reset credits to 1,000 and clear all statistics on this device?")) return;
+    if (!window.confirm("Reset credits to 100,000 and clear all statistics on this device?")) return;
     state = defaults(); phase = "ready"; hand = []; held = [false, false, false, false, false]; lastResult = null; persist(); closeModal(); setMessage("Bankroll reset. Good luck."); render();
   });
 }
@@ -173,9 +175,11 @@ const safeStat = k => Number(state.stats[k]) || 0;
 function openModal() { ui.modal.hidden = false; $("modal-close").focus(); }
 function closeModal() { ui.modal.hidden = true; }
 
-$("bet-minus").addEventListener("click", () => { state.bet = Math.max(1, state.bet - 1); persist(); tone(420, .04); render(); });
-$("bet-plus").addEventListener("click", () => { state.bet = Math.min(5, state.bet + 1); persist(); tone(520, .04); render(); });
-$("max-bet").addEventListener("click", () => { state.bet = 5; persist(); tone(650, .06); buzz(); render(); });
+document.querySelectorAll(".bet-option").forEach(button => button.addEventListener("click", () => {
+  if (phase === "draw" || phase === "drawing") return;
+  state.bet = Number(button.dataset.bet); persist(); tone(520, .04); buzz(8); render();
+  setMessage(state.credits < state.bet ? "Not enough credits for that bet. Choose a lower bet or reset in Settings." : `Bet ${fmt(state.bet)} credits. Deal when ready.`);
+}));
 ui.action.addEventListener("click", startHand);
 ui.hint.addEventListener("click", showHint);
 $("paytable-open").addEventListener("click", buildPayTable);
@@ -183,6 +187,6 @@ $("settings-open").addEventListener("click", buildSettings);
 $("modal-close").addEventListener("click", closeModal);
 ui.modal.addEventListener("click", e => { if (e.target === ui.modal) closeModal(); });
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
-render();
+persist(); render();
 setMessage(state.credits < state.bet ? "Bankroll empty. Reset in Settings." : "Choose your bet, then deal.");
 if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));

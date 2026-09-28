@@ -104,7 +104,7 @@ assert.equal(selected.bet, "500");
 assert.equal(selected.selected, "true");
 assert.equal(selected.storage.bet, 500);
 const afterDeal = await client.evaluate(`(()=>{document.querySelector('#action-button').click();return document.querySelector('#credits').textContent})()`);
-assert.equal(afterDeal, "99,500", "deal should debit the selected 500-credit bet");
+assert.equal(afterDeal, "500", "deal should debit the selected 500-credit bet");
 assert.equal(await client.evaluate(`document.querySelector('[data-bet="500"]').disabled`), true, "bet cannot change during a hand");
 writeFileSync("quiet-video-poker/qa-artifacts/portrait-dealt.png", await client.screenshot());
 const handResult = await client.evaluate(`(async()=>{

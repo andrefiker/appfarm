@@ -12,6 +12,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.ValueCallback;
 import android.view.View;
 
 import java.io.ByteArrayInputStream;
@@ -109,7 +110,11 @@ public final class MainActivity extends Activity {
             "if(m&&!m.classList.contains('hidden')){" +
             "document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape'}));return 'handled';}" +
             "return 'exit';})()",
-            value -> { if ("\"exit\"".equals(value) && !isFinishing()) finish(); }
+            new ValueCallback<String>() {
+                @Override public void onReceiveValue(String value) {
+                    if ("\"exit\"".equals(value) && !isFinishing()) finish();
+                }
+            }
         );
     }
 

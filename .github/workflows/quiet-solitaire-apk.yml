@@ -50,7 +50,9 @@ jobs:
         run: npm test
 
       - name: Build and verify APK
-        run: ANDROID_HOME="$ANDROID_HOME" ./build-android.sh | tee android-build.log
+        run: |
+          set -o pipefail
+          ANDROID_HOME="$ANDROID_HOME" ./build-android.sh | tee android-build.log
 
       - name: Upload verified APK and reports
         uses: actions/upload-artifact@v4

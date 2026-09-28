@@ -13,7 +13,7 @@
 
 ## Verified checks
 
-- APK SHA-256: `7d69b22b524a06720b182cedc163299886f699cf6c7c0050f932dda2fedd83b0`
+- APK SHA-256: `e69994981f001f9c5f7392459ca2d28e299be80091642abc0537bd29fd8217ee`
 - Packaged PWA `index.html` SHA-256: `b0419ed88693786dbd26714a94d844ea07a7eaefa5e9ce6f303d0cda7e992e35`
 - APK ZIP integrity: pass.
 - APK signature: v2 and v3 pass; one 3072-bit RSA temporary test signer.

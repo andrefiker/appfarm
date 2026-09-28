@@ -182,3 +182,96 @@
   .tableau{margin-top:7px}
 }
 .drag-group.returning{transition:transform .18s cubic-bezier(.2,.8,.2,1)}
+
+/* Quiet Solitaire minimal skin: keep the same table geometry, remove the ornament. */
+#app{
+  --felt:#173b32;
+  background-color:var(--felt);
+  background-image:none;
+}
+#app.felt-blue{--felt:#1b3044;background-color:var(--felt);background-image:none}
+#app.felt-walnut{--felt:#493a31;background-color:var(--felt);background-image:none}
+#app.felt-charcoal{--felt:#303532;background-color:var(--felt);background-image:none}
+.topbar:after{display:none}
+.brand{color:rgba(244,244,235,.82);letter-spacing:.09em}
+.brand-mark{color:#d6bd87;text-shadow:none}
+.game-meta{color:rgba(240,242,232,.72)}
+.icon-button{border-color:rgba(241,242,231,.2);background:transparent;border-radius:6px}
+.stock-pile,.waste-pile,.foundation-pile,.tableau-column{box-shadow:none}
+.stock-pile:before,.stock-pile:after{background-color:#25483e;background-image:none;border-color:rgba(239,232,206,.62)}
+.stock-pile:after{inset:7px}
+.card.face-down{background-color:#25483e;background-image:none;border:1px solid rgba(239,232,206,.72);box-shadow:0 1px 2px rgba(0,0,0,.18)}
+.card.face-down:before{inset:4px;border:1px solid rgba(239,232,206,.36);border-radius:3px}
+.card.face-down:after{content:none}
+.card:not(.face-down){background-color:#fbfaf6;background-image:none;border:1px solid rgba(31,39,34,.2);box-shadow:0 1px 2px rgba(0,0,0,.16)}
+.card.red{color:#ad3535}
+.card.black{color:#222824}
+.card:has(.face-art) .center-suit{opacity:.12}
+.face-art,.card.minimal .face-art{inset:30% 18%;border:0;background:transparent}
+.face-art:before,.face-art:after,.face-crown{display:none}
+.face-letter{font-size:calc(var(--card-w)*.46);font-weight:600;text-shadow:none}
+.card.selected{box-shadow:0 0 0 2px #d7be88;transform:translateY(-4px)}
+.card.dragging{box-shadow:0 7px 12px rgba(0,0,0,.26)}
+.card.ghost-card{box-shadow:0 7px 12px rgba(0,0,0,.28)}
+.pile.legal-target,.tableau-column.legal-target{outline:1px solid rgba(226,205,158,.9);outline-offset:1px;box-shadow:none}
+.card.legal-target-card{box-shadow:0 0 0 1px #ddc18c,0 1px 3px rgba(0,0,0,.2)}
+.card.highlight{animation:hintPulse .95s ease-in-out 2;box-shadow:0 0 0 2px #ddc18c,0 2px 5px rgba(0,0,0,.2)}
+.controls{backdrop-filter:none;background:transparent;border:0;border-radius:0;box-shadow:none}
+.control-button,.control-button.primary{color:rgba(246,245,235,.88);border-radius:5px;background:transparent;box-shadow:none}
+.control-button .control-icon{color:#ded3b4}
+.control-button.primary:not(:disabled){color:#f3f0e6}
+#new-game .control-icon,#hint .control-icon,#undo .control-icon{color:#ded3b4}
+.control-button:not(:disabled):active,.control-button.primary:not(:disabled):active{transform:translateY(1px);background:rgba(255,255,255,.07);box-shadow:none}
+.control-button:disabled{opacity:.34}
+.auto-finish{background:rgba(255,255,255,.07);border-color:rgba(241,242,231,.22)}
+.status-note,.hint-layer div{background:#f8f7f1;color:#263b32;box-shadow:0 2px 8px rgba(0,0,0,.14);border-radius:5px}
+.modal-backdrop{background:rgba(8,19,15,.56);backdrop-filter:none}
+.modal{border-radius:10px;box-shadow:0 10px 32px rgba(0,0,0,.22);background:#f8f7f2}
+.modal .eyebrow{display:none}
+.modal h1{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:24px;font-weight:550;letter-spacing:-.025em;color:#263b32}
+.modal-close{color:#686c64;font-size:23px}
+.menu-stats{border-color:#e5e4dc}
+.stat strong{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:550}
+.menu-row{border-color:#e7e6df}
+.menu-row>span:last-child{font-size:18px;color:#686d63}
+.settings-grid select,.modal input[type=number]{border-color:#d9ddd5;border-radius:5px;background:#fff;color:#27342c}
+.modal-primary,.modal-secondary{border-radius:5px;letter-spacing:.04em}
+.modal-primary{background:#23483d}
+.modal-secondary{background:#e7e8e0}
+.menu-footnote{color:#73786e}
+@media(orientation:portrait) and (max-width:600px){
+  #app{--felt:#173b32;background-color:var(--felt);background-image:none}
+  #app.felt-blue{background-color:var(--felt)}
+  #app.felt-walnut{background-color:var(--felt)}
+  #app.felt-charcoal{background-color:var(--felt)}
+  .topbar{flex-basis:78px;height:78px}
+  .brand{margin-top:2px;font:500 20px/1.2 system-ui,-apple-system,'Segoe UI',sans-serif;letter-spacing:.015em;color:#f1f0e7;text-shadow:none}
+  .game-meta{margin-top:9px}
+  .game-meta small{font-size:8px;letter-spacing:.08em;color:rgba(240,242,232,.65)}
+  .game-meta strong{font-size:16px;color:#f4f3ea}
+  .game-meta .metric:first-child strong{font-size:10px;color:#f4f3ea}
+  .upper-row{margin-top:1px}
+  .pile,.tableau-column,.card{border-radius:4px}
+  .foundation-pile{background:rgba(255,255,255,.025);border:1px solid rgba(239,241,229,.28)}
+  .foundation-pile:before{font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:400;color:rgba(239,241,229,.25)}
+  .foundation-pile:after{color:rgba(239,241,229,.35)}
+  .tableau{margin-top:8px}
+  .tableau-column{background:transparent;border:0}
+  .tableau-column:empty{border:1px dashed rgba(239,241,229,.29)}
+  .card:not(.face-down){background-color:#fbfaf6;background-image:none;border-color:rgba(31,39,34,.22);box-shadow:0 1px 2px rgba(0,0,0,.16)}
+  .card .corner .rank{font-weight:600}
+  .card.face-down{background-color:#25483e;background-image:none;border:1px solid rgba(239,232,206,.72)}
+  .card.face-down:before{inset:4px;border:1px solid rgba(239,232,206,.36)}
+  .stock-pile{background:#25483e;border:1px solid rgba(239,232,206,.72)}
+  .stock-pile:before,.stock-pile:after{background-color:#25483e;background-image:none;border-color:rgba(239,232,206,.62)}
+  .controls{height:54px;bottom:calc(4px + var(--safe-bottom));left:5px;right:5px;display:flex;justify-content:space-around;gap:0;padding:1px 0}
+  .control-button,.control-button.primary{height:50px;gap:3px;padding:3px 0;border:0;background:transparent;box-shadow:none}
+  .control-button .control-icon{font-size:21px;color:#ded3b4}
+  .control-button span:last-child{font-size:8px;font-weight:550;letter-spacing:.045em}
+  .control-button.primary:not(:disabled){background:transparent;color:rgba(246,245,235,.88)}
+  .control-button.primary:not(:disabled):active{background:rgba(255,255,255,.07)}
+  #auto-finish{bottom:58px;background:#f8f7f1;color:#263b32;border-color:transparent;box-shadow:0 2px 8px rgba(0,0,0,.14)}
+  #auto-finish .control-icon{color:#263b32}
+  .modal{border-radius:10px}
+}
+@media(prefers-reduced-motion:reduce){.card,.control-button,.menu-row{transition-duration:.01ms}}

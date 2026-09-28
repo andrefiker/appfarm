@@ -57,7 +57,7 @@ jobs:
       - name: Upload verified APK and reports
         uses: actions/upload-artifact@v4
         with:
-          name: quiet-solitaire-v1.1.0
+          name: quiet-solitaire-v1.2.0
           path: |
             quiet-solitaire/Quiet-Solitaire.apk
             quiet-solitaire/android-build.log

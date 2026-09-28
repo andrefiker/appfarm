@@ -3,7 +3,7 @@
 ## Package
 
 - Application: **Quiet Solitaire**
-- Version: `1.1.0` (`versionCode=11`)
+- Version: `1.2.0` (`versionCode=12`)
 - Package ID: `com.andrefiker.quietsolitaire`
 - APK: `Quiet-Solitaire.apk`
 - Minimum Android: API 26
@@ -13,7 +13,7 @@
 
 ## Verified checks
 
-- APK SHA-256: `e8895ba0543469a6120c48a1dd15c97d8598142d77c638c10ce10195af5e0fdc`
+- APK SHA-256: `7d69b22b524a06720b182cedc163299886f699cf6c7c0050f932dda2fedd83b0`
 - Packaged PWA `index.html` SHA-256: `b0419ed88693786dbd26714a94d844ea07a7eaefa5e9ce6f303d0cda7e992e35`
 - APK ZIP integrity: pass.
 - APK signature: v2 and v3 pass; one 3072-bit RSA temporary test signer.
@@ -24,6 +24,10 @@
 - Internet permission: absent. The only requested permission is `android.permission.VIBRATE`.
 - Unrelated assets: none detected.
 - Game tests after packaging: 28/28 passed in GitHub Actions and locally.
+
+## Minimalist design
+
+The 1.2.0 visual pass removes the felt texture, ornate card-back lines, heavy dock, and stronger bevels/shadows while retaining the green table, readable cards, existing pile positions, and all game controls.
 
 ## Runtime status
 

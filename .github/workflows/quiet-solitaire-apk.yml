@@ -3,12 +3,30 @@ name: Build Quiet Solitaire APK
 on:
   pull_request:
     paths:
-      - 'quiet-solitaire/**'
+      - 'quiet-solitaire/package.json'
+      - 'quiet-solitaire/index.html'
+      - 'quiet-solitaire/manifest.webmanifest'
+      - 'quiet-solitaire/service-worker.js'
+      - 'quiet-solitaire/public/**'
+      - 'quiet-solitaire/src/**'
+      - 'quiet-solitaire/tests/**'
+      - 'quiet-solitaire/scripts/**'
+      - 'quiet-solitaire/android/**'
+      - 'quiet-solitaire/build-android.sh'
       - '.github/workflows/quiet-solitaire-apk.yml'
   push:
     branches: [ main ]
     paths:
-      - 'quiet-solitaire/**'
+      - 'quiet-solitaire/package.json'
+      - 'quiet-solitaire/index.html'
+      - 'quiet-solitaire/manifest.webmanifest'
+      - 'quiet-solitaire/service-worker.js'
+      - 'quiet-solitaire/public/**'
+      - 'quiet-solitaire/src/**'
+      - 'quiet-solitaire/tests/**'
+      - 'quiet-solitaire/scripts/**'
+      - 'quiet-solitaire/android/**'
+      - 'quiet-solitaire/build-android.sh'
       - '.github/workflows/quiet-solitaire-apk.yml'
   workflow_dispatch:
 

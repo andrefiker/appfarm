@@ -1,0 +1,11 @@
+{
+  "name":"Quiet Solitaire",
+  "short_name":"Solitaire",
+  "description":"A quiet, tactile Klondike table.",
+  "start_url":"./",
+  "display":"standalone",
+  "background_color":"#17372f",
+  "theme_color":"#17372f",
+  "orientation":"portrait",
+  "icons":[{"src":"public/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}

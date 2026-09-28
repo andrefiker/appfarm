@@ -1,0 +1,68 @@
+name: Build Quiet Solitaire APK
+
+on:
+  pull_request:
+    paths:
+      - 'quiet-solitaire/**'
+      - '.github/workflows/quiet-solitaire-apk.yml'
+  push:
+    branches: [ main ]
+    paths:
+      - 'quiet-solitaire/**'
+      - '.github/workflows/quiet-solitaire-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  ANDROID_HOME: /usr/local/lib/android/sdk
+  ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: quiet-solitaire
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android 35
+        run: |
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -path '*/bin/sdkmanager' -type f | sort -V | tail -n 1)"
+          test -x "$SDKMANAGER"
+          yes | "$SDKMANAGER" 'platforms;android-35' 'build-tools;35.0.0' >/dev/null
+
+      - name: Test PWA
+        run: npm test
+
+      - name: Build and verify APK
+        run: |
+          set -o pipefail
+          ANDROID_HOME="$ANDROID_HOME" ./build-android.sh | tee android-build.log
+
+      - name: Upload verified APK and reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: quiet-solitaire-v1.1.0
+          path: |
+            quiet-solitaire/Quiet-Solitaire.apk
+            quiet-solitaire/android-build.log
+            quiet-solitaire/android-build/apk-badging.txt
+            quiet-solitaire/android-build/apk-permissions.txt
+            quiet-solitaire/android-build/apk-signature.txt
+            quiet-solitaire/android-build/apk-alignment.txt
+          if-no-files-found: error

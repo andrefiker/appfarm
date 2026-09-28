@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#17372f" />
+  <meta name="description" content="A quiet, tactile Klondike solitaire table. Free, private, and playable offline." />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="public/icon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="src/style.css" />
+  <title>Quiet Solitaire</title>
+</head>
+<body>
+  <main id="app" class="felt-green">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">♠</span><span>Quiet Solitaire</span></div>
+      <div class="game-meta">
+        <div class="metric"><small>GAME</small><strong id="game-number">000000</strong><span id="score" class="hidden"></span></div>
+        <div class="metric"><small>TIME</small><strong id="timer">00:00</strong></div>
+        <div class="metric"><small>MOVES</small><strong id="moves">0</strong></div>
+      </div>
+    </header>
+
+    <section class="upper-row" aria-label="Stock, waste and foundations">
+      <div class="stock-waste">
+        <button id="stock-pile" class="pile stock-pile" data-pile="stock" aria-label="Draw from stock"></button>
+        <div id="waste-pile" class="pile waste-pile" data-pile="waste" aria-label="Waste pile"></div>
+      </div>
+      <div id="foundations" class="foundations"></div>
+    </section>
+
+    <div id="tableau-viewport" class="tableau-viewport">
+      <section id="tableau" class="tableau" aria-label="Tableau columns"></section>
+    </div>
+    <div id="status-note" class="status-note" aria-live="polite"></div>
+
+    <nav id="game-controls" class="controls" aria-label="Game controls">
+      <button id="menu-open" class="control-button" aria-label="Open settings" title="Settings"><span class="control-icon" aria-hidden="true">⚙</span><span>SETTINGS</span></button>
+      <button id="game-number-open" class="control-button" aria-label="Play a game number" title="Game number"><span class="control-icon" aria-hidden="true">▦</span><span>GAME #</span></button>
+      <button id="new-game" class="control-button primary" aria-label="New game" title="New game"><span class="control-icon" aria-hidden="true">♠</span><span>NEW GAME</span></button>
+      <button id="hint" class="control-button" aria-label="Hint" title="Hint"><span class="control-icon" aria-hidden="true">✧</span><span>HINT</span></button>
+      <button id="undo" class="control-button" aria-label="Undo" title="Undo"><span class="control-icon" aria-hidden="true">↶</span><span>UNDO</span></button>
+      <button id="auto-finish" class="control-button auto-finish hidden" aria-label="Auto finish"><span class="control-icon" aria-hidden="true">⇧</span><span>FINISH</span></button>
+    </nav>
+  </main>
+
+  <div id="modal-backdrop" class="modal-backdrop hidden">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button id="modal-close" class="modal-close" aria-label="Close">×</button>
+      <p class="eyebrow">THE TABLE</p><h1 id="modal-title">A quieter game.</h1>
+      <div id="menu-view">
+        <p class="menu-game-details" id="menu-game-details"></p>
+        <div class="menu-stats" id="stats-summary"></div>
+        <button class="menu-row" id="continue-game"><span><b>Continue this game</b><small>Resume right where you left off</small></span><span>›</span></button>
+        <button class="menu-row" id="new-random"><span><b>New random game</b><small>Shuffle a fresh deck</small></span><span>›</span></button>
+        <button class="menu-row" id="play-number"><span><b>Play a game number</b><small>Return to a reproducible deal</small></span><span>›</span></button>
+        <div class="settings-grid">
+          <label>Next deal<select id="setting-draw"><option value="1">Draw 1</option><option value="3">Draw 3</option></select></label>
+          <label>Table<select id="setting-theme"><option value="green">Green felt</option><option value="blue">Midnight blue</option><option value="walnut">Walnut</option><option value="charcoal">Charcoal</option></select></label>
+          <label>Handedness<select id="setting-hand"><option value="left">Left-handed</option><option value="right">Right-handed</option></select></label>
+          <label>Deck<select id="setting-deck"><option value="classic">Classic</option><option value="minimal">Minimal</option></select></label>
+          <label>Mode<select id="setting-mode"><option value="relaxed">Relaxed</option><option value="standard">Standard score</option></select></label>
+        </div>
+        <div class="toggle-list">
+          <label><span>Sound</span><input id="setting-sound" type="checkbox" checked /></label>
+          <label><span>Haptics</span><input id="setting-haptics" type="checkbox" checked /></label>
+          <label><span>High contrast</span><input id="setting-contrast" type="checkbox" /></label>
+          <label><span>Reduced motion</span><input id="setting-motion" type="checkbox" /></label>
+          <label><span>Smart tap<small class="toggle-help">Lone moves → reveals → safe foundations</small></span><input id="setting-smart" type="checkbox" checked /></label>
+        </div>
+        <p class="menu-footnote">Rule changes apply to the next deal. No ads, account, or network required.</p>
+      </div>
+      <div id="number-view" class="hidden">
+        <p class="modal-copy">Enter a number from 1 to 999,999,999. The same number and draw rule always produce the same deal.</p>
+        <input id="number-input" type="number" inputmode="numeric" min="1" max="999999999" placeholder="Game number" />
+        <button id="number-start" class="modal-primary">PLAY GAME</button>
+      </div>
+      <div id="new-view" class="hidden">
+        <p class="modal-copy">Start a new deal? The current board will be replaced.</p>
+        <div class="choice-row"><button id="cancel-new" class="modal-secondary">KEEP PLAYING</button><button id="confirm-new" class="modal-primary">NEW GAME</button></div>
+      </div>
+      <div id="win-view" class="hidden">
+        <p class="win-mark">✦</p><p class="modal-copy">The deck has found its home.</p>
+        <div class="win-stats" id="win-stats"></div><button id="win-new" class="modal-primary">DEAL AGAIN</button>
+      </div>
+    </section>
+  </div>
+
+  <div id="hint-layer" class="hint-layer hidden"><div id="hint-message"></div></div>
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>

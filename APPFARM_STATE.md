@@ -43,9 +43,9 @@ Historical wrapper:
 IMPORTANT: GitHub currently lags some late-September Project-chat work.
 
 As of 2026-09-28:
-- default-branch history ends on 2026-09-24;
+- main now includes the Quiet Video Poker v1.1.0 release at `7a2d3978156a61cf444a4b605432f5c774e8e839` (2026-09-28);
 - Quiet Video Poker commit `2026ab088ff01eb3c2bc0ab27413aa77a26fcf43` was recovered on branch `quiet-video-poker-apk-2026-09-27`; it is the v1.0 rollback target;
-- default-branch code search did not find Quiet Video Poker, Star Swarm, Quiet Mines, Quiet Solitaire, Silo Defense, or Loot source by project name;
+- default-branch code search still did not find Star Swarm, Quiet Mines, Quiet Solitaire, Silo Defense, or Loot source by project name;
 - therefore do not claim those late-September builds are safely canonical until their source/commit is located and reconciled.
 
 Projects referenced in Project history but currently requiring repo verification before modification include:
@@ -83,7 +83,7 @@ Vercel:
 ## Known current source anchors / rollback references
 
 - Settlement Zero / Android packaging baseline: `4dc5aaa0bfb60f118055370483c8b3471ecbf940`.
-- Quiet Video Poker v1.0 source/APK workflow: branch `quiet-video-poker-apk-2026-09-27`, rollback `2026ab088ff01eb3c2bc0ab27413aa77a26fcf43`. The v1.1 portrait redesign is pending Android release verification.
+- Quiet Video Poker v1.1.0: main commit `7a2d3978156a61cf444a4b605432f5c774e8e839`, package `com.appfarm.quietvideopoker`, version code 2. GitHub Actions run `36441954849` passed tests, APK verification, emulator install/play/resume/reopen/offline QA, and WebView screenshot capture. Rollback: `2026ab088ff01eb3c2bc0ab27413aa77a26fcf43` (v1.0).
 - Quiet Knight most recent default-branch game change found: `ebaf078f1148b764f1da013b7c2f7871ec76f9c6` (`fix(quiet-knight): smooth strong difficulty ladder`, 2026-09-24).
 - Older Quiet Knight production release reports exist in Project/Library history, but provider deployment state must be rechecked before using them as current runtime truth.
 

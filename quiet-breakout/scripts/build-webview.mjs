@@ -1,0 +1,16 @@
+import { readFile, writeFile, mkdir, cp } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const web = resolve(root, 'web');
+const assets = resolve(root, 'android/app/src/main/assets');
+await mkdir(assets, { recursive: true });
+for (const file of ['index.html', 'manifest.webmanifest', 'icon.svg', 'sw.js']) await cp(resolve(web, file), resolve(assets, file));
+const engine = (await readFile(resolve(web, 'engine.js'), 'utf8')).replace(/^export\s+/gm, '');
+const app = (await readFile(resolve(web, 'app.js'), 'utf8')).replace(/^import\s+\{[^}]+\}\s+from\s+['"]\.\/engine\.js['"];\s*/m, '');
+if (app.includes("from './engine.js'") || engine.includes('export ')) throw new Error('The WebView bundle still contains ES module syntax.');
+await writeFile(resolve(assets, 'bundle.js'), `${engine}\n\n${app}`, 'utf8');
+let html = await readFile(resolve(assets, 'index.html'), 'utf8');
+html = html.replace('<script type="module" src="app.js"></script>', '<script src="bundle.js" defer></script>');
+await writeFile(resolve(assets, 'index.html'), html, 'utf8');
+console.log(`Bundled ${engine.length + app.length} JavaScript characters into ${assets}`);

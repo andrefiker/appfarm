@@ -1,0 +1,11 @@
+{
+  "name": "Quiet Breakout",
+  "version": "1.0.0",
+  "versionCode": 1,
+  "applicationId": "com.andrefiker.quietbreakout",
+  "orientation": "portrait",
+  "storage": "local-only",
+  "networkPermission": false,
+  "releaseChannel": "debug APK",
+  "rollbackParent": "e237baf4be792899be670b586d68fb26901d75a6"
+}

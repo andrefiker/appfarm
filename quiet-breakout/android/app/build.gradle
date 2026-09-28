@@ -1,0 +1,14 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.andrefiker.quietbreakout'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.andrefiker.quietbreakout'
+        minSdk 23
+        targetSdk 34
+        versionCode 1
+        versionName '1.0.0'
+    }
+}

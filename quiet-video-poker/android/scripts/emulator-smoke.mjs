@@ -61,7 +61,12 @@ async function attach() {
     if (result.exceptionDetails) throw new Error(result.exceptionDetails.text ?? "WebView JavaScript error");
     return result.result?.value;
   }
-  return { socket, evaluate };
+  async function screenshot() {
+    await evaluate(`new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))`);
+    const result = await send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
+    return Buffer.from(result.data, "base64");
+  }
+  return { socket, evaluate, screenshot };
 }
 async function pageReady(client) {
   for (let i = 0; i < 40; i++) {
@@ -87,13 +92,11 @@ assert.ok(firstView.scrollWidth <= firstView.width + 1, "the hand and controls s
 assert.ok(firstView.cards.every(c => c.w >= 60 && c.h >= 90), "playing cards should remain readable and tappable");
 assert.ok(firstView.action.w >= 90 && firstView.action.h >= 42, "primary action should have a phone-sized touch target");
 mkdirSync("quiet-video-poker/qa-artifacts", { recursive: true });
-const firstScreenshot = spawnSync("adb", ["exec-out", "screencap", "-p"], { timeout: 20000 });
-if (firstScreenshot.status === 0) writeFileSync("quiet-video-poker/qa-artifacts/portrait-ready.png", firstScreenshot.stdout);
+writeFileSync("quiet-video-poker/qa-artifacts/portrait-ready.png", await client.screenshot());
 
 const afterDeal = await client.evaluate(`(()=>{document.querySelector('#action-button').click();return document.querySelector('#credits').textContent})()`);
 assert.notEqual(afterDeal, firstView.credits, "deal should immediately debit the selected fictional bet");
-const dealtScreenshot = spawnSync("adb", ["exec-out", "screencap", "-p"], { timeout: 20000 });
-if (dealtScreenshot.status === 0) writeFileSync("quiet-video-poker/qa-artifacts/portrait-dealt.png", dealtScreenshot.stdout);
+writeFileSync("quiet-video-poker/qa-artifacts/portrait-dealt.png", await client.screenshot());
 const handResult = await client.evaluate(`(async()=>{
   document.querySelectorAll('.playing-card')[0].click();
   document.querySelectorAll('.playing-card')[2].click();

@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { mkdirSync, writeFileSync } from "node:fs";
 
 const PACKAGE = "com.appfarm.quietvideopoker";
 const ACTIVITY = `${PACKAGE}/.MainActivity`;
@@ -78,15 +79,21 @@ await forwardToWebView();
 let client = await attach();
 await pageReady(client);
 
-const firstView = await client.evaluate(`({title:document.title, width:innerWidth, height:innerHeight, cards:[...document.querySelectorAll('.playing-card')].map(x=>{let r=x.getBoundingClientRect();return {w:r.width,h:r.height}}), action:(()=>{let r=document.querySelector('#action-button').getBoundingClientRect();return {w:r.width,h:r.height,text:document.querySelector('#action-button').textContent}})(), credits:document.querySelector('#credits').textContent})`);
+const firstView = await client.evaluate(`({title:document.title, width:innerWidth, height:innerHeight, scrollWidth:document.documentElement.scrollWidth, cards:[...document.querySelectorAll('.playing-card')].map(x=>{let r=x.getBoundingClientRect();return {x:r.x,w:r.width,h:r.height}}), action:(()=>{let r=document.querySelector('#action-button').getBoundingClientRect();return {x:r.x,w:r.width,h:r.height,text:document.querySelector('#action-button').textContent}})(), credits:document.querySelector('#credits').textContent})`);
 assert.equal(firstView.title, "Quiet Video Poker");
 assert.equal(firstView.cards.length, 5);
-assert.ok(firstView.width > firstView.height, "activity should start in landscape");
+assert.ok(firstView.height > firstView.width, "activity should start in portrait");
+assert.ok(firstView.scrollWidth <= firstView.width + 1, "the hand and controls should fit without horizontal scroll");
 assert.ok(firstView.cards.every(c => c.w >= 60 && c.h >= 90), "playing cards should remain readable and tappable");
 assert.ok(firstView.action.w >= 90 && firstView.action.h >= 42, "primary action should have a phone-sized touch target");
+mkdirSync("quiet-video-poker/qa-artifacts", { recursive: true });
+const firstScreenshot = spawnSync("adb", ["exec-out", "screencap", "-p"], { timeout: 20000 });
+if (firstScreenshot.status === 0) writeFileSync("quiet-video-poker/qa-artifacts/portrait-ready.png", firstScreenshot.stdout);
 
 const afterDeal = await client.evaluate(`(()=>{document.querySelector('#action-button').click();return document.querySelector('#credits').textContent})()`);
 assert.notEqual(afterDeal, firstView.credits, "deal should immediately debit the selected fictional bet");
+const dealtScreenshot = spawnSync("adb", ["exec-out", "screencap", "-p"], { timeout: 20000 });
+if (dealtScreenshot.status === 0) writeFileSync("quiet-video-poker/qa-artifacts/portrait-dealt.png", dealtScreenshot.stdout);
 const handResult = await client.evaluate(`(async()=>{
   document.querySelectorAll('.playing-card')[0].click();
   document.querySelectorAll('.playing-card')[2].click();

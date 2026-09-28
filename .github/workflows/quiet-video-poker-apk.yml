@@ -93,3 +93,12 @@ jobs:
           profile: pixel_2
           disable-animations: true
           script: node quiet-video-poker/android/scripts/emulator-smoke.mjs
+
+      - name: Upload phone screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quiet-video-poker-phone-qa
+          path: quiet-video-poker/qa-artifacts/*.png
+          if-no-files-found: ignore
+          retention-days: 7

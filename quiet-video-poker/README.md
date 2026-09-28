@@ -21,7 +21,7 @@ The hint is a deterministic basic guide. It keeps made hands, recognizes pairs, 
 
 ## Android APK
 
-The `android/` directory contains a minimal, offline WebView wrapper for the same tested web game. Its application ID is `com.appfarm.quietvideopoker`; it requests vibration only, starts in landscape, and keeps game data in local storage. See [`android/README.md`](android/README.md) for the wrapper details. The Android packaging workflow runs the poker tests, builds the PWA bundle, assembles and signs a debug APK, then installs and exercises it in an Android emulator.
+The `android/` directory contains a minimal, offline WebView wrapper for the same tested web game. Its application ID is `com.appfarm.quietvideopoker`; it requests vibration only, starts in portrait, and keeps game data in local storage. See [`android/README.md`](android/README.md) for the wrapper details. The Android packaging workflow runs the poker tests, builds the PWA bundle, assembles and signs a debug APK, then installs and exercises it in an Android emulator.
 
 ## Offline use
 

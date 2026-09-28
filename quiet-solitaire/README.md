@@ -44,13 +44,18 @@ The signing key is generated temporarily for each test build and removed after s
 - Settings, Game #, New Game, Hint, and Undo are always accessible in the bottom bar. A long tableau scrolls within the board area while the piles and controls stay visible.
 - Tableau cards retain explicit pixel offsets from game state; this avoids the earlier Android WebView spacing fault.
 - Existing local save keys, game rules, and interaction priorities are unchanged.
-- The service worker precaches both interaction and layout modules and uses cache v10 so the update works offline after refresh.
+- The service worker precaches both interaction and layout modules and uses cache v11 so the update works offline after refresh.
+
+## Minimalist visual pass (2026-09-28 UTC)
+
+- Preserves the existing game layout, identity, palette family, card sizing, behavior, and local storage while removing felt texture, ornamental card-back patterning, bevels, stronger shadows, and the heavy control dock.
+- Uses flatter greens, clean paper-white cards, simple court-card marks, restrained pile outlines, and low-key text/icon controls. No rules or settings were removed.
 
 ## Verified build state (2026-09-28 UTC)
 
 - PWA tests: 28 passed, including Ace auto-placement, smart-tap safety, double-tap suppression, forgiving drop geometry, hint priority, stock recycling, and adaptive tableau layout.
 - Android compile SDK: 35; minimum SDK: 26; target SDK: 34.
-- App version: 1.1.0 (`versionCode=11`).
+- App version: 1.2.0 (`versionCode=12`).
 - APK ID/name: `com.andrefiker.quietsolitaire` / `Quiet Solitaire`.
 - APK signature: v2 and v3 verified; APK ZIP integrity and 4-byte alignment verified.
 - APK contents: all files under `dist/` match byte-for-byte; application manifest and package ID verified; no Internet permission; no unrelated assets.

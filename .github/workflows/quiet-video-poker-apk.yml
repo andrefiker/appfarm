@@ -2,7 +2,7 @@ name: Quiet Video Poker Android APK
 
 on:
   push:
-    branches: [quiet-video-poker-apk-2026-09-27, quiet-video-poker-bets-2026-09-28]
+    branches: [main, quiet-video-poker-apk-2026-09-27, quiet-video-poker-bets-2026-09-28]
     paths:
       - 'quiet-video-poker/**'
       - '.github/workflows/quiet-video-poker-apk.yml'
@@ -63,7 +63,7 @@ jobs:
           BADGING=$("$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK")
           echo "$BADGING" | head -n 6
           echo "$BADGING" | grep -F "name='com.appfarm.quietvideopoker'"
-          echo "$BADGING" | grep -F "versionCode='3' versionName='1.2.0'"
+          echo "$BADGING" | grep -F "versionCode='4' versionName='1.3.0'"
           PERMISSIONS=$("$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions "$APK")
           echo "$PERMISSIONS"
           ! echo "$PERMISSIONS" | grep -q 'android.permission.INTERNET'

@@ -84,7 +84,7 @@ await forwardToWebView();
 let client = await attach();
 await pageReady(client);
 
-const firstView = await client.evaluate(`({title:document.title, width:innerWidth, height:innerHeight, scrollWidth:document.documentElement.scrollWidth, cards:[...document.querySelectorAll('.playing-card')].map(x=>{let r=x.getBoundingClientRect();return {x:r.x,w:r.width,h:r.height}}), action:(()=>{let r=document.querySelector('#action-button').getBoundingClientRect();return {x:r.x,w:r.width,h:r.height,text:document.querySelector('#action-button').textContent}})(), bets:[...document.querySelectorAll('.bet-option')].map(x=>({value:Number(x.dataset.bet),width:x.getBoundingClientRect().width,height:x.getBoundingClientRect().height})), credits:document.querySelector('#credits').textContent})`);
+const firstView = await client.evaluate(`({title:document.title, width:innerWidth, height:innerHeight, scrollWidth:document.documentElement.scrollWidth, cards:[...document.querySelectorAll('.playing-card')].map(x=>{let r=x.getBoundingClientRect();return {x:r.x,w:r.width,h:r.height}}), action:(()=>{let r=document.querySelector('#action-button').getBoundingClientRect();return {x:r.x,w:r.width,h:r.height,text:document.querySelector('#action-button').textContent}})(), bets:[...document.querySelectorAll('.bet-option')].map(x=>({value:Number(x.dataset.bet),width:x.getBoundingClientRect().width,height:x.getBoundingClientRect().height})), credits:document.querySelector('#credits').textContent, storage:JSON.parse(localStorage.getItem('quiet-video-poker-v1'))})`);
 assert.equal(firstView.title, "Quiet Video Poker");
 assert.equal(firstView.cards.length, 5);
 assert.ok(firstView.height > firstView.width, "activity should start in portrait");
@@ -93,7 +93,9 @@ assert.ok(firstView.cards.every(c => c.w >= 60 && c.h >= 90), "playing cards sho
 assert.ok(firstView.action.w >= 90 && firstView.action.h >= 42, "primary action should have a phone-sized touch target");
 assert.deepEqual(firstView.bets.map(x => x.value), [100, 200, 500, 1000, 5000]);
 assert.ok(firstView.bets.every(x => x.width >= 45 && x.height >= 40), "all five bet choices should fit the phone");
-assert.equal(firstView.credits, "100,000");
+assert.equal(firstView.credits, "1,000");
+assert.equal(firstView.storage.credits, 1000);
+assert.equal(firstView.storage.economyVersion, 3);
 mkdirSync("quiet-video-poker/qa-artifacts", { recursive: true });
 writeFileSync("quiet-video-poker/qa-artifacts/portrait-ready.png", await client.screenshot());
 

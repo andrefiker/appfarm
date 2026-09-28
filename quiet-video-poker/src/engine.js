@@ -11,20 +11,32 @@ export const PAYTABLE = Object.freeze([
   [CATEGORY.THREE_KIND, 3], [CATEGORY.TWO_PAIR, 2], [CATEGORY.JACKS_OR_BETTER, 1],
 ]);
 export const BET_AMOUNTS = Object.freeze([100, 200, 500, 1000, 5000]);
-export const INITIAL_CREDITS = 100000;
+export const INITIAL_CREDITS = 1000;
 const OLD_BETS = Object.freeze([100, 200, 500, 1000, 5000]);
 
 export function migrateEconomy(saved) {
-  if (saved.economyVersion === 2) {
+  if (saved.economyVersion === 3) {
     return { ...saved, bet: BET_AMOUNTS.includes(saved.bet) ? saved.bet : BET_AMOUNTS[0] };
   }
-  const legacyCredits = Number.isFinite(saved.credits) && saved.credits >= 0 ? saved.credits : 1000;
+  if (saved.economyVersion === 2) {
+    const stats = saved.stats ?? {};
+    const untouchedOpeningBalance = saved.credits === 100000
+      && (stats.handsPlayed ?? 0) === 0
+      && (stats.creditsWagered ?? 0) === 0;
+    return {
+      ...saved, economyVersion: 3,
+      credits: untouchedOpeningBalance ? INITIAL_CREDITS : saved.credits,
+      bet: BET_AMOUNTS.includes(saved.bet) ? saved.bet : BET_AMOUNTS[0],
+    };
+  }
+  const legacyCredits = Number.isFinite(saved.credits) && saved.credits >= 0 ? saved.credits : INITIAL_CREDITS;
   const stats = { ...saved.stats };
   for (const key of ["creditsWagered", "creditsWon", "largestWin"]) {
     stats[key] = (Number.isFinite(stats[key]) && stats[key] >= 0 ? stats[key] : 0) * 100;
   }
   return {
-    ...saved, economyVersion: 2, credits: Math.round(legacyCredits * 100),
+    ...saved, economyVersion: 3,
+    credits: legacyCredits === 1000 ? INITIAL_CREDITS : Math.round(legacyCredits * 100),
     bet: OLD_BETS[saved.bet - 1] ?? BET_AMOUNTS[0], stats,
   };
 }

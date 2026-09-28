@@ -15,7 +15,7 @@ The project has no third-party dependencies. It uses native JavaScript modules, 
 
 ## Rules and controls
 
-Five cards are dealt from one Fisher–Yates shuffled 52-card deck. Tapping a card toggles its hold. DRAW replaces only discarded cards from that same deck. Bets are 100, 200, 500, 1,000, or 5,000 fictional credits. Payouts use the 9/6 Jacks or Better table; a 5,000-credit royal flush pays 4,000,000 credits. A fresh bankroll is 100,000 credits. Existing v1.1 balances and credit totals are scaled by 100 once, while hands and settings are preserved. Bet, credits, settings, and statistics stay in local storage. Settings can reset credits and statistics.
+Five cards are dealt from one Fisher–Yates shuffled 52-card deck. Tapping a card toggles its hold. DRAW replaces only discarded cards from that same deck. Bets are 100, 200, 500, 1,000, or 5,000 fictional credits. Payouts use the 9/6 Jacks or Better table; a 5,000-credit royal flush pays 4,000,000 credits. A fresh bankroll is 1,000 credits. On upgrade from v1.2, an untouched 100,000-credit opening balance becomes 1,000; played balances and session history are preserved. Older v1.1 balances and credit totals are scaled by 100 once. Bet, credits, settings, and statistics stay in local storage. Settings can reset credits and statistics.
 
 The hint is a deterministic basic guide. It keeps made hands, recognizes pairs, four to a royal, four-card straight-flush draws, four-card flushes, four-card straights, and high cards. It is not an optimal strategy solver.
 

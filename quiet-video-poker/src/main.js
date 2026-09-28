@@ -3,7 +3,7 @@ import { BET_AMOUNTS, INITIAL_CREDITS, PAYTABLE, createDeck, shuffleDeck, deal, 
 const STORAGE_KEY = "quiet-video-poker-v1";
 const SUIT_NAMES = { "♠": "spades", "♥": "hearts", "♦": "diamonds", "♣": "clubs" };
 const freshStats = () => ({ handsPlayed: 0, handsWon: 0, creditsWagered: 0, creditsWon: 0, largestWin: 0, categories: Object.fromEntries(PAYTABLE.map(([name]) => [name, 0])) });
-const defaults = () => ({ economyVersion: 2, credits: INITIAL_CREDITS, bet: BET_AMOUNTS[0], settings: { sound: true, volume: 45, haptics: true }, stats: freshStats() });
+const defaults = () => ({ economyVersion: 3, credits: INITIAL_CREDITS, bet: BET_AMOUNTS[0], settings: { sound: true, volume: 45, haptics: true }, stats: freshStats() });
 function loadState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -167,7 +167,7 @@ function buildSettings() {
   $("haptics-toggle").addEventListener("change", e => { state.settings.haptics = e.target.checked; persist(); });
   $("volume-slider").addEventListener("input", e => { state.settings.volume = Number(e.target.value); $("volume-label").textContent = `${state.settings.volume}%`; persist(); });
   $("reset-bankroll").addEventListener("click", () => {
-    if (!window.confirm("Reset credits to 100,000 and clear all statistics on this device?")) return;
+    if (!window.confirm("Reset credits to 1,000 and clear all statistics on this device?")) return;
     state = defaults(); phase = "ready"; hand = []; held = [false, false, false, false, false]; lastResult = null; persist(); closeModal(); setMessage("Bankroll reset. Good luck."); render();
   });
 }

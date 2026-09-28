@@ -46,7 +46,7 @@ test("all five bet choices scale the 9/6 table and the maximum royal bonus", () 
 test("old bankroll and statistics migrate once without wiping play history", () => {
   const legacy = { credits: 846, bet: 4, settings: { sound: false }, stats: { handsPlayed: 12, creditsWagered: 71, creditsWon: 28, largestWin: 15, categories: { Flush: 2 } } };
   const migrated = migrateEconomy(legacy);
-  assert.equal(INITIAL_CREDITS, 100000);
+  assert.equal(INITIAL_CREDITS, 1000);
   assert.equal(migrated.credits, 84600);
   assert.equal(migrated.bet, 1000);
   assert.deepEqual([migrated.stats.creditsWagered, migrated.stats.creditsWon, migrated.stats.largestWin], [7100, 2800, 1500]);
@@ -55,6 +55,21 @@ test("old bankroll and statistics migrate once without wiping play history", () 
   assert.equal(migrated.settings.sound, false);
   assert.deepEqual(migrateEconomy(migrated), migrated);
   assert.equal(migrateEconomy({ credits: 0, bet: 5 }).bet, 5000);
+});
+
+test("v1.2 untouched opening bankroll resets to 1,000 while played progress survives", () => {
+  const freshV2 = { economyVersion: 2, credits: 100000, bet: 100, stats: { handsPlayed: 0, creditsWagered: 0, creditsWon: 0 } };
+  const fresh = migrateEconomy(freshV2);
+  assert.equal(fresh.credits, 1000);
+  assert.equal(fresh.economyVersion, 3);
+
+  const playedV2 = { economyVersion: 2, credits: 84200, bet: 500, stats: { handsPlayed: 7, creditsWagered: 5800, creditsWon: 9000 } };
+  const played = migrateEconomy(playedV2);
+  assert.equal(played.credits, 84200);
+  assert.equal(played.stats.handsPlayed, 7);
+  assert.equal(played.stats.creditsWagered, 5800);
+  assert.equal(played.stats.creditsWon, 9000);
+  assert.deepEqual(migrateEconomy(played), played);
 });
 
 test("shuffling is deterministic with an injected RNG and preserves the deck", () => {

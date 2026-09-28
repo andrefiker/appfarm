@@ -1,0 +1,1194 @@
+[
+  {
+    "id": "xiphoid_process",
+    "name": "Xiphoid process",
+    "layer": "bone",
+    "sourceObject": "Xiphoid process",
+    "vertices": 459,
+    "polygons": 913
+  },
+  {
+    "id": "vertebra_t9",
+    "name": "Vertebra T9",
+    "layer": "bone",
+    "sourceObject": "Vertebra T9",
+    "vertices": 903,
+    "polygons": 1806
+  },
+  {
+    "id": "vertebra_t8",
+    "name": "Vertebra T8",
+    "layer": "bone",
+    "sourceObject": "Vertebra T8",
+    "vertices": 868,
+    "polygons": 1706
+  },
+  {
+    "id": "vertebra_t7",
+    "name": "Vertebra T7",
+    "layer": "bone",
+    "sourceObject": "Vertebra T7",
+    "vertices": 950,
+    "polygons": 1900
+  },
+  {
+    "id": "vertebra_t6",
+    "name": "Vertebra T6",
+    "layer": "bone",
+    "sourceObject": "Vertebra T6",
+    "vertices": 890,
+    "polygons": 1774
+  },
+  {
+    "id": "vertebra_t5",
+    "name": "Vertebra T5",
+    "layer": "bone",
+    "sourceObject": "Vertebra T5",
+    "vertices": 900,
+    "polygons": 1800
+  },
+  {
+    "id": "vertebra_t4",
+    "name": "Vertebra T4",
+    "layer": "bone",
+    "sourceObject": "Vertebra T4",
+    "vertices": 900,
+    "polygons": 1800
+  },
+  {
+    "id": "vertebra_t3",
+    "name": "Vertebra T3",
+    "layer": "bone",
+    "sourceObject": "Vertebra T3",
+    "vertices": 900,
+    "polygons": 1800
+  },
+  {
+    "id": "vertebra_t2",
+    "name": "Vertebra T2",
+    "layer": "bone",
+    "sourceObject": "Vertebra T2",
+    "vertices": 921,
+    "polygons": 1842
+  },
+  {
+    "id": "vertebra_t12",
+    "name": "Vertebra T12",
+    "layer": "bone",
+    "sourceObject": "Vertebra T12",
+    "vertices": 941,
+    "polygons": 1880
+  },
+  {
+    "id": "vertebra_t11",
+    "name": "Vertebra T11",
+    "layer": "bone",
+    "sourceObject": "Vertebra T11",
+    "vertices": 899,
+    "polygons": 1780
+  },
+  {
+    "id": "vertebra_t10",
+    "name": "Vertebra T10",
+    "layer": "bone",
+    "sourceObject": "Vertebra T10",
+    "vertices": 932,
+    "polygons": 1864
+  },
+  {
+    "id": "vertebra_t1",
+    "name": "Vertebra T1",
+    "layer": "bone",
+    "sourceObject": "Vertebra T1",
+    "vertices": 900,
+    "polygons": 1800
+  },
+  {
+    "id": "vertebra_l5",
+    "name": "Vertebra L5",
+    "layer": "bone",
+    "sourceObject": "Vertebra L5",
+    "vertices": 925,
+    "polygons": 1850
+  },
+  {
+    "id": "vertebra_l4",
+    "name": "Vertebra L4",
+    "layer": "bone",
+    "sourceObject": "Vertebra L4",
+    "vertices": 927,
+    "polygons": 1853
+  },
+  {
+    "id": "vertebra_l3",
+    "name": "Vertebra L3",
+    "layer": "bone",
+    "sourceObject": "Vertebra L3",
+    "vertices": 949,
+    "polygons": 1858
+  },
+  {
+    "id": "vertebra_l2",
+    "name": "Vertebra L2",
+    "layer": "bone",
+    "sourceObject": "Vertebra L2",
+    "vertices": 940,
+    "polygons": 1878
+  },
+  {
+    "id": "vertebra_l1",
+    "name": "Vertebra L1",
+    "layer": "bone",
+    "sourceObject": "Vertebra L1",
+    "vertices": 931,
+    "polygons": 1862
+  },
+  {
+    "id": "vertebra_c7",
+    "name": "Vertebra C7",
+    "layer": "bone",
+    "sourceObject": "Vertebra C7",
+    "vertices": 927,
+    "polygons": 1862
+  },
+  {
+    "id": "vertebra_c6",
+    "name": "Vertebra C6",
+    "layer": "bone",
+    "sourceObject": "Vertebra C6",
+    "vertices": 928,
+    "polygons": 1864
+  },
+  {
+    "id": "vertebra_c5",
+    "name": "Vertebra C5",
+    "layer": "bone",
+    "sourceObject": "Vertebra C5",
+    "vertices": 927,
+    "polygons": 1862
+  },
+  {
+    "id": "vertebra_c4",
+    "name": "Vertebra C4",
+    "layer": "bone",
+    "sourceObject": "Vertebra C4",
+    "vertices": 902,
+    "polygons": 1800
+  },
+  {
+    "id": "vertebra_c3",
+    "name": "Vertebra C3",
+    "layer": "bone",
+    "sourceObject": "Vertebra C3",
+    "vertices": 1044,
+    "polygons": 1994
+  },
+  {
+    "id": "twelfth_rib_r",
+    "name": "Twelfth rib.r",
+    "layer": "bone",
+    "sourceObject": "Twelfth rib.r",
+    "vertices": 904,
+    "polygons": 1804
+  },
+  {
+    "id": "twelfth_rib_l",
+    "name": "Twelfth rib.l",
+    "layer": "bone",
+    "sourceObject": "Twelfth rib.l",
+    "vertices": 904,
+    "polygons": 1804
+  },
+  {
+    "id": "transverse_part_of_trapezius_muscle_r",
+    "name": "Transverse part of trapezius muscle.r",
+    "layer": "muscle",
+    "sourceObject": "Transverse part of trapezius muscle.r",
+    "vertices": 898,
+    "polygons": 1800
+  },
+  {
+    "id": "transverse_part_of_trapezius_muscle_l",
+    "name": "Transverse part of trapezius muscle.l",
+    "layer": "muscle",
+    "sourceObject": "Transverse part of trapezius muscle.l",
+    "vertices": 898,
+    "polygons": 1800
+  },
+  {
+    "id": "transverse_colon",
+    "name": "Transverse colon",
+    "layer": "organ",
+    "sourceObject": "Transverse colon",
+    "vertices": 1800,
+    "polygons": 3600
+  },
+  {
+    "id": "thoracic_aorta",
+    "name": "Thoracic aorta",
+    "layer": "organ",
+    "sourceObject": "Thoracic aorta",
+    "vertices": 190,
+    "polygons": 182
+  },
+  {
+    "id": "third_rib_r",
+    "name": "Third rib.r",
+    "layer": "bone",
+    "sourceObject": "Third rib.r",
+    "vertices": 904,
+    "polygons": 1804
+  },
+  {
+    "id": "third_rib_l",
+    "name": "Third rib.l",
+    "layer": "bone",
+    "sourceObject": "Third rib.l",
+    "vertices": 904,
+    "polygons": 1804
+  },
+  {
+    "id": "tenth_rib_r",
+    "name": "Tenth rib.r",
+    "layer": "bone",
+    "sourceObject": "Tenth rib.r",
+    "vertices": 905,
+    "polygons": 1806
+  },
+  {
+    "id": "tenth_rib_l",
+    "name": "Tenth rib.l",
+    "layer": "bone",
+    "sourceObject": "Tenth rib.l",
+    "vertices": 905,
+    "polygons": 1806
+  },
+  {
+    "id": "superior_vena_cava",
+    "name": "Superior vena cava",
+    "layer": "organ",
+    "sourceObject": "Superior vena cava",
+    "vertices": 70,
+    "polygons": 62
+  },
+  {
+    "id": "superior_lobe_of_right_lung",
+    "name": "Superior lobe of right lung",
+    "layer": "organ",
+    "sourceObject": "Superior lobe of right lung",
+    "vertices": 1812,
+    "polygons": 3578
+  },
+  {
+    "id": "superior_lobe_of_left_lung",
+    "name": "Superior lobe of left lung",
+    "layer": "organ",
+    "sourceObject": "Superior lobe of left lung",
+    "vertices": 1807,
+    "polygons": 3587
+  },
+  {
+    "id": "stomach",
+    "name": "Stomach",
+    "layer": "organ",
+    "sourceObject": "Stomach",
+    "vertices": 1826,
+    "polygons": 3584
+  },
+  {
+    "id": "sternocostal_head_of_pectoralis_major_muscle_r",
+    "name": "Sternocostal head of pectoralis major muscle.r",
+    "layer": "muscle",
+    "sourceObject": "Sternocostal head of pectoralis major muscle.r",
+    "vertices": 901,
+    "polygons": 1799
+  },
+  {
+    "id": "sternocostal_head_of_pectoralis_major_muscle_l",
+    "name": "Sternocostal head of pectoralis major muscle.l",
+    "layer": "muscle",
+    "sourceObject": "Sternocostal head of pectoralis major muscle.l",
+    "vertices": 901,
+    "polygons": 1799
+  },
+  {
+    "id": "sternocleidomastoid_muscle_r",
+    "name": "Sternocleidomastoid muscle.r",
+    "layer": "muscle",
+    "sourceObject": "Sternocleidomastoid muscle.r",
+    "vertices": 937,
+    "polygons": 1849
+  },
+  {
+    "id": "sternocleidomastoid_muscle_l",
+    "name": "Sternocleidomastoid muscle.l",
+    "layer": "muscle",
+    "sourceObject": "Sternocleidomastoid muscle.l",
+    "vertices": 937,
+    "polygons": 1849
+  },
+  {
+    "id": "sixth_rib_r",
+    "name": "Sixth rib.r",
+    "layer": "bone",
+    "sourceObject": "Sixth rib.r",
+    "vertices": 915,
+    "polygons": 1806
+  },
+  {
+    "id": "sixth_rib_l",
+    "name": "Sixth rib.l",
+    "layer": "bone",
+    "sourceObject": "Sixth rib.l",
+    "vertices": 915,
+    "polygons": 1806
+  },
+  {
+    "id": "sigmoid_colon",
+    "name": "Sigmoid colon",
+    "layer": "organ",
+    "sourceObject": "Sigmoid colon",
+    "vertices": 1013,
+    "polygons": 1961
+  },
+  {
+    "id": "seventh_rib_r",
+    "name": "Seventh rib.r",
+    "layer": "bone",
+    "sourceObject": "Seventh rib.r",
+    "vertices": 905,
+    "polygons": 1806
+  },
+  {
+    "id": "seventh_rib_l",
+    "name": "Seventh rib.l",
+    "layer": "bone",
+    "sourceObject": "Seventh rib.l",
+    "vertices": 905,
+    "polygons": 1806
+  },
+  {
+    "id": "second_rib_l",
+    "name": "Second rib.l",
+    "layer": "bone",
+    "sourceObject": "Second rib.l",
+    "vertices": 903,
+    "polygons": 1802
+  },
+  {
+    "id": "scapular_spinal_part_of_deltoid_muscle_r",
+    "name": "Scapular spinal part of deltoid muscle.r",
+    "layer": "muscle",
+    "sourceObject": "Scapular spinal part of deltoid muscle.r",
+    "vertices": 1009,
+    "polygons": 1940
+  },
+  {
+    "id": "scapular_spinal_part_of_deltoid_muscle_l",
+    "name": "Scapular spinal part of deltoid muscle.l",
+    "layer": "muscle",
+    "sourceObject": "Scapular spinal part of deltoid muscle.l",
+    "vertices": 1009,
+    "polygons": 1940
+  },
+  {
+    "id": "scapula_r",
+    "name": "Scapula.r",
+    "layer": "bone",
+    "sourceObject": "Scapula.r",
+    "vertices": 929,
+    "polygons": 1804
+  },
+  {
+    "id": "scapula_l",
+    "name": "Scapula.l",
+    "layer": "bone",
+    "sourceObject": "Scapula.l",
+    "vertices": 929,
+    "polygons": 1804
+  },
+  {
+    "id": "sacrum",
+    "name": "Sacrum",
+    "layer": "bone",
+    "sourceObject": "Sacrum",
+    "vertices": 1226,
+    "polygons": 2464
+  },
+  {
+    "id": "right_ventricle",
+    "name": "Right ventricle",
+    "layer": "organ",
+    "sourceObject": "Right ventricle",
+    "vertices": 1828,
+    "polygons": 3509
+  },
+  {
+    "id": "right_atrium",
+    "name": "Right atrium",
+    "layer": "organ",
+    "sourceObject": "Right atrium",
+    "vertices": 1818,
+    "polygons": 3556
+  },
+  {
+    "id": "serratus_anterior_muscle_r",
+    "name": "Serratus anterior muscle.r",
+    "layer": "muscle",
+    "sourceObject": "Serratus anterior muscle.r",
+    "vertices": 898,
+    "polygons": 1800
+  },
+  {
+    "id": "serratus_anterior_muscle_l",
+    "name": "Serratus anterior muscle.l",
+    "layer": "muscle",
+    "sourceObject": "Serratus anterior muscle.l",
+    "vertices": 898,
+    "polygons": 1800
+  },
+  {
+    "id": "second_rib_r",
+    "name": "Second rib.r",
+    "layer": "bone",
+    "sourceObject": "Second rib.r",
+    "vertices": 903,
+    "polygons": 1802
+  },
+  {
+    "id": "rectus_abdominis_muscle_r",
+    "name": "Rectus abdominis muscle.r",
+    "layer": "muscle",
+    "sourceObject": "Rectus abdominis muscle.r",
+    "vertices": 905,
+    "polygons": 1801
+  },
+  {
+    "id": "rectus_abdominis_muscle_l",
+    "name": "Rectus abdominis muscle.l",
+    "layer": "muscle",
+    "sourceObject": "Rectus abdominis muscle.l",
+    "vertices": 905,
+    "polygons": 1801
+  },
+  {
+    "id": "pulmonary_trunk",
+    "name": "Pulmonary trunk",
+    "layer": "organ",
+    "sourceObject": "Pulmonary trunk",
+    "vertices": 138,
+    "polygons": 117
+  },
+  {
+    "id": "ninth_rib_r",
+    "name": "Ninth rib.r",
+    "layer": "bone",
+    "sourceObject": "Ninth rib.r",
+    "vertices": 906,
+    "polygons": 1808
+  },
+  {
+    "id": "ninth_rib_l",
+    "name": "Ninth rib.l",
+    "layer": "bone",
+    "sourceObject": "Ninth rib.l",
+    "vertices": 906,
+    "polygons": 1808
+  },
+  {
+    "id": "middle_lobe_of_right_lung",
+    "name": "Middle lobe of right lung",
+    "layer": "organ",
+    "sourceObject": "Middle lobe of right lung",
+    "vertices": 1804,
+    "polygons": 3593
+  },
+  {
+    "id": "manubrium_of_sternum",
+    "name": "Manubrium of sternum",
+    "layer": "bone",
+    "sourceObject": "Manubrium of sternum",
+    "vertices": 905,
+    "polygons": 1800
+  },
+  {
+    "id": "liver",
+    "name": "Liver",
+    "layer": "organ",
+    "sourceObject": "Liver",
+    "vertices": 1852,
+    "polygons": 3588
+  },
+  {
+    "id": "left_ventricle",
+    "name": "Left ventricle",
+    "layer": "organ",
+    "sourceObject": "Left ventricle",
+    "vertices": 1831,
+    "polygons": 3506
+  },
+  {
+    "id": "left_atrium",
+    "name": "Left atrium",
+    "layer": "organ",
+    "sourceObject": "Left atrium",
+    "vertices": 1818,
+    "polygons": 3552
+  },
+  {
+    "id": "latissimus_dorsi_muscle_r",
+    "name": "Latissimus dorsi muscle.r",
+    "layer": "muscle",
+    "sourceObject": "Latissimus dorsi muscle.r",
+    "vertices": 906,
+    "polygons": 1800
+  },
+  {
+    "id": "latissimus_dorsi_muscle_l",
+    "name": "Latissimus dorsi muscle.l",
+    "layer": "muscle",
+    "sourceObject": "Latissimus dorsi muscle.l",
+    "vertices": 906,
+    "polygons": 1800
+  },
+  {
+    "id": "jejunum",
+    "name": "Jejunum",
+    "layer": "organ",
+    "sourceObject": "Jejunum",
+    "vertices": 1803,
+    "polygons": 3594
+  },
+  {
+    "id": "intervertebral_disc_t9_t10",
+    "name": "Intervertebral disc T9-T10",
+    "layer": "bone",
+    "sourceObject": "Intervertebral disc T9-T10",
+    "vertices": 626,
+    "polygons": 1186
+  },
+  {
+    "id": "intervertebral_disc_t8_t9",
+    "name": "Intervertebral disc T8-T9",
+    "layer": "bone",
+    "sourceObject": "Intervertebral disc T8-T9",
+    "vertices": 935,
+    "polygons": 1866
+  },
+  {
+    "id": "intervertebral_disc_t7_t8",
+    "name": "Intervertebral disc T7-T8",
+    "layer": "bone",
+    "sourceObject": "Intervertebral disc T7-T8",
+    "vertices": 932,
+    "polygons": 1860
+  },
+  {
+    "id": "intervertebral_disc_t6_t7",
+    "name": "Intervertebral disc T6-T7",
+    "layer": "bone",
+    "sourceObject": "Intervertebral disc T6-T7",
+    "vertices": 925,
+    "polygons": 1846
+  },
+  {
+    "id": "intervertebral_disc_t5_t6",
+    "name": "Intervertebral disc T5-T6",
+    "layer": "bone",
+    "sourceObject": "Intervertebral disc T5-T6",
+    "vertices": 871,
+    "polygons": 1684
+  },
+  {
+    "id": "intervertebral_disc_t4_t5",
+    "name": "Intervertebral disc T4-T5",
+    "layer": "bone",
+    "sourceObject": "Intervertebral disc T4-T5",
+    "vertices": 817,
+    "polygons": 1600
+  },
+  {
+    "id": "intervertebral_disc_t3_t4",
+    "name": "Intervertebral disc T3-T4",
+    "layer": "bone",
+    "sourceObject": "Intervertebral disc T3-T4",
+    "vertices": 682,
+    "polygons": 1310
+  },
+  {
+    "id": "intervertebral_disc_t2_t3",
+    "name": "Intervertebral disc T2-T3",
+    "layer": "bone",
+    "sourceObject": "Intervertebral disc T2-T3",
+    "vertices": 664,
+    "polygons": 1272
+  },
+  {
+    "id": "intervertebral_disc_t12_l1",
+    "name": "Intervertebral disc T12-L1",
+    "layer": "bone",
+    "sourceObject": "Intervertebral disc T12-L1",
+    "vertices": 924,
+    "polygons": 1844
+  },
+  {
+    "id": "intervertebral_disc_t11_t12",
+    "name": "Intervertebral disc T11-T12",
+    "layer": "bone",
+    "sourceObject": "Intervertebral disc T11-T12",
+    "vertices": 927,
+    "polygons": 1850
+  },
+  {
+    "id": "intervertebral_disc_t10_t11",
+    "name": "Intervertebral disc T10-T11",
+    "layer": "bone",
+    "sourceObject": "Intervertebral disc T10-T11",
+    "vertices": 934,
+    "polygons": 1864
+  },
+  {
+    "id": "intervertebral_disc_t1_t2",
+    "name": "Intervertebral disc T1-T2",
+    "layer": "bone",
+    "sourceObject": "Intervertebral disc T1-T2",
+    "vertices": 628,
+    "polygons": 1208
+  },
+  {
+    "id": "intervertebral_disc_l5_s1",
+    "name": "Intervertebral disc L5-S1",
+    "layer": "bone",
+    "sourceObject": "Intervertebral disc L5-S1",
+    "vertices": 924,
+    "polygons": 1844
+  },
+  {
+    "id": "intervertebral_disc_l4_l5",
+    "name": "Intervertebral disc L4-L5",
+    "layer": "bone",
+    "sourceObject": "Intervertebral disc L4-L5",
+    "vertices": 921,
+    "polygons": 1838
+  },
+  {
+    "id": "intervertebral_disc_l3_l4",
+    "name": "Intervertebral disc L3-L4",
+    "layer": "bone",
+    "sourceObject": "Intervertebral disc L3-L4",
+    "vertices": 924,
+    "polygons": 1844
+  },
+  {
+    "id": "intervertebral_disc_l2_l3",
+    "name": "Intervertebral disc L2-L3",
+    "layer": "bone",
+    "sourceObject": "Intervertebral disc L2-L3",
+    "vertices": 925,
+    "polygons": 1846
+  },
+  {
+    "id": "intervertebral_disc_l1_l2",
+    "name": "Intervertebral disc L1-L2",
+    "layer": "bone",
+    "sourceObject": "Intervertebral disc L1-L2",
+    "vertices": 923,
+    "polygons": 1842
+  },
+  {
+    "id": "intervertebral_disc_c7_t1",
+    "name": "Intervertebral disc C7-T1",
+    "layer": "bone",
+    "sourceObject": "Intervertebral disc C7-T1",
+    "vertices": 586,
+    "polygons": 1140
+  },
+  {
+    "id": "intervertebral_disc_c6_c7",
+    "name": "Intervertebral disc C6-C7",
+    "layer": "bone",
+    "sourceObject": "Intervertebral disc C6-C7",
+    "vertices": 415,
+    "polygons": 800
+  },
+  {
+    "id": "intervertebral_disc_c5_c6",
+    "name": "Intervertebral disc C5-C6",
+    "layer": "bone",
+    "sourceObject": "Intervertebral disc C5-C6",
+    "vertices": 486,
+    "polygons": 930
+  },
+  {
+    "id": "intervertebral_disc_c4_c5",
+    "name": "Intervertebral disc C4-C5",
+    "layer": "bone",
+    "sourceObject": "Intervertebral disc C4-C5",
+    "vertices": 430,
+    "polygons": 822
+  },
+  {
+    "id": "intervertebral_disc_c3_c4",
+    "name": "Intervertebral disc C3-C4",
+    "layer": "bone",
+    "sourceObject": "Intervertebral disc C3-C4",
+    "vertices": 346,
+    "polygons": 654
+  },
+  {
+    "id": "intervertebral_disc_c2_c3",
+    "name": "Intervertebral disc C2-C3",
+    "layer": "bone",
+    "sourceObject": "Intervertebral disc C2-C3",
+    "vertices": 111,
+    "polygons": 128
+  },
+  {
+    "id": "inferior_lobe_of_right_lung",
+    "name": "Inferior lobe of right lung",
+    "layer": "organ",
+    "sourceObject": "Inferior lobe of right lung",
+    "vertices": 1801,
+    "polygons": 3594
+  },
+  {
+    "id": "inferior_lobe_of_left_lung",
+    "name": "Inferior lobe of left lung",
+    "layer": "organ",
+    "sourceObject": "Inferior lobe of left lung",
+    "vertices": 1803,
+    "polygons": 3591
+  },
+  {
+    "id": "hip_bone_r",
+    "name": "Hip bone.r",
+    "layer": "bone",
+    "sourceObject": "Hip bone.r",
+    "vertices": 1001,
+    "polygons": 1902
+  },
+  {
+    "id": "hip_bone_l",
+    "name": "Hip bone.l",
+    "layer": "bone",
+    "sourceObject": "Hip bone.l",
+    "vertices": 1001,
+    "polygons": 1902
+  },
+  {
+    "id": "fourth_rib_r",
+    "name": "Fourth rib.r",
+    "layer": "bone",
+    "sourceObject": "Fourth rib.r",
+    "vertices": 902,
+    "polygons": 1800
+  },
+  {
+    "id": "fourth_rib_l",
+    "name": "Fourth rib.l",
+    "layer": "bone",
+    "sourceObject": "Fourth rib.l",
+    "vertices": 902,
+    "polygons": 1800
+  },
+  {
+    "id": "first_rib_r",
+    "name": "First rib.r",
+    "layer": "bone",
+    "sourceObject": "First rib.r",
+    "vertices": 902,
+    "polygons": 1800
+  },
+  {
+    "id": "first_rib_l",
+    "name": "First rib.l",
+    "layer": "bone",
+    "sourceObject": "First rib.l",
+    "vertices": 902,
+    "polygons": 1800
+  },
+  {
+    "id": "fifth_rib_r",
+    "name": "Fifth rib.r",
+    "layer": "bone",
+    "sourceObject": "Fifth rib.r",
+    "vertices": 903,
+    "polygons": 1802
+  },
+  {
+    "id": "fifth_rib_l",
+    "name": "Fifth rib.l",
+    "layer": "bone",
+    "sourceObject": "Fifth rib.l",
+    "vertices": 903,
+    "polygons": 1802
+  },
+  {
+    "id": "external_abdominal_oblique_muscle_r",
+    "name": "External abdominal oblique muscle.r",
+    "layer": "muscle",
+    "sourceObject": "External abdominal oblique muscle.r",
+    "vertices": 900,
+    "polygons": 1800
+  },
+  {
+    "id": "external_abdominal_oblique_muscle_l",
+    "name": "External abdominal oblique muscle.l",
+    "layer": "muscle",
+    "sourceObject": "External abdominal oblique muscle.l",
+    "vertices": 900,
+    "polygons": 1800
+  },
+  {
+    "id": "eleventh_rib_r",
+    "name": "Eleventh rib.r",
+    "layer": "bone",
+    "sourceObject": "Eleventh rib.r",
+    "vertices": 902,
+    "polygons": 1800
+  },
+  {
+    "id": "eleventh_rib_l",
+    "name": "Eleventh rib.l",
+    "layer": "bone",
+    "sourceObject": "Eleventh rib.l",
+    "vertices": 902,
+    "polygons": 1800
+  },
+  {
+    "id": "eighth_rib_r",
+    "name": "Eighth rib.r",
+    "layer": "bone",
+    "sourceObject": "Eighth rib.r",
+    "vertices": 903,
+    "polygons": 1802
+  },
+  {
+    "id": "eighth_rib_l",
+    "name": "Eighth rib.l",
+    "layer": "bone",
+    "sourceObject": "Eighth rib.l",
+    "vertices": 903,
+    "polygons": 1802
+  },
+  {
+    "id": "duodenum",
+    "name": "Duodenum",
+    "layer": "organ",
+    "sourceObject": "Duodenum",
+    "vertices": 887,
+    "polygons": 1739
+  },
+  {
+    "id": "diaphragm",
+    "name": "Diaphragm",
+    "layer": "organ",
+    "sourceObject": "Diaphragm",
+    "vertices": 1798,
+    "polygons": 3559
+  },
+  {
+    "id": "descending_part_of_trapezius_muscle_r",
+    "name": "Descending part of trapezius muscle.r",
+    "layer": "muscle",
+    "sourceObject": "Descending part of trapezius muscle.r",
+    "vertices": 896,
+    "polygons": 1800
+  },
+  {
+    "id": "descending_part_of_trapezius_muscle_l",
+    "name": "Descending part of trapezius muscle.l",
+    "layer": "muscle",
+    "sourceObject": "Descending part of trapezius muscle.l",
+    "vertices": 896,
+    "polygons": 1800
+  },
+  {
+    "id": "descending_colon",
+    "name": "Descending colon",
+    "layer": "organ",
+    "sourceObject": "Descending colon",
+    "vertices": 1800,
+    "polygons": 3600
+  },
+  {
+    "id": "costal_cartilage_of_third_rib_r",
+    "name": "Costal cartilage of third rib.r",
+    "layer": "bone",
+    "sourceObject": "Costal cartilage of third rib.r",
+    "vertices": 302,
+    "polygons": 600
+  },
+  {
+    "id": "costal_cartilage_of_third_rib_l",
+    "name": "Costal cartilage of third rib.l",
+    "layer": "bone",
+    "sourceObject": "Costal cartilage of third rib.l",
+    "vertices": 302,
+    "polygons": 600
+  },
+  {
+    "id": "costal_cartilage_of_tenth_rib_r",
+    "name": "Costal cartilage of tenth rib.r",
+    "layer": "bone",
+    "sourceObject": "Costal cartilage of tenth rib.r",
+    "vertices": 191,
+    "polygons": 192
+  },
+  {
+    "id": "costal_cartilage_of_tenth_rib_l",
+    "name": "Costal cartilage of tenth rib.l",
+    "layer": "bone",
+    "sourceObject": "Costal cartilage of tenth rib.l",
+    "vertices": 191,
+    "polygons": 192
+  },
+  {
+    "id": "costal_cartilage_of_sixth_rib_r",
+    "name": "Costal cartilage of sixth rib.r",
+    "layer": "bone",
+    "sourceObject": "Costal cartilage of sixth rib.r",
+    "vertices": 679,
+    "polygons": 1353
+  },
+  {
+    "id": "costal_cartilage_of_sixth_rib_l",
+    "name": "Costal cartilage of sixth rib.l",
+    "layer": "bone",
+    "sourceObject": "Costal cartilage of sixth rib.l",
+    "vertices": 679,
+    "polygons": 1353
+  },
+  {
+    "id": "costal_cartilage_of_seventh_rib_r",
+    "name": "Costal cartilage of seventh rib.r",
+    "layer": "bone",
+    "sourceObject": "Costal cartilage of seventh rib.r",
+    "vertices": 902,
+    "polygons": 1800
+  },
+  {
+    "id": "costal_cartilage_of_seventh_rib_l",
+    "name": "Costal cartilage of seventh rib.l",
+    "layer": "bone",
+    "sourceObject": "Costal cartilage of seventh rib.l",
+    "vertices": 902,
+    "polygons": 1800
+  },
+  {
+    "id": "costal_cartilage_of_second_rib_r",
+    "name": "Costal cartilage of second rib.r",
+    "layer": "bone",
+    "sourceObject": "Costal cartilage of second rib.r",
+    "vertices": 286,
+    "polygons": 568
+  },
+  {
+    "id": "costal_cartilage_of_second_rib_l",
+    "name": "Costal cartilage of second rib.l",
+    "layer": "bone",
+    "sourceObject": "Costal cartilage of second rib.l",
+    "vertices": 286,
+    "polygons": 568
+  },
+  {
+    "id": "costal_cartilage_of_ninth_rib_r",
+    "name": "Costal cartilage of ninth rib.r",
+    "layer": "bone",
+    "sourceObject": "Costal cartilage of ninth rib.r",
+    "vertices": 246,
+    "polygons": 247
+  },
+  {
+    "id": "costal_cartilage_of_ninth_rib_l",
+    "name": "Costal cartilage of ninth rib.l",
+    "layer": "bone",
+    "sourceObject": "Costal cartilage of ninth rib.l",
+    "vertices": 246,
+    "polygons": 247
+  },
+  {
+    "id": "costal_cartilage_of_fourth_rib_r",
+    "name": "Costal cartilage of fourth rib.r",
+    "layer": "bone",
+    "sourceObject": "Costal cartilage of fourth rib.r",
+    "vertices": 375,
+    "polygons": 745
+  },
+  {
+    "id": "costal_cartilage_of_fourth_rib_l",
+    "name": "Costal cartilage of fourth rib.l",
+    "layer": "bone",
+    "sourceObject": "Costal cartilage of fourth rib.l",
+    "vertices": 375,
+    "polygons": 745
+  },
+  {
+    "id": "costal_cartilage_of_first_rib_r",
+    "name": "Costal cartilage of first rib.r",
+    "layer": "bone",
+    "sourceObject": "Costal cartilage of first rib.r",
+    "vertices": 233,
+    "polygons": 462
+  },
+  {
+    "id": "costal_cartilage_of_first_rib_l",
+    "name": "Costal cartilage of first rib.l",
+    "layer": "bone",
+    "sourceObject": "Costal cartilage of first rib.l",
+    "vertices": 233,
+    "polygons": 462
+  },
+  {
+    "id": "costal_cartilage_of_fifth_rib_r",
+    "name": "Costal cartilage of fifth rib.r",
+    "layer": "bone",
+    "sourceObject": "Costal cartilage of fifth rib.r",
+    "vertices": 543,
+    "polygons": 1082
+  },
+  {
+    "id": "costal_cartilage_of_fifth_rib_l",
+    "name": "Costal cartilage of fifth rib.l",
+    "layer": "bone",
+    "sourceObject": "Costal cartilage of fifth rib.l",
+    "vertices": 543,
+    "polygons": 1082
+  },
+  {
+    "id": "costal_cartilage_of_eighth_rib_r",
+    "name": "Costal cartilage of eighth rib.r",
+    "layer": "bone",
+    "sourceObject": "Costal cartilage of eighth rib.r",
+    "vertices": 328,
+    "polygons": 330
+  },
+  {
+    "id": "costal_cartilage_of_eighth_rib_l",
+    "name": "Costal cartilage of eighth rib.l",
+    "layer": "bone",
+    "sourceObject": "Costal cartilage of eighth rib.l",
+    "vertices": 328,
+    "polygons": 330
+  },
+  {
+    "id": "coccyx",
+    "name": "Coccyx",
+    "layer": "bone",
+    "sourceObject": "Coccyx",
+    "vertices": 81,
+    "polygons": 69
+  },
+  {
+    "id": "clavicular_part_of_deltoid_muscle_r",
+    "name": "Clavicular part of deltoid muscle.r",
+    "layer": "muscle",
+    "sourceObject": "Clavicular part of deltoid muscle.r",
+    "vertices": 934,
+    "polygons": 1846
+  },
+  {
+    "id": "clavicular_part_of_deltoid_muscle_l",
+    "name": "Clavicular part of deltoid muscle.l",
+    "layer": "muscle",
+    "sourceObject": "Clavicular part of deltoid muscle.l",
+    "vertices": 934,
+    "polygons": 1846
+  },
+  {
+    "id": "clavicular_head_of_pectoralis_major_muscle_r",
+    "name": "Clavicular head of pectoralis major muscle.r",
+    "layer": "muscle",
+    "sourceObject": "Clavicular head of pectoralis major muscle.r",
+    "vertices": 425,
+    "polygons": 850
+  },
+  {
+    "id": "clavicular_head_of_pectoralis_major_muscle_l",
+    "name": "Clavicular head of pectoralis major muscle.l",
+    "layer": "muscle",
+    "sourceObject": "Clavicular head of pectoralis major muscle.l",
+    "vertices": 425,
+    "polygons": 850
+  },
+  {
+    "id": "clavicle_r",
+    "name": "Clavicle.r",
+    "layer": "bone",
+    "sourceObject": "Clavicle.r",
+    "vertices": 789,
+    "polygons": 1548
+  },
+  {
+    "id": "clavicle_l",
+    "name": "Clavicle.l",
+    "layer": "bone",
+    "sourceObject": "Clavicle.l",
+    "vertices": 789,
+    "polygons": 1548
+  },
+  {
+    "id": "body_of_sternum",
+    "name": "Body of sternum",
+    "layer": "bone",
+    "sourceObject": "Body of sternum",
+    "vertices": 907,
+    "polygons": 1800
+  },
+  {
+    "id": "ascending_part_of_trapezius_muscle_r",
+    "name": "Ascending part of trapezius muscle.r",
+    "layer": "muscle",
+    "sourceObject": "Ascending part of trapezius muscle.r",
+    "vertices": 946,
+    "polygons": 1855
+  },
+  {
+    "id": "ascending_part_of_trapezius_muscle_l",
+    "name": "Ascending part of trapezius muscle.l",
+    "layer": "muscle",
+    "sourceObject": "Ascending part of trapezius muscle.l",
+    "vertices": 946,
+    "polygons": 1855
+  },
+  {
+    "id": "ascending_colon",
+    "name": "Ascending colon",
+    "layer": "organ",
+    "sourceObject": "Ascending colon",
+    "vertices": 1802,
+    "polygons": 3600
+  },
+  {
+    "id": "ascending_aorta",
+    "name": "Ascending aorta",
+    "layer": "organ",
+    "sourceObject": "Ascending aorta",
+    "vertices": 130,
+    "polygons": 122
+  },
+  {
+    "id": "acromial_part_of_deltoid_muscle_r",
+    "name": "Acromial part of deltoid muscle.r",
+    "layer": "muscle",
+    "sourceObject": "Acromial part of deltoid muscle.r",
+    "vertices": 952,
+    "polygons": 1591
+  },
+  {
+    "id": "acromial_part_of_deltoid_muscle_l",
+    "name": "Acromial part of deltoid muscle.l",
+    "layer": "muscle",
+    "sourceObject": "Acromial part of deltoid muscle.l",
+    "vertices": 952,
+    "polygons": 1591
+  },
+  {
+    "id": "skin",
+    "name": "Skin",
+    "layer": "skin",
+    "sourceObject": "Skin",
+    "vertices": 61168,
+    "polygons": 60754
+  }
+]

@@ -1,0 +1,20 @@
+# Impact Lab: Core — build decisions
+
+Researched 2026-09-28. This is an anatomical visualization toy, not an injury predictor.
+
+## Supported anatomy
+- https://openstax.org/books/anatomy-and-physiology/pages/1-6-anatomical-terminology — supports anatomical left/right, anterior/posterior, body planes and cavity relationships. Use subject-relative labels and a shared upright coordinate system. Heart/lungs belong in the thorax, abdominal viscera below the diaphragm. This is a terminology/reference source; no OpenStax text or illustrations are bundled. It does not validate a damage model.
+- https://github.com/Z-Anatomy/Models-of-human-anatomy — downloaded repository commit `7cc49aa8749632adcd564c0e75f096dc43f6a4b8`; `Z-Anatomy.zip` SHA256 `e029688545627bd0214b269e1063143abb580aad72b2c2445d6d8a9a0d9da736`; contained `Startup.blend` dated 2023-05-02, SHA256 `9f08a17ea0115fed80b2a73ecdf0a1bc2ab2f6956f37c593ce23d513ea35afcd`. Use selected aligned torso meshes. Attribution: Gauthier Kervyn / Z-Anatomy, derived from Kousaku Okubo / BodyParts3D / DBCLS. Asset derivative under CC BY-SA 4.0. Exact upstream notice bundled. No kidney, head/ear/cranial or brain models are selected because the notice lists additional sources and NC conditions for some of them. No atlas definitions or upstream application code are copied.
+- https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html — official archive now states CC BY 4.0 (updated 2025-02-27), while Z-Anatomy's downloaded notice identifies its original BodyParts3D contribution as CC BY-SA 2.1 Japan. Preserve both provenance facts and the downloaded notice; do not use the newer archive license to erase Z-Anatomy's own CC BY-SA requirements. This build uses the Z-Anatomy derivative, not a fresh BodyParts3D archive.
+
+## Visual approximation
+- https://threejs.org/docs/pages/Raycaster.html — supports sorted mesh intersections, both-sided casting and the need to deduplicate coincident triangle-edge hits. Cast against all anatomical meshes independent of display visibility, use paired surface intervals and bounded shell thickness. Raycasting alone does not establish material thickness or medical effects.
+- https://threejs.org/docs/pages/Material.html and https://threejs.org/examples/webgl_clipping_stencil.html — clipping is a rendering operation. Use a controlled inspection opening with tissue lining, without changing the collision anatomy or making the whole subject transparent. Cut faces need deliberate treatment; opacity alone cannot supply depth.
+- https://www.medlineplus.gov/bruises.html — a bruise involves damaged small vessels beneath unbroken skin; this supports localized discoloration distinct from an opening. Immediate visible bruising is an accelerated illustrative convention; no healing timeline is simulated.
+- https://www.msdmanuals.com/professional/injuries-poisoning/abdominal-trauma/overview-of-abdominal-trauma — distinguishes blunt and penetrating mechanisms and anatomical involvement. Use restrained blunt deformation/discoloration versus a small inset entry and directional internal path. It supplies no validated intensity or resistance values for this app.
+
+## Fictional game parameters
+Three normalized impact intensities and one generic projectile. Deformation caps, radii, transfer falloff, resistance, track budget and fracture activation are invented display parameters. No real weapon, medical threshold, pain score, survival probability, healing model or tissue mechanics claim.
+
+## Recovery decision
+Recovered `Impact-Lab-2.0.0-Offline.html` from the Project files. Its bundled Three.js confirms an offline web implementation was feasible. The old full-body, equipment and armor presentation does not fit this scope, so it is preserved without importing its architecture. Existing minimal Android packaging in AppFarm is reused separately.

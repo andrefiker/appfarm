@@ -41,7 +41,10 @@ jobs:
           java-version: '17'
 
       - name: Install Android 35
-        run: yes | sdkmanager 'platforms;android-35' 'build-tools;35.0.0' >/dev/null
+        run: |
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -path '*/bin/sdkmanager' -type f | sort -V | tail -n 1)"
+          test -x "$SDKMANAGER"
+          yes | "$SDKMANAGER" 'platforms;android-35' 'build-tools;35.0.0' >/dev/null
 
       - name: Test PWA
         run: npm test

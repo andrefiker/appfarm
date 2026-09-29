@@ -27,13 +27,20 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,29 +59,38 @@ private val statementDanger = Color(0xFF8C474B)
 
 @Composable
 fun StatementInboxScreen(state: StatementInboxState, vm: StatementInboxViewModel) {
-    Column(Modifier.fillMaxSize().background(paper).statusBarsPadding()) {
-        StatementInboxHeader(state)
-        if (state.items.isEmpty()) {
-            Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Tudo processado", color = navy, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
-                    Spacer(Modifier.height(6.dp))
-                    Text("Nenhuma saída de extrato está pendente.", color = muted, fontSize = 13.sp)
+    val undo by vm.undoNotice.collectAsStateWithLifecycle()
+    val snackbar = remember { SnackbarHostState() }
+    LaunchedEffect(undo?.id) {
+        val notice = undo ?: return@LaunchedEffect
+        if (snackbar.showSnackbar(notice.message, actionLabel = "Desfazer", withDismissAction = true) == SnackbarResult.ActionPerformed) {
+            vm.undoLastProcess()
+        } else vm.dismissUndo()
+    }
+    Scaffold(containerColor = paper, snackbarHost = { SnackbarHost(snackbar) }) { padding ->
+        Column(Modifier.fillMaxSize().padding(padding).background(paper).statusBarsPadding()) {
+            StatementInboxHeader(state)
+            if (state.items.isEmpty()) {
+                Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("Tudo processado", color = navy, fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+                        Spacer(Modifier.height(6.dp))
+                        Text("Nenhuma saída de extrato está pendente.", color = muted, fontSize = 13.sp)
+                    }
                 }
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 10.dp),
-                verticalArrangement = Arrangement.spacedBy(9.dp)
-            ) {
-                items(state.items, key = { it.id }) { item ->
+            } else {
+                LazyColumn(modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 10.dp)) {
+                    item(key = state.items.first().id) {
+                        val item = state.items.first()
                     StatementInboxCard(
                         item = item,
                         categories = state.categories,
                         similarCount = state.items.count { it.matchKey == item.matchKey },
+                        similarPreview = state.items.filter { it.matchKey == item.matchKey }.take(3),
                         vm = vm
                     )
+                    }
                 }
             }
         }
@@ -86,7 +102,7 @@ private fun StatementInboxHeader(state: StatementInboxState) {
     Column(
         Modifier.fillMaxWidth().background(statementHeader).padding(horizontal = 16.dp, vertical = 14.dp)
     ) {
-        Text("LOOT  |  EXTRATOS", color = Color(0xFFBBD8D0), fontSize = 10.sp,
+        Text("GADGETY  |  EXTRATOS", color = Color(0xFFBBD8D0), fontSize = 10.sp,
             fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp)
         Spacer(Modifier.height(8.dp))
         Text("Saídas para processar", color = Color.White, fontSize = 21.sp, fontWeight = FontWeight.Bold)
@@ -97,10 +113,8 @@ private fun StatementInboxHeader(state: StatementInboxState) {
                 modifier = Modifier.padding(bottom = 4.dp))
         }
         Spacer(Modifier.height(4.dp))
-        Text(
-            "Set 2026 · Inter ${ledgerMoney(state.sourceTotal("Inter"))} · Nubank ${ledgerMoney(state.sourceTotal("Nubank"))}",
-            color = Color(0xFFD2DFDB), fontSize = 11.sp, maxLines = 2
-        )
+        Text("Uma transação por vez; processar traz a próxima.",
+            color = Color(0xFFD2DFDB), fontSize = 11.sp)
         if (state.ignoreRules.isNotEmpty()) {
             Text("${state.ignoreRules.size} regras de ignorar sempre", color = Color(0xFFBBD8D0), fontSize = 10.sp)
         }
@@ -113,12 +127,15 @@ private fun StatementInboxCard(
     item: StatementInboxItem,
     categories: List<String>,
     similarCount: Int,
+    similarPreview: List<StatementInboxItem>,
     vm: StatementInboxViewModel
 ) {
     var name by remember(item.id, item.correctedName) { mutableStateOf(item.correctedName) }
     var category by remember(item.id, item.category) { mutableStateOf(item.category) }
     var expanded by remember(item.id) { mutableStateOf(false) }
     var rememberRule by remember(item.id) { mutableStateOf(false) }
+    var confirmSimilar by remember(item.id) { mutableStateOf(false) }
+    var ignoreChoice by remember(item.id) { mutableStateOf(false) }
     val date = Instant.ofEpochMilli(item.occurredAt).atZone(ZoneId.of("America/Sao_Paulo"))
         .toLocalDate().format(statementDate)
     val ready = category.isNotBlank()
@@ -181,7 +198,7 @@ private fun StatementInboxCard(
                     }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(checked = rememberRule, onCheckedChange = { rememberRule = it })
-                        Text("Lembrar categoria", color = muted, fontSize = 10.sp,
+                        Text("Sempre tratar assim", color = muted, fontSize = 10.sp,
                             modifier = Modifier.weight(1f))
                     }
                 }
@@ -189,7 +206,7 @@ private fun StatementInboxCard(
             Spacer(Modifier.height(4.dp))
             if (ready && similarCount > 1) {
                 TextButton(
-                    onClick = { vm.processSimilar(item.id, name, category, rememberRule) },
+                    onClick = { confirmSimilar = true },
                     modifier = Modifier.align(Alignment.End),
                     contentPadding = PaddingValues(horizontal = 9.dp, vertical = 2.dp)
                 ) {
@@ -202,11 +219,8 @@ private fun StatementInboxCard(
                 }
             }
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                TextButton(onClick = { vm.ignoreForever(item.id) }, contentPadding = PaddingValues(horizontal = 7.dp)) {
-                    Text("Ignorar sempre", color = teal, fontSize = 11.sp)
-                }
-                TextButton(onClick = { vm.dismiss(item.id) }, contentPadding = PaddingValues(horizontal = 7.dp)) {
-                    Text("Excluir", color = statementDanger, fontSize = 11.sp)
+                TextButton(onClick = { ignoreChoice = true }, contentPadding = PaddingValues(horizontal = 7.dp)) {
+                    Text("Ignorar", color = muted, fontSize = 11.sp)
                 }
                 Spacer(Modifier.weight(1f))
                 Button(
@@ -219,4 +233,30 @@ private fun StatementInboxCard(
             }
         }
     }
+    if (confirmSimilar) AlertDialog(
+        onDismissRequest = { confirmSimilar = false },
+        title = { Text("Processar $similarCount semelhantes?") },
+        text = { Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            Text("$similarCount transações receberão o mesmo nome e categoria.", color = muted, fontSize = 12.sp)
+            similarPreview.forEach { Text(it.original, color = navy, fontSize = 11.sp, maxLines = 2,
+                overflow = TextOverflow.Ellipsis) }
+            if (similarCount > similarPreview.size) Text("+ ${similarCount - similarPreview.size} outras", color = muted, fontSize = 11.sp)
+        } },
+        confirmButton = { TextButton(onClick = {
+            confirmSimilar = false
+            vm.processSimilar(item.id, name, category, rememberRule)
+        }) { Text("Processar $similarCount") } },
+        dismissButton = { TextButton(onClick = { confirmSimilar = false }) { Text("Cancelar") } }
+    )
+    if (ignoreChoice) AlertDialog(
+        onDismissRequest = { ignoreChoice = false },
+        title = { Text("Ignorar transação") },
+        text = { Text("Você pode ignorar somente esta saída ou criar uma regra visível para semelhantes futuras.") },
+        confirmButton = { TextButton(onClick = { ignoreChoice = false; vm.ignoreForever(item.id) }) {
+            Text("Ignorar semelhantes")
+        } },
+        dismissButton = { TextButton(onClick = { ignoreChoice = false; vm.ignoreOne(item.id) }) {
+            Text("Só esta")
+        } }
+    )
 }

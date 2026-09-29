@@ -104,19 +104,20 @@ class MainActivity : ComponentActivity() {
                 Column(Modifier.fillMaxSize().background(paper)) {
                     androidx.compose.foundation.layout.Box(Modifier.weight(1f)) {
                         when (destination) {
-                            0 -> if (ready) PatientPaymentsScreen(state, vm) { dataTransferOpen = true }
-                                else Text("Carregando Loot…", modifier = Modifier.statusBarsPadding().padding(28.dp), color = muted)
-                            1 -> ExpensesScreen(expenseState, expenses) { dataTransferOpen = true }
-                            2 -> SpendingSummaryScreen(expenseState, expenses, state.totals) { dataTransferOpen = true }
-                            3 -> BehaviorScreen(expenseState, expenses) { dataTransferOpen = true }
-                            else -> StatementInboxScreen(statementState, statementInbox)
+                            0 -> ExpensesScreen(expenseState, expenses, state.totals) { dataTransferOpen = true }
+                            1 -> StatementInboxScreen(statementState, statementInbox)
+                            2 -> if (ready) PatientPaymentsScreen(state, vm) { dataTransferOpen = true }
+                                else Text("Carregando Gadgety…", modifier = Modifier.statusBarsPadding().padding(28.dp), color = muted)
+                            else -> MoreScreen(expenseState, expenses, state.totals, statementState, statementInbox) {
+                                dataTransferOpen = true
+                            }
                         }
                     }
                     HorizontalDivider(color = divider)
                     Row(Modifier.fillMaxWidth().background(paper).navigationBarsPadding()
                         .padding(horizontal = 14.dp, vertical = 5.dp)) {
-                        listOf("↓" to "Receitas", "↑" to "Gastos", "◷" to "Resumo",
-                            "◇" to "Planos", "☷" to "Extratos").forEachIndexed { index, item ->
+                        listOf("◷" to "Mês", "☷" to "Extratos", "↓" to "Receitas",
+                            "•••" to "Mais").forEachIndexed { index, item ->
                             val (glyph, label) = item
                             Box(Modifier.weight(1f).height(44.dp).padding(horizontal = 4.dp)
                                 .clip(RoundedCornerShape(11.dp))
@@ -166,7 +167,7 @@ fun PatientPaymentsScreen(state: ScreenState, vm: PatientPaymentsViewModel, onDa
                 .background(Color.White), contentPadding = PaddingValues(bottom = 12.dp)) {
                 if (active.isEmpty()) item {
                     EmptyLedgerState("Nenhum paciente ativo neste mês.", "Adicione um paciente para começar.",
-                        "Carregar lista de 22 pacientes") { onData() }
+                        "Importar lista privada") { onData() }
                 }
                 items(active, key = { it.patient.id }) { row -> CompactPaymentRow(
                     name = row.patient.name, expected = row.payment.expectedCents,
@@ -235,7 +236,7 @@ fun PatientPaymentsScreen(state: ScreenState, vm: PatientPaymentsViewModel, onDa
 internal fun LootHeader(section: String, month: YearMonth, previous: () -> Unit, next: () -> Unit,
     addLabel: String, onData: () -> Unit, onAdd: () -> Unit) {
     Row(Modifier.fillMaxWidth().height(48.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text("LOOT", color = teal, fontWeight = FontWeight.Bold, fontSize = 11.sp, letterSpacing = 2.sp)
+        Text("GADGETY", color = teal, fontWeight = FontWeight.Bold, fontSize = 10.sp, letterSpacing = 1.5.sp)
         Spacer(Modifier.width(9.dp))
         Box(Modifier.size(width = 1.dp, height = 12.dp).background(divider))
         Spacer(Modifier.width(9.dp))
@@ -295,31 +296,34 @@ internal fun Summary(totals: Totals, label: String = "pacientes", paidLabel: Str
 @Composable
 internal fun CompactPaymentRow(name: String, expected: Long, paid: Long, full: Boolean, enabled: Boolean,
     inactive: Boolean = false,
+    subtitle: String? = null, displayCents: Long? = null,
     onName: () -> Unit, onAmount: () -> Unit, onPaid: () -> Unit, onManage: () -> Unit,
     onFull: (Boolean) -> Unit) {
     Column(Modifier.fillMaxWidth().background(Color.White)
-        .padding(start = 14.dp, end = 8.dp, top = 3.dp, bottom = 3.dp)) {
-        Row(Modifier.fillMaxWidth().height(30.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.weight(1f).height(30.dp).clickable(onClick = onName), contentAlignment = Alignment.CenterStart) {
+        .padding(start = 14.dp, end = 6.dp, top = 2.dp, bottom = 2.dp)) {
+        Row(Modifier.fillMaxWidth().height(31.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.weight(1f).height(31.dp).clickable(onClick = onName), contentAlignment = Alignment.CenterStart) {
                 Text(name, color = navy, fontWeight = FontWeight.SemiBold, fontSize = 15.sp,
                     maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             Spacer(Modifier.width(8.dp))
-            Box(Modifier.widthIn(max = 145.dp).height(30.dp).clickable(onClick = onAmount),
+            Box(Modifier.widthIn(max = 145.dp).height(31.dp).clickable(onClick = if (displayCents == null) onAmount else onPaid),
                 contentAlignment = Alignment.CenterEnd) {
-                Text("${ledgerMoney(expected)} / mês", color = muted, fontSize = 12.sp,
+                Text(ledgerMoney(displayCents ?: expected), color = navy, fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
                     style = TextStyle(fontFeatureSettings = "tnum"), maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
-        Row(Modifier.fillMaxWidth().height(48.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.weight(1f).height(48.dp).clickable(onClick = onPaid)
-                .semantics { contentDescription = "Editar valor pago" }, contentAlignment = Alignment.CenterStart) {
-                Text(if (full) "Editar pago" else "Pago ${ledgerMoney(paid)}",
-                    color = if (full) muted else teal, fontSize = 12.sp,
+        Row(Modifier.fillMaxWidth().height(35.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.weight(1f).height(35.dp).clickable(onClick = if (subtitle == null) onPaid else onAmount)
+                .semantics { contentDescription = if (subtitle == null) "Editar valor pago" else "Editar valor mensal" },
+                contentAlignment = Alignment.CenterStart) {
+                Text(subtitle ?: if (full) "Recebido · ${ledgerMoney(expected)}/mês" else "Recebido ${ledgerMoney(paid)} de ${ledgerMoney(expected)}",
+                    color = muted, fontSize = 10.sp,
                     maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             val status = if (inactive) "Inativo" else if (!enabled) "Sem valor" else if (full) "✓ Quitado" else "○ Pendente"
-            Box(Modifier.height(48.dp).widthIn(min = 90.dp)
+            Box(Modifier.height(35.dp).widthIn(min = 76.dp)
                 .clip(RoundedCornerShape(9.dp))
                 .clickable(enabled = enabled, role = Role.Checkbox) { onFull(!full) }
                 .semantics { contentDescription = if (full) "Quitado; toque para desmarcar" else "Pendente; toque para quitar" }
@@ -327,7 +331,7 @@ internal fun CompactPaymentRow(name: String, expected: Long, paid: Long, full: B
                 Text(status, color = if (full && enabled) teal else muted,
                     fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
             }
-            Box(Modifier.size(width = 40.dp, height = 48.dp).clickable(onClick = onManage)
+            Box(Modifier.size(width = 40.dp, height = 35.dp).clickable(onClick = onManage)
                 .semantics { contentDescription = "Mais opções" }, contentAlignment = Alignment.Center) {
                 Text("⋮", color = muted, fontSize = 21.sp)
             }

@@ -26,7 +26,7 @@ fun BehaviorScreen(state: ExpensesState, vm: ExpensesViewModel, onData: () -> Un
     var ruleOpen by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxSize().statusBarsPadding().background(paper)
         .verticalScroll(rememberScrollState()).padding(horizontal = 14.dp)) {
-        LootHeader("Planejado", state.month, { vm.shiftMonth(-1) }, { vm.shiftMonth(1) },
+        LootHeader("Fricção", state.month, { vm.shiftMonth(-1) }, { vm.shiftMonth(1) },
             "Quero comprar", onData = onData, onAdd = { urgeOpen = true })
         BehaviorCard {
             Text("TEM ALGO VINDO POR AÍ?", style = smallTitle)

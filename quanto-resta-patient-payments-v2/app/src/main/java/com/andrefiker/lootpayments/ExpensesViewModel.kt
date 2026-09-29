@@ -206,6 +206,12 @@ class ExpensesViewModel(application: Application) : AndroidViewModel(application
 
     fun deleteCategoryRule(id: String) = viewModelScope.launch { dao.deleteRule(id) }
 
+    fun saveMerchantRule(rule: CategoryRule) = viewModelScope.launch {
+        if (rule.pattern.trim().length < 3 || rule.category.isBlank()) return@launch
+        dao.putRule(rule.copy(pattern = rule.pattern.trim(), category = rule.category.trim(),
+            canonicalName = rule.canonicalName.trim()))
+    }
+
     fun addPlan(name: String, category: String, cents: Long) = viewModelScope.launch {
         dao.putPlannedExpense(PlannedExpense(UUID.randomUUID().toString(), selected.value.key(),
             name.trim(), category.trim(), cents, null))

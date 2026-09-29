@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.text.Normalizer
 import java.time.Instant
+import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 import java.util.Locale
@@ -26,6 +27,14 @@ internal const val STATEMENT_PENDING = "PENDING"
 internal const val STATEMENT_PROCESSED = "PROCESSED"
 internal const val STATEMENT_IGNORED = "IGNORED"
 internal const val STATEMENT_DISMISSED = "DISMISSED"
+
+data class StatementSeedRow(
+    val id: String,
+    val date: String,
+    val source: String,
+    val original: String,
+    val cents: Long
+)
 
 @Entity(tableName = "statement_inbox", indices = [Index("status"), Index("monthKey"), Index("matchKey")])
 data class StatementInboxItem(
@@ -59,6 +68,8 @@ interface StatementInboxDao {
     @Query("SELECT * FROM statement_inbox") suspend fun allItems(): List<StatementInboxItem>
     @Query("SELECT * FROM statement_ignore_rules") suspend fun allIgnoreRules(): List<StatementIgnoreRule>
     @Query("SELECT * FROM statement_inbox WHERE id = :id LIMIT 1") suspend fun item(id: String): StatementInboxItem?
+    @Query("SELECT * FROM statement_inbox WHERE status = 'PENDING' ORDER BY occurredAt DESC, id DESC")
+    suspend fun allPending(): List<StatementInboxItem>
     @Query("SELECT * FROM statement_inbox WHERE status = 'PENDING' AND matchKey = :matchKey ORDER BY occurredAt DESC, id DESC")
     suspend fun pendingMatching(matchKey: String): List<StatementInboxItem>
     @Upsert suspend fun putItem(item: StatementInboxItem)
@@ -67,16 +78,15 @@ interface StatementInboxDao {
     @Upsert suspend fun putIgnoreRules(rules: List<StatementIgnoreRule>)
     @Query("UPDATE statement_inbox SET correctedName = :name, category = :category WHERE id = :id AND status = 'PENDING'")
     suspend fun updateDraft(id: String, name: String, category: String)
-    @Query("UPDATE statement_inbox SET correctedName = 'Ifood' WHERE status = 'PENDING' AND correctedName = '' AND UPPER(original) LIKE '%IFD%'")
-    suspend fun applyIfoodNameDefault()
-    @Query("UPDATE statement_inbox SET category = 'Uber/transporte' WHERE status = 'PENDING' AND category = '' AND UPPER(original) LIKE '%UBER%'")
-    suspend fun applyUberCategoryDefault()
     @Query("UPDATE statement_inbox SET status = :status, resolvedAt = :resolvedAt WHERE id = :id AND status = 'PENDING'")
     suspend fun resolve(id: String, status: String, resolvedAt: Long = System.currentTimeMillis())
+    @Query("UPDATE statement_inbox SET status = 'PENDING', resolvedAt = NULL WHERE id = :id")
+    suspend fun restorePending(id: String)
     @Query("UPDATE statement_inbox SET status = 'IGNORED', resolvedAt = :resolvedAt WHERE matchKey = :matchKey AND status = 'PENDING'")
     suspend fun ignoreMatching(matchKey: String, resolvedAt: Long = System.currentTimeMillis())
     @Query("DELETE FROM statement_inbox") suspend fun clearItems()
     @Query("DELETE FROM statement_ignore_rules") suspend fun clearIgnoreRules()
+    @Query("DELETE FROM statement_ignore_rules WHERE id = :id") suspend fun deleteIgnoreRule(id: String)
 }
 
 internal object StatementText {
@@ -90,6 +100,21 @@ internal object StatementText {
     }
 }
 
+internal object MerchantRuleMatcher {
+    private fun normalized(value: String): String = Normalizer.normalize(value, Normalizer.Form.NFD)
+        .replace(Regex("\\p{M}+"), "").lowercase(Locale.ROOT)
+        .replace(Regex("[^a-z0-9]+"), " ").trim()
+
+    fun matches(original: String, pattern: String): Boolean {
+        val candidate = normalized(StatementText.ruleLabel(original))
+        val wildcard = pattern.trim().endsWith("*")
+        val rule = normalized(pattern.removeSuffix("*"))
+        if (rule.length < 3) return false
+        return if (wildcard) candidate.startsWith(rule)
+        else candidate == rule || candidate.startsWith("$rule ") || candidate.contains(" $rule ") || candidate.endsWith(" $rule")
+    }
+}
+
 internal val statementCategories = listOf(
     "Comida", "Weed", "Assinaturas/Google", "Compras", "Pods", "Faxina/limpeza",
     "Saúde", "Carro/combustível", "Uber/transporte", "Ads Mãe", "Taxas bancárias",
@@ -99,7 +124,8 @@ internal val statementCategories = listOf(
 data class StatementInboxState(
     val items: List<StatementInboxItem> = emptyList(),
     val ignoreRules: List<StatementIgnoreRule> = emptyList(),
-    val categories: List<String> = statementCategories
+    val categories: List<String> = statementCategories,
+    val merchantRules: List<CategoryRule> = emptyList()
 ) {
     val totalCents: Long get() = items.sumOf { it.amountCents }
     fun sourceTotal(source: String): Long = items.filter { it.source == source }.sumOf { it.amountCents }
@@ -117,25 +143,48 @@ internal class StatementInboxRepository(private val db: PaymentsDatabase) {
         val additions = rows.filter { it.id !in existing && "${it.id}-actual" !in processedActualIds }
             .map { row ->
                 val matchKey = StatementText.matchKey(row.original)
-                val category = categoryRules.firstOrNull {
-                    row.original.contains(it.pattern, ignoreCase = true)
-                }?.category.orEmpty()
+                val rule = categoryRules.firstOrNull { MerchantRuleMatcher.matches(row.original, it.pattern) }
+                val ignoredByRule = rule?.action == "IGNORE"
+                val date = LocalDate.parse(row.date)
                 StatementInboxItem(
                     id = row.id,
                     source = row.source,
-                    monthKey = StatementSeed202609.month.key(),
-                    occurredAt = StatementSeed202609.occurredAt(row),
+                    monthKey = YearMonth.from(date).key(),
+                    occurredAt = date.atStartOfDay(ZoneId.of("America/Sao_Paulo")).toInstant().toEpochMilli(),
                     original = row.original,
                     amountCents = row.cents,
                     matchKey = matchKey,
-                    category = category,
-                    status = if (matchKey in ignored) STATEMENT_IGNORED else STATEMENT_PENDING,
-                    resolvedAt = if (matchKey in ignored) System.currentTimeMillis() else null
+                    correctedName = rule?.canonicalName.orEmpty(),
+                    category = rule?.category.orEmpty(),
+                    status = if (matchKey in ignored || ignoredByRule) STATEMENT_IGNORED else STATEMENT_PENDING,
+                    resolvedAt = if (matchKey in ignored || ignoredByRule) System.currentTimeMillis() else null
                 )
             }
         if (additions.isNotEmpty()) inbox.putItems(additions)
-        inbox.applyIfoodNameDefault()
-        inbox.applyUberCategoryDefault()
+    }
+
+    suspend fun ensureDefaultRules() {
+        val existing = expenses.allRules().map { it.pattern.trim().lowercase(Locale.ROOT) }.toSet()
+        listOf(
+            CategoryRule("merchant-ifd", "IFD*", "Comida", SpendingType.FLEXIBLE.stored,
+                canonicalName = "iFood"),
+            CategoryRule("merchant-uber", "UBER*", "Uber/transporte", SpendingType.FLEXIBLE.stored,
+                canonicalName = "Uber")
+        ).filter { it.pattern.lowercase(Locale.ROOT) !in existing }.forEach { expenses.putRule(it) }
+    }
+
+    suspend fun applyRulesToPending() = db.withTransaction {
+        val rules = expenses.allRules().filter { it.enabled }
+        inbox.allPending().forEach { item ->
+            val rule = rules.firstOrNull { MerchantRuleMatcher.matches(item.original, it.pattern) } ?: return@forEach
+            if (rule.action == "IGNORE") {
+                inbox.resolve(item.id, STATEMENT_IGNORED)
+            } else {
+                inbox.updateDraft(item.id,
+                    item.correctedName.ifBlank { rule.canonicalName },
+                    item.category.ifBlank { rule.category })
+            }
+        }
     }
 
     suspend fun updateDraft(id: String, name: String, category: String) {
@@ -192,7 +241,9 @@ internal class StatementInboxRepository(private val db: PaymentsDatabase) {
                     id = "statement-category-${item.matchKey.hashCode()}",
                     pattern = label,
                     category = category.trim(),
-                    spendingType = SpendingType.FLEXIBLE.stored
+                    spendingType = SpendingType.FLEXIBLE.stored,
+                    canonicalName = resolvedName,
+                    action = "SUGGEST"
                 ))
             }
             inbox.updateDraft(item.id, resolvedName, category.trim())
@@ -229,34 +280,93 @@ internal class StatementInboxRepository(private val db: PaymentsDatabase) {
         true
     }
 
+    suspend fun ignoreOne(id: String): Boolean = db.withTransaction {
+        val item = inbox.item(id) ?: return@withTransaction false
+        if (item.status != STATEMENT_PENDING) return@withTransaction false
+        inbox.resolve(id, STATEMENT_IGNORED)
+        true
+    }
+
+    suspend fun undoProcessed(ids: List<String>): Int = db.withTransaction {
+        val actuals = expenses.allActualTransactions().associateBy { it.id }
+        var restored = 0
+        ids.distinct().forEach { id ->
+            val actual = actuals["$id-actual"] ?: return@forEach
+            actual.expenseId?.let { expenseId ->
+                expenses.month(expenseId, actual.monthKey)?.let { month ->
+                    expenses.putMonth(month.copy(
+                        paidCents = (month.paidCents - actual.amountCents).coerceAtLeast(0),
+                        updatedAt = System.currentTimeMillis()))
+                }
+            }
+            expenses.deleteActualTransaction(actual.id)
+            inbox.restorePending(id)
+            restored++
+        }
+        restored
+    }
+
+    suspend fun matchingIds(id: String): List<String> {
+        val item = inbox.item(id) ?: return emptyList()
+        return inbox.pendingMatching(item.matchKey).map { it.id }
+    }
+
+    suspend fun deleteIgnoreRule(id: String) = inbox.deleteIgnoreRule(id)
+
     suspend fun dismiss(id: String) = inbox.resolve(id, STATEMENT_DISMISSED)
 }
+
+data class StatementUndoNotice(val id: Long, val message: String)
 
 class StatementInboxViewModel(application: Application) : AndroidViewModel(application) {
     private val db = PaymentsDatabase.get(application)
     private val repository = StatementInboxRepository(db)
     private val inbox = db.statementInbox()
+    private val _undoNotice = kotlinx.coroutines.flow.MutableStateFlow<StatementUndoNotice?>(null)
+    val undoNotice: StateFlow<StatementUndoNotice?> = _undoNotice
+    private var undoIds: List<String> = emptyList()
+
     val state: StateFlow<StatementInboxState> = combine(
-        inbox.pendingFlow(), inbox.ignoreRulesFlow(), db.expenses().expenses()
-    ) { items, rules, expenses ->
-        val categories = (statementCategories + expenses.map { it.category.ifBlank { it.name } })
+        inbox.pendingFlow(), inbox.ignoreRulesFlow(), db.expenses().expenses(), db.expenses().rulesFlow()
+    ) { items, ignores, expenseRows, merchantRules ->
+        val categories = (statementCategories + expenseRows.map { it.category.ifBlank { it.name } })
             .filter { it.isNotBlank() }.distinctBy { it.lowercase(Locale.ROOT) }
-        StatementInboxState(items, rules, categories)
+        StatementInboxState(items, ignores, categories, merchantRules)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), StatementInboxState())
 
-    init { viewModelScope.launch { repository.seed(StatementSeed202609.rows) } }
+    init { viewModelScope.launch { repository.ensureDefaultRules(); repository.applyRulesToPending() } }
 
     fun updateDraft(id: String, name: String, category: String) = viewModelScope.launch {
         repository.updateDraft(id, name, category)
     }
 
     fun process(id: String, name: String, category: String, rememberRule: Boolean) = viewModelScope.launch {
-        repository.process(id, name, category, rememberRule)
+        if (repository.process(id, name, category, rememberRule)) {
+            if (rememberRule) repository.applyRulesToPending()
+            undoIds = listOf(id)
+            _undoNotice.value = StatementUndoNotice(System.nanoTime(), "Transação processada")
+        }
     }
 
     fun processSimilar(id: String, name: String, category: String, rememberRule: Boolean) =
-        viewModelScope.launch { repository.processSimilar(id, name, category, rememberRule) }
+        viewModelScope.launch {
+            val ids = repository.matchingIds(id)
+            val count = repository.processSimilar(id, name, category, rememberRule)
+            if (count > 0) {
+                undoIds = ids
+                _undoNotice.value = StatementUndoNotice(System.nanoTime(), "$count transações processadas")
+            }
+        }
 
     fun ignoreForever(id: String) = viewModelScope.launch { repository.ignoreForever(id) }
+    fun ignoreOne(id: String) = viewModelScope.launch { repository.ignoreOne(id) }
     fun dismiss(id: String) = viewModelScope.launch { repository.dismiss(id) }
+    fun undoLastProcess() = viewModelScope.launch {
+        val ids = undoIds
+        undoIds = emptyList()
+        _undoNotice.value = null
+        repository.undoProcessed(ids)
+    }
+    fun dismissUndo() { undoIds = emptyList(); _undoNotice.value = null }
+    fun deleteIgnoreRule(id: String) = viewModelScope.launch { repository.deleteIgnoreRule(id) }
 }

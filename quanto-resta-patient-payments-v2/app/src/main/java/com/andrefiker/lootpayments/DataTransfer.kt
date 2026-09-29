@@ -52,7 +52,6 @@ import javax.crypto.spec.SecretKeySpec
 private const val BACKUP_NAME = "loot-backup.ltb"
 private const val BACKUP_FORMAT = "loot-encrypted-backup"
 private const val BACKUP_SCHEMA = 4
-private const val PRIVATE_INCOME_ASSET = "loot-income-2026-09.lir"
 
 data class IncomeRosterEntry(val name: String, val monthlyCents: Long)
 data class IncomeRoster(
@@ -219,7 +218,8 @@ internal object LootBackupJson {
             o.getInt("recurringCount")) } ?: emptyList()
         val rules = root.optJSONArray("rules")?.objects { o -> CategoryRule(
             o.getString("id"), o.getString("pattern"), o.getString("category"),
-            o.getString("spendingType"), o.getBoolean("enabled"), o.getLong("createdAt")) } ?: emptyList()
+            o.getString("spendingType"), o.getBoolean("enabled"), o.getLong("createdAt"),
+            o.optString("canonicalName", ""), o.optString("action", "SUGGEST")) } ?: emptyList()
         val monthIds = expenseMonths.map { it.id }.toSet()
         val splits = root.optJSONArray("splitParts")?.objects { o -> SplitPart(
             o.getString("id"), o.getString("expenseMonthId"), o.getString("category"), o.getLong("cents"))
@@ -293,7 +293,7 @@ internal object LootBackupJson {
 
     private fun rule(r: CategoryRule) = JSONObject().put("id", r.id).put("pattern", r.pattern)
         .put("category", r.category).put("spendingType", r.spendingType).put("enabled", r.enabled)
-        .put("createdAt", r.createdAt)
+        .put("createdAt", r.createdAt).put("canonicalName", r.canonicalName).put("action", r.action)
 
     private fun splitPart(p: SplitPart) = JSONObject().put("id", p.id)
         .put("expenseMonthId", p.expenseMonthId).put("category", p.category).put("cents", p.cents)
@@ -370,19 +370,21 @@ internal class LootDataTransfer(private val context: Context) {
         val send = Intent(Intent.ACTION_SEND).apply {
             type = "application/octet-stream"
             putExtra(Intent.EXTRA_EMAIL, arrayOf("andrefiker@gmail.com"))
-            putExtra(Intent.EXTRA_SUBJECT, "Backup do Loot")
-            putExtra(Intent.EXTRA_TEXT, "Backup criptografado do Loot. Guarde a senha separadamente.")
+            putExtra(Intent.EXTRA_SUBJECT, "Backup do Gadgety")
+            putExtra(Intent.EXTRA_TEXT, "Backup criptografado do Gadgety. Guarde a senha separadamente.")
             putExtra(Intent.EXTRA_STREAM, backup.uri)
             clipData = ClipData.newUri(context.contentResolver, BACKUP_NAME, backup.uri)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
-        context.startActivity(Intent.createChooser(send, "Enviar backup do Loot").apply {
+        context.startActivity(Intent.createChooser(send, "Enviar backup do Gadgety").apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         })
     }
 
-    suspend fun importPrivateIncome(password: CharArray): String = withContext(Dispatchers.IO) {
-        val encrypted = context.assets.open(PRIVATE_INCOME_ASSET).bufferedReader().use { it.readText() }
+    suspend fun importPrivateIncome(uri: Uri, password: CharArray): String = withContext(Dispatchers.IO) {
+        val encrypted = requireNotNull(context.contentResolver.openInputStream(uri)) {
+            "Arquivo privado indisponível."
+        }.bufferedReader().use { it.readText() }
         val roster = IncomeRosterJson.decode(LootBackupCrypto.decrypt(encrypted, password))
         val owner = ownerId()
         db.withTransaction { db.dao().mergeIncomeRoster(owner, roster) }
@@ -418,11 +420,6 @@ internal class LootDataTransfer(private val context: Context) {
             db.statementInbox().putItems(payload.statementInbox)
             db.statementInbox().putIgnoreRules(payload.statementIgnoreRules)
         }
-        StatementInboxRepository(db).seed(StatementSeed202609.rows)
-        val currentMonth = YearMonth.now()
-        db.expenses().addOrFillFixedMonthlyCategories(
-            FixedMonthlyCategories.forMonth(currentMonth), currentMonth
-        )
         "Importado: ${payload.patients.size} pacientes e ${payload.expenses.size} despesas."
     }
 
@@ -439,8 +436,9 @@ internal fun LootDataTransferDialog(onDismiss: () -> Unit) {
     val transfer = remember(context) { LootDataTransfer(context.applicationContext) }
     val scope = rememberCoroutineScope()
     var folder by remember { mutableStateOf(transfer.savedFolder()) }
+    var rosterFile by remember { mutableStateOf<Uri?>(null) }
     var password by remember { mutableStateOf("") }
-    var status by remember { mutableStateOf("Digite a senha da lista privada para carregar as receitas.") }
+    var status by remember { mutableStateOf("Selecione a lista privada ou gerencie o backup criptografado.") }
     var backupFound by remember { mutableStateOf(false) }
     var importing by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
@@ -450,12 +448,16 @@ internal fun LootDataTransferDialog(onDismiss: () -> Unit) {
                 "$BACKUP_NAME encontrado." else "Pasta vinculada; nenhum backup encontrado ainda." }
             .onFailure { status = it.message ?: "Não foi possível acessar a pasta." }
     }
+    val rosterPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        rosterFile = uri
+        status = if (uri == null) "Nenhum arquivo selecionado." else "Lista privada selecionada; digite a senha."
+    }
     LaunchedEffect(folder) { folder?.let { backupFound = runCatching { transfer.hasBackup(it) }.getOrDefault(false) } }
 
     if (importing) {
         AlertDialog(onDismissRequest = { if (!busy) importing = false },
             title = { Text("Substituir os dados atuais?") },
-            text = { Text("A importação apaga os pacientes e despesas deste Loot e restaura exatamente o backup. Esta ação não altera outros aplicativos Loot instalados.") },
+            text = { Text("A importação substitui os dados locais do Gadgety e restaura exatamente o backup. Outros aplicativos não são alterados.") },
             confirmButton = { TextButton(enabled = !busy, onClick = {
                 val uri = folder ?: return@TextButton
                 busy = true
@@ -470,19 +472,24 @@ internal fun LootDataTransferDialog(onDismiss: () -> Unit) {
     }
 
     AlertDialog(onDismissRequest = { if (!busy) onDismiss() },
-        title = { Text("Dados do Loot") },
+        title = { Text("Dados do Gadgety") },
         text = { Column(Modifier.imePadding(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Receitas de setembro", color = navy, fontWeight = FontWeight.SemiBold)
-            Text("Lista privada: 22 pacientes · R$ 17.800. A importação é aditiva e não altera gastos.",
+            Text("Importar receitas privadas", color = navy, fontWeight = FontWeight.SemiBold)
+            Text("Selecione o arquivo .lir criptografado. Ele é importado localmente e não fica dentro do aplicativo.",
                 color = muted, fontSize = 12.sp)
+            TextButton(onClick = { rosterPicker.launch(arrayOf("application/octet-stream", "application/json", "text/plain")) },
+                modifier = Modifier.fillMaxWidth()) {
+                Text(if (rosterFile == null) "Selecionar lista privada" else "Trocar lista privada")
+            }
             OutlinedTextField(password, { password = it }, modifier = Modifier.fillMaxWidth(), singleLine = true,
                 label = { Text("Senha da lista ou do backup") }, visualTransformation = PasswordVisualTransformation(),
                 supportingText = { Text("Mínimo de 6 caracteres. A senha não é salva.") })
-            TextButton(enabled = password.length >= 6 && !busy,
+            TextButton(enabled = rosterFile != null && password.length >= 6 && !busy,
                 onClick = {
+                    val uri = rosterFile ?: return@TextButton
                     busy = true
                     scope.launch {
-                        val result = runCatching { transfer.importPrivateIncome(password.toCharArray()) }
+                        val result = runCatching { transfer.importPrivateIncome(uri, password.toCharArray()) }
                         password = ""; busy = false
                         result.onSuccess {
                             status = it
@@ -492,7 +499,7 @@ internal fun LootDataTransferDialog(onDismiss: () -> Unit) {
                         }
                     }
                 }, modifier = Modifier.fillMaxWidth()) {
-                Text(if (busy) "Carregando…" else "Carregar 22 pacientes")
+                Text(if (busy) "Carregando…" else "Importar receitas")
             }
             androidx.compose.material3.HorizontalDivider(color = divider)
             Text("Backup local criptografado", color = navy, fontWeight = FontWeight.SemiBold)

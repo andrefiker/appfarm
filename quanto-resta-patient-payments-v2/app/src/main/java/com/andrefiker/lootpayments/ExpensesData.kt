@@ -78,7 +78,9 @@ data class CategoryRule(
     val category: String,
     val spendingType: String,
     val enabled: Boolean = true,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val canonicalName: String = "",
+    val action: String = "SUGGEST"
 )
 
 @Entity(tableName = "split_parts", indices = [Index("expenseMonthId")],

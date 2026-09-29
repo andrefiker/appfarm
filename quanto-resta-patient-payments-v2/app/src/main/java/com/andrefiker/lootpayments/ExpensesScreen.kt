@@ -47,6 +47,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import java.time.LocalDate
 import java.util.Locale
 
 private sealed interface ExpenseEditor {
@@ -61,7 +62,8 @@ private sealed interface ExpenseEditor {
 }
 
 @Composable
-fun ExpensesScreen(state: ExpensesState, vm: ExpensesViewModel, onData: () -> Unit = {}) {
+fun ExpensesScreen(state: ExpensesState, vm: ExpensesViewModel, incomeTotals: Totals? = null,
+    onData: () -> Unit = {}) {
     var editor by remember { mutableStateOf<ExpenseEditor?>(null) }
     var searchOpen by remember { mutableStateOf(false) }
     var query by remember { mutableStateOf("") }
@@ -73,10 +75,16 @@ fun ExpensesScreen(state: ExpensesState, vm: ExpensesViewModel, onData: () -> Un
     }
     val active = filtered.filter { it.payment.included }
     val inactive = filtered.filterNot { it.payment.included }
+    val suggestedLimit = state.totals.expected
+    val limit = vm.spendingLimit(state.month, suggestedLimit)
+    val metrics = BudgetMath.metrics(state.month, LocalDate.now(), state.rows.map { it.toBudgetItem() }, limit,
+        state.plannedExpenses.sumOf { it.amountCents })
+    val income = incomeTotals?.paid ?: 0L
+    val goal = vm.savingsGoal(state.month)
     Column(Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 14.dp)) {
-        LootHeader("Gastos", state.month, { vm.shiftMonth(-1) }, { vm.shiftMonth(1) },
+        LootHeader("Mês", state.month, { vm.shiftMonth(-1) }, { vm.shiftMonth(1) },
             "Despesa", onData) { editor = ExpenseEditor.Add }
-        Summary(state.totals, label = "despesas", paidLabel = "Pago", showOverpayment = true)
+        MonthHomeSummary(income, metrics.actualCents, income - metrics.actualCents, goal, metrics.forecastCents)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
             TextButton(onClick = { searchOpen = !searchOpen }) { Text(if (searchOpen) "Ocultar busca" else "Buscar e filtrar") }
         }
@@ -107,6 +115,8 @@ fun ExpensesScreen(state: ExpensesState, vm: ExpensesViewModel, onData: () -> Un
                     name = row.expense.name, expected = row.payment.expectedCents,
                     paid = row.payment.paidCents, full = row.line.full,
                     enabled = row.payment.included && row.payment.expectedCents > 0,
+                    subtitle = "${row.expense.category.ifBlank { row.expense.name }} · ${SpendingType.from(row.payment.spendingType).label}",
+                    displayCents = row.payment.paidCents,
                     onName = { editor = ExpenseEditor.Name(row) }, onAmount = { editor = ExpenseEditor.Amount(row) },
                     onPaid = { editor = ExpenseEditor.Paid(row) }, onManage = { editor = ExpenseEditor.Manage(row) },
                     onFull = { vm.setFull(row, it) })
@@ -118,6 +128,8 @@ fun ExpensesScreen(state: ExpensesState, vm: ExpensesViewModel, onData: () -> Un
                     items(inactive, key = { it.expense.id }) { row -> CompactPaymentRow(
                         name = row.expense.name, expected = row.payment.expectedCents,
                         paid = row.payment.paidCents, full = row.line.full, enabled = false, inactive = true,
+                        subtitle = "${row.expense.category.ifBlank { row.expense.name }} · Inativa",
+                        displayCents = row.payment.paidCents,
                         onName = { editor = ExpenseEditor.Name(row) }, onAmount = { editor = ExpenseEditor.Amount(row) },
                         onPaid = { editor = ExpenseEditor.Paid(row) }, onManage = { editor = ExpenseEditor.Manage(row) },
                         onFull = { vm.setFull(row, it) })
@@ -167,6 +179,31 @@ fun ExpensesScreen(state: ExpensesState, vm: ExpensesViewModel, onData: () -> Un
             confirmButton = { TextButton(onClick = { vm.delete(action.row.expense.id); editor = null }) { Text("Excluir definitivamente", color = Color(0xFF9C4545)) } },
             dismissButton = { TextButton(onClick = { editor = null }) { Text("Manter despesa") } })
         null -> Unit
+    }
+}
+
+@Composable
+private fun MonthHomeSummary(income: Long, spending: Long, remaining: Long, goal: Long, forecast: Long) {
+    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(accent)
+        .padding(horizontal = 11.dp, vertical = 8.dp)) {
+        Row(Modifier.fillMaxWidth()) {
+            MonthMetric("RECEITAS", income, Modifier.weight(1f))
+            MonthMetric("GASTOS", spending, Modifier.weight(1f))
+            MonthMetric("RESTANTE", remaining, Modifier.weight(1f), remaining < 0)
+            MonthMetric("META", goal, Modifier.weight(1f))
+        }
+        Text("No ritmo atual, o mês fecha em aproximadamente ${ledgerMoney(forecast)}",
+            color = muted, fontSize = 10.sp, modifier = Modifier.padding(top = 5.dp))
+    }
+}
+
+@Composable
+private fun MonthMetric(label: String, cents: Long, modifier: Modifier, alert: Boolean = false) {
+    Column(modifier.padding(end = 4.dp)) {
+        Text(label, color = muted, fontSize = 8.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+        Text(if (cents < 0) "-${ledgerMoney(-cents)}" else ledgerMoney(cents),
+            color = if (alert) Color(0xFF914B47) else navy,
+            fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 

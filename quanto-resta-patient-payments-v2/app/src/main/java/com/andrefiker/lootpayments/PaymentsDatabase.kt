@@ -230,11 +230,19 @@ val MIGRATION_4_5 = object : Migration(4, 5) {
     }
 }
 
+/** v1.15 -> Gadgety: enrich existing merchant rules without changing ledger rows. */
+val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `category_rules` ADD COLUMN `canonicalName` TEXT NOT NULL DEFAULT ''")
+        db.execSQL("ALTER TABLE `category_rules` ADD COLUMN `action` TEXT NOT NULL DEFAULT 'SUGGEST'")
+    }
+}
+
 @Database(entities = [Patient::class, PatientMonth::class, Expense::class, ExpenseMonth::class,
     MonthClosing::class, CategoryRule::class, SplitPart::class, ActualTransaction::class,
     PlannedExpense::class, PersonalRule::class, CoolingPurchase::class, StrategyEvent::class,
     StatementInboxItem::class, StatementIgnoreRule::class],
-    version = 5, exportSchema = false)
+    version = 6, exportSchema = false)
 abstract class PaymentsDatabase : RoomDatabase() {
     abstract fun dao(): PaymentsDao
     abstract fun expenses(): ExpensesDao
@@ -243,7 +251,7 @@ abstract class PaymentsDatabase : RoomDatabase() {
         @Volatile private var instance: PaymentsDatabase? = null
         fun get(context: Context): PaymentsDatabase = instance ?: synchronized(this) {
             instance ?: Room.databaseBuilder(context.applicationContext, PaymentsDatabase::class.java, "qr-payments-v2.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                 .build().also { instance = it }
         }
     }

@@ -49,7 +49,7 @@ class LootBackupCryptoTest {
         val closing = MonthClosing(month.key(), 2026, 9, true, 3, 123456, 500000,
             147979, 0, 123456, 0, "Comida", 123456, 1)
         val source = LootBackup(emptyList(), emptyList(), listOf(expense), listOf(payment),
-            listOf(closing), listOf(CategoryRule("r", "Patrícia", "Comida", "FLEXIBLE")),
+            listOf(closing), listOf(CategoryRule("r", "Merchant Example", "Comida", "FLEXIBLE")),
             listOf(SplitPart("s", payment.id, "Comida", 123456)),
             actualTransactions = listOf(ActualTransaction("tx", expense.id, month.key(), 4, 123456, "Mercado", "Comida")),
             plannedExpenses = listOf(PlannedExpense("plan", month.key(), "Projetor", "Compras", 60000, null)),
@@ -63,7 +63,7 @@ class LootBackupCryptoTest {
         assertEquals(expense, restored.expenses.single())
         assertEquals(payment, restored.expenseMonths.single())
         assertEquals(closing, restored.closings.single())
-        assertEquals("Patrícia", restored.rules.single().pattern)
+        assertEquals("Merchant Example", restored.rules.single().pattern)
         assertEquals(123456L, restored.splitParts.single().cents)
         assertEquals(123456L, restored.actualTransactions.single().amountCents)
         assertEquals("Projetor", restored.plannedExpenses.single().name)

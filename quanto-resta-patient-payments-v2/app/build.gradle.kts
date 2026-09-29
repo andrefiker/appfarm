@@ -9,14 +9,21 @@ android {
     namespace = "com.andrefiker.lootpayments"
     compileSdk = 35
     defaultConfig {
-        applicationId = "com.andrefiker.lootpayments.portable"
+        applicationId = "com.andrefiker.gadgety"
         minSdk = 26
         targetSdk = 35
         versionCode = 17
         versionName = "1.16"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-    buildTypes { release { isMinifyEnabled = false } }
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            signingConfig = signingConfigs.getByName("debug")
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+    }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     kotlinOptions { jvmTarget = "17" }
     buildFeatures { compose = true }

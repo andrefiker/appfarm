@@ -1,4 +1,22 @@
-# Loot Portátil — Receitas e Despesas
+# Gadgety — Controle mensal local
+
+Gadgety v1.16 is the compact, side-by-side continuation of Loot v1.15. It uses
+the separate package `com.andrefiker.gadgety`, so it does not collide with an
+installed Loot app. Data moves between the apps only through the encrypted
+backup/restore flow.
+
+The primary navigation is now `Mês`, `Extratos`, `Receitas`, and `Mais`. `Mês`
+combines income, actual spending, remainder, savings target, forecast, and the
+editable expense list. `Extratos` presents one pending transaction at a time,
+removes processed rows immediately, previews conservative similar matches, and
+offers undo. Merchant/category behavior is represented by editable local rules;
+ignore rules remain visible under `Mais`.
+
+No private income roster or statement dataset is bundled in the APK. The
+password-protected `.lir` roster is selected explicitly and decrypted only on
+device. Tests use synthetic transactions. The native Room database migrates
+additively from schema 5 to 6, preserving ledgers, history, rules, and processing
+state when an existing database is restored.
 
 Version 1.6 is the portable build (`com.andrefiker.lootpayments.portable`). The
 header data action lets the user grant access to a shared folder, export an

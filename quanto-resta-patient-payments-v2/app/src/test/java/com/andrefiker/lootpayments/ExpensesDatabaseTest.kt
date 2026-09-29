@@ -20,21 +20,28 @@ class ExpensesPersistenceTest {
     private val file = "expenses-v1-test.db"
     @After fun cleanup() { context.deleteDatabase(file) }
     private fun open() = Room.databaseBuilder(context, PaymentsDatabase::class.java, file)
-        .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5).build()
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6).build()
+    private val syntheticRows = listOf(
+        StatementSeedRow("synthetic-a", "2026-09-10", "Banco A", "Compra: MERCHANT ALPHA", 1_000),
+        StatementSeedRow("synthetic-b", "2026-09-11", "Banco A", "Compra: MERCHANT ALPHA", 2_000),
+        StatementSeedRow("synthetic-c", "2026-09-12", "Banco A", "Compra: IFD*TESTE", 3_000),
+        StatementSeedRow("synthetic-d", "2026-09-13", "Banco B", "Compra: UBER*TRIP", 4_000)
+    )
 
-    @Test fun suppliedStatementsPopulateOnlyThePendingInbox() = runBlocking {
+    @Test fun importedStatementsPopulateOnlyThePendingInbox() = runBlocking {
         context.deleteDatabase(file)
         val db = open()
         val repository = StatementInboxRepository(db)
-        repository.seed(StatementSeed202609.rows)
-        repository.seed(StatementSeed202609.rows)
+        repository.ensureDefaultRules()
+        repository.seed(syntheticRows)
+        repository.seed(syntheticRows)
 
         val pending = db.statementInbox().pendingFlow().first()
-        assertEquals(180, pending.size)
-        assertEquals(180, pending.map { it.id }.toSet().size)
-        assertEquals(753595L, pending.filter { it.source == "Inter" }.sumOf { it.amountCents })
-        assertEquals(1604574L, pending.filter { it.source == "Nubank" }.sumOf { it.amountCents })
-        assertEquals(2358169L, pending.sumOf { it.amountCents })
+        assertEquals(4, pending.size)
+        assertEquals(4, pending.map { it.id }.toSet().size)
+        assertEquals(6000L, pending.filter { it.source == "Banco A" }.sumOf { it.amountCents })
+        assertEquals(4000L, pending.filter { it.source == "Banco B" }.sumOf { it.amountCents })
+        assertEquals(10000L, pending.sumOf { it.amountCents })
         assertTrue(pending.filter { it.original.contains("IFD", ignoreCase = true) }
             .all { it.correctedName == "Ifood" })
         assertTrue(pending.filter { it.original.contains("UBER", ignoreCase = true) }
@@ -48,12 +55,12 @@ class ExpensesPersistenceTest {
         context.deleteDatabase(file)
         val db = open()
         val repository = StatementInboxRepository(db)
-        repository.seed(StatementSeed202609.rows)
+        repository.seed(syntheticRows)
         val item = db.statementInbox().pendingFlow().first().first()
 
         assertTrue(repository.process(item.id, "", "Compras", rememberRule = true))
         assertFalse(repository.process(item.id, "Duplicado", "Compras", rememberRule = false))
-        assertEquals(179, db.statementInbox().pendingFlow().first().size)
+        assertEquals(3, db.statementInbox().pendingFlow().first().size)
         assertEquals(STATEMENT_PROCESSED, db.statementInbox().item(item.id)!!.status)
         val actual = db.expenses().allActualTransactions().single()
         assertEquals(StatementText.ruleLabel(item.original), actual.merchant)
@@ -66,11 +73,34 @@ class ExpensesPersistenceTest {
         db.close()
     }
 
+    @Test fun processedTransactionCanBeUndoneWithoutChangingTotals() = runBlocking {
+        context.deleteDatabase(file)
+        val db = open()
+        val repository = StatementInboxRepository(db)
+        repository.seed(syntheticRows)
+        val item = db.statementInbox().pendingFlow().first().first()
+        assertTrue(repository.process(item.id, "Loja", "Compras", rememberRule = false))
+        assertEquals(1, db.expenses().allActualTransactions().size)
+        assertEquals(1, repository.undoProcessed(listOf(item.id)))
+        assertEquals(STATEMENT_PENDING, db.statementInbox().item(item.id)!!.status)
+        assertTrue(db.expenses().allActualTransactions().isEmpty())
+        val expense = db.expenses().allExpenses().single { it.category == "Compras" }
+        assertEquals(0L, db.expenses().month(expense.id, item.monthKey)!!.paidCents)
+        db.close()
+    }
+
+    @Test fun merchantMatcherRequiresConservativeBoundaryOrPrefix() {
+        assertTrue(MerchantRuleMatcher.matches("Compra: IFD*RESTAURANTE", "IFD*"))
+        assertTrue(MerchantRuleMatcher.matches("Compra: UBER TRIP", "UBER*"))
+        assertFalse(MerchantRuleMatcher.matches("Compra: SUBER LOJA", "UBER*"))
+        assertFalse(MerchantRuleMatcher.matches("Compra: XPTO", "XP"))
+    }
+
     @Test fun processingSimilarMovesEveryMatchingRowAndUsesOriginalNamesAsFallback() = runBlocking {
         context.deleteDatabase(file)
         val db = open()
         val repository = StatementInboxRepository(db)
-        repository.seed(StatementSeed202609.rows)
+        repository.seed(syntheticRows)
         val initial = db.statementInbox().pendingFlow().first()
         val repeated = initial.first { candidate -> initial.count { it.matchKey == candidate.matchKey } > 1 }
         val matches = initial.filter { it.matchKey == repeated.matchKey }
@@ -80,7 +110,7 @@ class ExpensesPersistenceTest {
         )
 
         assertEquals(matches.size, processed)
-        assertEquals(180 - matches.size, db.statementInbox().pendingFlow().first().size)
+        assertEquals(4 - matches.size, db.statementInbox().pendingFlow().first().size)
         val actuals = db.expenses().allActualTransactions()
         assertEquals(matches.size, actuals.size)
         assertTrue(actuals.all { it.merchant.isNotBlank() && it.category == "Assinaturas/Google" })
@@ -95,12 +125,12 @@ class ExpensesPersistenceTest {
         context.deleteDatabase(file)
         val db = open()
         val repository = StatementInboxRepository(db)
-        repository.seed(StatementSeed202609.rows)
+        repository.seed(syntheticRows)
         val initial = db.statementInbox().pendingFlow().first()
         val repeated = initial.first { candidate -> initial.count { it.matchKey == candidate.matchKey } > 1 }
         val matchingCount = initial.count { it.matchKey == repeated.matchKey }
         assertTrue(repository.ignoreForever(repeated.id))
-        assertEquals(180 - matchingCount, db.statementInbox().pendingFlow().first().size)
+        assertEquals(4 - matchingCount, db.statementInbox().pendingFlow().first().size)
         assertEquals(1, db.statementInbox().allIgnoreRules().size)
 
         val dismissed = db.statementInbox().pendingFlow().first().first()

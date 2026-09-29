@@ -44,6 +44,13 @@ data class BudgetMetrics(
 data class UnusualSpend(val expenseId: String, val name: String, val aboveRecentCents: Long)
 
 object BudgetMath {
+    fun withWhatIf(items: List<BudgetItem>, amountCents: Long, expenseId: String? = null): List<BudgetItem> {
+        require(amountCents >= 0)
+        if (expenseId == null) return items + BudgetItem("what-if", "Simulação", amountCents,
+            0, 0, SpendingType.EXTRAORDINARY)
+        return items.map { if (it.id == expenseId) it.copy(actualCents = it.actualCents + amountCents) else it }
+    }
+
     fun metrics(month: YearMonth, today: LocalDate, items: List<BudgetItem>, limitCents: Long): BudgetMetrics {
         val active = items.filter { it.included }
         val actual = active.sumOf { it.actualCents }

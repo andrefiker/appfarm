@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.emitAll
@@ -20,6 +21,7 @@ data class ExpenseRow(val expense: Expense, val payment: ExpenseMonth, val hasHi
     val line get() = MonthLine(payment.expectedCents, payment.paidCents, payment.included, payment.forceIncomplete)
 }
 data class SavingsTip(val key: String, val title: String, val detail: String, val possibleSavingCents: Long? = null)
+data class UndoNotice(val id: Long, val message: String)
 data class ExpensesState(
     val month: YearMonth,
     val rows: List<ExpenseRow>,
@@ -37,6 +39,23 @@ class ExpensesViewModel(application: Application) : AndroidViewModel(application
     private val dao = PaymentsDatabase.get(application).expenses()
     private val preferences = application.getSharedPreferences("loot_summary", Application.MODE_PRIVATE)
     private val selected = MutableStateFlow(YearMonth.now())
+    private val _undoNotice = MutableStateFlow<UndoNotice?>(null)
+    val undoNotice: StateFlow<UndoNotice?> = _undoNotice
+    private var undoAction: (suspend () -> Unit)? = null
+
+    private fun offerUndo(message: String, action: suspend () -> Unit) {
+        undoAction = action
+        _undoNotice.value = UndoNotice(System.nanoTime(), message)
+    }
+
+    fun undoLastEdit() = viewModelScope.launch {
+        val action = undoAction ?: return@launch
+        undoAction = null
+        _undoNotice.value = null
+        action()
+    }
+
+    fun dismissUndo() { undoAction = null; _undoNotice.value = null }
     init {
         val month = selected.value
         viewModelScope.launch {
@@ -89,12 +108,28 @@ class ExpensesViewModel(application: Application) : AndroidViewModel(application
             val now = System.currentTimeMillis()
             val rule = dao.allRules().firstOrNull { it.enabled &&
                 name.contains(it.pattern, ignoreCase = true) }
-            dao.put(Expense(UUID.randomUUID().toString(), name.trim(), amount, active,
+            val id = UUID.randomUUID().toString()
+            dao.put(Expense(id, name.trim(), amount, active,
                 if (active) null else month.key(), month.key(), now, now,
                 category = rule?.category ?: name.trim(),
                 spendingType = rule?.spendingType ?: SpendingType.FLEXIBLE.stored,
                 baselineCents = amount, manualCategory = false))
             dao.ensureMonth(month)
+            offerUndo("Despesa adicionada: ${ledgerMoney(amount)}") { dao.delete(id) }
+        }
+    }
+
+    fun addActual(name: String, amount: Long, category: String? = null) {
+        val month = selected.value
+        viewModelScope.launch {
+            val now = System.currentTimeMillis()
+            val id = UUID.randomUUID().toString()
+            dao.put(Expense(id, name, 0, true, null, month.key(), now, now,
+                category = category ?: name, spendingType = SpendingType.FLEXIBLE.stored,
+                baselineCents = 0, manualCategory = category != null))
+            dao.ensureMonth(month)
+            dao.month(id, month.key())?.let { dao.putMonth(it.copy(paidCents = amount, updatedAt = now)) }
+            offerUndo("Gasto aplicado: ${ledgerMoney(amount)}") { dao.delete(id) }
         }
     }
     fun rename(id: String, name: String) = viewModelScope.launch {
@@ -102,13 +137,18 @@ class ExpensesViewModel(application: Application) : AndroidViewModel(application
         dao.put(expense.copy(name = name.trim(), updatedAt = System.currentTimeMillis()))
     }
     fun changeAmount(row: ExpenseRow, cents: Long) = viewModelScope.launch {
+        val oldExpense = dao.expense(row.expense.id) ?: return@launch
+        val oldMonths = dao.allMonths().filter { it.expenseId == row.expense.id }
         dao.changeDefault(row.expense.id, selected.value, cents)
+        offerUndo("Valor mensal alterado") { dao.put(oldExpense); dao.putMonths(oldMonths) }
     }
     fun setPaid(row: ExpenseRow, paid: Long) = viewModelScope.launch {
         val existing = dao.month(row.expense.id, row.payment.monthKey) ?: return@launch
         dao.putMonth(existing.copy(paidCents = paid, forceIncomplete = false,
             updatedAt = System.currentTimeMillis()))
+        offerUndo("Gasto atualizado: ${ledgerMoney(paid)}") { dao.putMonth(existing) }
     }
+    fun addToPaid(row: ExpenseRow, amount: Long) = setPaid(row, row.payment.paidCents + amount)
     fun setFull(row: ExpenseRow, full: Boolean) = viewModelScope.launch {
         val existing = dao.month(row.expense.id, row.payment.monthKey) ?: return@launch
         dao.putMonth(existing.copy(paidCents = if (full) existing.expectedCents else existing.paidCents,
@@ -121,7 +161,10 @@ class ExpensesViewModel(application: Application) : AndroidViewModel(application
 
     fun updateDetails(row: ExpenseRow, category: String, type: SpendingType,
         rollover: Boolean, tags: String, note: String) = viewModelScope.launch {
+        val oldExpense = dao.expense(row.expense.id) ?: return@launch
+        val oldMonths = dao.allMonths().filter { it.expenseId == row.expense.id }
         dao.updateDetails(row.expense.id, category, type.stored, rollover, tags, note)
+        offerUndo("Classificação atualizada") { dao.put(oldExpense); dao.putMonths(oldMonths) }
     }
 
     fun confirmBaseline(row: ExpenseRow, cents: Long = row.payment.paidCents) = viewModelScope.launch {
@@ -206,17 +249,17 @@ internal object SavingsInsights {
 internal object MonthlyExpenseBaseline {
     fun forMonth(month: YearMonth, now: Long = System.currentTimeMillis()): List<Expense> {
         val entries = listOf(
-            Triple("Comida", 147_979L, SpendingType.FLEXIBLE),
-            Triple("Weed", 40_000L, SpendingType.FIXED),
-            Triple("Assinaturas/Google", 59_208L, SpendingType.FIXED),
-            Triple("Compras", 51_934L, SpendingType.FLEXIBLE),
-            Triple("Pods", 39_800L, SpendingType.FLEXIBLE),
-            Triple("Faxina/limpeza", 40_000L, SpendingType.FIXED),
-            Triple("Saúde", 39_662L, SpendingType.FLEXIBLE),
-            Triple("Carro/combustível", 12_595L, SpendingType.FLEXIBLE),
-            Triple("Uber/transporte", 11_780L, SpendingType.FLEXIBLE),
-            Triple("Ads Mãe", 8_000L, SpendingType.FIXED),
-            Triple("Taxas bancárias", 380L, SpendingType.FIXED)
+            Triple("Comida", 0L, SpendingType.FLEXIBLE),
+            Triple("Weed", 0L, SpendingType.FLEXIBLE),
+            Triple("Assinaturas/Google", 0L, SpendingType.FLEXIBLE),
+            Triple("Compras", 0L, SpendingType.FLEXIBLE),
+            Triple("Pods", 0L, SpendingType.FLEXIBLE),
+            Triple("Faxina/limpeza", 0L, SpendingType.FLEXIBLE),
+            Triple("Saúde", 0L, SpendingType.FLEXIBLE),
+            Triple("Carro/combustível", 0L, SpendingType.FLEXIBLE),
+            Triple("Uber/transporte", 0L, SpendingType.FLEXIBLE),
+            Triple("Ads Mãe", 0L, SpendingType.FLEXIBLE),
+            Triple("Taxas bancárias", 0L, SpendingType.FLEXIBLE)
         )
         return entries.mapIndexed { index, (name, cents, type) -> Expense(
             id = "baseline_${index + 1}", name = name, defaultCents = cents, active = true,

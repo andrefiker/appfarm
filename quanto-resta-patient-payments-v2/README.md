@@ -14,11 +14,7 @@ and dismissible local savings tips. The default limit follows that month's
 planned expenses until a manual limit is set. Tips compare the two most recent
 prior recorded months for the same expense, or label a 10% reduction as a
 scenario based on the largest planned expense. All summary preferences stay on
-device. Version 1.7 (version code 8) also adds the user's monthly spending
-baseline to a fresh or currently empty list, using R$400 for Weed as the normal
-monthly reference. The one-time seed is name-based: existing expense names and
-amounts are preserved, and deleting a baseline item later will not cause it to
-return. Keep the existing signing key when building to preserve update
+device. Keep the existing signing key when building to preserve update
 compatibility with version 1.6.
 
 Version 1.8 turns `Resumo` into a compact monthly decision screen: real spend,
@@ -28,13 +24,16 @@ simple recent history and an optional savings target. Expenses support category,
 type, tags, note, selective rollover, persistent local categorization rules,
 transparent recurring/unusual-spend detection and conserved two-category splits.
 All calculations remain local and actual recorded spending is always authoritative.
+The interactive pass adds a temporary `E se eu gastar…?` preview with quick and
+custom amounts, optional category impact, explicit apply/close actions, subtle
+number/progress motion, light haptics, a deterministic month pulse, elapsed-vs-spent
+pace and one-step undo for recent amount/classification/add actions. Simulations
+never write data until `Aplicar como gasto` is tapped.
 
-The September 2026 handoff is the editable initial baseline for monthly planning:
-Comida R$1.479,79; Weed R$400,00; Assinaturas/Google R$592,08; Compras R$519,34;
-Pods R$398,00; Faxina/limpeza R$400,00; Saúde R$396,62; Carro/combustível
-R$125,95; Uber/transporte R$117,80; Ads Mãe R$80,00; Taxas bancárias R$3,80.
-These values seed only missing names once. They never overwrite recorded spending,
-remain editable, and Weed intentionally uses the normalized R$400 monthly value.
+Fresh installs seed only the category names from the September handoff. Every
+starting amount and baseline is R$0, and no category is predeclared fixed. The
+user can enter actual values and deliberately promote recurring spending later.
+The one-time name-based seed never overwrites existing records.
 
 Native Kotlin/Jetpack Compose Android app. Three compact tabs: patient income,
 manual expenses, and a monthly spending summary. The ledger works offline using

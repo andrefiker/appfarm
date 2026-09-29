@@ -22,7 +22,7 @@ class ExpensesPersistenceTest {
     private fun open() = Room.databaseBuilder(context, PaymentsDatabase::class.java, file)
         .addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
 
-    @Test fun baselineAddsMissingFixedMonthlyTotalsWithoutOverwritingOrDuplicating() = runBlocking {
+    @Test fun starterCategoriesHaveNoPresetAmountsAndNeverOverwriteOrDuplicate() = runBlocking {
         context.deleteDatabase(file)
         val month = YearMonth.of(2026, 9)
         val db = open()
@@ -34,8 +34,11 @@ class ExpensesPersistenceTest {
         val all = dao.allExpenses()
         assertEquals(11, all.size)
         assertEquals(12345L, dao.expense("mine")!!.defaultCents)
-        assertEquals(315704L, dao.months(month.key()).first().sumOf { it.expectedCents })
-        assertEquals(40000L, all.single { it.name == "Weed" }.defaultCents)
+        assertEquals(12345L, dao.months(month.key()).first().sumOf { it.expectedCents })
+        assertEquals(0L, all.single { it.name == "Weed" }.defaultCents)
+        assertTrue(all.filterNot { it.id == "mine" }.all {
+            it.defaultCents == 0L && it.baselineCents == 0L && it.spendingType == SpendingType.FLEXIBLE.stored
+        })
         db.close()
     }
 

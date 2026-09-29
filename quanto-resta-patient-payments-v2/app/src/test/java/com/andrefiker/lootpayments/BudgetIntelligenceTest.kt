@@ -77,6 +77,16 @@ class BudgetIntelligenceTest {
         assertEquals(19000L, unusual.single().aboveRecentCents)
     }
 
+    @Test fun whatIfIsPureAndOnlyChangesTheSelectedCategory() {
+        val original = listOf(item("food", 10000, 20000, 20000, SpendingType.FLEXIBLE))
+        val simulated = BudgetMath.withWhatIf(original, 5000, "food")
+        assertEquals(10000L, original.single().actualCents)
+        assertEquals(15000L, simulated.single().actualCents)
+        val general = BudgetMath.withWhatIf(original, 30000)
+        assertEquals(40000L, general.sumOf { it.actualCents })
+        assertEquals(SpendingType.EXTRAORDINARY, general.last().type)
+    }
+
     private fun item(id: String, actual: Long, planned: Long, baseline: Long, type: SpendingType,
         rollover: Boolean = false) = BudgetItem(id, id, actual, planned, baseline, type,
         rolloverEnabled = rollover)

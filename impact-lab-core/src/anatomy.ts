@@ -21,8 +21,9 @@ export function tissueMaterial(layer:Layer,name:string){
  let color=layer==='skin'?'#b88970':layer==='bone'?'#ddd0ac':layer==='muscle'?'#96483d':'#b97d72';
  if(/lung/.test(name))color='#b98e86';if(name==='Liver')color='#8b4846';if(name==='Stomach')color='#c18b74';if(/colon|Jejunum|Ileum|Duodenum/.test(name))color='#bf9b7c';if(/ventricle|atrium/.test(name))color='#934d46';if(/lobe|Cerebellum/.test(name)&&!/lung/.test(name))color='#b99088';if(name==='Diaphragm')color='#b37160';if(/cartilage|disc/i.test(name))color='#b9c2b7';
  const mat=layer==='skin'?gelMaterial():new THREE.MeshStandardMaterial({color,roughness:layer==='bone'?.84:.82,metalness:0,side:THREE.DoubleSide});
+ if(layer==='organ'){mat.transparent=true;mat.opacity=.62;mat.depthWrite=false;mat.forceSinglePass=true;}
  const fiber=/pectoralis/.test(name)?new THREE.Vector3(.35,.9,.12):/oblique/.test(name)?new THREE.Vector3(.8,.45,.2):new THREE.Vector3(1,.08,.25);
- const baseCompile=mat.onBeforeCompile.bind(mat);mat.onBeforeCompile=(shader,renderer)=>{baseCompile(shader,renderer);
+ const baseCompile=mat.onBeforeCompile.bind(mat);mat.onBeforeCompile=(shader,renderer)=>{baseCompile(shader,renderer);if(layer==='organ')shader.fragmentShader=shader.fragmentShader.replace('#include <opaque_fragment>','if(!gl_FrontFacing)discard;\n#include <opaque_fragment>');
   shader.uniforms.uTissue={value:layer==='skin'?0:layer==='muscle'?1:layer==='bone'?2:3};shader.uniforms.uFiber={value:fiber};
   shader.vertexShader='varying vec3 vAnatomy;\n'+shader.vertexShader;shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvAnatomy=position;');
   shader.fragmentShader='varying vec3 vAnatomy;\nuniform float uTissue;\nuniform vec3 uFiber;\n'+shader.fragmentShader;

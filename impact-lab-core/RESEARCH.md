@@ -52,3 +52,13 @@ SUPPORTED ANATOMY remains the licensed aligned datasets already documented. VISU
 SUPPORTED ANATOMY: unchanged previously attributed BodyParts3D/Z-Anatomy meshes and spatial relationships.
 VISUAL APPROXIMATION: amber surface scattering, stress whitening, corrugated closed air-cavity geometry, temporary replay expansion, synthetic organ coloration. Gel cavities use the actual recorded deflected path; embedded organs can occlude them until sectioned. The source has a remaining head/neck seam.
 FICTIONAL GAME PARAMETER: normalized continuous gel resistance, weakened existing-channel resistance, cavity radius/growth/caps and expansion timing. Not calibrated against gelatin tests, ammunition, human injury, or television footage. The existing bounded bone/soft-tissue solver remains in use. This is a stylized synthetic surrogate, not a validated ballistic-gel solver.
+
+## Gel Exhibition 2.2.0 — qualitative equivalents, 2026-09-29
+
+| Source | Supports | Build decision | Limit |
+|---|---|---|---|
+| https://v2staging.clearballistics.com/learn/terminal-ballistics-101 | Manufacturer distinguishes entry, travel, temporary cavity, permanent track and terminal position. | Animate those stages separately; preserve a smaller channel after expansion. | Commercial staging-page copy includes overgeneralizations (including claims about organic gel opacity). No calibration, medical equivalence, thresholds or numerical benchmarks adopted. Weapon name alone cannot determine a real result. |
+| https://www.phantomhighspeed.com/applications/where/material-analysis | High-speed imaging makes fast deformation observable. | Default ¼-speed recorded replay, with 1× and 0.05× options and frame scrub. | Display time is deliberately stretched; it is not real flight timing. |
+| https://www.hunter-ed.com/muzzleloader/studyGuide/Shotgun-Choke-and-Shot-String/222099_88885/ | Shotshell pellets form multiple diverging paths. | Three representative independently raycast pellets in the Shotgun profile. | Three is a bounded game representation, not a cartridge pellet count or realistic pattern. No choke, range or load optimization used. |
+
+Artistic mapping: Pistol = compact single channel; Rifle = stronger temporary cavity pulse; Shotgun = several smaller separate channels. All energy, spread, width and pulse constants are fictional normalized parameters. They are **not numerical equivalents of real firearms**. Bone geometry and accumulated state still affect the resulting paths. No real weapon brands or ammunition specifications added. No external images or model assets imported.

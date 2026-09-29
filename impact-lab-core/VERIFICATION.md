@@ -1,3 +1,19 @@
+# Gel Exhibition 2.2.0 — verification
+
+2026-09-29. Gel-only product UI with Pistol, Rifle and Shotgun fictional profiles. Default ¼-speed shot animation; 1×/0.05×, pause/resume, scrub, step, orbit/zoom, whole-shot undo and reset. Package com.andrefiker.impactlabcore.next, code 7; rollback 47ceccb479e150bb25c99dffc8706ef86720edd9 (2.1.0).
+
+34 deterministic tests pass, including actual anatomy traversal differences between profiles, independent scatter contacts, event-group persistence, recorded path sampling, progressive cavity arrival, stable repeated seeks, prior-channel retention, resource disposal and wall-time replay. Existing fracture, state, miss, gesture, reset and intersection tests remain passing. The old test's opaque-skin visibility expectation was updated for the gel exhibition.
+
+Browser QA uses the production bundle in Chrome138 / SwiftShader Linux / 390×844 DPR1. See qa/v2.2/browser-report.json for final results: all three styles, three separate pellet paths, byte-identical repeated replay frames, whole-group undo/reload, repeated scatter, head interaction, quality-state equality, actual pause/scrub/resume controls, reset, small portrait and landscape. No page/shader errors or external asset requests. Screenshots are actual rendered views. Their anatomy/entry/motion/cavity states were inspected at phone size.
+
+The temporary cavity uses a contrasting cool tint and see-through depth overlay during replay; embedded organs fade so the motion remains legible. Settled cavities return to normal depth testing. This is a deliberate exhibition convention, not an optically accurate prediction. Geometry/ray intersections remain stateful and independent of the presentation. The staged arrival/expansion/collapse timing and all profile values are fictional. Three pellets represent the shotgun class, not any real load. Older head/neck seam and skull banding remain.
+
+Event processing measurements and endpoints are retained in the browser report. No physical-phone FPS claim; no emulator used. Android build and signature/asset verification are recorded in qa/v2.2/apk-report.json after packaging. Native installation/offline relaunch/resume on a physical phone remains untested here.
+
+---
+
+## Earlier release verification
+
 # Verification — Impact Lab Gel 2.1.0
 
 2026-09-29. Package com.andrefiker.impactlabcore.next, versionCode 6. Rollback: 0a727de6d12e1644d7d595c4d5583dfc93063bc4 (2.0.0). This update changes the default presentation to a synthetic amber gel specimen; it does not claim calibrated gelatin physics.

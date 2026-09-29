@@ -34,3 +34,15 @@ The existing state, event serialization (schema 2), Android package and replay r
 `path-solver.ts` accounts for a continuous synthetic host inside the skin boundary, using the maximum host/insert resistance rather than summing overlaps. Existing projectile channels reduce local host resistance. Mesh intersections still use both front/back faces; only the gel rendering shader discards back faces. This separation prevents transparency choices from losing exits. No new runtime services, textures or downloaded assets. The RoomEnvironment reflection map is generated locally once. Cavity geometries/materials dispose on reset/rebuild, cap at the existing 30-event/four-leg event bounds, and remain absent from other isolated-layer views.
 
 Rollback: 0a727de6d12e1644d7d595c4d5583dfc93063bc4 (delivered 2.0.0); prior APK and signing identity preserved. Gel replaces the opaque default appearance, not the underlying anatomy or original raycast/undo/persistence controls.
+
+## Gel-only Exhibition 2.2.0
+
+The interface now exposes only the gel specimen, three shot styles, camera controls, replay/speed/scrub, undo and reset. Old layer/cutaway code remains in source for rollback/system tests but is absent from this product UI. Existing saved view/tool settings migrate to the exhibition presentation without discarding damage.
+
+`shot-profiles.ts` separates fictional profile parameters, independent contact rays, grouping and recorded path sampling. Every pellet is a normal DamageEvent with optional `weapon` and `shotId`; schema 2 remains backward-compatible. One trigger groups three representative shotgun pellets. Undo removes the whole group. Replay capture combines all group contact responses and geometry patches; reloading reconstructs the latest full group. Distinct normalized energy affects traversal, while profile width affects surface opening, displacement and gel channel diameter.
+
+`shot-animation.ts` uses a fixed pool of three tips/trails. Each follows its recorded path from an external approach point to the actual terminal point. No fresh randomness or physics is run during playback. `gel.ts` opens each cavity ring only after the moving front arrives, expands and settles it; pre-existing merged channels remain visible before the new event. Dynamic updates touch only active paths. Organ inserts fade during replay and the active temporary cavity/tip use a see-through inspection overlay for readability through bones. Settled cavities return to ordinary depth testing. This is an explicit exhibition convention, not volumetric refraction.
+
+Recorded replay advances by elapsed wall time, with background time excluded; it no longer caps every rendered frame at 50 ms. Pause/resume preserves the current frame. Mobile/Balanced/Ultra continue to change rendering resolution only. Existing 30-projectile-record and 12-fragment bounds remain. No backend, accounts, network permissions or runtime asset downloads.
+
+Rollback: 47ceccb479e150bb25c99dffc8706ef86720edd9 (delivered 2.1.0). Package identity and private signing key unchanged.

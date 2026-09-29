@@ -23,3 +23,6 @@ Rollback: c6bbcac49971ccd3734b500701c0c2638b778227. Application code MIT; anatom
 
 ### Gel update 2.1.0
 Default view is now translucent amber synthetic gel with visible embedded anatomy. Continuous gel resistance, merged persistent cavities and deterministic temporary expansion accompany the existing bone failure/path/replay system. No real-ammunition calibration. Run `npm test`, `npm run build`, and `node scripts/gel-qa.mjs` for the gel pass. See RESEARCH.md and VERIFICATION.md for evidence and limitations.
+
+### Gel Exhibition 2.2.0
+Gel-only interface; Pistol, Rifle and Shotgun fictional equivalents. Default ¼-speed approach/entry/travel/cavity/settling animation, grouped scatter undo/reload, persistent channels and recorded replay. `node scripts/exhibition-qa.mjs` exercises the actual interface. No real-ammunition calibration. Rollback 47ceccb479e150bb25c99dffc8706ef86720edd9.

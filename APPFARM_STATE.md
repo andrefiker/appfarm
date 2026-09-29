@@ -150,3 +150,6 @@ Vercel:
 
 ### Impact Lab gel direction — 2026-09-29
 Andre chose translucent amber ballistic-gel-dummy presentation (film/TV prop reference) over opaque skin. 2.1.0/code6 preserves head+torso, offline package com.andrefiker.impactlabcore.next and signing identity. Embedded bones/organs, continuous fictional gel host resistance, merged persistent cavities and deterministic replay expansion; no ammunition calibration. 29 tests and final browser regression pass. Close-up skull/neck remains rough; material optics are approximate. Rollback source 0a727de6d12e1644d7d595c4d5583dfc93063bc4; 2.0.0 APK preserved. 2.1.0 APK built and structurally/signature verified; source 2d4f6efccb856e5cf17d164a7016a7c131a31ddd, CI 36587343865. Evidence: qa/v2.1/apk-report.json. Physical device untested.
+
+### Impact Lab Gel Exhibition 2.2.0 — 2026-09-29
+Andre requested gel-only exhibition and slow-motion weapon-style equivalents. UI now has Pistol/Rifle/Shotgun fictional profiles, automatic ¼-speed approach/entry/cavity/settling, grouped scatter undo/reload, and persistent channels. No real-ammunition calibration. 34 system tests pass; production browser evidence in qa/v2.2. Package/signing unchanged, code7. Rollback 47ceccb479e150bb25c99dffc8706ef86720edd9.

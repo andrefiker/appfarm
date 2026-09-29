@@ -1,0 +1,75 @@
+{
+  "environment": "Chrome138 SwiftShader Linux 390x844 DPR1",
+  "errors": [],
+  "offlineAssets": true,
+  "gelOnly": true,
+  "profiles": [
+    {
+      "weapon": "pistol",
+      "pellets": 1,
+      "pathEndpoints": [
+        [
+          -0.06626095786593805,
+          0.13095667776389577,
+          -0.001045194972885452
+        ]
+      ],
+      "energies": [
+        0.72
+      ],
+      "eventCpuMs": 141.10000000149012,
+      "cavitySegments": 1
+    },
+    {
+      "weapon": "rifle",
+      "pellets": 1,
+      "pathEndpoints": [
+        [
+          -0.07055025784845947,
+          0.1384629528303116,
+          -0.08397166192079214
+        ]
+      ],
+      "energies": [
+        1.22
+      ],
+      "eventCpuMs": 57.30000000074506,
+      "cavitySegments": 1
+    },
+    {
+      "weapon": "shotgun",
+      "pellets": 3,
+      "pathEndpoints": [
+        [
+          -0.06287161915324466,
+          0.1250253349400318,
+          0.06448202062843685
+        ],
+        [
+          -0.09924497571759028,
+          0.15252749808304494,
+          0.053273944746356064
+        ],
+        [
+          -0.03077750414708316,
+          0.09871880982426424,
+          0.05863968339102246
+        ]
+      ],
+      "energies": [
+        0.44,
+        0.44,
+        0.44
+      ],
+      "eventCpuMs": 63.69999999925494,
+      "cavitySegments": 3
+    }
+  ],
+  "replayByteIdentical": true,
+  "groupUndo": true,
+  "groupReload": true,
+  "repeatShots": true,
+  "qualityStateEquivalent": true,
+  "pauseScrubResume": true,
+  "reset": true
+}

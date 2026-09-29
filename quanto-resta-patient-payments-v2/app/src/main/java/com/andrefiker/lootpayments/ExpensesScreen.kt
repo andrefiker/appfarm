@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.lazy.LazyColumn
@@ -62,18 +64,14 @@ fun ExpensesScreen(state: ExpensesState, vm: ExpensesViewModel) {
     var editor by remember { mutableStateOf<ExpenseEditor?>(null) }
     val active = state.rows.filter { it.payment.included }
     val inactive = state.rows.filterNot { it.payment.included }
-    Column(Modifier.fillMaxSize().padding(horizontal = 14.dp)) {
+    Column(Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 14.dp)) {
         LootHeader("Gastos", state.month, { vm.shiftMonth(-1) }, { vm.shiftMonth(1) },
             "Despesa") { editor = ExpenseEditor.Add }
         Summary(state.totals, label = "despesas", paidLabel = "Pago", showOverpayment = true)
         Spacer(Modifier.height(7.dp))
         if (state.rows.isEmpty()) {
-            Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(Color.White)
-                .padding(horizontal = 16.dp, vertical = 15.dp)) {
-                Text("Nenhuma despesa ainda.", color = navy, fontWeight = FontWeight.Medium, fontSize = 15.sp)
-                Spacer(Modifier.height(3.dp))
-                Text("Adicione a primeira despesa para começar.", color = muted, fontSize = 12.sp)
-            }
+            EmptyLedgerState("Nenhuma despesa ainda.", "Adicione a primeira despesa para começar.",
+                "Adicionar") { editor = ExpenseEditor.Add }
         } else Box(Modifier.weight(1f)) {
             LazyColumn(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp))
                 .background(Color.White), contentPadding = PaddingValues(bottom = 12.dp)) {
@@ -150,7 +148,7 @@ private fun ExpenseForm(onDismiss: () -> Unit, onSave: (String, Long, Boolean) -
     var active by remember { mutableStateOf(true) }
     val cents = Money.parse(amount)
     AlertDialog(onDismissRequest = onDismiss, title = { Text("Adicionar despesa") },
-        text = { Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        text = { Column(Modifier.imePadding(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             OutlinedTextField(name, { name = it }, label = { Text("Nome da despesa") }, singleLine = true)
             OutlinedTextField(amount, { amount = it }, label = { Text("Valor mensal em reais") }, singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))

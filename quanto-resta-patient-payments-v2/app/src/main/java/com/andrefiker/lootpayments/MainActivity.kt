@@ -19,7 +19,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -98,23 +101,30 @@ class MainActivity : ComponentActivity() {
                     androidx.compose.foundation.layout.Box(Modifier.weight(1f)) {
                         if (destination == 0) {
                             if (ready) PatientPaymentsScreen(state, vm)
-                            else Text("Carregando Loot…", modifier = Modifier.padding(28.dp), color = muted)
+                            else Text("Carregando Loot…", modifier = Modifier.statusBarsPadding().padding(28.dp), color = muted)
                         } else {
                             val expenseState by expenses.state.collectAsStateWithLifecycle()
                             ExpensesScreen(expenseState, expenses)
                         }
                     }
                     HorizontalDivider(color = divider)
-                    Row(Modifier.fillMaxWidth().background(paper).padding(horizontal = 14.dp, vertical = 5.dp)) {
-                        listOf("Receitas", "Gastos").forEachIndexed { index, label ->
+                    Row(Modifier.fillMaxWidth().background(paper).navigationBarsPadding()
+                        .padding(horizontal = 14.dp, vertical = 5.dp)) {
+                        listOf("↓" to "Receitas", "↑" to "Gastos").forEachIndexed { index, item ->
+                            val (glyph, label) = item
                             Box(Modifier.weight(1f).height(44.dp).padding(horizontal = 4.dp)
                                 .clip(RoundedCornerShape(11.dp))
                                 .background(if (destination == index) accent else Color.Transparent)
                                 .clickable(role = Role.Tab) { destination = index }
                                 .semantics { selected = destination == index },
                                 contentAlignment = Alignment.Center) {
-                                Text(label, color = if (destination == index) teal else muted,
-                                    fontSize = 13.sp, fontWeight = if (destination == index) FontWeight.SemiBold else FontWeight.Medium)
+                                Row(verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    Text(glyph, color = if (destination == index) teal else muted,
+                                        fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                                    Text(label, color = if (destination == index) teal else muted,
+                                        fontSize = 13.sp, fontWeight = if (destination == index) FontWeight.Bold else FontWeight.Medium)
+                                }
                             }
                         }
                     }
@@ -139,7 +149,7 @@ fun PatientPaymentsScreen(state: ScreenState, vm: PatientPaymentsViewModel) {
     var editor by remember { mutableStateOf<Editor?>(null) }
     val active = state.rows.filter { it.terms.active }
     val inactive = state.rows.filterNot { it.terms.active }
-    Column(Modifier.fillMaxSize().padding(horizontal = 14.dp)) {
+    Column(Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 14.dp)) {
         LootHeader("Receitas", state.month, { vm.shiftMonth(-1) }, { vm.shiftMonth(1) },
             "Paciente") { editor = Editor.Add }
         Summary(state.totals)
@@ -148,7 +158,8 @@ fun PatientPaymentsScreen(state: ScreenState, vm: PatientPaymentsViewModel) {
             LazyColumn(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp))
                 .background(Color.White), contentPadding = PaddingValues(bottom = 12.dp)) {
                 if (active.isEmpty()) item {
-                    Text("Nenhum paciente ativo neste mês.", color = muted, modifier = Modifier.padding(vertical = 20.dp))
+                    EmptyLedgerState("Nenhum paciente ativo neste mês.", "Adicione um paciente para começar.",
+                        "Adicionar paciente") { editor = Editor.Add }
                 }
                 items(active, key = { it.patient.id }) { row -> CompactPaymentRow(
                     name = row.patient.name, expected = row.payment.expectedCents,
@@ -226,11 +237,14 @@ internal fun LootHeader(section: String, month: YearMonth, previous: () -> Unit,
         Spacer(Modifier.weight(1f))
         Box(Modifier.height(48.dp).clip(RoundedCornerShape(10.dp)).clickable(onClick = onAdd)
             .semantics { contentDescription = "Adicionar $addLabel" }
-            .padding(horizontal = 10.dp), contentAlignment = Alignment.Center) {
-            Text("+ $addLabel", color = teal, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+            .padding(horizontal = 4.dp), contentAlignment = Alignment.Center) {
+            Box(Modifier.clip(RoundedCornerShape(10.dp)).background(accent)
+                .padding(horizontal = 10.dp, vertical = 7.dp)) {
+                Text("+ $addLabel", color = teal, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+            }
         }
     }
-    Row(Modifier.fillMaxWidth().height(42.dp), horizontalArrangement = Arrangement.Center,
+    Row(Modifier.fillMaxWidth().height(40.dp), horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically) {
         Box(Modifier.size(44.dp).clip(RoundedCornerShape(11.dp)).clickable(onClick = previous)
             .semantics { contentDescription = "Mês anterior" }, contentAlignment = Alignment.Center) {
@@ -261,7 +275,7 @@ internal fun Summary(totals: Totals, label: String = "pacientes", paidLabel: Str
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("$paidLabel ${ledgerMoney(totals.paid)}", color = teal, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                 Text(if (over) "A mais ${ledgerMoney(totals.paid - totals.expected)}"
-                    else "Resta ${ledgerMoney(totals.remaining)}", color = navy, fontSize = 12.sp)
+                    else "Restante ${ledgerMoney(totals.remaining)}", color = navy, fontSize = 12.sp)
             }
     }
 }
@@ -311,6 +325,22 @@ internal fun CompactPaymentRow(name: String, expected: Long, paid: Long, full: B
 }
 
 @Composable
+internal fun EmptyLedgerState(title: String, subtitle: String, actionLabel: String, onAdd: () -> Unit) {
+    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(Color.White)
+        .padding(start = 16.dp, end = 8.dp, top = 10.dp, bottom = 10.dp),
+        verticalAlignment = Alignment.CenterVertically) {
+        Column(Modifier.weight(1f)) {
+            Text(title, color = navy, fontWeight = FontWeight.Medium, fontSize = 15.sp)
+            Spacer(Modifier.height(2.dp))
+            Text(subtitle, color = muted, fontSize = 12.sp)
+        }
+        TextButton(onClick = onAdd, modifier = Modifier.heightIn(min = 48.dp)) {
+            Text(actionLabel, color = teal, fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
+        }
+    }
+}
+
+@Composable
 internal fun TextEntry(title: String, initial: String, money: Boolean, onDismiss: () -> Unit, onSave: (String) -> Unit) {
     var value by remember(title, initial) { mutableStateOf(TextFieldValue(initial, selection = TextRange(0, initial.length))) }
     val focus = remember { FocusRequester() }
@@ -319,7 +349,7 @@ internal fun TextEntry(title: String, initial: String, money: Boolean, onDismiss
     val cents = if (money) Money.parse(value.text) else null
     val valid = if (money) cents != null else value.text.trim().isNotEmpty()
     AlertDialog(onDismissRequest = onDismiss, title = { Text(title) },
-        text = { Column {
+        text = { Column(Modifier.imePadding()) {
             OutlinedTextField(value = value, onValueChange = { value = it }, singleLine = true,
                 label = { Text(if (money) "Valor em reais" else "Nome ou apelido") },
                 modifier = Modifier.focusRequester(focus),
@@ -339,7 +369,7 @@ private fun PatientForm(onDismiss: () -> Unit, onSave: (String, Long, Boolean) -
     var active by remember { mutableStateOf(true) }
     val cents = Money.parse(amount)
     AlertDialog(onDismissRequest = onDismiss, title = { Text("Adicionar paciente") },
-        text = { Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        text = { Column(Modifier.imePadding(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             OutlinedTextField(name, { name = it }, label = { Text("Nome ou apelido") }, singleLine = true)
             OutlinedTextField(amount, { amount = it }, label = { Text("Valor mensal em reais") }, singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))

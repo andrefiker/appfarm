@@ -8,6 +8,6 @@ The strengthened fictional penetration budget and visible disruption are art-dir
 
 Andre's latest supplied screenshot confirms 1.2 renders on his physical phone. This 1.3 release has not been physically tested. No emulator used. Native update/install, offline relaunch and resume remain physically untested.
 
-Android target: same com.andrefiker.impactlabcore.next as 1.2; 1.3.0/code 4. Same private release certificate enables in-place update. No permissions or new infrastructure. APK package verification pending this source checkpoint.
+Android target: same com.andrefiker.impactlabcore.next as 1.2; 1.3.0/code 4. Same private release certificate enables in-place update. No permissions or new infrastructure. APK BUILT / PACKAGE VERIFIED: source 6596dfc7a2eb578ead61f7de961eec7421ba7d9a, run 36578550305, SHA256 e47f7756e28e83aa86ab96d1f1c46578d6005d51688d5ba04cd1566e4ff02c84. v2/v3 signature verified; certificate and package match 1.2, version code increased 3→4. All fourteen bundled files match the tested production build exactly. Correct launcher and zero requested permissions.
 
 Rollback: 98a9dba25765d998bd2c6a8a9f613d13daa023d6 (1.2 final verification); prior APK source 40c6d052c85abd473b3f14b329ef803dfce8da67.

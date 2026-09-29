@@ -43,7 +43,7 @@ class ExpensesPersistenceTest {
         assertEquals(4000L, pending.filter { it.source == "Banco B" }.sumOf { it.amountCents })
         assertEquals(10000L, pending.sumOf { it.amountCents })
         assertTrue(pending.filter { it.original.contains("IFD", ignoreCase = true) }
-            .all { it.correctedName == "Ifood" })
+            .all { it.correctedName == "iFood" })
         assertTrue(pending.filter { it.original.contains("UBER", ignoreCase = true) }
             .all { it.category == "Uber/transporte" })
         assertTrue(db.expenses().allActualTransactions().isEmpty())

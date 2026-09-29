@@ -34,7 +34,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
@@ -141,12 +140,13 @@ fun PatientPaymentsScreen(state: ScreenState, vm: PatientPaymentsViewModel) {
     val active = state.rows.filter { it.terms.active }
     val inactive = state.rows.filterNot { it.terms.active }
     Column(Modifier.fillMaxSize().padding(horizontal = 14.dp)) {
-        LootHeader("Receitas", state.month, { vm.shiftMonth(-1) }, { vm.shiftMonth(1) })
+        LootHeader("Receitas", state.month, { vm.shiftMonth(-1) }, { vm.shiftMonth(1) },
+            "Paciente") { editor = Editor.Add }
         Summary(state.totals)
         Spacer(Modifier.height(7.dp))
         Box(Modifier.weight(1f)) {
             LazyColumn(modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp))
-                .background(Color.White), contentPadding = PaddingValues(bottom = 88.dp)) {
+                .background(Color.White), contentPadding = PaddingValues(bottom = 12.dp)) {
                 if (active.isEmpty()) item {
                     Text("Nenhum paciente ativo neste mês.", color = muted, modifier = Modifier.padding(vertical = 20.dp))
                 }
@@ -171,12 +171,6 @@ fun PatientPaymentsScreen(state: ScreenState, vm: PatientPaymentsViewModel) {
                         HorizontalDivider(Modifier.padding(start = 14.dp), color = divider)
                     }
                 }
-            }
-            FloatingActionButton(onClick = { editor = Editor.Add },
-                modifier = Modifier.align(Alignment.BottomEnd).padding(end = 8.dp, bottom = 10.dp)
-                    .semantics { contentDescription = "Adicionar paciente" },
-                shape = RoundedCornerShape(16.dp), containerColor = teal, contentColor = Color.White) {
-                Text("+", fontSize = 25.sp, modifier = Modifier.padding(horizontal = 17.dp))
             }
         }
     }
@@ -220,16 +214,23 @@ fun PatientPaymentsScreen(state: ScreenState, vm: PatientPaymentsViewModel) {
 }
 
 @Composable
-internal fun LootHeader(section: String, month: YearMonth, previous: () -> Unit, next: () -> Unit) {
-    Row(Modifier.fillMaxWidth().padding(top = 7.dp, bottom = 1.dp), verticalAlignment = Alignment.CenterVertically) {
+internal fun LootHeader(section: String, month: YearMonth, previous: () -> Unit, next: () -> Unit,
+    addLabel: String, onAdd: () -> Unit) {
+    Row(Modifier.fillMaxWidth().height(48.dp), verticalAlignment = Alignment.CenterVertically) {
         Text("LOOT", color = teal, fontWeight = FontWeight.Bold, fontSize = 11.sp, letterSpacing = 2.sp)
         Spacer(Modifier.width(9.dp))
         Box(Modifier.size(width = 1.dp, height = 12.dp).background(divider))
         Spacer(Modifier.width(9.dp))
         Text(section.uppercase(Locale("pt", "BR")), color = muted, fontWeight = FontWeight.Medium,
             fontSize = 10.sp, letterSpacing = 1.4.sp)
+        Spacer(Modifier.weight(1f))
+        Box(Modifier.height(48.dp).clip(RoundedCornerShape(10.dp)).clickable(onClick = onAdd)
+            .semantics { contentDescription = "Adicionar $addLabel" }
+            .padding(horizontal = 10.dp), contentAlignment = Alignment.Center) {
+            Text("+ $addLabel", color = teal, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+        }
     }
-    Row(Modifier.fillMaxWidth().height(46.dp), horizontalArrangement = Arrangement.Center,
+    Row(Modifier.fillMaxWidth().height(42.dp), horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically) {
         Box(Modifier.size(44.dp).clip(RoundedCornerShape(11.dp)).clickable(onClick = previous)
             .semantics { contentDescription = "Mês anterior" }, contentAlignment = Alignment.Center) {
@@ -285,24 +286,23 @@ internal fun CompactPaymentRow(name: String, expected: Long, paid: Long, full: B
                     style = TextStyle(fontFeatureSettings = "tnum"), maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
-        Row(Modifier.fillMaxWidth().height(38.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.weight(1f).height(38.dp).clickable(onClick = onPaid)
+        Row(Modifier.fillMaxWidth().height(48.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.weight(1f).height(48.dp).clickable(onClick = onPaid)
                 .semantics { contentDescription = "Editar valor pago" }, contentAlignment = Alignment.CenterStart) {
                 Text(if (full) "Editar pago" else "Pago ${ledgerMoney(paid)}",
                     color = if (full) muted else teal, fontSize = 12.sp,
                     maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             val status = if (inactive) "Inativo" else if (!enabled) "Sem valor" else if (full) "✓ Quitado" else "○ Pendente"
-            Box(Modifier.height(34.dp).widthIn(min = 88.dp)
+            Box(Modifier.height(48.dp).widthIn(min = 90.dp)
                 .clip(RoundedCornerShape(9.dp))
-                .background(if (full && enabled) accent else Color(0xFFF4F4F2))
                 .clickable(enabled = enabled, role = Role.Checkbox) { onFull(!full) }
                 .semantics { contentDescription = if (full) "Quitado; toque para desmarcar" else "Pendente; toque para quitar" }
-                .padding(horizontal = 8.dp), contentAlignment = Alignment.Center) {
+                .padding(horizontal = 5.dp), contentAlignment = Alignment.Center) {
                 Text(status, color = if (full && enabled) teal else muted,
                     fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
             }
-            Box(Modifier.size(width = 36.dp, height = 38.dp).clickable(onClick = onManage)
+            Box(Modifier.size(width = 40.dp, height = 48.dp).clickable(onClick = onManage)
                 .semantics { contentDescription = "Mais opções" }, contentAlignment = Alignment.Center) {
                 Text("⋮", color = muted, fontSize = 21.sp)
             }

@@ -2,7 +2,7 @@
 
 Native Kotlin/Jetpack Compose Android app. Two compact tabs: patient income and manual expenses. Both work offline using the same Room database. No login, categories, imported expenses, merchant rules, cloud sync or internet permission. Aliases in tests are fictional; the production expense list starts empty.
 
-The 1.3 visual pass groups rows into a continuous, divided ledger, uses a quiet status control instead of a full switch, aligns amounts, shortens whole-real display amounts, and tightens the header, summary and bottom tabs. Tap the name, monthly value, paid value, or status directly; the overflow menu still contains archive and delete. Currency editing retains cents. Data tables and business rules are unchanged from 1.2.
+The 1.4 UI pass moves `+ Paciente` / `+ Despesa` into the header so no floating button covers a ledger row. The paid status is now a small text control with a 48 dp tap area, while full payments retain a quiet `Editar pago` action. Empty Expenses uses a compact message instead of a full-height blank card. The compact, divided ledger, monetary formatting, Room tables and business rules are unchanged. Tap the name, monthly value, paid value, or status directly; the overflow menu still contains archive and delete. Currency editing retains cents.
 
 ## Build and test
 
@@ -14,10 +14,10 @@ The Room database `qr-payments-v2.db` is now version 2. Explicit `MIGRATION_1_2`
 
 `Expense` contains ID, name, monthly default in integer cents, activity/archive month and creation/update times. `ExpenseMonth` contains the frozen expected cents, paid cents, inclusion and explicit incomplete flag. Opening a new month adds missing snapshots with zero paid. Changing a fee or archiving first snapshots unvisited earlier months, then changes the selected and future months only. Archive preserves older values. Delete requires one confirmation, or two if prior months or payments exist; a foreign key cascades permanent deletion. Patients retain their existing data model and logic.
 
-Both compact lists keep patient/expense name, expected fee, paid amount when partial, full toggle, access to paid editing on full rows, and a row menu for archive/delete. A floating add button sits above scrollable list content with bottom padding. Expense overpayments remain stored and the summary displays the amount over expected.
+Both compact lists keep patient/expense name, expected fee, paid amount when partial, full toggle, access to paid editing on full rows, and a row menu for archive/delete. The add action is at the top right; the last ledger row remains unobstructed. Expense overpayments remain stored and the summary displays the amount over expected.
 
 ## Privacy, updates, rollback
 
 Everything is manual and stored only on the device. Android backup remains disabled; uninstall removes local records. The older Supabase migration file remains in this branch for history, but the current APK does not use Supabase or access the network. The budget app’s previous expense data is not read.
 
-An APK signed with a different debug certificate cannot update an already installed Loot APK. Do not uninstall the installed copy if it has unique patient data; export or migrate the local database first. For a same-key update, version 3→4 retains the Room version 2 database without a schema change. To roll back this UI pass, return the Git branch to `7a1c2e49c3c82b9c6183f6da49196e3a6c4c79db`. Android will not downgrade an installed database or version code directly; restore from a data backup before using an older app.
+An APK signed with a different debug certificate cannot update an already installed Loot APK. Do not uninstall the installed copy if it has unique patient data; export or migrate the local database first. A same-key update from version 4 to 5 retains the Room version 2 database without a schema change. To roll back the 1.4 UI pass, return the Git branch to `e340ea195178a54b06fbb56fa8b457db977845ee` and rebuild with the original signing key. Android will not downgrade an installed version code directly; preserve a backup before replacing an installed app.

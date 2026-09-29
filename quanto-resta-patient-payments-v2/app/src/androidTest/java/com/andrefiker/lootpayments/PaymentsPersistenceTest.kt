@@ -6,6 +6,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.core.app.ActivityScenario
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import kotlinx.coroutines.flow.first
@@ -101,10 +102,15 @@ class PaymentsPersistenceTest {
                 composeRule.onNodeWithText("A.L.").assertExists()
                 composeRule.onNodeWithText("Marina").assertExists()
                 captureScreen(scenario, "patient-screen-actual.png")
+                composeRule.onNodeWithContentDescription("Adicionar Paciente").performClick()
+                composeRule.onNodeWithText("Adicionar paciente").assertExists()
+                composeRule.onNodeWithText("Cancelar").performClick()
                 composeRule.onNodeWithText("Gastos").performClick()
                 composeRule.waitUntil(10_000) { composeRule.onAllNodesWithText("Nenhuma despesa ainda.").fetchSemanticsNodes().isNotEmpty() }
                 composeRule.onNodeWithText("Nenhuma despesa ainda.").assertExists()
                 captureScreen(scenario, "expense-screen-actual.png")
+                composeRule.onNodeWithContentDescription("Adicionar Despesa").performClick()
+                composeRule.onNodeWithText("Adicionar despesa").assertExists()
             } finally { scenario.close() }
         } finally { dao.clearAll(); context.getSharedPreferences("loot-local-owner", 0).edit().remove("id").commit() }
     }

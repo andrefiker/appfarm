@@ -62,3 +62,12 @@ FICTIONAL GAME PARAMETER: normalized continuous gel resistance, weakened existin
 | https://www.hunter-ed.com/muzzleloader/studyGuide/Shotgun-Choke-and-Shot-String/222099_88885/ | Shotshell pellets form multiple diverging paths. | Three representative independently raycast pellets in the Shotgun profile. | Three is a bounded game representation, not a cartridge pellet count or realistic pattern. No choke, range or load optimization used. |
 
 Artistic mapping: Pistol = compact single channel; Rifle = stronger temporary cavity pulse; Shotgun = several smaller separate channels. All energy, spread, width and pulse constants are fictional normalized parameters. They are **not numerical equivalents of real firearms**. Bone geometry and accumulated state still affect the resulting paths. No real weapon brands or ammunition specifications added. No external images or model assets imported.
+
+## Rifle launch reference — 2.2.1, 2026-09-29
+
+- SOURCE: https://www.sellier-bellot.cz/en/products/rifle-ammunition/rifle-ammunition-training-fmj/detail/216/ — primary manufacturer page, V340842 7.62×39 FMJ. Published projectile mass 8.00 g, muzzle velocity 738 m/s, test barrel 520 mm; listed energy rounds to 2,179 J. Supports these launch conditions only, not all rifles or an anatomical penetration result. No assets/text copied.
+- SUPPORTED INPUT: rifle launch snapshot stores this reference and computes kinetic energy from mass and speed. The resulting 2,178.576 J replaces the old arbitrary rifle starting value. The source's test setup is explicitly retained rather than describing it as a measurement from an AK rifle.
+- VISUAL APPROXIMATION: relative transit time follows recorded energy loss; cavity-front arrival uses the same timing. An actual mesh exit gets a short outbound animation, with no invented internal continuation. Replay remains stretched exhibition time, not real-time film timing.
+- FICTIONAL GAME PARAMETER: compatibility mapping of 1,000 J per simulation unit; gel/insert work losses, local bone response, channel size and expansion. These remain uncalibrated assumptions. Real muzzle data alone does NOT validate penetration depth; no matching measured gel dataset was obtained. Other weapon styles remain fictional. Older recorded events are not recomputed.
+
+This narrow revision improves provenance and internal consistency; it is not a claim that the application reproduces a real firearm's tissue effects.

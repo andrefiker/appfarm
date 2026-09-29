@@ -46,3 +46,9 @@ The interface now exposes only the gel specimen, three shot styles, camera contr
 Recorded replay advances by elapsed wall time, with background time excluded; it no longer caps every rendered frame at 50 ms. Pause/resume preserves the current frame. Mobile/Balanced/Ultra continue to change rendering resolution only. Existing 30-projectile-record and 12-fragment bounds remain. No backend, accounts, network permissions or runtime asset downloads.
 
 Rollback: 47ceccb479e150bb25c99dffc8706ef86720edd9 (delivered 2.1.0). Package identity and private signing key unchanged.
+
+## 2.2.1 reference-fed rifle
+
+`rifle-reference.ts` stores a primary-source launch reference, calculates kinetic energy and exposes the explicit compatibility mapping to existing solver units. New rifle events snapshot their launch data; old events retain their saved paths and previous replay timing. No material resistance was recalibrated or disguised as measured data.
+
+Replay weights each recorded leg by its mean speed (speed proportional to square root of remaining energy), with constant work per distance within the leg. Cavity-front arrival uses the inverse mapping, cached when geometry is rebuilt rather than recalculated per vertex every frame. A short outbound marker follows only a recorded skin exit and remaining energy; it creates no extra damage/collision record. The UI identifies the cartridge reference and About explains launch evidence versus uncalibrated gel response. Package/signature/data keys remain unchanged. Rollback: 923ca5980835bb0b7cd75cde726fc79783c2b7b5, delivered 2.2.0.

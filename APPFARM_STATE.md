@@ -155,3 +155,6 @@ Andre chose translucent amber ballistic-gel-dummy presentation (film/TV prop ref
 Andre requested gel-only exhibition and slow-motion weapon-style equivalents. UI now has Pistol/Rifle/Shotgun fictional profiles, automatic ¼-speed approach/entry/cavity/settling, grouped scatter undo/reload, and persistent channels. No real-ammunition calibration. 34 system tests pass; production browser evidence in qa/v2.2. Package/signing unchanged, code7. Rollback 47ceccb479e150bb25c99dffc8706ef86720edd9.
 
 2.2.0 APK package/signature verified; source 8792e9fcbda88550577f2d39468016f114c9a5c8, CI 36590317747. No emulator or physical-device test.
+
+### Impact Lab rifle reference 2.2.1 — 2026-09-29
+Andre requested real rifle specifications after the fictional rifle stopped too shallow. New rifle shots now snapshot primary-source S&B 7.62×39 FMJ launch mass/velocity and derive energy; gel/bone resistance remains explicitly uncalibrated. Relative replay speed follows recorded energy loss, cavity arrival matches, and actual exits animate outside the specimen. Older saves retain recorded outcomes. 38 tests and production browser regressions pass; phone-size side/back exit renders inspected. Package/signing unchanged, code8. Rollback 923ca5980835bb0b7cd75cde726fc79783c2b7b5. APK verification pending; no emulator/device claim.

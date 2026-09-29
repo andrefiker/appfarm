@@ -26,3 +26,6 @@ Default view is now translucent amber synthetic gel with visible embedded anatom
 
 ### Gel Exhibition 2.2.0
 Gel-only interface; Pistol, Rifle and Shotgun fictional equivalents. Default ¼-speed approach/entry/travel/cavity/settling animation, grouped scatter undo/reload, persistent channels and recorded replay. `node scripts/exhibition-qa.mjs` exercises the actual interface. No real-ammunition calibration. Rollback 47ceccb479e150bb25c99dffc8706ef86720edd9.
+
+### Rifle reference update 2.2.1
+Rifle now uses published S&B V340842 7.62×39 FMJ launch mass/velocity to derive initial energy. Gel/bone resistance remains uncalibrated; see RESEARCH.md for the exact evidence boundary. Energy-aware replay and cavity arrival share one timing model. Actual exits animate outside the specimen. Existing damage saves, package and signing identity are preserved. Rollback: 923ca5980835bb0b7cd75cde726fc79783c2b7b5 (2.2.0). Tests: `npm test`; browser regression: `node scripts/exhibition-qa.mjs` and `node scripts/rifle-reference-qa.mjs` with Playwright/Chrome paths supplied as needed.

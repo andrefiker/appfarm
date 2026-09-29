@@ -9,7 +9,7 @@ android {
     namespace = "com.andrefiker.lootpayments"
     compileSdk = 35
     defaultConfig {
-        applicationId = "com.andrefiker.lootpayments"
+        applicationId = "com.andrefiker.lootpayments.polished"
         minSdk = 26
         targetSdk = 35
         versionCode = 5

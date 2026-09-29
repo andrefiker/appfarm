@@ -431,14 +431,16 @@ internal class LootDataTransfer(private val context: Context) {
 }
 
 @Composable
-internal fun LootDataTransferDialog(onDismiss: () -> Unit) {
+internal fun LootDataTransferDialog(onDismiss: () -> Unit, rosterOnly: Boolean = false) {
     val context = LocalContext.current
     val transfer = remember(context) { LootDataTransfer(context.applicationContext) }
     val scope = rememberCoroutineScope()
     var folder by remember { mutableStateOf(transfer.savedFolder()) }
     var rosterFile by remember { mutableStateOf<Uri?>(null) }
     var password by remember { mutableStateOf("") }
-    var status by remember { mutableStateOf("Selecione a lista privada ou gerencie o backup criptografado.") }
+    var status by remember { mutableStateOf(if (rosterOnly)
+        "Selecione o arquivo .lir entregue com o APK e informe a senha."
+        else "Selecione a lista privada ou gerencie o backup criptografado.") }
     var backupFound by remember { mutableStateOf(false) }
     var importing by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
@@ -451,6 +453,13 @@ internal fun LootDataTransferDialog(onDismiss: () -> Unit) {
     val rosterPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         rosterFile = uri
         status = if (uri == null) "Nenhum arquivo selecionado." else "Lista privada selecionada; digite a senha."
+    }
+    var rosterPickerStarted by remember { mutableStateOf(false) }
+    LaunchedEffect(rosterOnly) {
+        if (rosterOnly && !rosterPickerStarted) {
+            rosterPickerStarted = true
+            rosterPicker.launch(arrayOf("application/octet-stream", "application/json", "text/plain", "*/*"))
+        }
     }
     LaunchedEffect(folder) { folder?.let { backupFound = runCatching { transfer.hasBackup(it) }.getOrDefault(false) } }
 
@@ -472,7 +481,7 @@ internal fun LootDataTransferDialog(onDismiss: () -> Unit) {
     }
 
     AlertDialog(onDismissRequest = { if (!busy) onDismiss() },
-        title = { Text("Dados do Gadgety") },
+        title = { Text(if (rosterOnly) "Importar receitas" else "Dados do Gadgety") },
         text = { Column(Modifier.imePadding(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Importar receitas privadas", color = navy, fontWeight = FontWeight.SemiBold)
             Text("Selecione o arquivo .lir criptografado. Ele é importado localmente e não fica dentro do aplicativo.",
@@ -501,44 +510,46 @@ internal fun LootDataTransferDialog(onDismiss: () -> Unit) {
                 }, modifier = Modifier.fillMaxWidth()) {
                 Text(if (busy) "Carregando…" else "Importar receitas")
             }
-            androidx.compose.material3.HorizontalDivider(color = divider)
-            Text("Backup local criptografado", color = navy, fontWeight = FontWeight.SemiBold)
-            Text("Escolha uma pasta uma vez. Outras versões podem selecionar a mesma pasta e detectar $BACKUP_NAME.",
-                color = muted, fontSize = 12.sp)
-            TextButton(onClick = { folderPicker.launch(folder) }, modifier = Modifier.fillMaxWidth()) {
-                Text(if (folder == null) "Escolher pasta" else "Trocar pasta")
-            }
-            Text(if (backupFound) "✓ Backup encontrado" else "Nenhum backup detectado",
-                color = if (backupFound) teal else muted, fontSize = 12.sp)
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                TextButton(enabled = folder != null && password.length >= 6 && !busy, onClick = {
-                    val uri = folder ?: return@TextButton
-                    busy = true
-                    scope.launch {
-                        status = runCatching { transfer.export(uri, password.toCharArray()) }
-                            .getOrElse { it.message ?: "Falha ao exportar." }
-                        backupFound = runCatching { transfer.hasBackup(uri) }.getOrDefault(false)
-                        password = ""; busy = false
-                    }
-                }) { Text(if (busy) "Salvando…" else "Exportar") }
-                TextButton(enabled = backupFound && password.length >= 6 && !busy,
-                    onClick = { importing = true }) { Text("Importar") }
-            }
-            TextButton(enabled = folder != null && password.length >= 6 && !busy,
-                onClick = {
-                    val uri = folder ?: return@TextButton
-                    busy = true
-                    scope.launch {
-                        status = runCatching {
-                            val result = transfer.export(uri, password.toCharArray())
-                            transfer.emailBackup(uri)
-                            "$result E-mail preparado para andrefiker@gmail.com."
-                        }.getOrElse { it.message ?: "Falha ao preparar o e-mail." }
-                        backupFound = runCatching { transfer.hasBackup(uri) }.getOrDefault(false)
-                        password = ""; busy = false
-                    }
-                }, modifier = Modifier.fillMaxWidth()) {
-                Text(if (busy) "Preparando…" else "Enviar backup por e-mail")
+            if (!rosterOnly) {
+                androidx.compose.material3.HorizontalDivider(color = divider)
+                Text("Backup local criptografado", color = navy, fontWeight = FontWeight.SemiBold)
+                Text("Escolha uma pasta uma vez. Outras versões podem selecionar a mesma pasta e detectar $BACKUP_NAME.",
+                    color = muted, fontSize = 12.sp)
+                TextButton(onClick = { folderPicker.launch(folder) }, modifier = Modifier.fillMaxWidth()) {
+                    Text(if (folder == null) "Escolher pasta" else "Trocar pasta")
+                }
+                Text(if (backupFound) "✓ Backup encontrado" else "Nenhum backup detectado",
+                    color = if (backupFound) teal else muted, fontSize = 12.sp)
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    TextButton(enabled = folder != null && password.length >= 6 && !busy, onClick = {
+                        val uri = folder ?: return@TextButton
+                        busy = true
+                        scope.launch {
+                            status = runCatching { transfer.export(uri, password.toCharArray()) }
+                                .getOrElse { it.message ?: "Falha ao exportar." }
+                            backupFound = runCatching { transfer.hasBackup(uri) }.getOrDefault(false)
+                            password = ""; busy = false
+                        }
+                    }) { Text(if (busy) "Salvando…" else "Exportar") }
+                    TextButton(enabled = backupFound && password.length >= 6 && !busy,
+                        onClick = { importing = true }) { Text("Importar") }
+                }
+                TextButton(enabled = folder != null && password.length >= 6 && !busy,
+                    onClick = {
+                        val uri = folder ?: return@TextButton
+                        busy = true
+                        scope.launch {
+                            status = runCatching {
+                                val result = transfer.export(uri, password.toCharArray())
+                                transfer.emailBackup(uri)
+                                "$result E-mail preparado para andrefiker@gmail.com."
+                            }.getOrElse { it.message ?: "Falha ao preparar o e-mail." }
+                            backupFound = runCatching { transfer.hasBackup(uri) }.getOrDefault(false)
+                            password = ""; busy = false
+                        }
+                    }, modifier = Modifier.fillMaxWidth()) {
+                    Text(if (busy) "Preparando…" else "Enviar backup por e-mail")
+                }
             }
             Spacer(Modifier.height(2.dp))
             Text(status, color = muted, fontSize = 12.sp, modifier = Modifier.padding(horizontal = 2.dp))

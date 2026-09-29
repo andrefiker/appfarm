@@ -173,9 +173,10 @@ class ExpensesPersistenceTest {
 
         dao.addOrFillFixedMonthlyCategories(FixedMonthlyCategories.forMonth(month, now), month)
         dao.addOrFillFixedMonthlyCategories(FixedMonthlyCategories.forMonth(month, now), month)
+        dao.removeUntouchedLegacyStarterCategories()
 
         val all = dao.allExpenses()
-        assertEquals(23, all.size)
+        assertEquals(14, all.size)
         assertEquals(1, all.count { it.name.equals("compras", ignoreCase = true) })
         assertEquals(1_380_000L, dao.months(month.key()).first().sumOf { it.expectedCents })
         val updated = dao.expense(compras.id)!!

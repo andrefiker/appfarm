@@ -206,6 +206,7 @@ interface ExpensesDao {
     @Query("DELETE FROM actual_transactions WHERE id = :id") suspend fun deleteActualTransaction(id: String)
     @Query("DELETE FROM personal_rules WHERE id = :id") suspend fun deletePersonalRule(id: String)
     @Query("DELETE FROM cooling_purchases WHERE id = :id") suspend fun deleteCoolingPurchase(id: String)
+    @Query("DELETE FROM expense_months WHERE expenseId = :id") suspend fun deleteMonthsForExpense(id: String)
     @Query("DELETE FROM expenses WHERE id = :id") suspend fun delete(id: String)
     @Query("DELETE FROM expense_months") suspend fun clearMonths()
     @Query("DELETE FROM expenses") suspend fun clearExpenses()
@@ -278,6 +279,26 @@ interface ExpensesDao {
             }
         }
         ensureMonth(selected)
+    }
+
+    /**
+     * v1.17 cleanup: remove only the untouched zero-value starter rows that preceded the
+     * user-confirmed monthly list. Anything edited or carrying real spending is preserved.
+     */
+    @Transaction suspend fun removeUntouchedLegacyStarterCategories() {
+        val months = allMonths().groupBy { it.expenseId }
+        val actualExpenseIds = allActualTransactions().mapNotNull { it.expenseId }.toSet()
+        allExpenses().filter { expense ->
+            expense.id.startsWith("baseline_") &&
+                expense.defaultCents == 0L && expense.baselineCents == 0L &&
+                expense.id !in actualExpenseIds &&
+                months[expense.id].orEmpty().all {
+                    it.expectedCents == 0L && it.paidCents == 0L && it.baselineCents == 0L
+                }
+        }.forEach { expense ->
+            deleteMonthsForExpense(expense.id)
+            delete(expense.id)
+        }
     }
 
     @Transaction suspend fun changeDefault(id: String, selected: YearMonth, cents: Long) {

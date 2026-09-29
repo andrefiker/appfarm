@@ -1,6 +1,6 @@
 # Gadgety — Controle mensal local
 
-Gadgety v1.16 is the compact, side-by-side continuation of Loot v1.15. It uses
+Gadgety v1.17 is the compact, side-by-side continuation of Loot v1.15. It uses
 the separate package `com.andrefiker.gadgety`, so it does not collide with an
 installed Loot app. Data moves between the apps only through the encrypted
 backup/restore flow.

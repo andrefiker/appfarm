@@ -101,12 +101,13 @@ class MainActivity : ComponentActivity() {
                 val statementState by statementInbox.state.collectAsStateWithLifecycle()
                 var destination by rememberSaveable { mutableStateOf(0) }
                 var dataTransferOpen by rememberSaveable { mutableStateOf(false) }
+                var privateIncomeOpen by rememberSaveable { mutableStateOf(false) }
                 Column(Modifier.fillMaxSize().background(paper)) {
                     androidx.compose.foundation.layout.Box(Modifier.weight(1f)) {
                         when (destination) {
                             0 -> ExpensesScreen(expenseState, expenses, state.totals) { dataTransferOpen = true }
                             1 -> StatementInboxScreen(statementState, statementInbox)
-                            2 -> if (ready) PatientPaymentsScreen(state, vm) { dataTransferOpen = true }
+                            2 -> if (ready) PatientPaymentsScreen(state, vm) { privateIncomeOpen = true }
                                 else Text("Carregando Gadgety…", modifier = Modifier.statusBarsPadding().padding(28.dp), color = muted)
                             else -> MoreScreen(expenseState, expenses, state.totals, statementState, statementInbox) {
                                 dataTransferOpen = true
@@ -137,6 +138,9 @@ class MainActivity : ComponentActivity() {
                     }
                 }
                 if (dataTransferOpen) LootDataTransferDialog { dataTransferOpen = false }
+                if (privateIncomeOpen) LootDataTransferDialog(
+                    onDismiss = { privateIncomeOpen = false }, rosterOnly = true
+                )
             }
         }
     }

@@ -64,10 +64,9 @@ class ExpensesViewModel(application: Application) : AndroidViewModel(application
     init {
         val month = selected.value
         viewModelScope.launch {
-            if (!preferences.getBoolean("monthly_baseline_seeded_v1", false)) {
-                dao.addMissingBaselineExpenses(MonthlyExpenseBaseline.forMonth(month), month)
-                check(preferences.edit().putBoolean("monthly_baseline_seeded_v1", true).commit())
-            }
+            // The old blank starter list is superseded by Andre's confirmed editable monthly set.
+            // Remove only untouched zero rows so genuine history is never discarded.
+            dao.removeUntouchedLegacyStarterCategories()
             if (!preferences.getBoolean("fixed_monthly_categories_seeded_v1", false)) {
                 dao.addOrFillFixedMonthlyCategories(FixedMonthlyCategories.forMonth(month), month)
                 check(preferences.edit().putBoolean("fixed_monthly_categories_seeded_v1", true).commit())

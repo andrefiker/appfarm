@@ -1,0 +1,22 @@
+{
+  "version": "1.2.0",
+  "package": "com.andrefiker.impactlabcore.next",
+  "versionCode": 3,
+  "sourceCommit": "40c6d052c85abd473b3f14b329ef803dfce8da67",
+  "workflowRun": 36577005538,
+  "apkBytes": 9778968,
+  "sha256": "2af052d855838281f92ee60a64efb39fc9f812b9abd1c02adeae0f2653a0efac",
+  "allBundledFilesMatchTestedProduction": true,
+  "bundledFileCount": 14,
+  "emulatorTested": false,
+  "physicalDeviceTested": false,
+  "rollback": "d1b74dac2f35ebd44c4ac20e71dc40dfe3d888f3",
+  "signatureSchemes": [
+    "v2",
+    "v3"
+  ],
+  "certificateSha256": "2b046c630f7fb4a742c249b3cc28c831e174cf6da1ff328c4977a69ab15bb532",
+  "requestedPermissions": [],
+  "launchableActivity": "com.andrefiker.impactlabcore.MainActivity",
+  "signingKeyPrivatelyRetained": true
+}

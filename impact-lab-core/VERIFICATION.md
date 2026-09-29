@@ -12,7 +12,7 @@ Performance: final Chrome138/SwiftShader Linux, 390×844 DPR1, five events took 
 
 Remaining visual limits: stylized material rather than accurate volume refraction; head/skull banding and neck seam are visible in close-up; coarse local bone pieces and entry rims; opaque organ inserts can hide a channel until sectioned. No full gel fluid/elastic-volume solver. No new commercial assets or clinical images. Current working anatomy, source licenses and signing identity retained.
 
-Android: build/package verification pending at this checkpoint; final APK report is recorded separately after packaging. Physical-device installation, offline relaunch/resume and actual phone performance remain untested in this environment.
+Android: **APK BUILT / PACKAGE VERIFIED**. First CI run 36587343865 succeeded. Source 2d4f6efccb856e5cf17d164a7016a7c131a31ddd. Version/package/launcher, zero permissions, stored-entry alignment and v2/v3 signature verified. Same update certificate; all 14 bundled files match the browser-tested production build byte for byte. SHA256 2b1ec955f5e85000ed612359edf7128b20aaa827d68b3f44d61a6ad470b1e71a. Physical-device installation, offline relaunch/resume and actual phone performance remain untested in this environment.
 
 ---
 

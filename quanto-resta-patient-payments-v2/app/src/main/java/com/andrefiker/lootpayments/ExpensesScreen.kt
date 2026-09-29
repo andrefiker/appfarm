@@ -115,8 +115,7 @@ fun ExpensesScreen(state: ExpensesState, vm: ExpensesViewModel, incomeTotals: To
                     name = row.expense.name, expected = row.payment.expectedCents,
                     paid = row.payment.paidCents, full = row.line.full,
                     enabled = row.payment.included && row.payment.expectedCents > 0,
-                    subtitle = "${row.expense.category.ifBlank { row.expense.name }} · ${SpendingType.from(row.payment.spendingType).label}",
-                    displayCents = row.payment.paidCents,
+                    subtitle = expensePaymentSubtitle(row), subtitleOnClick = { editor = ExpenseEditor.Paid(row) },
                     onName = { editor = ExpenseEditor.Name(row) }, onAmount = { editor = ExpenseEditor.Amount(row) },
                     onPaid = { editor = ExpenseEditor.Paid(row) }, onManage = { editor = ExpenseEditor.Manage(row) },
                     onFull = { vm.setFull(row, it) })
@@ -128,8 +127,7 @@ fun ExpensesScreen(state: ExpensesState, vm: ExpensesViewModel, incomeTotals: To
                     items(inactive, key = { it.expense.id }) { row -> CompactPaymentRow(
                         name = row.expense.name, expected = row.payment.expectedCents,
                         paid = row.payment.paidCents, full = row.line.full, enabled = false, inactive = true,
-                        subtitle = "${row.expense.category.ifBlank { row.expense.name }} · Inativa",
-                        displayCents = row.payment.paidCents,
+                        subtitle = expensePaymentSubtitle(row, inactive = true), subtitleOnClick = { editor = ExpenseEditor.Paid(row) },
                         onName = { editor = ExpenseEditor.Name(row) }, onAmount = { editor = ExpenseEditor.Amount(row) },
                         onPaid = { editor = ExpenseEditor.Paid(row) }, onManage = { editor = ExpenseEditor.Manage(row) },
                         onFull = { vm.setFull(row, it) })
@@ -180,6 +178,20 @@ fun ExpensesScreen(state: ExpensesState, vm: ExpensesViewModel, incomeTotals: To
             dismissButton = { TextButton(onClick = { editor = null }) { Text("Manter despesa") } })
         null -> Unit
     }
+}
+
+internal data class ExpenseRowDisplay(val principalCents: Long, val paidCents: Long, val remainingCents: Long)
+
+internal fun expenseRowDisplay(expectedCents: Long, paidCents: Long): ExpenseRowDisplay =
+    ExpenseRowDisplay(expectedCents, paidCents, (expectedCents - paidCents).coerceAtLeast(0))
+
+private fun expensePaymentSubtitle(row: ExpenseRow, inactive: Boolean = false): String {
+    val display = expenseRowDisplay(row.payment.expectedCents, row.payment.paidCents)
+    val category = row.expense.category.ifBlank { row.expense.name }
+    val state = if (inactive) "Inativa" else SpendingType.from(row.payment.spendingType).label
+    val paid = "Pago ${ledgerMoney(display.paidCents)}"
+    val remaining = if (display.paidCents > 0 && display.remainingCents > 0) " · Restam ${ledgerMoney(display.remainingCents)}" else ""
+    return "$category · $state · $paid$remaining"
 }
 
 @Composable

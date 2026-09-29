@@ -139,7 +139,8 @@ class MainActivity : ComponentActivity() {
                 }
                 if (dataTransferOpen) LootDataTransferDialog(onDismiss = { dataTransferOpen = false })
                 if (privateIncomeOpen) LootDataTransferDialog(
-                    onDismiss = { privateIncomeOpen = false }, rosterOnly = true
+                    onDismiss = { privateIncomeOpen = false }, rosterOnly = true,
+                    onIncomeImported = vm::selectMonth
                 )
             }
         }
@@ -300,7 +301,7 @@ internal fun Summary(totals: Totals, label: String = "pacientes", paidLabel: Str
 @Composable
 internal fun CompactPaymentRow(name: String, expected: Long, paid: Long, full: Boolean, enabled: Boolean,
     inactive: Boolean = false,
-    subtitle: String? = null, displayCents: Long? = null,
+    subtitle: String? = null, subtitleOnClick: (() -> Unit)? = null,
     onName: () -> Unit, onAmount: () -> Unit, onPaid: () -> Unit, onManage: () -> Unit,
     onFull: (Boolean) -> Unit) {
     Column(Modifier.fillMaxWidth().background(Color.White)
@@ -311,16 +312,16 @@ internal fun CompactPaymentRow(name: String, expected: Long, paid: Long, full: B
                     maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             Spacer(Modifier.width(8.dp))
-            Box(Modifier.widthIn(max = 145.dp).height(31.dp).clickable(onClick = if (displayCents == null) onAmount else onPaid),
+            Box(Modifier.widthIn(max = 145.dp).height(31.dp).clickable(onClick = onAmount),
                 contentAlignment = Alignment.CenterEnd) {
-                Text(ledgerMoney(displayCents ?: expected), color = navy, fontSize = 13.sp,
+                Text(ledgerMoney(expected), color = navy, fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
                     style = TextStyle(fontFeatureSettings = "tnum"), maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
         Row(Modifier.fillMaxWidth().height(35.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.weight(1f).height(35.dp).clickable(onClick = if (subtitle == null) onPaid else onAmount)
-                .semantics { contentDescription = if (subtitle == null) "Editar valor pago" else "Editar valor mensal" },
+            Box(Modifier.weight(1f).height(35.dp).clickable(onClick = subtitleOnClick ?: onPaid)
+                .semantics { contentDescription = "Editar valor pago" },
                 contentAlignment = Alignment.CenterStart) {
                 Text(subtitle ?: if (full) "Recebido · ${ledgerMoney(expected)}/mês" else "Recebido ${ledgerMoney(paid)} de ${ledgerMoney(expected)}",
                     color = muted, fontSize = 10.sp,

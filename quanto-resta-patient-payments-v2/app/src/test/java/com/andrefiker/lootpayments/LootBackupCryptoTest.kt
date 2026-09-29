@@ -38,6 +38,40 @@ class LootBackupCryptoTest {
         }
     }
 
+    @Test fun validEncryptedIncomeRosterDecodesThroughImportBoundary() {
+        val plain = """{
+          "format":"loot-income-roster","schema":1,"month":"2026-09","markPaid":false,
+          "patients":[{"name":"Pessoa Sintética","monthlyCents":90000}]
+        }"""
+        val encrypted = LootBackupCrypto.encrypt(plain, "senha-forte".toCharArray())
+        val decoded = IncomeRosterImportCodec.decode(encrypted, "senha-forte".toCharArray())
+        assertEquals(YearMonth.of(2026, 9), decoded.month)
+        assertEquals(90000L, decoded.entries.single().monthlyCents)
+    }
+
+    @Test fun wrongIncomeRosterPasswordHasControlledMessage() {
+        val encrypted = LootBackupCrypto.encrypt("{}", "senha-correta".toCharArray())
+        val error = assertThrows(IncomeImportException::class.java) {
+            IncomeRosterImportCodec.decode(encrypted, "senha-errada".toCharArray())
+        }
+        assertEquals("Senha incorreta ou arquivo criptografado corrompido.", error.userMessage)
+    }
+
+    @Test fun malformedIncomeRosterHasControlledMessage() {
+        val error = assertThrows(IncomeImportException::class.java) {
+            IncomeRosterImportCodec.decode("não é um envelope", "senha-forte".toCharArray())
+        }
+        assertEquals("Arquivo de receitas inválido ou incompatível.", error.userMessage)
+    }
+
+    @Test fun incompatibleInnerRosterHasControlledMessage() {
+        val encrypted = LootBackupCrypto.encrypt("{\"format\":\"outro\",\"schema\":1}", "senha-forte".toCharArray())
+        val error = assertThrows(IncomeImportException::class.java) {
+            IncomeRosterImportCodec.decode(encrypted, "senha-forte".toCharArray())
+        }
+        assertEquals("Esta lista de receitas não é compatível com esta versão do Gadgety.", error.userMessage)
+    }
+
     @Test fun currentBackupRoundTripsBudgetAndStatementInboxData() {
         val month = YearMonth.of(2026, 9)
         val expense = Expense("food", "Comida", 147979, true, null, month.key(), 1, 2,

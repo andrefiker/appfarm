@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.provider.OpenableColumns
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -43,6 +44,7 @@ import java.security.SecureRandom
 import java.time.YearMonth
 import java.util.Base64
 import java.util.UUID
+import javax.crypto.AEADBadTagException
 import javax.crypto.Cipher
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.GCMParameterSpec
@@ -59,6 +61,41 @@ data class IncomeRoster(
     val markPaid: Boolean,
     val entries: List<IncomeRosterEntry>
 )
+
+enum class IncomeImportStage { IDLE, FILE_SELECTED, OPENING, READ, DECRYPTING, VALIDATING, IMPORTING, SUCCESS, ERROR }
+
+data class IncomeImportResult(
+    val month: YearMonth,
+    val insertedCount: Int,
+    val updatedCount: Int,
+    val totalCount: Int,
+    val expectedTotalCents: Long
+) {
+    fun userMessage(): String = buildString {
+        append("$totalCount receitas importadas para ${month.format(dateFormatter)}.")
+        if (updatedCount > 0) append(" $updatedCount atualizadas.")
+    }
+}
+
+internal class IncomeImportException(val userMessage: String, cause: Throwable? = null) :
+    IllegalArgumentException(userMessage, cause)
+
+internal object IncomeRosterImportCodec {
+    fun decode(encrypted: String, password: CharArray): IncomeRoster {
+        val plain = try {
+            LootBackupCrypto.decrypt(encrypted, password)
+        } catch (error: AEADBadTagException) {
+            throw IncomeImportException("Senha incorreta ou arquivo criptografado corrompido.", error)
+        } catch (error: Exception) {
+            throw IncomeImportException("Arquivo de receitas inválido ou incompatível.", error)
+        }
+        return try {
+            IncomeRosterJson.decode(plain)
+        } catch (error: Exception) {
+            throw IncomeImportException("Esta lista de receitas não é compatível com esta versão do Gadgety.", error)
+        }
+    }
+}
 
 internal object IncomeRosterJson {
     fun decode(text: String): IncomeRoster {
@@ -345,6 +382,18 @@ internal class LootDataTransfer(private val context: Context) {
 
     fun hasBackup(uri: Uri): Boolean = DocumentFile.fromTreeUri(context, uri)?.findFile(BACKUP_NAME)?.isFile == true
 
+    fun rosterFileName(uri: Uri): String = runCatching {
+        context.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
+            if (cursor.moveToFirst()) cursor.getString(0) else null
+        }
+    }.getOrNull()?.takeIf { it.isNotBlank() } ?: (uri.lastPathSegment?.substringAfterLast('/') ?: "Lista privada")
+
+    fun keepRosterAccess(uri: Uri) {
+        runCatching {
+            context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+    }
+
     suspend fun export(uri: Uri, password: CharArray): String = withContext(Dispatchers.IO) {
         val owner = ownerId()
         val payload = LootBackup(db.dao().backupPatients(owner), db.dao().allMonths(owner),
@@ -381,15 +430,31 @@ internal class LootDataTransfer(private val context: Context) {
         })
     }
 
-    suspend fun importPrivateIncome(uri: Uri, password: CharArray): String = withContext(Dispatchers.IO) {
-        val encrypted = requireNotNull(context.contentResolver.openInputStream(uri)) {
-            "Arquivo privado indisponível."
-        }.bufferedReader().use { it.readText() }
-        val roster = IncomeRosterJson.decode(LootBackupCrypto.decrypt(encrypted, password))
+    suspend fun importPrivateIncome(uri: Uri, password: CharArray,
+        onStage: suspend (IncomeImportStage) -> Unit = {}): IncomeImportResult {
+        onStage(IncomeImportStage.OPENING)
+        val encrypted = try {
+            withContext(Dispatchers.IO) {
+                requireNotNull(context.contentResolver.openInputStream(uri)) {
+                    "Arquivo privado indisponível."
+                }.bufferedReader().use { it.readText() }
+            }
+        } catch (error: Exception) {
+            throw IncomeImportException("Não foi possível abrir o arquivo selecionado.", error)
+        }
+        onStage(IncomeImportStage.READ)
+        onStage(IncomeImportStage.DECRYPTING)
+        val roster = withContext(Dispatchers.Default) { IncomeRosterImportCodec.decode(encrypted, password) }
+        onStage(IncomeImportStage.VALIDATING)
+        onStage(IncomeImportStage.IMPORTING)
         val owner = ownerId()
-        db.withTransaction { db.dao().mergeIncomeRoster(owner, roster) }
-        val total = roster.entries.sumOf { it.monthlyCents }
-        "${roster.entries.size} receitas adicionadas em ${roster.month}: ${Money.format(total)}."
+        val merge = withContext(Dispatchers.IO) {
+            db.withTransaction { db.dao().mergeIncomeRoster(owner, roster) }
+        }
+        val result = IncomeImportResult(roster.month, merge.insertedCount, merge.updatedCount,
+            merge.totalCount, roster.entries.sumOf { it.monthlyCents })
+        onStage(IncomeImportStage.SUCCESS)
+        return result
     }
 
     suspend fun import(uri: Uri, password: CharArray): String = withContext(Dispatchers.IO) {
@@ -432,12 +497,16 @@ internal class LootDataTransfer(private val context: Context) {
 }
 
 @Composable
-internal fun LootDataTransferDialog(onDismiss: () -> Unit, rosterOnly: Boolean = false) {
+internal fun LootDataTransferDialog(onDismiss: () -> Unit, rosterOnly: Boolean = false,
+    onIncomeImported: (YearMonth) -> Unit = {}) {
     val context = LocalContext.current
     val transfer = remember(context) { LootDataTransfer(context.applicationContext) }
     val scope = rememberCoroutineScope()
     var folder by remember { mutableStateOf(transfer.savedFolder()) }
     var rosterFile by remember { mutableStateOf<Uri?>(null) }
+    var rosterFileName by remember { mutableStateOf<String?>(null) }
+    var importStage by remember { mutableStateOf(IncomeImportStage.IDLE) }
+    var importResult by remember { mutableStateOf<IncomeImportResult?>(null) }
     var password by remember { mutableStateOf("") }
     var status by remember { mutableStateOf(if (rosterOnly)
         "Selecione o arquivo .lir entregue com o APK e informe a senha."
@@ -453,7 +522,17 @@ internal fun LootDataTransferDialog(onDismiss: () -> Unit, rosterOnly: Boolean =
     }
     val rosterPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         rosterFile = uri
-        status = if (uri == null) "Nenhum arquivo selecionado." else "Lista privada selecionada; digite a senha."
+        importResult = null
+        if (uri == null) {
+            rosterFileName = null
+            importStage = IncomeImportStage.IDLE
+            status = "Nenhum arquivo selecionado."
+        } else {
+            transfer.keepRosterAccess(uri)
+            rosterFileName = transfer.rosterFileName(uri)
+            importStage = IncomeImportStage.FILE_SELECTED
+            status = "Arquivo selecionado: $rosterFileName"
+        }
     }
     var rosterPickerStarted by remember { mutableStateOf(false) }
     LaunchedEffect(rosterOnly) {
@@ -487,29 +566,45 @@ internal fun LootDataTransferDialog(onDismiss: () -> Unit, rosterOnly: Boolean =
             Text("Importar receitas privadas", color = navy, fontWeight = FontWeight.SemiBold)
             Text("Selecione o arquivo .lir criptografado. Ele é importado localmente e não fica dentro do aplicativo.",
                 color = muted, fontSize = 12.sp)
-            TextButton(onClick = { rosterPicker.launch(arrayOf("application/octet-stream", "application/json", "text/plain")) },
+            TextButton(onClick = { rosterPicker.launch(arrayOf("application/octet-stream", "application/json", "text/plain", "*/*")) },
                 modifier = Modifier.fillMaxWidth()) {
                 Text(if (rosterFile == null) "Selecionar lista privada" else "Trocar lista privada")
             }
+            rosterFileName?.let { Text(it, color = navy, fontSize = 12.sp) }
             OutlinedTextField(password, { password = it }, modifier = Modifier.fillMaxWidth(), singleLine = true,
                 label = { Text("Senha da lista ou do backup") }, visualTransformation = PasswordVisualTransformation(),
                 supportingText = { Text("Mínimo de 6 caracteres. A senha não é salva.") })
             TextButton(enabled = rosterFile != null && password.length >= 6 && !busy,
                 onClick = {
-                    val uri = rosterFile ?: return@TextButton
-                    busy = true
-                    scope.launch {
-                        val result = runCatching { transfer.importPrivateIncome(uri, password.toCharArray()) }
+                        val uri = rosterFile ?: return@TextButton
+                        busy = true
+                        importResult = null
+                        scope.launch {
+                        val result = runCatching { transfer.importPrivateIncome(uri, password.toCharArray()) { stage ->
+                            importStage = stage
+                            status = when (stage) {
+                                IncomeImportStage.OPENING -> "Abrindo arquivo…"
+                                IncomeImportStage.READ -> "Arquivo lido."
+                                IncomeImportStage.DECRYPTING -> "Descriptografando…"
+                                IncomeImportStage.VALIDATING -> "Validando lista…"
+                                IncomeImportStage.IMPORTING -> "Salvando receitas…"
+                                else -> status
+                            }
+                        } }
                         password = ""; busy = false
-                        result.onSuccess {
-                            status = it
-                            onDismiss()
-                        }.onFailure {
-                            status = "Falha ao carregar a lista: ${it.message ?: it.javaClass.simpleName}."
+                        result.onSuccess { imported ->
+                            importResult = imported
+                            importStage = IncomeImportStage.SUCCESS
+                            status = imported.userMessage()
+                            onIncomeImported(imported.month)
+                        }.onFailure { error ->
+                            importStage = IncomeImportStage.ERROR
+                            status = (error as? IncomeImportException)?.userMessage
+                                ?: "Não foi possível importar a lista de receitas."
                         }
                     }
                 }, modifier = Modifier.fillMaxWidth()) {
-                Text(if (busy) "Carregando…" else "Importar receitas")
+                Text(if (busy) "Importando…" else if (importResult != null) "Importar novamente" else "Importar receitas")
             }
             if (!rosterOnly) {
                 androidx.compose.material3.HorizontalDivider(color = divider)
@@ -555,5 +650,7 @@ internal fun LootDataTransferDialog(onDismiss: () -> Unit, rosterOnly: Boolean =
             Spacer(Modifier.height(2.dp))
             Text(status, color = muted, fontSize = 12.sp, modifier = Modifier.padding(horizontal = 2.dp))
         } },
-        confirmButton = { TextButton(enabled = !busy, onClick = onDismiss) { Text("Fechar") } })
+        confirmButton = { TextButton(enabled = !busy, onClick = onDismiss) {
+            Text(if (importResult != null) "Concluir" else "Fechar")
+        } })
 }

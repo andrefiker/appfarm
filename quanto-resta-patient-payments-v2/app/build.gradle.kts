@@ -9,6 +9,14 @@ val gadgetyKeystorePath = System.getenv("GADGETY_KEYSTORE_PATH")
 val gadgetyStorePassword = System.getenv("GADGETY_STORE_PASSWORD")
 val gadgetyKeyAlias = System.getenv("GADGETY_KEY_ALIAS")
 val gadgetyKeyPassword = System.getenv("GADGETY_KEY_PASSWORD")
+val releaseRequested = gradle.startParameter.taskNames.any { it.contains("release", ignoreCase = true) }
+
+if (releaseRequested) {
+    require(!gadgetyKeystorePath.isNullOrBlank() && !gadgetyStorePassword.isNullOrBlank() &&
+        !gadgetyKeyAlias.isNullOrBlank() && !gadgetyKeyPassword.isNullOrBlank()) {
+        "Gadgety release signing credentials are required; refusing to create a differently signed release."
+    }
+}
 
 android {
     namespace = "com.andrefiker.lootpayments"
@@ -17,8 +25,8 @@ android {
         applicationId = "com.andrefiker.gadgety"
         minSdk = 26
         targetSdk = 35
-        versionCode = 18
-        versionName = "1.17"
+        versionCode = 19
+        versionName = "1.18"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     signingConfigs {
@@ -35,8 +43,7 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            signingConfig = signingConfigs.findByName("gadgetyStable")
-                ?: signingConfigs.getByName("debug")
+            signingConfigs.findByName("gadgetyStable")?.let { signingConfig = it }
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }

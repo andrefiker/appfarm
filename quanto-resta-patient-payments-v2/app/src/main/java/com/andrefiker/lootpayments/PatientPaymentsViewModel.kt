@@ -53,6 +53,7 @@ class PatientPaymentsViewModel(application: Application) : AndroidViewModel(appl
         }
     }
     fun shiftMonth(delta: Long) { selected.value = selected.value.plusMonths(delta) }
+    fun selectMonth(month: YearMonth) { selected.value = month }
     fun add(name: String, amount: Long, active: Boolean) {
         val idOwner = owner.value ?: return
         val month = selected.value

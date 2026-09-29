@@ -1,4 +1,4 @@
-name: Build Gadgety v1.17
+name: Build Gadgety v1.18
 
 on:
   push:
@@ -34,32 +34,47 @@ jobs:
         with:
           gradle-version: '8.9'
       - name: Restore stable Gadgety signing identity
+        id: signing-cache
         uses: actions/cache@v4
         with:
           path: ${{ runner.temp }}/gadgety-signing
           key: gadgety-signing-v1
-      - name: Prepare stable Gadgety signing identity
+      - name: Prepare exact Gadgety v1.17 signing identity
         shell: bash
+        env:
+          GADGETY_KEYSTORE_B64_SECRET: ${{ secrets.GADGETY_KEYSTORE_B64 }}
+          GADGETY_STORE_PASSWORD_SECRET: ${{ secrets.GADGETY_STORE_PASSWORD }}
+          GADGETY_KEY_ALIAS_SECRET: ${{ secrets.GADGETY_KEY_ALIAS }}
+          GADGETY_KEY_PASSWORD_SECRET: ${{ secrets.GADGETY_KEY_PASSWORD }}
         run: |
           set -eu
           KEY_DIR="$RUNNER_TEMP/gadgety-signing"
           KEYSTORE="$KEY_DIR/gadgety-release.p12"
           PASSWORD_FILE="$KEY_DIR/password"
           mkdir -p "$KEY_DIR"
-          if [ ! -s "$KEYSTORE" ] || [ ! -s "$PASSWORD_FILE" ]; then
-            PASSWORD=$(openssl rand -base64 36 | tr -dc 'A-Za-z0-9' | head -c 24)
-            printf '%s' "$PASSWORD" > "$PASSWORD_FILE"
-            keytool -genkeypair -noprompt -storetype PKCS12 \
-              -keystore "$KEYSTORE" -storepass "$PASSWORD" -keypass "$PASSWORD" \
-              -alias gadgety -keyalg RSA -keysize 4096 -validity 10000 \
-              -dname 'CN=Gadgety Personal Release, OU=AppFarm, O=Andre Fiker, C=BR'
+          if [ -n "$GADGETY_KEYSTORE_B64_SECRET" ]; then
+            test -n "$GADGETY_STORE_PASSWORD_SECRET"
+            test -n "$GADGETY_KEY_ALIAS_SECRET"
+            test -n "$GADGETY_KEY_PASSWORD_SECRET"
+            printf '%s' "$GADGETY_KEYSTORE_B64_SECRET" | base64 --decode > "$KEYSTORE"
+            STORE_PASSWORD="$GADGETY_STORE_PASSWORD_SECRET"
+            KEY_ALIAS="$GADGETY_KEY_ALIAS_SECRET"
+            KEY_PASSWORD="$GADGETY_KEY_PASSWORD_SECRET"
+          else
+            if [ ! -s "$KEYSTORE" ] || [ ! -s "$PASSWORD_FILE" ]; then
+              echo 'Exact v1.17 signing key unavailable; refusing to generate a replacement.' >&2
+              exit 1
+            fi
+            STORE_PASSWORD=$(cat "$PASSWORD_FILE")
+            KEY_ALIAS=gadgety
+            KEY_PASSWORD="$STORE_PASSWORD"
           fi
-          PASSWORD=$(cat "$PASSWORD_FILE")
-          echo "::add-mask::$PASSWORD"
+          echo "::add-mask::$STORE_PASSWORD"
+          echo "::add-mask::$KEY_PASSWORD"
           echo "GADGETY_KEYSTORE_PATH=$KEYSTORE" >> "$GITHUB_ENV"
-          echo "GADGETY_STORE_PASSWORD=$PASSWORD" >> "$GITHUB_ENV"
-          echo "GADGETY_KEY_ALIAS=gadgety" >> "$GITHUB_ENV"
-          echo "GADGETY_KEY_PASSWORD=$PASSWORD" >> "$GITHUB_ENV"
+          echo "GADGETY_STORE_PASSWORD=$STORE_PASSWORD" >> "$GITHUB_ENV"
+          echo "GADGETY_KEY_ALIAS=$KEY_ALIAS" >> "$GITHUB_ENV"
+          echo "GADGETY_KEY_PASSWORD=$KEY_PASSWORD" >> "$GITHUB_ENV"
       - name: Unit tests, lint and APK build
         run: gradle --no-daemon :app:testDebugUnitTest :app:lintRelease :app:assembleRelease
       - name: Verify package, version, manifest and signing
@@ -71,21 +86,29 @@ jobs:
           test -s "$APK"
           "$TOOLS/aapt" dump badging "$APK" > build/verification/badging.txt
           "$TOOLS/aapt" dump permissions "$APK" > build/verification/permissions.txt
-          "$TOOLS/apksigner" verify --verbose --print-certs "$APK" > build/verification/signing-gadgety-v1.17.txt
-          grep -q "package: name='com.andrefiker.gadgety' versionCode='18' versionName='1.17'" build/verification/badging.txt
+          "$TOOLS/apksigner" verify --verbose --print-certs "$APK" > build/verification/signing-gadgety-v1.18.txt
+          grep -q "package: name='com.andrefiker.gadgety' versionCode='19' versionName='1.18'" build/verification/badging.txt
           if grep -Eq 'READ_CONTACTS|READ_SMS|ACCESS_FINE_LOCATION|INTERNET' build/verification/permissions.txt; then
             echo 'Unexpected sensitive/network permission found' >&2
             exit 1
           fi
-          NEW_CERT=$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' build/verification/signing-gadgety-v1.17.txt | head -n 1)
+          NEW_CERT=$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' build/verification/signing-gadgety-v1.18.txt | head -n 1)
+          EXPECTED_CERT=24380c7ccb0e5c86c6c98b2638614dcf04df988ee632c9e231c778590b7d24ce
+          test "$NEW_CERT" = "$EXPECTED_CERT"
+          if unzip -Z1 "$APK" | grep -Eiq '(^|/)assets/.*(\.lir$|private.*roster|private.*backup)'; then
+            echo 'Private roster/backup asset found inside APK' >&2
+            exit 1
+          fi
           {
             echo "package_id=com.andrefiker.gadgety"
-            echo "version_code=18"
-            echo "version_name=1.17"
+            echo "version_code=19"
+            echo "version_name=1.18"
             echo "new_certificate_sha256=$NEW_CERT"
             echo 'side_by_side_with_loot=true'
             echo 'update_from_gadgety_v1_16=false'
-            echo 'signing_baseline=gadgety_v1_17_stable'
+            echo 'signing_compatible_with_v1_17=true'
+            echo 'in_place_update_preserves_data=true'
+            echo 'signing_baseline=gadgety_v1_17_exact'
             echo 'data_transfer=encrypted_backup_restore'
           } > build/verification/update-compatibility.txt
           sha256sum "$APK" > build/verification/apk-sha256.txt
@@ -95,7 +118,7 @@ jobs:
           cat build/verification/update-compatibility.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: Gadgety-v1.17-APK-and-verification
+          name: Gadgety-v1.18-APK-and-verification
           path: |
             quanto-resta-patient-payments-v2/app/build/outputs/apk/release/app-release.apk
             quanto-resta-patient-payments-v2/build/verification/

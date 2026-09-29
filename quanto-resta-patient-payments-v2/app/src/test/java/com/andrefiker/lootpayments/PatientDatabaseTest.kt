@@ -76,8 +76,12 @@ class PatientDatabaseTest {
             IncomeRosterEntry("Pessoa A", 90_000),
             IncomeRosterEntry("pessoa b", 50_000)
         ))
-        dao.mergeIncomeRoster(owner, roster)
-        dao.mergeIncomeRoster(owner, roster)
+        val first = dao.mergeIncomeRoster(owner, roster)
+        val second = dao.mergeIncomeRoster(owner, roster)
+        assertEquals(1, first.insertedCount)
+        assertEquals(1, first.updatedCount)
+        assertEquals(0, second.insertedCount)
+        assertEquals(2, second.updatedCount)
         val patients = dao.backupPatients(owner)
         assertEquals(2, patients.size)
         assertEquals(140_000L, patients.sumOf { it.defaultCents })
@@ -85,6 +89,28 @@ class PatientDatabaseTest {
         assertEquals(2, months.size)
         assertEquals(140_000L, months.sumOf { it.expectedCents })
         assertEquals(140_000L, months.sumOf { it.paidCents })
+        db.close()
+    }
+
+    @Test fun rosterReimportUpdatesValueAndSurvivesDatabaseReopen() = runBlocking {
+        context.deleteDatabase(fileName)
+        val september = YearMonth.of(2026, 9)
+        var db = Room.databaseBuilder(context, PaymentsDatabase::class.java, fileName).build()
+        var dao = db.dao()
+        dao.mergeIncomeRoster(owner, IncomeRoster(september, false,
+            listOf(IncomeRosterEntry("Pessoa Sintética", 90_000))))
+        val result = dao.mergeIncomeRoster(owner, IncomeRoster(september, false,
+            listOf(IncomeRosterEntry("Pessoa Sintética", 95_000))))
+        assertEquals(0, result.insertedCount)
+        assertEquals(1, result.updatedCount)
+        assertEquals(1, dao.backupPatients(owner).size)
+        assertEquals(95_000L, dao.months(owner, september.key()).first().single().expectedCents)
+        db.close()
+
+        db = Room.databaseBuilder(context, PaymentsDatabase::class.java, fileName).build()
+        dao = db.dao()
+        assertEquals(1, dao.backupPatients(owner).size)
+        assertEquals(95_000L, dao.months(owner, september.key()).first().single().expectedCents)
         db.close()
     }
 

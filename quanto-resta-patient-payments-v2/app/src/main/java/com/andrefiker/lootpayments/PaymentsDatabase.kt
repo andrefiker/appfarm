@@ -9,6 +9,8 @@ import java.time.YearMonth
 import java.util.Locale
 import java.util.UUID
 
+data class IncomeRosterMergeResult(val insertedCount: Int, val updatedCount: Int, val totalCount: Int)
+
 @Entity(tableName = "patients", indices = [Index("ownerId")])
 data class Patient(
     @PrimaryKey val id: String,
@@ -124,9 +126,11 @@ interface PaymentsDao {
     @Transaction suspend fun clearAll() { clearMonths(); clearPatients() }
 
     /** Additive, idempotent roster import. It never touches expenses or other months. */
-    @Transaction suspend fun mergeIncomeRoster(owner: String, roster: IncomeRoster) {
+    @Transaction suspend fun mergeIncomeRoster(owner: String, roster: IncomeRoster): IncomeRosterMergeResult {
         val selected = roster.month
         val now = System.currentTimeMillis()
+        var inserted = 0
+        var updated = 0
         val existing = allPatients(owner)
             .filter { it.deletedAt == null }
             .associateBy { it.name.trim().lowercase(Locale.ROOT) }
@@ -135,9 +139,11 @@ interface PaymentsDao {
             val key = entry.name.trim().lowercase(Locale.ROOT)
             val current = existing[key]
             val patient = if (current == null) {
+                inserted += 1
                 Patient(UUID.randomUUID().toString(), owner, entry.name.trim(), entry.monthlyCents,
                     true, null, selected.key(), now, now)
             } else {
+                updated += 1
                 current.copy(defaultCents = entry.monthlyCents, active = true, archivedFromMonth = null,
                     updatedAt = now, revision = current.revision + 1, dirty = true)
             }
@@ -155,6 +161,7 @@ interface PaymentsDao {
                     revision = prior.revision + 1, dirty = true)
             })
         }
+        return IncomeRosterMergeResult(inserted, updated, roster.entries.size)
     }
 
     /** Freeze every earlier fee before changing the default, even if an old month was never opened. */

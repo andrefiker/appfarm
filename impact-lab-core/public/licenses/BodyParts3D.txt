@@ -1,0 +1,8 @@
+BodyParts3D, © The Database Center for Life Science licensed under CC Attribution 4.0 International.
+License: https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html (updated 2025-02-27; accessed 2026-09-29).
+Source: BodyParts3D 4.0, 20130619 partof_BP3D_4.0_obj_99.zip
+https://dbarchive.biosciencedbc.jp/data/bodyparts3d/20130619/partof_BP3D_4.0_obj_99.zip
+SHA256: 9fbc713fffeee924a5a657d9813d84d7eb957bded63adb854931dd5e3eb61c97
+Contributors: Kousaku Okubo / DBCLS. No endorsement implied.
+Adaptations: head extraction; outer skin envelope sampling; alignment to torso; neck connection; simplification; repair/remeshing of closed skull and brain surfaces. Shared x-left/y-superior/z-anterior coordinates. Exact FMA identifiers and original per-file SHA256 hashes in models/head.json.
+The head skin is joined to the previous Z-Anatomy-derived torso. Combined derivative head.glb is CC BY-SA 4.0, with both upstream notices and attribution retained. No restricted Z-Anatomy head/ear/brain contributions are imported.

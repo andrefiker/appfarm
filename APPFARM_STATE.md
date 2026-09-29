@@ -124,3 +124,11 @@ Vercel:
 - 14 geometry/state tests and production-browser interaction/visual acceptance; CPU benchmarks in `impact-lab-core/qa/benchmark-{before,after}.json`. No physical-phone FPS claim.
 - Packaging target `com.andrefiker.impactlabcore.fast`, 1.1.0/code 2, Impact Lab Core+, separate from 1.0 because its debug signing key was not retained. No backend/deployment/permissions. APK BUILT / PACKAGE VERIFIED: source commit `774de4e4a426d8e0f54a53f138f5abeebb827855`, workflow `36568549017` succeeded without emulator. SHA256 `7aeabcdddb6acaf7b2b16ee99b2a71ae44fc6f68b09ff1ca2ebbef231d0f661d`; v2 debug signature; ten bundled files match tested production. Physical 1.1 performance/resume/offline relaunch remain untested.
 - Rollback: `dccdcf1ed3b9cc8ad69dfdf209582e2a9abfcae0`; older APK source `1520d6c1fab67b91b4fc852a166681460ddccf17`.
+
+## Impact Lab Core 3 / 1.2.0 — 2026-09-29
+
+- Current checkpoint: cumulative projectile wounds, closed lining, surface-following blood trails, geometry-aligned internal tracks and bounded tissue deformation; 30-event cap. Added original licensed BodyParts3D 4.0 head/skull/brain and focus controls. No real rifle calibration or injury prediction.
+- 17 tests and production browser QA pass; screenshots inspected. Head remains visually provisional: neck seam, simplified eyes and rough cranial sections. No emulator work; no physical-device claim.
+- Packaging target com.andrefiker.impactlabcore.next, 1.2.0/code 3. New release signing key outside repository; privately retain for update continuity. CI builds unsigned, local signing keeps secrets out of CI/Git. Final package verification pending at this checkpoint.
+- Rollback d1b74dac2f35ebd44c4ac20e71dc40dfe3d888f3; prior APK source 774de4e4a426d8e0f54a53f138f5abeebb827855.
+- Dataset lesson: BodyParts3D skin includes a thin double surface. Use validated outer envelope before pairing entry/exit; otherwise the projectile falsely exits before skull.

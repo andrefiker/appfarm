@@ -37,22 +37,24 @@ jobs:
           gradle-version: '8.10.2'
           cache-disabled: true
       - name: Build APK
-        run: gradle --no-daemon --stacktrace -p impact-lab-core/android :app:assembleDebug
-      - name: Verify package and signature
+        run: gradle --no-daemon --stacktrace -p impact-lab-core/android :app:assembleRelease
+      - name: Verify unsigned package
         run: |
-          APK=impact-lab-core/android/app/build/outputs/apk/debug/app-debug.apk
+          APK=impact-lab-core/android/app/build/outputs/apk/release/app-release-unsigned.apk
           test -s "$APK"
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | tee /tmp/badging.txt
-          grep -F "name='com.andrefiker.impactlabcore.fast'" /tmp/badging.txt
-          grep -F "versionCode='2' versionName='1.1.0'" /tmp/badging.txt
+          grep -F "name='com.andrefiker.impactlabcore.next'" /tmp/badging.txt
+          grep -F "versionCode='3' versionName='1.2.0'" /tmp/badging.txt
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions "$APK" | tee /tmp/permissions.txt
           ! grep -q 'uses-permission' /tmp/permissions.txt
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
+          cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" impact-lab-core/android/app/build/outputs/apk/release/apksigner.jar
           unzip -l "$APK" | grep 'assets/web/models/torso.glb'
           unzip -l "$APK" | grep 'assets/web/licenses/Z-Anatomy.txt'
       - uses: actions/upload-artifact@v4
         with:
-          name: Impact-Lab-Core-1.1.0-APK
-          path: impact-lab-core/android/app/build/outputs/apk/debug/app-debug.apk
+          name: Impact-Lab-Core-1.2.0-Unsigned
+          path: |
+            impact-lab-core/android/app/build/outputs/apk/release/app-release-unsigned.apk
+            impact-lab-core/android/app/build/outputs/apk/release/apksigner.jar
           retention-days: 7
           if-no-files-found: error

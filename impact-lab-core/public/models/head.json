@@ -1,0 +1,580 @@
+[
+  {
+    "structureId": "skin",
+    "anatomicalName": "Skin",
+    "layer": "skin",
+    "source": "BodyParts3D 4.0",
+    "sourceFMA": "FMA7163",
+    "sourceFiles": [
+      "FJ2810"
+    ],
+    "sourceHashes": {
+      "FJ2810": "50fb17d0b3559b8b6c5481dbe7f877d25726e576564da615c45b2dd7654e315d"
+    },
+    "faces": 156806,
+    "bounds": [
+      [
+        -0.20500434935092926,
+        -0.3199999928474426,
+        -0.1480649709701538
+      ],
+      [
+        0.2050042748451233,
+        0.5725000000000011,
+        0.13171619176864624
+      ]
+    ],
+    "watertight": false
+  },
+  {
+    "structureId": "bp3d_fma52734",
+    "anatomicalName": "Frontal bone",
+    "layer": "bone",
+    "source": "BodyParts3D 4.0",
+    "sourceFMA": "FMA52734",
+    "sourceFiles": [
+      "FJ3200"
+    ],
+    "sourceHashes": {
+      "FJ3200": "9a01d88bd564b462ecadd6ad5bb3bb2274105baa3d211e0f444210d3f499ed64"
+    },
+    "faces": 32392,
+    "bounds": [
+      [
+        -0.065,
+        0.451,
+        0.001
+      ],
+      [
+        0.063,
+        0.5630000000000001,
+        0.075
+      ]
+    ],
+    "watertight": true
+  },
+  {
+    "structureId": "bp3d_fma52735",
+    "anatomicalName": "Occipital bone",
+    "layer": "bone",
+    "source": "BodyParts3D 4.0",
+    "sourceFMA": "FMA52735",
+    "sourceFiles": [
+      "FJ3309"
+    ],
+    "sourceHashes": {
+      "FJ3309": "37172b4706d23d51ebb3ce3839cc59c6e4cb4931039901f395703bc7dff52761"
+    },
+    "faces": 28166,
+    "bounds": [
+      [
+        -0.063,
+        0.40900000000000003,
+        -0.125
+      ],
+      [
+        0.061,
+        0.517,
+        -0.0030000000000000027
+      ]
+    ],
+    "watertight": true
+  },
+  {
+    "structureId": "bp3d_fma52738",
+    "anatomicalName": "Right temporal bone",
+    "layer": "bone",
+    "source": "BodyParts3D 4.0",
+    "sourceFMA": "FMA52738",
+    "sourceFiles": [
+      "FJ3386"
+    ],
+    "sourceHashes": {
+      "FJ3386": "cae2e4dc5211d50b06e70893eef3bdaf19564ab8ae7923260e800c3498f65f88"
+    },
+    "faces": 11366,
+    "bounds": [
+      [
+        -0.075,
+        0.40700000000000003,
+        -0.07100000000000001
+      ],
+      [
+        -0.010999999999999996,
+        0.48500000000000004,
+        0.031
+      ]
+    ],
+    "watertight": true
+  },
+  {
+    "structureId": "bp3d_fma52739",
+    "anatomicalName": "Left temporal bone",
+    "layer": "bone",
+    "source": "BodyParts3D 4.0",
+    "sourceFMA": "FMA52739",
+    "sourceFiles": [
+      "FJ3281"
+    ],
+    "sourceHashes": {
+      "FJ3281": "47cc46f1480c54fe14a2d22361c3b93fcb964538f23d5b425ac718854cff2673"
+    },
+    "faces": 11204,
+    "bounds": [
+      [
+        0.011,
+        0.40700000000000003,
+        -0.069
+      ],
+      [
+        0.073,
+        0.48500000000000004,
+        0.031
+      ]
+    ],
+    "watertight": true
+  },
+  {
+    "structureId": "bp3d_fma52788",
+    "anatomicalName": "Right parietal bone",
+    "layer": "bone",
+    "source": "BodyParts3D 4.0",
+    "sourceFMA": "FMA52788",
+    "sourceFiles": [
+      "FJ3380"
+    ],
+    "sourceHashes": {
+      "FJ3380": "fb69a19eaa0585509f45ce1ebb5e8d91af0442629e52cfe1cfd190ca8f2f72b0"
+    },
+    "faces": 29578,
+    "bounds": [
+      [
+        -0.077,
+        0.449,
+        -0.11900000000000001
+      ],
+      [
+        0.007000000000000006,
+        0.5690000000000001,
+        0.02500000000000001
+      ]
+    ],
+    "watertight": true
+  },
+  {
+    "structureId": "bp3d_fma52789",
+    "anatomicalName": "Left parietal bone",
+    "layer": "bone",
+    "source": "BodyParts3D 4.0",
+    "sourceFMA": "FMA52789",
+    "sourceFiles": [
+      "FJ3274"
+    ],
+    "sourceHashes": {
+      "FJ3274": "df63a28fa604ff67828d8f382c66cfa46f40306b1b4c17a8062029764047d0e3"
+    },
+    "faces": 29992,
+    "bounds": [
+      [
+        -0.009000000000000001,
+        0.449,
+        -0.11900000000000001
+      ],
+      [
+        0.07500000000000001,
+        0.5690000000000001,
+        0.028999999999999984
+      ]
+    ],
+    "watertight": true
+  },
+  {
+    "structureId": "bp3d_fma52748",
+    "anatomicalName": "Mandible",
+    "layer": "bone",
+    "source": "BodyParts3D 4.0",
+    "sourceFMA": "FMA52748",
+    "sourceFiles": [
+      "FJ3289"
+    ],
+    "sourceHashes": {
+      "FJ3289": "6ae0d7fde4221302f1c74d9e9933e2e05c36efef273bb27a78326d108d140ce8"
+    },
+    "faces": 2200,
+    "bounds": [
+      [
+        -0.05397157534405543,
+        0.3535437872603817,
+        -0.014211009038254944
+      ],
+      [
+        0.05257108076751679,
+        0.4380615045645107,
+        0.06994905664432532
+      ]
+    ],
+    "watertight": true
+  },
+  {
+    "structureId": "bp3d_fma53649",
+    "anatomicalName": "Right maxilla",
+    "layer": "bone",
+    "source": "BodyParts3D 4.0",
+    "sourceFMA": "FMA53649",
+    "sourceFiles": [
+      "FJ3375"
+    ],
+    "sourceHashes": {
+      "FJ3375": "a1be9480b632355859507e590be68146a591d343ad671ca85c43d7be50d8b43c"
+    },
+    "faces": 7076,
+    "bounds": [
+      [
+        -0.049,
+        0.395,
+        0.025
+      ],
+      [
+        0.0010000000000000009,
+        0.467,
+        0.081
+      ]
+    ],
+    "watertight": true
+  },
+  {
+    "structureId": "bp3d_fma53650",
+    "anatomicalName": "Left maxilla",
+    "layer": "bone",
+    "source": "BodyParts3D 4.0",
+    "sourceFMA": "FMA53650",
+    "sourceFiles": [
+      "FJ3269"
+    ],
+    "sourceHashes": {
+      "FJ3269": "a56eeb3723f4b3cd1d96b113eaba8f253ed49ff76220ba48ac0d1d086b80ff60"
+    },
+    "faces": 7280,
+    "bounds": [
+      [
+        -0.005,
+        0.395,
+        0.020999999999999998
+      ],
+      [
+        0.047,
+        0.467,
+        0.079
+      ]
+    ],
+    "watertight": true
+  },
+  {
+    "structureId": "bp3d_fma52736",
+    "anatomicalName": "Sphenoid bone",
+    "layer": "bone",
+    "source": "BodyParts3D 4.0",
+    "sourceFMA": "FMA52736",
+    "sourceFiles": [
+      "FJ3394"
+    ],
+    "sourceHashes": {
+      "FJ3394": "9255a2f02b16d0cf87c68fbfdc7afc4709d1afef94c2e2bb1e035b7f7852aca0"
+    },
+    "faces": 15382,
+    "bounds": [
+      [
+        -0.057,
+        0.40900000000000003,
+        -0.015
+      ],
+      [
+        0.057,
+        0.48100000000000004,
+        0.043000000000000003
+      ]
+    ],
+    "watertight": true
+  },
+  {
+    "structureId": "bp3d_fma72969",
+    "anatomicalName": "Right frontal lobe",
+    "layer": "organ",
+    "source": "BodyParts3D 4.0",
+    "sourceFMA": "FMA72969",
+    "sourceFiles": [
+      "FJ1745",
+      "FJ1788",
+      "FJ1801",
+      "FJ1834"
+    ],
+    "sourceHashes": {
+      "FJ1745": "6210acb1780932a25c00b2f4cbdf5ab28cd9ed95eef46ef792ab3647a42c1b47",
+      "FJ1788": "e72da8ed193cd1b514207a4056bfb41fef1fabd548090dcc4cd5108ded280fa8",
+      "FJ1801": "f8ddd0851486a930ef02ff586badabd34cbcf31b034dd7b5ad1b6466f12d28c3",
+      "FJ1834": "9a52d502e5af633cb6d1cae76e5e9230e60f78ee987982c23b02776fd3adc9ea"
+    },
+    "faces": 29862,
+    "bounds": [
+      [
+        -0.065,
+        0.47700000000000004,
+        -0.065
+      ],
+      [
+        -0.0010000000000000009,
+        0.5630000000000001,
+        0.067
+      ]
+    ],
+    "watertight": true
+  },
+  {
+    "structureId": "bp3d_fma72970",
+    "anatomicalName": "Left frontal lobe",
+    "layer": "organ",
+    "source": "BodyParts3D 4.0",
+    "sourceFMA": "FMA72970",
+    "sourceFiles": [
+      "FJ1744",
+      "FJ1787",
+      "FJ1800",
+      "FJ1833"
+    ],
+    "sourceHashes": {
+      "FJ1744": "055774da0ba432560fb8e65b2b474ddaf5ac1a683f5b4fbcc1e8cac6e9536c25",
+      "FJ1787": "9bc4568f6633e999f98ba932ac18608251aa36d689433fbbb536f72d6c4d3d6d",
+      "FJ1800": "34c447cb8bf5e98493cfe52911af1fa9ebd0eaf32c7c5578457666575f5d8cc0",
+      "FJ1833": "8f4548f67acff09574bc46bfc9c78c31ad8d4f16a34cfe28b95e19b640d2208c"
+    },
+    "faces": 29626,
+    "bounds": [
+      [
+        -0.001,
+        0.47700000000000004,
+        -0.065
+      ],
+      [
+        0.063,
+        0.5630000000000001,
+        0.067
+      ]
+    ],
+    "watertight": true
+  },
+  {
+    "structureId": "bp3d_fma72971",
+    "anatomicalName": "Right temporal lobe",
+    "layer": "organ",
+    "source": "BodyParts3D 4.0",
+    "sourceFMA": "FMA72971",
+    "sourceFiles": [
+      "FJ1747",
+      "FJ1784",
+      "FJ1786",
+      "FJ1790"
+    ],
+    "sourceHashes": {
+      "FJ1747": "0e04dea5d156768ae580670b771197c882d9b652132358ef6197ae3f823640f6",
+      "FJ1784": "b6e11d4565f77ca8c0b815540a6a7cc77f48616f81263cb6352c183cdbd0f1da",
+      "FJ1786": "9f4a8e120131ee6041a48635c3b6dc74cac8d6dcd50e80ef38b2aec56a66ce38",
+      "FJ1790": "47b2ce1a7536c8dccaeba6e14139475ce65805b2d0af6036cda4db18aabe4559"
+    },
+    "faces": 2200,
+    "bounds": [
+      [
+        -0.0703189801442226,
+        0.4455089239702554,
+        -0.0900273683549941
+      ],
+      [
+        -0.009905939676031586,
+        0.48692552838905023,
+        0.020967490574264933
+      ]
+    ],
+    "watertight": true
+  },
+  {
+    "structureId": "bp3d_fma72972",
+    "anatomicalName": "Left temporal lobe",
+    "layer": "organ",
+    "source": "BodyParts3D 4.0",
+    "sourceFMA": "FMA72972",
+    "sourceFiles": [
+      "FJ1746",
+      "FJ1783",
+      "FJ1785",
+      "FJ1789"
+    ],
+    "sourceHashes": {
+      "FJ1746": "4be36eec071bfe6d1878acfa535e74dbf91c773c351dea9bc9a4704e3db3fe2e",
+      "FJ1783": "2ea98ec904ba5de8229ed9aeff99c1b34f4030a080e758bdd063f8cc7e92d5f3",
+      "FJ1785": "87db9ae2691ad71d47210ad27a8d56353fb3e9400f68f1b1350f59cfdf4880b4",
+      "FJ1789": "4985721171ebf94eb7607822073dba045e42bec2428982a7befa96204b4b4c1a"
+    },
+    "faces": 2200,
+    "bounds": [
+      [
+        0.008932180000000001,
+        0.4455168365821631,
+        -0.09015795631997335
+      ],
+      [
+        0.06889340000000001,
+        0.4872437687062936,
+        0.020889000000000005
+      ]
+    ],
+    "watertight": true
+  },
+  {
+    "structureId": "bp3d_fma72973",
+    "anatomicalName": "Right parietal lobe",
+    "layer": "organ",
+    "source": "BodyParts3D 4.0",
+    "sourceFMA": "FMA72973",
+    "sourceFiles": [
+      "FJ1733",
+      "FJ1798",
+      "FJ1836",
+      "FJ1842"
+    ],
+    "sourceHashes": {
+      "FJ1733": "4f154c33e0c43d68d75aaec659b9a6f65ca42ef4b8ea6462a4482e2178b92a0f",
+      "FJ1798": "a7c633819d776ef3610be33e0c2ddf47e7da39b6da476b7876418f8245f27c25",
+      "FJ1836": "367b62ae6f27730d3587f4776ad948ad114f9182be35e776faf7aa576d97ae41",
+      "FJ1842": "dd46c1ccde03f979fb0e23071ab5816d7a4bda05776b66604e784f735127c0c2"
+    },
+    "faces": 21814,
+    "bounds": [
+      [
+        -0.07100000000000001,
+        0.47100000000000003,
+        -0.113
+      ],
+      [
+        0.0010000000000000009,
+        0.557,
+        -0.015
+      ]
+    ],
+    "watertight": true
+  },
+  {
+    "structureId": "bp3d_fma72974",
+    "anatomicalName": "Left parietal lobe",
+    "layer": "organ",
+    "source": "BodyParts3D 4.0",
+    "sourceFMA": "FMA72974",
+    "sourceFiles": [
+      "FJ1732",
+      "FJ1797",
+      "FJ1835",
+      "FJ1841"
+    ],
+    "sourceHashes": {
+      "FJ1732": "661e99ae245f0392bd7bfd63aa65074f61fb47e9c35641310f1804c9973acb9a",
+      "FJ1797": "030dbec5dbfc8f29059727f18f867e962fc5debfeea4cab45883edc2c996ec6b",
+      "FJ1835": "d8c6c241f6e98a6b8bfa9cd97943173d18a91251a66029d9a5681fc09f691be4",
+      "FJ1841": "473636ae8d030582d4d7a76d6fa93d2fc785a415060411fe9b93ce63738ee2bf"
+    },
+    "faces": 21872,
+    "bounds": [
+      [
+        -0.001,
+        0.47100000000000003,
+        -0.113
+      ],
+      [
+        0.07100000000000001,
+        0.557,
+        -0.015
+      ]
+    ],
+    "watertight": true
+  },
+  {
+    "structureId": "bp3d_fma72975",
+    "anatomicalName": "Right occipital lobe",
+    "layer": "organ",
+    "source": "BodyParts3D 4.0",
+    "sourceFMA": "FMA72975",
+    "sourceFiles": [
+      "FJ1792"
+    ],
+    "sourceHashes": {
+      "FJ1792": "860b8fd92e2fae9dd28f782c88170fb591d00b3154da78b57098ff5119692d96"
+    },
+    "faces": 2200,
+    "bounds": [
+      [
+        -0.0448244,
+        0.44928083828358795,
+        -0.11364722895320044
+      ],
+      [
+        -0.0014540206499751335,
+        0.5039244754659816,
+        -0.05104849999999999
+      ]
+    ],
+    "watertight": true
+  },
+  {
+    "structureId": "bp3d_fma72976",
+    "anatomicalName": "Left occipital lobe",
+    "layer": "organ",
+    "source": "BodyParts3D 4.0",
+    "sourceFMA": "FMA72976",
+    "sourceFiles": [
+      "FJ1791"
+    ],
+    "sourceHashes": {
+      "FJ1791": "b8f2b6ac30aaf72f9ef0e7c00892edd7d4b27b1a6589971d25c973a8894e09f2"
+    },
+    "faces": 2200,
+    "bounds": [
+      [
+        5.767553516415276e-05,
+        0.4495590725907484,
+        -0.1143293
+      ],
+      [
+        0.04348665844362009,
+        0.5037120047690794,
+        -0.05102921013889006
+      ]
+    ],
+    "watertight": true
+  },
+  {
+    "structureId": "bp3d_fma67944",
+    "anatomicalName": "Cerebellum",
+    "layer": "organ",
+    "source": "BodyParts3D 4.0",
+    "sourceFMA": "FMA67944",
+    "sourceFiles": [
+      "FJ1781",
+      "FJ1830"
+    ],
+    "sourceHashes": {
+      "FJ1781": "6f66f4912c7519ea6a018324ef4f6d46eb266350574d05a905afeb2c88c575ed",
+      "FJ1830": "d35574d86994e5e49e0e1ee41174a927c666735d7eb7b9cbdae2a709ae4a0bb9"
+    },
+    "faces": 12112,
+    "bounds": [
+      [
+        -0.055,
+        0.417,
+        -0.093
+      ],
+      [
+        0.053,
+        0.473,
+        -0.034999999999999996
+      ]
+    ],
+    "watertight": true
+  }
+]

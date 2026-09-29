@@ -5,7 +5,7 @@ export type Layer='skin'|'muscle'|'bone'|'organ';
 export type View='skin'|'muscle'|'skeleton'|'organs'|'cutaway';
 export interface Structure {id:string;name:string;layer:Layer;mesh:THREE.Mesh<THREE.BufferGeometry,THREE.MeshStandardMaterial>;base:Float32Array;normals:Float32Array;}
 export async function loadAnatomy():Promise<Structure[]> {
- const gltf=await new GLTFLoader().loadAsync('./models/torso.glb');return structuresFromScene(gltf.scene);
+ const loader=new GLTFLoader(),models=await Promise.all(['torso','head'].map(n=>loader.loadAsync('./models/'+n+'.glb')));return models.flatMap((g,i)=>structuresFromScene(g.scene).filter(s=>i!==0||s.layer!=='skin'));
 }
 export function structuresFromScene(scene:THREE.Object3D):Structure[]{const structures:Structure[]=[];scene.updateMatrixWorld(true);
  scene.traverse(o=>{if(!(o instanceof THREE.Mesh))return;const d=o.userData;const layer=d.layer as Layer;if(!layer)return;
@@ -18,7 +18,7 @@ export function structuresFromScene(scene:THREE.Object3D):Structure[]{const stru
 }
 export function tissueMaterial(layer:Layer,name:string){
  let color=layer==='skin'?'#b88970':layer==='bone'?'#ddd0ac':layer==='muscle'?'#96483d':'#b97d72';
- if(/lung/.test(name))color='#b98e86';if(name==='Liver')color='#8b4846';if(name==='Stomach')color='#c18b74';if(/colon|Jejunum|Ileum|Duodenum/.test(name))color='#bf9b7c';if(/ventricle|atrium/.test(name))color='#934d46';if(name==='Diaphragm')color='#b37160';if(/cartilage|disc/i.test(name))color='#b9c2b7';
+ if(/lung/.test(name))color='#b98e86';if(name==='Liver')color='#8b4846';if(name==='Stomach')color='#c18b74';if(/colon|Jejunum|Ileum|Duodenum/.test(name))color='#bf9b7c';if(/ventricle|atrium/.test(name))color='#934d46';if(/lobe|Cerebellum/.test(name)&&!/lung/.test(name))color='#b99088';if(name==='Diaphragm')color='#b37160';if(/cartilage|disc/i.test(name))color='#b9c2b7';
  const mat=new THREE.MeshStandardMaterial({color,roughness:layer==='bone'?.84:.82,metalness:0,side:THREE.DoubleSide});
  const fiber=/pectoralis/.test(name)?new THREE.Vector3(.35,.9,.12):/oblique/.test(name)?new THREE.Vector3(.8,.45,.2):new THREE.Vector3(1,.08,.25);
  mat.onBeforeCompile=shader=>{

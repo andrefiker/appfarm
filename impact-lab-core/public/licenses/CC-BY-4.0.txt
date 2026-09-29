@@ -1,0 +1,4 @@
+Creative Commons Attribution 4.0 International
+License reference: https://creativecommons.org/licenses/by/4.0/
+Legal code: https://creativecommons.org/licenses/by/4.0/legalcode
+BodyParts3D attribution and exact archive provenance: BodyParts3D.txt

@@ -1,0 +1,41 @@
+{
+  "errors": [],
+  "offlineAssets": true,
+  "resetIdentical": true,
+  "one": [
+    {
+      "skinId": "skin",
+      "count": 1,
+      "radius": 0.0085,
+      "depth": 0.0145,
+      "exit": false
+    }
+  ],
+  "six": [
+    {
+      "skinId": "skin",
+      "count": 6,
+      "radius": 0.016326237921249265,
+      "depth": 0.022,
+      "exit": false
+    }
+  ],
+  "thirtyShots": true,
+  "applyMs": {
+    "median": 36.200000000186265,
+    "max": 56.90000000037253
+  },
+  "allocations": {
+    "geometries": 176,
+    "textures": 1
+  },
+  "resetAllocations": {
+    "geometries": 172,
+    "textures": 1
+  },
+  "idleFrames": [
+    68,
+    68
+  ],
+  "environment": "Chrome 138 / SwiftShader software rendering / Linux / 390x844 DPR1. Not physical-phone performance."
+}

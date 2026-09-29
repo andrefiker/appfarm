@@ -11,3 +11,6 @@ The exact downloaded Z-Anatomy notice is `public/licenses/Z-Anatomy.txt`. It ide
 Three.js 0.180.0 — Copyright 2010–2025 Three.js authors, MIT license bundled at `public/licenses/Three-MIT.txt`. Independent application code is MIT. Build dependency licenses are retained by npm packages; pinned versions are in package-lock.json.
 
 three-mesh-bvh 0.9.1 — Garrett Johnson, MIT; bundled notice `public/licenses/Three-Mesh-BVH-MIT.txt`. Used for acceleration of actual anatomy intersections and section slicing.
+
+## Head added in 1.2
+BodyParts3D, © The Database Center for Life Science licensed under CC Attribution 4.0 International. Original 4.0 archive dated 20130619, downloaded from the official archive on 2026-09-29. Per-file provenance is in `public/models/head.json`; notices and license links at `public/licenses/BodyParts3D.txt` and `CC-BY-4.0.txt`. Head skin/skull/brain are sourced directly from this archive, avoiding separately licensed Z-Anatomy head contributions. Head skin is joined to the earlier Z-Anatomy torso; the combined derivative is distributed under CC BY-SA 4.0. Scaling, envelope extraction, repairs and remeshing are adaptations.

@@ -1,0 +1,7 @@
+import * as THREE from 'three';
+import type {DamageEvent} from './damage';
+export interface Lesion {id:string;skinId:string;point:THREE.Vector3;normal:THREE.Vector3;count:number;radius:number;depth:number;event:DamageEvent;exit:boolean;}
+// Bounded visual units, not wound dimensions predicted from a weapon.
+export function lesionRadius(count:number){return Math.min(.023,.0085+.0035*Math.sqrt(Math.max(0,count-1)));}
+export function projectileLesions(events:DamageEvent[]):Lesion[]{const out:Lesion[]=[];for(const event of events){if(event.tool!=='projectile')continue;const skinId=event.skinId??'skin';for(const exit of [false,true]){if(exit&&!event.exit)continue;const point=exit?event.exit!:event.anchor,normal=exit?event.direction:event.normal;let l=out.find(l=>l.skinId===skinId&&l.exit===exit&&l.normal.dot(normal)>.65&&l.point.distanceTo(point)<.017);if(l){l.count++;l.event=event;l.radius=lesionRadius(l.count)*(exit?1.12:1);l.depth=Math.min(.023,.013+.0015*l.count);}else out.push({id:`${event.id}-${exit?'exit':'entry'}`,skinId,point:point.clone(),normal:normal.clone(),count:1,radius:lesionRadius(1)*(exit?1.12:1),depth:.0145,event,exit});}}return out;}
+export function priorLocalShots(events:DamageEvent[],point:THREE.Vector3,normal:THREE.Vector3,skinId:string){return events.filter(e=>e.tool==='projectile'&&(e.skinId??'skin')===skinId&&e.anchor.distanceTo(point)<.028&&e.normal.dot(normal)>.65).length;}

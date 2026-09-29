@@ -1,13 +1,16 @@
-# Impact Lab: Core+ 1.1.0
+# Impact Lab: Core 3 — 1.2.0
 
-Offline anatomical visualization toy. One adult torso, three fictional blunt intensities, one fictional projectile, five anatomical views. Drag to orbit, pinch to zoom, tap to select, then Apply. Undo removes the latest event; Reset restores geometry and appearance. Up to twelve events per session. Only view/tool/intensity settings persist.
+Offline anatomical visualization toy. One adult head and torso, three fictional blunt intensities, one fictional projectile, five anatomical views. Drag to orbit, pinch to zoom, tap to select, then Apply. Undo removes the latest event; Reset restores geometry and appearance. Up to thirty events per session. Only view/tool/intensity settings persist.
 
 ## Build
 Node 22.14.0 or compatible Node >=22.12. `npm ci`, `npm test`, `npm run build`. Open using Vite (`npm run dev`); do not open index.html directly as a file. All runtime assets are bundled; no CDN/backend/accounts/analytics.
 
-Android: `node scripts/bundle-android.mjs`, then Java 17, Gradle 8.10.2, Android SDK 35/build-tools 35.0.0: `gradle --no-daemon -p android :app:assembleDebug`. GitHub workflow `impact-lab-core-apk.yml` performs packaging and structural verification only. Emulator diagnostics are manual-only and are not a delivery gate. Package `com.andrefiker.impactlabcore.fast`, version 1.1.0/code 2, Android 8+. Separate installation from Impact Lab Core 1.0 and older Impact Lab; the old signing key is unavailable. No requested permissions.
+Android: `node scripts/bundle-android.mjs`, then Java 17, Gradle 8.10.2, Android SDK 35/build-tools 35.0.0: `gradle --no-daemon -p android :app:assembleRelease`. GitHub workflow `impact-lab-core-apk.yml` performs packaging and structural verification only. Emulator diagnostics are manual-only and are not a delivery gate. Package `com.andrefiker.impactlabcore.next`, version 1.2.0/code 3, Android 8+. Separate installation from Impact Lab Core 1.0 and older Impact Lab; the old signing key is unavailable. No requested permissions.
 
-The delivered build uses the Android debug certificate. No private key is committed. A future build made with a different key cannot update this installation in place. Session damage is intentionally not persistent; local settings survive restarts.
+The release APK is signed locally with a private AppFarm release certificate. The key is kept outside Git and must be retained for future updates. CI produces an unsigned package and never receives the private key. This package coexists with older installations whose debug keys were not retained. Session damage is intentionally not persistent.
+
+## 1.2 projectile and head pass
+Repeated nearby shots enlarge the same lined entry wound, add surface-following blood trails, and strengthen the matching segmented internal track. Local tissue deformation and shader effects remain bounded; thirty events maximum. The original BodyParts3D 4.0 head, skull and brain are aligned with the existing torso; Torso/Head focus controls keep inspection practical. Effects are fictional visual approximations, not rifle ballistics or bleeding physiology.
 
 ## 1.1 responsiveness pass
 Actual-mesh BVH picking/penetration, refitted after local deformation; changed-structure updates; cached, spatially pruned cutaway geometry; early-rejected and shared damage shader noise. Demand-only rendering sleeps when still and pauses when hidden. DPR is capped at 1.25, without a real-time shadow pass. Compact controls, stronger bruising, a front-view/zoom reset button, and return-to-camera after cutaway. Projectile mode hides irrelevant intensities. No new tools or infrastructure.
@@ -19,10 +22,10 @@ Anatomy metadata, rendering, interaction and damage calculation are separated. S
 
 Blunt impact uses bounded local displacement and mottled discoloration, with depth falloff and local illustrative bone fissures. Projectile depth is an invented resistance budget and distance cap; only an actual skin exit produces an exit opening. Small closed inset patches line surface openings; capped section faces and a dark internal tract explain depth. This is not live mesh surgery, soft-body physics or an injury predictor. Bruises are visible immediately, with no healing timeline.
 
-Known visual limits: simplified uniform cross-sections; stylized muscle fibers and organ surfaces; flat cropped neck/shoulder/pelvis faces; no vascular microstructure. The tract is an illustrative mark, not an embedded projectile. Extreme grazing/overlapping contacts are less convincing than the verified upper-chest examples. Section caps are triangulated per closed contour; complex nested cavities are simplified.
+Known visual limits: simplified uniform cross-sections; stylized muscle fibers and organ surfaces; visible neck transition, simplified eyes, rough cranial cutaway sections and flat cropped shoulder/pelvis faces; no vascular microstructure. The tract is an illustrative mark, not an embedded projectile. Extreme grazing/overlapping contacts are less convincing than the verified upper-chest examples. Section caps are triangulated per closed contour; complex nested cavities are simplified.
 
 ## Evidence and recovery
-`npm test` exercises actual bundled geometry, side/visibility independence, path/exit rules, bounds, exact undo/reset and gestures. `scripts/acceptance.mjs` captures and checks the production build on 390×844, 360×640 and 844×390 viewports, including gesture separation, settings and exact canvas reset. Run with `PLAYWRIGHT_MODULE` and `CHROME_PATH` pointing to installed tools if defaults differ. `qa/browser-report.json` records the measured environment; screenshots are delivered separately.
+`npm test` exercises actual bundled geometry, side/visibility independence, path/exit rules, bounds, exact undo/reset and gestures. `scripts/acceptance.mjs` captures and checks the production build on 390×844, 360×640 and 844×390 viewports, including gesture separation, settings and exact canvas reset. Run with `PLAYWRIGHT_MODULE` and `CHROME_PATH` pointing to installed tools if defaults differ. `scripts/projectile-qa.mjs` adds the current projectile/head acceptance captures. `qa/v1.2/browser-report.json` records the measured environment; screenshots are delivered separately.
 
 Rollback to inspected anatomy: `53c556dd8bbb902562038bb9ef985367b3a9a99d`. Recovered interaction checkpoint: `450060ec77533807d632d00137f13496684036b9`. See `VERIFICATION.md` for current acceptance and Android status.
 

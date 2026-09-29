@@ -21,3 +21,9 @@ Recovered `Impact-Lab-2.0.0-Offline.html` from the Project files. Its bundled Th
 
 ## 1.1 acceleration decision
 - https://github.com/gkjohnson/three-mesh-bvh/tree/v0.9.1 — primary source, exact npm package 0.9.1 (MIT). Supports `acceleratedRaycast`, indirect BVH construction, refit after position changes, and bounds-pruned shapecasts. Preserve original triangle indices with `indirect:true`; refit changed skin/muscle after deformation; use all intersections (not first-hit-only) for interval pairing. CPU acceleration does not establish physical-phone frame rate. Geometry and fictional damage rules remain unchanged.
+
+## 1.2 head and projectile revision
+- https://dbarchive.biosciencedbc.jp/en/bodyparts3d/download.html and https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html — authoritative original BodyParts3D archive, CC BY 4.0 explicitly permits redistribution/adaptation with attribution. Exact 20130619 / version 4.0 archive and per-OBJ hashes retained. Supports generic head/cranial/brain anatomy; does not validate the neck fit to a different derivative.
+- SUPPORTED ANATOMY: original head surface, skull parts and cerebral/cerebellar structures, with anatomical left/right preserved.
+- VISUAL APPROXIMATION: outer-envelope skin joined to the previous torso; closed remeshed cranial structures; static gravity-following blood, irregular lined wounds, bounded tissue deformation and affected tracks. Facial muscles, eyes and fine neuroanatomy are incomplete. Original BP3D skin is a thin two-surface shell; using it as a body envelope produced a false immediate exit. The derivative extracts an outer envelope instead.
+- FICTIONAL GAME PARAMETERS: wound growth, 30-event cap, locally increased penetration through previous contacts. No rifle specifications, injury thresholds, bleeding-rate model, fluid dynamics or injury prediction. Distant contacts remain independent.

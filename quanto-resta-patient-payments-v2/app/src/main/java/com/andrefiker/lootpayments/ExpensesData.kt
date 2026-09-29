@@ -190,10 +190,6 @@ interface ExpensesDao {
     @Upsert suspend fun putSplitParts(parts: List<SplitPart>)
     @Upsert suspend fun putActualTransaction(item: ActualTransaction)
     @Upsert suspend fun putActualTransactions(items: List<ActualTransaction>)
-    @Query("UPDATE actual_transactions SET amountCents = :cents WHERE expenseId = :expenseId AND monthKey = :monthKey")
-    suspend fun updateActualTransactionAmount(expenseId: String, monthKey: Int, cents: Long)
-    @Query("UPDATE actual_transactions SET category = :category, tags = :tags WHERE expenseId = :expenseId")
-    suspend fun updateActualTransactionDetails(expenseId: String, category: String, tags: String)
     @Upsert suspend fun putPlannedExpense(item: PlannedExpense)
     @Upsert suspend fun putPlannedExpenses(items: List<PlannedExpense>)
     @Upsert suspend fun putPersonalRule(item: PersonalRule)
@@ -206,8 +202,6 @@ interface ExpensesDao {
     @Query("DELETE FROM split_parts WHERE expenseMonthId = :monthId") suspend fun clearSplit(monthId: String)
     @Query("DELETE FROM planned_expenses WHERE id = :id") suspend fun deletePlannedExpense(id: String)
     @Query("DELETE FROM actual_transactions WHERE id = :id") suspend fun deleteActualTransaction(id: String)
-    @Query("DELETE FROM actual_transactions WHERE expenseId = :expenseId")
-    suspend fun deleteActualTransactionsForExpense(expenseId: String)
     @Query("DELETE FROM personal_rules WHERE id = :id") suspend fun deletePersonalRule(id: String)
     @Query("DELETE FROM cooling_purchases WHERE id = :id") suspend fun deleteCoolingPurchase(id: String)
     @Query("DELETE FROM expenses WHERE id = :id") suspend fun delete(id: String)
@@ -225,68 +219,6 @@ interface ExpensesDao {
     @Transaction suspend fun clearAll() {
         clearStrategyEvents(); clearCoolingPurchases(); clearPersonalRules(); clearPlannedExpenses()
         clearActualTransactions(); clearSplits(); clearClosings(); clearRules(); clearMonths(); clearExpenses()
-    }
-
-    /**
-     * Import the supplied statement rows exactly once without replacing later user edits.
-     * Each bank outflow is both an editable ledger row and an explicit actual transaction.
-     */
-    @Transaction suspend fun importStatementRows(rows: List<StatementSeedRow>) {
-        val month = StatementSeed202609.month
-        val monthKey = month.key()
-        val existingIds = allExpenses().mapTo(mutableSetOf()) { it.id }
-        for ((index, row) in rows.withIndex()) {
-            if (row.id in existingIds) continue
-            val occurredAt = StatementSeed202609.occurredAt(row)
-            val expense = Expense(
-                id = row.id,
-                name = row.original,
-                defaultCents = 0,
-                active = true,
-                archivedFromMonth = null,
-                createdMonth = monthKey,
-                createdAt = occurredAt + index,
-                updatedAt = occurredAt + index,
-                category = "",
-                spendingType = "FLEXIBLE",
-                baselineCents = 0,
-                tags = "extrato",
-                note = "${row.source} · ${row.date.substring(8, 10)}/09/2026 · original: ${row.original}",
-                manualCategory = false
-            )
-            put(expense)
-            putMonth(ExpenseMonth(
-                id = "${row.id}-month",
-                expenseId = row.id,
-                monthKey = monthKey,
-                year = month.year,
-                month = month.monthValue,
-                expectedCents = 0,
-                paidCents = row.cents,
-                included = true,
-                baselineCents = 0,
-                spendingType = "FLEXIBLE",
-                updatedAt = occurredAt + index
-            ))
-            putActualTransaction(ActualTransaction(
-                id = "${row.id}-actual",
-                expenseId = row.id,
-                monthKey = monthKey,
-                occurredAt = occurredAt,
-                amountCents = row.cents,
-                merchant = row.original,
-                category = "",
-                source = row.source,
-                note = expense.note,
-                tags = expense.tags
-            ))
-            existingIds += row.id
-        }
-    }
-
-    @Transaction suspend fun deleteExpenseAndTransactions(id: String) {
-        deleteActualTransactionsForExpense(id)
-        delete(id)
     }
 
     @Transaction suspend fun ensureMonth(selected: YearMonth) {

@@ -73,13 +73,10 @@ fun ExpensesScreen(state: ExpensesState, vm: ExpensesViewModel, onData: () -> Un
     }
     val active = filtered.filter { it.payment.included }
     val inactive = filtered.filterNot { it.payment.included }
-    val imported = state.rows.filter { it.expense.tags.split(',').any { tag -> tag.trim() == "extrato" } }
     Column(Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 14.dp)) {
         LootHeader("Gastos", state.month, { vm.shiftMonth(-1) }, { vm.shiftMonth(1) },
             "Despesa", onData) { editor = ExpenseEditor.Add }
-        if (imported.isNotEmpty()) StatementExpenseSummary(state,
-            imported.count { it.payment.included }, imported.size)
-        else Summary(state.totals, label = "despesas", paidLabel = "Pago", showOverpayment = true)
+        Summary(state.totals, label = "despesas", paidLabel = "Pago", showOverpayment = true)
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
             TextButton(onClick = { searchOpen = !searchOpen }) { Text(if (searchOpen) "Ocultar busca" else "Buscar e filtrar") }
         }
@@ -106,35 +103,24 @@ fun ExpensesScreen(state: ExpensesState, vm: ExpensesViewModel, onData: () -> Un
                 if (active.isEmpty()) item {
                     Text("Nenhuma despesa ativa neste mês.", color = muted, modifier = Modifier.padding(18.dp))
                 }
-                items(active, key = { it.expense.id }) { row ->
-                    val actualEntry = row.expense.tags.split(',').any { it.trim() == "extrato" }
-                    CompactPaymentRow(
+                items(active, key = { it.expense.id }) { row -> CompactPaymentRow(
                     name = row.expense.name, expected = row.payment.expectedCents,
-                    paid = row.payment.paidCents, full = if (actualEntry) row.payment.included else row.line.full,
+                    paid = row.payment.paidCents, full = row.line.full,
                     enabled = row.payment.included && row.payment.expectedCents > 0,
-                    actualEntry = actualEntry, meta = if (actualEntry) row.expense.note.substringBefore(" · original") else "",
-                    onName = { editor = ExpenseEditor.Name(row) }, onAmount = {
-                        editor = if (actualEntry) ExpenseEditor.Paid(row) else ExpenseEditor.Amount(row)
-                    },
+                    onName = { editor = ExpenseEditor.Name(row) }, onAmount = { editor = ExpenseEditor.Amount(row) },
                     onPaid = { editor = ExpenseEditor.Paid(row) }, onManage = { editor = ExpenseEditor.Manage(row) },
-                    onFull = { if (actualEntry) vm.setArchived(row, row.payment.included) else vm.setFull(row, it) })
+                    onFull = { vm.setFull(row, it) })
                     if (row != active.last()) HorizontalDivider(Modifier.padding(start = 14.dp), color = divider)
                 }
                 if (inactive.isNotEmpty()) {
                     item { Text("INATIVAS", color = muted, fontSize = 11.sp, fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)) }
-                    items(inactive, key = { it.expense.id }) { row ->
-                        val actualEntry = row.expense.tags.split(',').any { it.trim() == "extrato" }
-                        CompactPaymentRow(
+                    items(inactive, key = { it.expense.id }) { row -> CompactPaymentRow(
                         name = row.expense.name, expected = row.payment.expectedCents,
-                        paid = row.payment.paidCents, full = if (actualEntry) row.payment.included else row.line.full,
-                        enabled = false, inactive = true, actualEntry = actualEntry,
-                        meta = if (actualEntry) row.expense.note.substringBefore(" · original") else "",
-                        onName = { editor = ExpenseEditor.Name(row) }, onAmount = {
-                            editor = if (actualEntry) ExpenseEditor.Paid(row) else ExpenseEditor.Amount(row)
-                        },
+                        paid = row.payment.paidCents, full = row.line.full, enabled = false, inactive = true,
+                        onName = { editor = ExpenseEditor.Name(row) }, onAmount = { editor = ExpenseEditor.Amount(row) },
                         onPaid = { editor = ExpenseEditor.Paid(row) }, onManage = { editor = ExpenseEditor.Manage(row) },
-                        onFull = { if (actualEntry) vm.setArchived(row, row.payment.included) else vm.setFull(row, it) })
+                        onFull = { vm.setFull(row, it) })
                         HorizontalDivider(Modifier.padding(start = 14.dp), color = divider)
                     }
                 }
@@ -181,23 +167,6 @@ fun ExpensesScreen(state: ExpensesState, vm: ExpensesViewModel, onData: () -> Un
             confirmButton = { TextButton(onClick = { vm.delete(action.row.expense.id); editor = null }) { Text("Excluir definitivamente", color = Color(0xFF9C4545)) } },
             dismissButton = { TextButton(onClick = { editor = null }) { Text("Manter despesa") } })
         null -> Unit
-    }
-}
-
-@Composable
-private fun StatementExpenseSummary(state: ExpensesState, includedCount: Int, importedCount: Int) {
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(accent)
-        .padding(horizontal = 12.dp, vertical = 8.dp)) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("$includedCount lançamentos contando", color = muted, fontSize = 12.sp)
-            Text("Gasto ${ledgerMoney(state.totals.paid)}", color = teal, fontSize = 13.sp,
-                fontWeight = FontWeight.SemiBold)
-        }
-        Spacer(Modifier.height(2.dp))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("$importedCount importados · Nubank + Inter", color = muted, fontSize = 11.sp)
-            Text("Nome e valor editáveis", color = navy, fontSize = 11.sp)
-        }
     }
 }
 

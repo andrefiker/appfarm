@@ -36,19 +36,13 @@ strategy events. The compact `Planos` surface supports `Quero comprar`, explicit
 buy/wait/save choices, reversible cooling decisions and descriptive strategy
 counts. Plans affect forecast but never actual; waiting never auto-buys.
 
-Version 1.10 imports the 180 outgoing rows extracted from Andre's supplied
-September 2026 Nubank and Inter statements (R$ 23,581.69 gross). Every row keeps
-its source, date and original description, appears as an editable actual expense,
-and can be renamed, recategorized, corrected or ignored without inventing a
-baseline. The one-time import uses stable IDs and never overwrites later edits.
-The immutable bank description remains available after renaming; amount and
-category edits keep the linked actual-transaction record synchronized.
-
-Category starters remain amount-free: every starting amount and baseline is R$0,
-and no category is predeclared fixed. Existing user records are never replaced.
+Fresh installs seed only the category names from the September handoff. Every
+starting amount and baseline is R$0, and no category is predeclared fixed. The
+user can enter actual values and deliberately promote recurring spending later.
+The one-time name-based seed never overwrites existing records.
 
 Native Kotlin/Jetpack Compose Android app. Four compact tabs: patient income,
-editable statement/manual expenses, monthly summary, and plans/rules. The ledger works offline using
+manual expenses, monthly summary, and plans/rules. The ledger works offline using
 the same Room database. No login, bank integration, cloud sync, OCR, backend or
 internet permission.
 

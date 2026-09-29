@@ -1,0 +1,7 @@
+import {cp,mkdir,rm,readFile} from 'node:fs/promises';
+const html=await readFile('dist/index.html','utf8');if(/https?:\/\//.test(html))throw Error('Unexpected remote reference in production HTML');
+await rm('android/app/src/main/assets/web',{recursive:true,force:true});await mkdir('android/app/src/main/assets',{recursive:true});await cp('dist','android/app/src/main/assets/web',{recursive:true});console.log('Bundled production assets, anatomy and notices.');
+const {execFileSync}=await import('node:child_process');const {createHash}=await import('node:crypto');const {writeFile,readdir}=await import('node:fs/promises');
+const glb=await readFile('dist/models/torso.glb');const metadata=JSON.parse(glb.subarray(20,20+glb.readUInt32LE(12)).toString());for(const entry of [...(metadata.images??[]),...(metadata.buffers??[])])if(entry.uri&&/^(https?:|\/\/)/.test(entry.uri))throw Error('Remote model asset');
+const files=[];async function scan(dir,prefix=''){for(const f of await readdir(dir,{withFileTypes:true})){const rel=prefix+f.name;if(f.isDirectory())await scan(dir+'/'+f.name,rel+'/');else files.push({path:rel,sha256:createHash('sha256').update(await readFile(dir+'/'+f.name)).digest('hex')});}}await scan('dist');
+await writeFile('android/app/src/main/assets/build-manifest.json',JSON.stringify({sourceCommit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),version:'1.0.0',files},null,2));

@@ -1,3 +1,7 @@
+## Recovery update — 2026-09-29
+
+The interaction implementation was reconstructed and committed as `450060ec77533807d632d00137f13496684036b9`. Fresh production-browser acceptance and 13 tests pass. The historical interrupted-run account below remains for provenance; it no longer describes the current source completeness. Android packaging is the remaining release gate.
+
 # Impact Lab: Core — interrupted build recovery
 Recorded 2026-09-29 after Andre reported an excessively long run.
 

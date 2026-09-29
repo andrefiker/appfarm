@@ -1,0 +1,77 @@
+name: Impact Lab Core APK
+on:
+  push:
+    branches: [impact-lab-core-2026-09-28]
+    paths: ['impact-lab-core/**', '.github/workflows/impact-lab-core-apk.yml']
+permissions:
+  contents: read
+concurrency:
+  group: impact-lab-core-apk
+  cancel-in-progress: false
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.14.0'
+      - name: Verify and bundle production assets
+        working-directory: impact-lab-core
+        run: |
+          npm ci --no-audit --no-fund
+          npm test
+          npm run build
+          node scripts/bundle-android.mjs
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
+      - run: yes | sdkmanager 'platforms;android-35' 'build-tools;35.0.0' >/dev/null
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+          cache-disabled: true
+      - name: Build APK
+        run: gradle --no-daemon --stacktrace -p impact-lab-core/android :app:assembleDebug
+      - name: Verify package and signature
+        run: |
+          APK=impact-lab-core/android/app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | tee /tmp/badging.txt
+          grep -F "name='com.andrefiker.impactlabcore'" /tmp/badging.txt
+          grep -F "versionCode='1' versionName='1.0.0'" /tmp/badging.txt
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions "$APK" | tee /tmp/permissions.txt
+          ! grep -q 'uses-permission' /tmp/permissions.txt
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
+          unzip -l "$APK" | grep 'assets/web/models/torso.glb'
+          unzip -l "$APK" | grep 'assets/web/licenses/Z-Anatomy.txt'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Impact-Lab-Core-1.0.0-APK
+          path: impact-lab-core/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 7
+          if-no-files-found: error
+      - name: Enable emulator hardware acceleration
+        run: sudo chmod 666 /dev/kvm
+      - name: Offline Android interaction check
+        uses: reactivecircus/android-emulator-runner@v2
+        timeout-minutes: 12
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          script: node impact-lab-core/android/scripts/emulator-smoke.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Impact-Lab-Core-Android-QA
+          path: impact-lab-core/qa-artifacts/
+          retention-days: 7
+          if-no-files-found: ignore

@@ -6,3 +6,6 @@ android/local.properties
 *.keystore
 *.jks
 qa/*.png
+android/app/src/main/assets/web/
+qa-artifacts/
+android/app/src/main/assets/build-manifest.json

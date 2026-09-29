@@ -132,3 +132,10 @@ Vercel:
 - Packaging target com.andrefiker.impactlabcore.next, 1.2.0/code 3. New release signing key outside repository; privately retain for update continuity. CI builds unsigned, local signing keeps secrets out of CI/Git. APK BUILT / PACKAGE VERIFIED: source 40c6d052c85abd473b3f14b329ef803dfce8da67, run 36577005538; SHA256 2af052d855838281f92ee60a64efb39fc9f812b9abd1c02adeae0f2653a0efac. v2/v3 release signature, zero permissions, fourteen bundled files match tested production. Private signing recovery archive saved as Impact-Lab-Core-Signing-PRIVATE.zip; never commit its contents.
 - Rollback d1b74dac2f35ebd44c4ac20e71dc40dfe3d888f3; prior APK source 774de4e4a426d8e0f54a53f138f5abeebb827855.
 - Dataset lesson: BodyParts3D skin includes a thin double surface. Use validated outer envelope before pairing entry/exit; otherwise the projectile falsely exits before skull.
+
+## Impact Lab Core 4 / 1.3.0 — 2026-09-29
+
+- Andre's phone screenshot confirms 1.2 rendered but damage was still too superficial. Focused correction: visible lined tissue openings in isolated layers/cutaway, branching bone fissures, larger cumulative wounds and stronger fictional penetration. No real weapon calibration.
+- 18 tests and production-browser checks pass. Actual phone-size renders inspected; 1.3 physical testing outstanding. Head/neck visual defects remain.
+- Same package com.andrefiker.impactlabcore.next and retained private certificate as 1.2; versionCode 4 permits update. Package verification pending at this checkpoint. No emulator, backend or deployment.
+- Rollback 98a9dba25765d998bd2c6a8a9f613d13daa023d6; previous APK source 40c6d052c85abd473b3f14b329ef803dfce8da67.

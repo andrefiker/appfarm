@@ -1,15 +1,13 @@
-# Verification — Impact Lab Core 3 / 1.2.0
+# Verification — Impact Lab Core 4 / 1.3.0
 
-2026-09-29. SOURCE / WEB tested: 17 actual-geometry and interaction tests pass; TypeScript and Vite production build pass.
+18 geometry, state and interaction tests pass; TypeScript/Vite build passes. Production screenshots actually inspected: muscle and organ openings, matching cutaway, repeated skin/bone/organ damage, rotated skin. Browser report also checks reset byte identity, undo, thirty-event cap, drag separation, small-phone/landscape and no remote assets or shader errors. See qa/v1.3/browser-report.json.
 
-Actual production renders inspected at phone size: skin, head front/side, skull/brain, torso projectile surface/muscle/cutaway, one/six/thirty shots, rotated damage, reset, small phone and landscape. Zero browser/shader errors; offline assets only; reset canvas byte-identical to baseline. See qa/v1.2/browser-report.json and scripts/projectile-qa.mjs. Prior gesture/picking/state tests remain in the suite.
+Measured Chrome 138 / SwiftShader software / Linux / 390×844 DPR1: apply median 48.8 ms, maximum 81.4 ms for thirty shots; idle frames 84→84; reset geometries 180→172. Not physical-phone performance. Additional internal lining has a modest CPU cost compared with 1.2.
 
-Repeated local shots expand one lined lesion and matching internal involvement. Six-shot entry radius 0.01633 versus 0.0085 initially, in model coordinates; these are fictional graphics parameters. Thirty-shot bound passes. CPU apply median 36.2 ms, maximum 56.9 ms in Chrome 138, SwiftShader software rendering, Linux, 390×844 DPR1. These are NOT phone FPS. Idle frame count remains 68 across the observation; reset releases damage resources (176 to 172 geometries).
+The strengthened fictional penetration budget and visible disruption are art-direction choices, not rifle calibration. Only actual crossed anatomy is affected; a path between front ribs does not automatically break those ribs. Internal cavities use shader masks and closed lining, not live mesh surgery. Remaining visual limits: uniform tubular internal sections, simplified fractures, visible head/neck joins and rough cranial cutaways. These are not fully realistic tissue mechanics.
 
-## Visual limits
-Projectile graphics visibly improve on the tiny previous mark, with depth, restrained trails and matching internal paths. No fluid, finite-element or validated ballistics simulation. Head added from licensed original BodyParts3D; neck transition remains visible, eyes are simplified, cranial cutaway sections can look fragmented. Combined skin has small nonmanifold neck joins; extreme neck/grazing contacts are not fully accepted. Do not claim the head passed the complete anatomy quality gate. Nineteen cranial structures are watertight after processing; recipe and provenance retained.
+Andre's latest supplied screenshot confirms 1.2 renders on his physical phone. This 1.3 release has not been physically tested. No emulator used. Native update/install, offline relaunch and resume remain physically untested.
 
-## Android
-Packaging checkpoint: com.andrefiker.impactlabcore.next, 1.2.0/code 3, label Impact Lab Core 3. Separate installation preserves older apps. CI packages without emulator; signing occurs locally with retained private certificate. APK BUILT / PACKAGE VERIFIED. First CI attempt passed (run 36577005538). Source commit 40c6d052c85abd473b3f14b329ef803dfce8da67. Signed v2/v3 with retained RSA3072 release certificate; SHA256 2af052d855838281f92ee60a64efb39fc9f812b9abd1c02adeae0f2653a0efac. Size 9,778,968 bytes. All fourteen bundled files exactly match tested production and build-manifest hashes. Correct package/version/launch activity; no requested permissions. See qa/v1.2/apk-report.json. No emulator or physical-device testing for this release. Offline native relaunch, resume and phone performance remain untested. Andre's screenshot establishes older-version rendering only.
+Android target: same com.andrefiker.impactlabcore.next as 1.2; 1.3.0/code 4. Same private release certificate enables in-place update. No permissions or new infrastructure. APK package verification pending this source checkpoint.
 
-Rollback: d1b74dac2f35ebd44c4ac20e71dc40dfe3d888f3. Prior APK source: 774de4e4a426d8e0f54a53f138f5abeebb827855. Older APKs/data preserved.
+Rollback: 98a9dba25765d998bd2c6a8a9f613d13daa023d6 (1.2 final verification); prior APK source 40c6d052c85abd473b3f14b329ef803dfce8da67.

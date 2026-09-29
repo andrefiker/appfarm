@@ -44,7 +44,7 @@ jobs:
           test -s "$APK"
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | tee /tmp/badging.txt
           grep -F "name='com.andrefiker.impactlabcore.next'" /tmp/badging.txt
-          grep -F "versionCode='3' versionName='1.2.0'" /tmp/badging.txt
+          grep -F "versionCode='4' versionName='1.3.0'" /tmp/badging.txt
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions "$APK" | tee /tmp/permissions.txt
           ! grep -q 'uses-permission' /tmp/permissions.txt
           cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" impact-lab-core/android/app/build/outputs/apk/release/apksigner.jar
@@ -52,7 +52,7 @@ jobs:
           unzip -l "$APK" | grep 'assets/web/licenses/Z-Anatomy.txt'
       - uses: actions/upload-artifact@v4
         with:
-          name: Impact-Lab-Core-1.2.0-Unsigned
+          name: Impact-Lab-Core-1.3.0-Unsigned
           path: |
             impact-lab-core/android/app/build/outputs/apk/release/app-release-unsigned.apk
             impact-lab-core/android/app/build/outputs/apk/release/apksigner.jar

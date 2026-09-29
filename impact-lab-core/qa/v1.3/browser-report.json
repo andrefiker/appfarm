@@ -1,0 +1,55 @@
+{
+  "errors": [],
+  "offlineAssets": true,
+  "resetIdentical": true,
+  "one": [
+    {
+      "skinId": "skin",
+      "count": 1,
+      "radius": 0.0115,
+      "depth": 0.02,
+      "exit": false
+    },
+    {
+      "skinId": "skin",
+      "count": 1,
+      "radius": 0.01288,
+      "depth": 0.02,
+      "exit": true
+    }
+  ],
+  "six": [
+    {
+      "skinId": "skin",
+      "count": 6,
+      "radius": 0.02268033988749895,
+      "depth": 0.03,
+      "exit": false
+    },
+    {
+      "skinId": "skin",
+      "count": 6,
+      "radius": 0.025401980673998827,
+      "depth": 0.03,
+      "exit": true
+    }
+  ],
+  "thirtyShots": true,
+  "applyMs": {
+    "median": 48.80000000074506,
+    "max": 81.39999999850988
+  },
+  "allocations": {
+    "geometries": 180,
+    "textures": 1
+  },
+  "resetAllocations": {
+    "geometries": 172,
+    "textures": 1
+  },
+  "idleFrames": [
+    84,
+    84
+  ],
+  "environment": "Chrome 138 / SwiftShader software rendering / Linux / 390x844 DPR1. Not physical-phone performance."
+}

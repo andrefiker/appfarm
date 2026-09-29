@@ -113,6 +113,7 @@ class PaymentsPersistenceTest {
                 composeRule.onNodeWithText("Adicionar despesa").assertExists()
             } finally { scenario.close() }
         } finally { dao.clearAll(); context.getSharedPreferences("loot-local-owner", 0).edit().remove("id").commit() }
+        Unit
     }
 
     private fun captureScreen(scenario: ActivityScenario<MainActivity>, filename: String) {

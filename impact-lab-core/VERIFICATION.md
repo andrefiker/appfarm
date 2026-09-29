@@ -20,7 +20,7 @@ Same Node 24 Linux container, same anatomy and contact, median of seven samples.
 Rendering: Chrome 138 headless / SwiftShader software renderer / Linux / DPR 1. GPU hardware speed is not measured. Demand-only rendering; DPR cap 1.25; no real-time shadow pass; local shader noise computed once only near a lesion. No Android emulator used for this release.
 
 ## Android status
-Packaging pending at this source checkpoint. Package `com.andrefiker.impactlabcore.fast`, version 1.1.0/code 2, label Impact Lab Core+. Separate installation because the 1.0 signing key is unavailable. No requested permissions; local assets served inside WebView; no development server.
+APK BUILT / PACKAGE VERIFIED. GitHub Actions run 36568549017 succeeded on the first attempt, including package/version, zero requested permissions and v2 signature checks. Downloaded APK: 5,603,951 bytes; SHA256 `7aeabcdddb6acaf7b2b16ee99b2a71ae44fc6f68b09ff1ca2ebbef231d0f661d`. All ten bundled files match the build manifest and browser-tested production byte for byte. Debug-signed; no private key committed. APK source commit `774de4e4a426d8e0f54a53f138f5abeebb827855`. See `qa/apk-report.json`. Package `com.andrefiker.impactlabcore.fast`, version 1.1.0/code 2, label Impact Lab Core+. Separate installation because the 1.0 signing key is unavailable. No requested permissions; local assets served inside WebView; no development server.
 
 Andre's supplied physical-phone screenshot establishes that **1.0 renders anatomy on his phone**. It does not establish performance, resume/offline relaunch, or 1.1 device acceptance. This release has not been physically device-tested. Native lifecycle behavior remains to be checked on a phone.
 

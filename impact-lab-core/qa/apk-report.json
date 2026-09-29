@@ -1,0 +1,16 @@
+{
+  "package": "com.andrefiker.impactlabcore.fast",
+  "version": "1.1.0",
+  "versionCode": 2,
+  "bytes": 5603951,
+  "sha256": "7aeabcdddb6acaf7b2b16ee99b2a71ae44fc6f68b09ff1ca2ebbef231d0f661d",
+  "sourceCommit": "774de4e4a426d8e0f54a53f138f5abeebb827855",
+  "bundledFilesMatchingTestedProduction": 10,
+  "workflow": 36568549017,
+  "signatureV2VerifiedInCI": true,
+  "certificateSha256": "b8c0539cd03e40ef7bc82c578be5e8e664e378b701c265f737ad196a9c57c445",
+  "debugSigned": true,
+  "requestedPermissions": [],
+  "physicalDeviceTested": false,
+  "emulatorUsed": false
+}

@@ -1,0 +1,19 @@
+{
+  "errors": [],
+  "fragmentReplayByteIdentical": true,
+  "latestReplayRestoredAfterReload": true,
+  "bluntAndProjectileTested": true,
+  "replayCutawayCpuMs": [
+    84.20000000111759,
+    56.19999999925494,
+    59.399999998509884,
+    46.5,
+    71.90000000037253,
+    49,
+    58.40000000037253,
+    44.90000000037253,
+    41.5
+  ],
+  "finalProduction": true,
+  "environment": "Chrome138 SwiftShader Linux 390x844 DPR1 / Mobile"
+}

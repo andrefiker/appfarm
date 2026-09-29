@@ -139,3 +139,11 @@ Vercel:
 - 18 tests and production-browser checks pass. Actual phone-size renders inspected; 1.3 physical testing outstanding. Head/neck visual defects remain.
 - Same package com.andrefiker.impactlabcore.next and retained private certificate as 1.2; versionCode 4 permits update. APK BUILT / PACKAGE VERIFIED: source 6596dfc7a2eb578ead61f7de961eec7421ba7d9a, workflow 36578550305; SHA256 e47f7756e28e83aa86ab96d1f1c46578d6005d51688d5ba04cd1566e4ff02c84. Same v2/v3 certificate as 1.2; all fourteen bundled assets match tested production; zero permissions. No emulator, backend or deployment.
 - Rollback 98a9dba25765d998bd2c6a8a9f613d13daa023d6; previous APK source 40c6d052c85abd473b3f14b329ef803dfce8da67.
+
+## Impact Lab Physics 2.0.0 — 2026-09-29
+
+- Continues 1.3; rollback c6bbcac49971ccd3734b500701c0c2638b778227; intermediate checkpoint 2051abe5797118834086e5435c90190abc2c4f78. No rewrite or provider resources.
+- Linked contact/state records, continuous state-aware ray paths with bounded bone deflection, local coupled fixed-step response, capped persistent split-bone geometry/colliders, sparse latest-event replay, four section planes, event inspector. Versioned damage now survives reopening; 1.3 only retained session damage.
+- 25 system tests plus rendered/browser regression; three illustrative core mechanisms accepted. Actual head/neck remesh deferred. Software-only sustained cutaway rendering remains slow (~2–3 RAF FPS); physical-phone acceptance outstanding. Never quote browser software FPS as phone speed.
+- Same package com.andrefiker.impactlabcore.next and private certificate; versionCode 5. CI packaging only, no emulator. Final APK verification pending this checkpoint.
+- Lesson: shader effects must not conceal displaced bone; cut planes need an appropriate camera. Sparse replay includes actual bone-fragment vertices. Unchanged anatomy should not carry a full damage shader; replay caps should rebuild only moving structures.

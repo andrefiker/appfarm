@@ -26,7 +26,7 @@ export function tissueMaterial(layer:Layer,name:string){
   shader.vertexShader='varying vec3 vAnatomy;\n'+shader.vertexShader;shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvAnatomy=position;');
   shader.fragmentShader='varying vec3 vAnatomy;\nuniform float uTissue;\nuniform vec3 uFiber;\n'+shader.fragmentShader;
   shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
-if(uTissue<.5){float pore=sin(vAnatomy.x*1500.)*sin(vAnatomy.y*1700.+sin(vAnatomy.z*1100.));vec3 qx=dFdx(vAnatomy),qy=dFdy(vAnatomy);vec3 sx=cross(qy,normal),sy=cross(normal,qx);float det=dot(qx,sx);normal=normalize(abs(det)*normal-.000035*sign(det)*(dFdx(pore)*sx+dFdy(pore)*sy));}
+if(uTissue<.5){float pore=(1.-smoothstep(.5,1.8,max(fwidth(vAnatomy.x*1500.),fwidth(vAnatomy.y*1700.))))*sin(vAnatomy.x*1500.)*sin(vAnatomy.y*1700.+sin(vAnatomy.z*1100.));vec3 qx=dFdx(vAnatomy),qy=dFdy(vAnatomy);vec3 sx=cross(qy,normal),sy=cross(normal,qx);float det=dot(qx,sx);normal=normalize(abs(det)*normal-.000020*sign(det)*(dFdx(pore)*sx+dFdy(pore)*sy));}
 `);
   shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
    float grain=fract(sin(dot(floor(vAnatomy*2300.),vec3(12.9898,78.233,45.164)))*43758.5453);

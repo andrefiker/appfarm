@@ -31,3 +31,11 @@ Recovered `Impact-Lab-2.0.0-Offline.html` from the Project files. Its bundled Th
 ## 1.3 implementation refinement
 VISUAL APPROXIMATION: shader cutouts and matching tube linings represent disrupted tissue in each actual crossed mesh and its section cap. Layer isolation shows the same lesion. Larger branching fissure masks affect crossed bone only.
 FICTIONAL GAME PARAMETER: increased penetration budget, local opening widths and cumulative radius limits are art-direction parameters. They are not calibrated to Kalashnikov ammunition, energy, medical thresholds or survival. No new anatomy dataset or medical claim was introduced.
+
+## Physics-core implementation sources (2026-09-29)
+
+- https://threejs.org/docs/pages/BufferGeometry.html — supports indexed/attribute geometry mutation, normal/bounds recomputation and disposal. Decision: split bounded local bone subsets and update actual vertex buffers. Limitation: Three.js provides geometry operations, not validated fracture mechanics.
+- https://github.com/gkjohnson/three-mesh-bvh — supports accelerated ray/spatial queries, refit after vertex movement, rebuild when topology changes. Decision: refit local deformation, rebuild changed fracture subsets. Limitation: rays and BVHs alone do not solve material physics.
+- https://threejs.org/docs/pages/Plane.html — supports plane normals, offsets and geometric intersections. Decision: shared axial/coronal/sagittal/free section planes used by meshes, caps and paths. Limitation: plane clipping does not supply anatomical interior topology.
+
+SUPPORTED ANATOMY remains the licensed aligned datasets already documented. VISUAL APPROXIMATION: anchored contact-node response, local bone partition/tether displacement, sparse directional deformation and simplified section caps. FICTIONAL GAME PARAMETER: every resistance, failure threshold, path deflection, mass/stiffness/damping value and displacement bound. No weapon-specific, medical or forensic source calibration was attempted.

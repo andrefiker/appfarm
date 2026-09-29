@@ -8,7 +8,7 @@ Browser QA uses the production bundle in Chrome138 / SwiftShader Linux / 390×84
 
 The temporary cavity uses a contrasting cool tint and see-through depth overlay during replay; embedded organs fade so the motion remains legible. Settled cavities return to normal depth testing. This is a deliberate exhibition convention, not an optically accurate prediction. Geometry/ray intersections remain stateful and independent of the presentation. The staged arrival/expansion/collapse timing and all profile values are fictional. Three pellets represent the shotgun class, not any real load. Older head/neck seam and skull banding remain.
 
-Event processing measurements and endpoints are retained in the browser report. No physical-phone FPS claim; no emulator used. Android build and signature/asset verification are recorded in qa/v2.2/apk-report.json after packaging. Native installation/offline relaunch/resume on a physical phone remains untested here.
+Event processing measurements and endpoints are retained in the browser report. No physical-phone FPS claim; no emulator used. APK BUILT / PACKAGE VERIFIED: CI 36590317747 succeeded first run. Source 8792e9fcbda88550577f2d39468016f114c9a5c8. Correct package/version/launcher, zero permissions, v2/v3 signature with retained certificate, aligned stored entries, all 14 bundled files byte-identical to tested production. SHA256 c11a2e4f3b0c35a96331552acb58dfd835835b60a51f2b2aa12a367ef1acac9f. See qa/v2.2/apk-report.json. Native installation/offline relaunch/resume on a physical phone remains untested here.
 
 ---
 

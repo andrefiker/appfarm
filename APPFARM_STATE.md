@@ -153,3 +153,5 @@ Andre chose translucent amber ballistic-gel-dummy presentation (film/TV prop ref
 
 ### Impact Lab Gel Exhibition 2.2.0 — 2026-09-29
 Andre requested gel-only exhibition and slow-motion weapon-style equivalents. UI now has Pistol/Rifle/Shotgun fictional profiles, automatic ¼-speed approach/entry/cavity/settling, grouped scatter undo/reload, and persistent channels. No real-ammunition calibration. 34 system tests pass; production browser evidence in qa/v2.2. Package/signing unchanged, code7. Rollback 47ceccb479e150bb25c99dffc8706ef86720edd9.
+
+2.2.0 APK package/signature verified; source 8792e9fcbda88550577f2d39468016f114c9a5c8, CI 36590317747. No emulator or physical-device test.

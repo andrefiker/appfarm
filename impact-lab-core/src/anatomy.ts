@@ -4,9 +4,10 @@ export type Layer='skin'|'muscle'|'bone'|'organ';
 export type View='skin'|'muscle'|'skeleton'|'organs'|'cutaway';
 export interface Structure {id:string;name:string;layer:Layer;mesh:THREE.Mesh<THREE.BufferGeometry,THREE.MeshStandardMaterial>;base:Float32Array;normals:Float32Array;}
 export async function loadAnatomy():Promise<Structure[]> {
- const gltf=await new GLTFLoader().loadAsync('./models/torso.glb');const structures:Structure[]=[];
- gltf.scene.updateMatrixWorld(true);
- gltf.scene.traverse(o=>{if(!(o instanceof THREE.Mesh))return;const d=o.userData;const layer=d.layer as Layer;if(!layer)return;
+ const gltf=await new GLTFLoader().loadAsync('./models/torso.glb');return structuresFromScene(gltf.scene);
+}
+export function structuresFromScene(scene:THREE.Object3D):Structure[]{const structures:Structure[]=[];scene.updateMatrixWorld(true);
+ scene.traverse(o=>{if(!(o instanceof THREE.Mesh))return;const d=o.userData;const layer=d.layer as Layer;if(!layer)return;
   const geometry=o.geometry.clone();geometry.applyMatrix4(o.matrixWorld);geometry.computeVertexNormals();
   const name=d.anatomicalName as string;const material=tissueMaterial(layer,name);const mesh=new THREE.Mesh(geometry,material);
   mesh.name=d.structureId;mesh.castShadow=true;mesh.receiveShadow=true;mesh.userData={...d};
@@ -28,6 +29,6 @@ export function tissueMaterial(layer:Layer,name:string){
    if(uTissue<.5){diffuseColor.rgb*=.96+.045*grain+.025*broad;}
    else if(uTissue<1.5){float fibers=pow(.5+.5*sin(dot(vAnatomy,uFiber)*3200.+sin(vAnatomy.y*180.)*.7),3.);diffuseColor.rgb*=.8+.32*fibers+.04*grain;}
    else if(uTissue<2.5){diffuseColor.rgb*=.93+.07*grain+.03*broad;}
-   else{float mottling=sin(vAnatomy.x*280.)*sin(vAnatomy.y*340.)*sin(vAnatomy.z*260.);diffuseColor.rgb*=.95+.065*mottling+.04*grain;}`);
+   else{float mottling=sin(vAnatomy.x*293.+sin(vAnatomy.z*163.)*2.)*sin(vAnatomy.y*337.+sin(vAnatomy.x*89.)*1.8);diffuseColor.rgb*=.98+.02*mottling+.02*grain;}`);
  };mat.customProgramCacheKey=()=>`anatomy-${layer}`;return mat;
 }

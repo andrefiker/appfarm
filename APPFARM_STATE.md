@@ -105,3 +105,10 @@ Vercel:
 2. Confirm whether their APK artifacts/workflow branches still exist before resuming them.
 3. Complete or explicitly cancel the pending Railway/Lovable cleanup in its own execution task.
 4. Update this file only when meaningful state changes.
+
+## Impact Lab: Core — 2026-09-29 recovery checkpoint
+
+- Isolated branch `impact-lab-core-2026-09-28`; anatomy baseline and rollback `53c556dd8bbb902562038bb9ef985367b3a9a99d`.
+- Licensed optimized torso assets, provenance/research and baseline web source are durable. No Core APK exists yet.
+- Later local damage/cutaway work was not committed before workspace pruning; prior successful local tests do not establish the saved branch's functionality.
+- See `impact-lab-core/RECOVERY.md`. Resume from this baseline, recover later code where possible, commit increments promptly, and use bounded build segments. Do not restart broad research or silently claim a release.

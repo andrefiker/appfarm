@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {MeshBVH,acceleratedRaycast} from 'three-mesh-bvh';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 export type Layer='skin'|'muscle'|'bone'|'organ';
 export type View='skin'|'muscle'|'skeleton'|'organs'|'cutaway';
@@ -9,8 +10,9 @@ export async function loadAnatomy():Promise<Structure[]> {
 export function structuresFromScene(scene:THREE.Object3D):Structure[]{const structures:Structure[]=[];scene.updateMatrixWorld(true);
  scene.traverse(o=>{if(!(o instanceof THREE.Mesh))return;const d=o.userData;const layer=d.layer as Layer;if(!layer)return;
   const geometry=o.geometry.clone();geometry.applyMatrix4(o.matrixWorld);geometry.computeVertexNormals();
+  geometry.boundsTree=new MeshBVH(geometry,{indirect:true,maxLeafTris:10});
   const name=d.anatomicalName as string;const material=tissueMaterial(layer,name);const mesh=new THREE.Mesh(geometry,material);
-  mesh.name=d.structureId;mesh.castShadow=true;mesh.receiveShadow=true;mesh.userData={...d};
+  mesh.raycast=acceleratedRaycast;mesh.name=d.structureId;mesh.castShadow=true;mesh.receiveShadow=true;mesh.userData={...d};
   structures.push({id:d.structureId,name,layer,mesh,base:new Float32Array(geometry.attributes.position.array),normals:new Float32Array(geometry.attributes.normal.array)});
  });return structures;
 }
@@ -27,7 +29,7 @@ export function tissueMaterial(layer:Layer,name:string){
    float grain=fract(sin(dot(floor(vAnatomy*2300.),vec3(12.9898,78.233,45.164)))*43758.5453);
    float broad=sin(vAnatomy.x*53.+vAnatomy.z*28.)*sin(vAnatomy.y*39.);
    if(uTissue<.5){diffuseColor.rgb*=.96+.045*grain+.025*broad;}
-   else if(uTissue<1.5){float fibers=pow(.5+.5*sin(dot(vAnatomy,uFiber)*3200.+sin(vAnatomy.y*180.)*.7),3.);diffuseColor.rgb*=.8+.32*fibers+.04*grain;}
+   else if(uTissue<1.5){float phase=dot(vAnatomy,uFiber)*1900.+sin(vAnatomy.y*140.)*.7;float fibers=.5+.5*sin(phase)*(1.-smoothstep(.6,2.5,fwidth(phase)));diffuseColor.rgb*=.88+.20*fibers+.025*grain;}
    else if(uTissue<2.5){diffuseColor.rgb*=.93+.07*grain+.03*broad;}
    else{float mottling=sin(vAnatomy.x*293.+sin(vAnatomy.z*163.)*2.)*sin(vAnatomy.y*337.+sin(vAnatomy.x*89.)*1.8);diffuseColor.rgb*=.98+.02*mottling+.02*grain;}`);
  };mat.customProgramCacheKey=()=>`anatomy-${layer}`;return mat;

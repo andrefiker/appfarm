@@ -18,3 +18,6 @@ Three normalized impact intensities and one generic projectile. Deformation caps
 
 ## Recovery decision
 Recovered `Impact-Lab-2.0.0-Offline.html` from the Project files. Its bundled Three.js confirms an offline web implementation was feasible. The old full-body, equipment and armor presentation does not fit this scope, so it is preserved without importing its architecture. Existing minimal Android packaging in AppFarm is reused separately.
+
+## 1.1 acceleration decision
+- https://github.com/gkjohnson/three-mesh-bvh/tree/v0.9.1 — primary source, exact npm package 0.9.1 (MIT). Supports `acceleratedRaycast`, indirect BVH construction, refit after position changes, and bounds-pruned shapecasts. Preserve original triangle indices with `indirect:true`; refit changed skin/muscle after deformation; use all intersections (not first-hit-only) for interval pairing. CPU acceleration does not establish physical-phone frame rate. Geometry and fictional damage rules remain unchanged.

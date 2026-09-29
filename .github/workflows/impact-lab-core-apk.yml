@@ -43,8 +43,8 @@ jobs:
           APK=impact-lab-core/android/app/build/outputs/apk/debug/app-debug.apk
           test -s "$APK"
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | tee /tmp/badging.txt
-          grep -F "name='com.andrefiker.impactlabcore'" /tmp/badging.txt
-          grep -F "versionCode='1' versionName='1.0.0'" /tmp/badging.txt
+          grep -F "name='com.andrefiker.impactlabcore.fast'" /tmp/badging.txt
+          grep -F "versionCode='2' versionName='1.1.0'" /tmp/badging.txt
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions "$APK" | tee /tmp/permissions.txt
           ! grep -q 'uses-permission' /tmp/permissions.txt
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
@@ -52,7 +52,7 @@ jobs:
           unzip -l "$APK" | grep 'assets/web/licenses/Z-Anatomy.txt'
       - uses: actions/upload-artifact@v4
         with:
-          name: Impact-Lab-Core-1.0.0-APK
+          name: Impact-Lab-Core-1.1.0-APK
           path: impact-lab-core/android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 7
           if-no-files-found: error

@@ -9,3 +9,5 @@ Changes: selected torso structures, removed unrelated anatomy and excluded separ
 The exact downloaded Z-Anatomy notice is `public/licenses/Z-Anatomy.txt`. It identifies original BodyParts3D licensing as CC BY-SA 2.1 Japan; the current official archive now lists CC BY 4.0. Both facts are preserved in RESEARCH.md. This build follows the downloaded Z-Anatomy derivative's CC BY-SA 4.0 requirements. Kidney/head/ear/brain and other separately credited restricted contributions are not selected. No atlas definitions or upstream application code are incorporated.
 
 Three.js 0.180.0 — Copyright 2010–2025 Three.js authors, MIT license bundled at `public/licenses/Three-MIT.txt`. Independent application code is MIT. Build dependency licenses are retained by npm packages; pinned versions are in package-lock.json.
+
+three-mesh-bvh 0.9.1 — Garrett Johnson, MIT; bundled notice `public/licenses/Three-Mesh-BVH-MIT.txt`. Used for acceleration of actual anatomy intersections and section slicing.

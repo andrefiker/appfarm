@@ -3,5 +3,11 @@
   "apply": true,
   "sectionGeometriesBefore": 225,
   "sectionGeometriesAfter": 225,
-  "missingAssetError": true
+  "missingAssetError": true,
+  "idleFrames": {
+    "before": 13,
+    "after": 13
+  },
+  "projectileIntensityHidden": true,
+  "homeView": true
 }

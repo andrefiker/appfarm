@@ -1,0 +1,59 @@
+{
+  "environment": "Node 24 Linux container; CPU operations, not phone FPS",
+  "samples": [
+    {
+      "pickMs": 1.7063499999999863,
+      "hitMs": 12.450817000000029,
+      "deformationMs": 38.28176300000001,
+      "sectionMs": 20.626514000000043,
+      "reopenSectionMs": 0.07127800000000661
+    },
+    {
+      "pickMs": 0.3323499999999058,
+      "hitMs": 2.6239830000000666,
+      "deformationMs": 29.656518000000005,
+      "sectionMs": 13.364594000000011,
+      "reopenSectionMs": 0.0424239999999827
+    },
+    {
+      "pickMs": 0.14197300000000723,
+      "hitMs": 2.160425000000032,
+      "deformationMs": 25.091661000000045,
+      "sectionMs": 13.456402000000026,
+      "reopenSectionMs": 0.04418699999996534
+    },
+    {
+      "pickMs": 0.24882500000001073,
+      "hitMs": 2.611163999999917,
+      "deformationMs": 26.175665000000095,
+      "sectionMs": 15.266779000000042,
+      "reopenSectionMs": 0.14313500000002932
+    },
+    {
+      "pickMs": 0.10648100000003069,
+      "hitMs": 1.917868999999996,
+      "deformationMs": 21.29587300000003,
+      "sectionMs": 10.236370999999963,
+      "reopenSectionMs": 0.03404199999999946
+    },
+    {
+      "pickMs": 0.22412800000006428,
+      "hitMs": 1.5069599999999355,
+      "deformationMs": 21.117053000000055,
+      "sectionMs": 11.041804999999954,
+      "reopenSectionMs": 0.0301560000000336
+    },
+    {
+      "pickMs": 0.12860399999999572,
+      "hitMs": 1.8731920000000173,
+      "deformationMs": 21.524967999999944,
+      "sectionMs": 10.471896000000015,
+      "reopenSectionMs": 0.03516300000001138
+    }
+  ],
+  "pickMs": 0.22412800000006428,
+  "hitMs": 2.160425000000032,
+  "deformationMs": 25.091661000000045,
+  "sectionMs": 13.364594000000011,
+  "reopenSectionMs": 0.0424239999999827
+}

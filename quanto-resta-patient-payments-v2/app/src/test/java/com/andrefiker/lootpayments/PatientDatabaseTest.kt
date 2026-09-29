@@ -63,4 +63,29 @@ class PatientDatabaseTest {
         db.close()
     }
 
+    @Test fun privateIncomeRosterMergeIsIdempotentAndDoesNotDuplicateNames() = runBlocking {
+        context.deleteDatabase(fileName)
+        val september = YearMonth.of(2026, 9)
+        val db = Room.databaseBuilder(context, PaymentsDatabase::class.java, fileName).build()
+        val dao = db.dao()
+        val now = System.currentTimeMillis()
+        dao.putPatient(Patient("existing", owner, "Pessoa B", 0, true, null,
+            september.key(), now, now))
+        dao.ensureMonth(owner, september)
+        val roster = IncomeRoster(september, true, listOf(
+            IncomeRosterEntry("Pessoa A", 90_000),
+            IncomeRosterEntry("pessoa b", 50_000)
+        ))
+        dao.mergeIncomeRoster(owner, roster)
+        dao.mergeIncomeRoster(owner, roster)
+        val patients = dao.backupPatients(owner)
+        assertEquals(2, patients.size)
+        assertEquals(140_000L, patients.sumOf { it.defaultCents })
+        val months = dao.months(owner, september.key()).first()
+        assertEquals(2, months.size)
+        assertEquals(140_000L, months.sumOf { it.expectedCents })
+        assertEquals(140_000L, months.sumOf { it.paidCents })
+        db.close()
+    }
+
 }

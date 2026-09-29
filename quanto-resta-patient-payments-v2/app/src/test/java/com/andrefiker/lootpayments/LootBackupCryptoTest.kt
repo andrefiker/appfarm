@@ -13,6 +13,16 @@ import java.time.YearMonth
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class LootBackupCryptoTest {
+    @Test fun incomeRosterParserKeepsMonthPaymentStateAndTotal() {
+        val roster = IncomeRosterJson.decode("""{
+          "format":"loot-income-roster","schema":1,"month":"2026-09","markPaid":true,
+          "patients":[{"name":"Pessoa A","monthlyCents":90000},{"name":"Pessoa B","monthlyCents":50000}]
+        }""")
+        assertEquals(YearMonth.of(2026, 9), roster.month)
+        assertTrue(roster.markPaid)
+        assertEquals(140000L, roster.entries.sumOf { it.monthlyCents })
+    }
+
     @Test fun encryptedBackupRoundTripsWithoutPlaintextLeak() {
         val source = "Paciente Exemplo — R$ 900"
         val encrypted = LootBackupCrypto.encrypt(source, "senha-forte".toCharArray())

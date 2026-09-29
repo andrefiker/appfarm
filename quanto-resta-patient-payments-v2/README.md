@@ -51,7 +51,7 @@ Pending rows also receive two transparent defaults without overriding edits:
 descriptions containing `IFD` suggest the name `Ifood`, and descriptions
 containing `Uber` suggest the category `Uber/transporte`.
 
-Version 1.14 adds the 14 categories confirmed in the supplied Loot screenshots
+Version 1.15 adds the 14 categories confirmed in the supplied Loot screenshots
 as editable fixed monthly values: alimentação R$3.000; aluguel R$1.800; cartão
 xp R$1.000; celular R$280; compras R$1.000; Conceição R$800; equalize R$630;
 medicação R$800; Notredame R$750; poupança R$1.500; psiquiatra R$1.000;
@@ -60,6 +60,9 @@ Existing zero-value Compras/Weed rows are filled in place and processed paid
 amounts are preserved; later manual non-zero edits are never overwritten.
 The same encrypted backup can be prepared as an email attachment addressed to
 `andrefiker@gmail.com`; Android leaves the final send under user control.
+It also includes a password-protected, additive September 2026 income roster.
+The 22 private entries total R$17.800, are marked received for September, and
+merge by name without duplicating patients or altering expenses.
 
 Fresh installs seed only the category names from the September handoff. Every
 starting amount and baseline is R$0, and no category is predeclared fixed. The

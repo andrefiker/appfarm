@@ -6,6 +6,7 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.flow.Flow
 import java.time.YearMonth
+import java.util.Locale
 import java.util.UUID
 
 @Entity(tableName = "patients", indices = [Index("ownerId")])
@@ -121,6 +122,40 @@ interface PaymentsDao {
     }
 
     @Transaction suspend fun clearAll() { clearMonths(); clearPatients() }
+
+    /** Additive, idempotent roster import. It never touches expenses or other months. */
+    @Transaction suspend fun mergeIncomeRoster(owner: String, roster: IncomeRoster) {
+        val selected = roster.month
+        val now = System.currentTimeMillis()
+        val existing = allPatients(owner)
+            .filter { it.deletedAt == null }
+            .associateBy { it.name.trim().lowercase(Locale.ROOT) }
+            .toMutableMap()
+        roster.entries.forEach { entry ->
+            val key = entry.name.trim().lowercase(Locale.ROOT)
+            val current = existing[key]
+            val patient = if (current == null) {
+                Patient(UUID.randomUUID().toString(), owner, entry.name.trim(), entry.monthlyCents,
+                    true, null, selected.key(), now, now)
+            } else {
+                current.copy(defaultCents = entry.monthlyCents, active = true, archivedFromMonth = null,
+                    updatedAt = now, revision = current.revision + 1, dirty = true)
+            }
+            putPatient(patient)
+            existing[key] = patient
+            val prior = month(owner, patient.id, selected.key())
+            putMonth(if (prior == null) {
+                PatientMonth(UUID.randomUUID().toString(), owner, patient.id, selected.key(),
+                    selected.year, selected.monthValue, entry.monthlyCents,
+                    paidCents = if (roster.markPaid) entry.monthlyCents else 0)
+            } else {
+                prior.copy(expectedCents = entry.monthlyCents,
+                    paidCents = if (roster.markPaid) entry.monthlyCents else prior.paidCents,
+                    included = true, forceIncomplete = false, updatedAt = now,
+                    revision = prior.revision + 1, dirty = true)
+            })
+        }
+    }
 
     /** Freeze every earlier fee before changing the default, even if an old month was never opened. */
     private suspend fun snapshotPrior(owner: String, patient: Patient, before: Int) {

@@ -52,6 +52,37 @@ import javax.crypto.spec.SecretKeySpec
 private const val BACKUP_NAME = "loot-backup.ltb"
 private const val BACKUP_FORMAT = "loot-encrypted-backup"
 private const val BACKUP_SCHEMA = 4
+private const val PRIVATE_INCOME_ASSET = "loot-income-2026-09.lir"
+
+internal data class IncomeRosterEntry(val name: String, val monthlyCents: Long)
+internal data class IncomeRoster(
+    val month: YearMonth,
+    val markPaid: Boolean,
+    val entries: List<IncomeRosterEntry>
+)
+
+internal object IncomeRosterJson {
+    fun decode(text: String): IncomeRoster {
+        val root = JSONObject(text)
+        require(root.getString("format") == "loot-income-roster" && root.getInt("schema") == 1) {
+            "Lista de receitas incompatível."
+        }
+        val month = YearMonth.parse(root.getString("month"))
+        val items = root.getJSONArray("patients")
+        val rows = (0 until items.length()).map { index ->
+            val item = items.getJSONObject(index)
+            IncomeRosterEntry(item.getString("name").trim(), item.getLong("monthlyCents"))
+        }
+        require(rows.isNotEmpty() && rows.size <= 200) { "Lista de receitas inválida." }
+        require(rows.all { it.name.isNotBlank() && it.name.length <= 80 && it.monthlyCents in 1..100_000_000 }) {
+            "Nome ou valor inválido na lista de receitas."
+        }
+        require(rows.map { it.name.lowercase() }.distinct().size == rows.size) {
+            "A lista contém nomes duplicados."
+        }
+        return IncomeRoster(month, root.optBoolean("markPaid", false), rows)
+    }
+}
 
 internal data class LootBackup(
     val patients: List<Patient>,
@@ -350,6 +381,15 @@ internal class LootDataTransfer(private val context: Context) {
         })
     }
 
+    suspend fun importPrivateIncome(password: CharArray): String = withContext(Dispatchers.IO) {
+        val encrypted = context.assets.open(PRIVATE_INCOME_ASSET).bufferedReader().use { it.readText() }
+        val roster = IncomeRosterJson.decode(LootBackupCrypto.decrypt(encrypted, password))
+        val owner = ownerId()
+        db.withTransaction { db.dao().mergeIncomeRoster(owner, roster) }
+        val total = roster.entries.sumOf { it.monthlyCents }
+        "${roster.entries.size} receitas adicionadas em ${roster.month}: ${Money.format(total)}."
+    }
+
     suspend fun import(uri: Uri, password: CharArray): String = withContext(Dispatchers.IO) {
         val file = requireNotNull(DocumentFile.fromTreeUri(context, uri)?.findFile(BACKUP_NAME)) {
             "Nenhum $BACKUP_NAME encontrado nesta pasta."
@@ -472,6 +512,17 @@ internal fun LootDataTransferDialog(onDismiss: () -> Unit) {
                     }
                 }, modifier = Modifier.fillMaxWidth()) {
                 Text(if (busy) "Preparando…" else "Enviar backup por e-mail")
+            }
+            TextButton(enabled = password.length >= 6 && !busy,
+                onClick = {
+                    busy = true
+                    scope.launch {
+                        status = runCatching { transfer.importPrivateIncome(password.toCharArray()) }
+                            .getOrElse { "Falha ao adicionar receitas. Confira a senha da lista privada." }
+                        password = ""; busy = false
+                    }
+                }, modifier = Modifier.fillMaxWidth()) {
+                Text(if (busy) "Adicionando…" else "Adicionar receitas da lista privada")
             }
             Spacer(Modifier.height(2.dp))
             Text(status, color = muted, fontSize = 12.sp, modifier = Modifier.padding(horizontal = 2.dp))

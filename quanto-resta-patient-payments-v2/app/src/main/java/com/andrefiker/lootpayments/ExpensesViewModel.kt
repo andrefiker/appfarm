@@ -68,6 +68,10 @@ class ExpensesViewModel(application: Application) : AndroidViewModel(application
                 dao.addMissingBaselineExpenses(MonthlyExpenseBaseline.forMonth(month), month)
                 check(preferences.edit().putBoolean("monthly_baseline_seeded_v1", true).commit())
             }
+            if (!preferences.getBoolean("statements_2026_09_seeded_v1", false)) {
+                dao.importStatementRows(StatementSeed202609.rows)
+                check(preferences.edit().putBoolean("statements_2026_09_seeded_v1", true).commit())
+            }
         }
     }
     val state = selected.flatMapLatest { month -> flow {
@@ -80,6 +84,8 @@ class ExpensesViewModel(application: Application) : AndroidViewModel(application
                 byId[payment.expenseId]?.let { expense -> ExpenseRow(expense, payment,
                     byExpense[expense.id].orEmpty().any { it.monthKey < month.key() || it.paidCents > 0 }) }
             }.sortedWith(compareByDescending<ExpenseRow> { it.payment.included }
+                .thenByDescending { it.expense.tags.split(',').any { tag -> tag.trim() == "extrato" } }
+                .thenByDescending { if (it.expense.tags.split(',').any { tag -> tag.trim() == "extrato" }) it.expense.createdAt else Long.MIN_VALUE }
                 .thenBy { it.expense.name.lowercase() })
             val items = rows.map { it.toBudgetItem() }
             ExpensesState(month, rows, PaymentRules.totals(rows.map { it.line }),
@@ -94,7 +100,13 @@ class ExpensesViewModel(application: Application) : AndroidViewModel(application
                 strategyEvents = events)
         }
         emitAll(combine(behavior, dao.actualTransactionsFlow()) { current, transactions ->
-            current.copy(actualTransactions = transactions.filter { it.monthKey == month.key() })
+            val includedExpenseIds = current.rows.asSequence()
+                .filter { it.payment.included }
+                .map { it.expense.id }
+                .toSet()
+            current.copy(actualTransactions = transactions.filter {
+                it.monthKey == month.key() && (it.expenseId == null || it.expenseId in includedExpenseIds)
+            })
         })
     } }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000),
         ExpensesState(selected.value, emptyList(), Totals(0, 0, 0)))
@@ -153,7 +165,8 @@ class ExpensesViewModel(application: Application) : AndroidViewModel(application
     }
     fun rename(id: String, name: String) = viewModelScope.launch {
         val expense = dao.expense(id) ?: return@launch
-        dao.put(expense.copy(name = name.trim(), updatedAt = System.currentTimeMillis()))
+        val clean = name.trim()
+        dao.put(expense.copy(name = clean, updatedAt = System.currentTimeMillis()))
     }
     fun changeAmount(row: ExpenseRow, cents: Long) = viewModelScope.launch {
         val oldExpense = dao.expense(row.expense.id) ?: return@launch
@@ -165,7 +178,11 @@ class ExpensesViewModel(application: Application) : AndroidViewModel(application
         val existing = dao.month(row.expense.id, row.payment.monthKey) ?: return@launch
         dao.putMonth(existing.copy(paidCents = paid, forceIncomplete = false,
             updatedAt = System.currentTimeMillis()))
-        offerUndo("Gasto atualizado: ${ledgerMoney(paid)}") { dao.putMonth(existing) }
+        dao.updateActualTransactionAmount(row.expense.id, row.payment.monthKey, paid)
+        offerUndo("Gasto atualizado: ${ledgerMoney(paid)}") {
+            dao.putMonth(existing)
+            dao.updateActualTransactionAmount(row.expense.id, row.payment.monthKey, existing.paidCents)
+        }
     }
     fun addToPaid(row: ExpenseRow, amount: Long) = setPaid(row, row.payment.paidCents + amount)
     fun setFull(row: ExpenseRow, full: Boolean) = viewModelScope.launch {
@@ -176,14 +193,19 @@ class ExpensesViewModel(application: Application) : AndroidViewModel(application
     fun setArchived(row: ExpenseRow, archive: Boolean) = viewModelScope.launch {
         dao.setArchive(row.expense.id, selected.value, archive)
     }
-    fun delete(id: String) = viewModelScope.launch { dao.delete(id) }
+    fun delete(id: String) = viewModelScope.launch { dao.deleteExpenseAndTransactions(id) }
 
     fun updateDetails(row: ExpenseRow, category: String, type: SpendingType,
         rollover: Boolean, tags: String, note: String) = viewModelScope.launch {
         val oldExpense = dao.expense(row.expense.id) ?: return@launch
         val oldMonths = dao.allMonths().filter { it.expenseId == row.expense.id }
         dao.updateDetails(row.expense.id, category, type.stored, rollover, tags, note)
-        offerUndo("Classificação atualizada") { dao.put(oldExpense); dao.putMonths(oldMonths) }
+        dao.updateActualTransactionDetails(row.expense.id, category.trim(), tags.trim())
+        offerUndo("Classificação atualizada") {
+            dao.put(oldExpense)
+            dao.putMonths(oldMonths)
+            dao.updateActualTransactionDetails(row.expense.id, oldExpense.category, oldExpense.tags)
+        }
     }
 
     fun confirmBaseline(row: ExpenseRow, cents: Long = row.payment.paidCents) = viewModelScope.launch {

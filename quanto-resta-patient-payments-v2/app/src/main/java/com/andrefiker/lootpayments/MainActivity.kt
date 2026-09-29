@@ -291,6 +291,7 @@ internal fun Summary(totals: Totals, label: String = "pacientes", paidLabel: Str
 @Composable
 internal fun CompactPaymentRow(name: String, expected: Long, paid: Long, full: Boolean, enabled: Boolean,
     inactive: Boolean = false,
+    actualEntry: Boolean = false, meta: String = "",
     onName: () -> Unit, onAmount: () -> Unit, onPaid: () -> Unit, onManage: () -> Unit,
     onFull: (Boolean) -> Unit) {
     Column(Modifier.fillMaxWidth().background(Color.White)
@@ -303,24 +304,28 @@ internal fun CompactPaymentRow(name: String, expected: Long, paid: Long, full: B
             Spacer(Modifier.width(8.dp))
             Box(Modifier.widthIn(max = 145.dp).height(30.dp).clickable(onClick = onAmount),
                 contentAlignment = Alignment.CenterEnd) {
-                Text("${ledgerMoney(expected)} / mês", color = muted, fontSize = 12.sp,
+                Text(if (actualEntry) meta else "${ledgerMoney(expected)} / mês", color = muted, fontSize = 12.sp,
                     style = TextStyle(fontFeatureSettings = "tnum"), maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
         Row(Modifier.fillMaxWidth().height(48.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.weight(1f).height(48.dp).clickable(onClick = onPaid)
                 .semantics { contentDescription = "Editar valor pago" }, contentAlignment = Alignment.CenterStart) {
-                Text(if (full) "Editar pago" else "Pago ${ledgerMoney(paid)}",
-                    color = if (full) muted else teal, fontSize = 12.sp,
+                Text(if (actualEntry) "Gasto ${ledgerMoney(paid)}" else if (full) "Editar pago" else "Pago ${ledgerMoney(paid)}",
+                    color = if (!actualEntry && full) muted else teal, fontSize = 12.sp,
                     maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
-            val status = if (inactive) "Inativo" else if (!enabled) "Sem valor" else if (full) "✓ Quitado" else "○ Pendente"
+            val status = if (actualEntry) {
+                if (inactive) "Ignorado" else "✓ Contando"
+            } else if (inactive) "Inativo" else if (!enabled) "Sem valor" else if (full) "✓ Quitado" else "○ Pendente"
             Box(Modifier.height(48.dp).widthIn(min = 90.dp)
                 .clip(RoundedCornerShape(9.dp))
-                .clickable(enabled = enabled, role = Role.Checkbox) { onFull(!full) }
-                .semantics { contentDescription = if (full) "Quitado; toque para desmarcar" else "Pendente; toque para quitar" }
+                .clickable(enabled = enabled || actualEntry, role = Role.Checkbox) { onFull(!full) }
+                .semantics { contentDescription = if (actualEntry) {
+                    if (inactive) "Ignorado; toque para voltar a contar" else "Contando; toque para ignorar"
+                } else if (full) "Quitado; toque para desmarcar" else "Pendente; toque para quitar" }
                 .padding(horizontal = 5.dp), contentAlignment = Alignment.Center) {
-                Text(status, color = if (full && enabled) teal else muted,
+                Text(status, color = if ((actualEntry && !inactive) || (full && enabled)) teal else muted,
                     fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
             }
             Box(Modifier.size(width = 40.dp, height = 48.dp).clickable(onClick = onManage)

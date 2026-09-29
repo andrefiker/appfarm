@@ -185,4 +185,45 @@ class ExpensesPersistenceTest {
         }
         db.close()
     }
+
+    @Test fun suppliedStatementsContainAllExactOutgoingRows() {
+        val rows = StatementSeed202609.rows
+        assertEquals(180, rows.size)
+        assertEquals(180, rows.map { it.id }.toSet().size)
+        assertEquals(753595L, rows.filter { it.source == "Inter" }.sumOf { it.cents })
+        assertEquals(1604574L, rows.filter { it.source == "Nubank" }.sumOf { it.cents })
+        assertEquals(2358169L, rows.sumOf { it.cents })
+        assertEquals(82, rows.count { it.source == "Inter" })
+        assertEquals(98, rows.count { it.source == "Nubank" })
+    }
+
+    @Test fun statementImportIsEditableAndNeverOverwritesCorrections() = runBlocking {
+        context.deleteDatabase(file)
+        val db = open()
+        val dao = db.expenses()
+        dao.importStatementRows(StatementSeed202609.rows)
+        assertEquals(180, dao.allExpenses().size)
+        assertEquals(2358169L, dao.allMonths().sumOf { it.paidCents })
+        assertEquals(180, dao.allActualTransactions().size)
+
+        val id = "extrato-2026-09-000"
+        val monthKey = StatementSeed202609.month.key()
+        dao.put(dao.expense(id)!!.copy(name = "Mercado corrigido"))
+        dao.putMonth(dao.month(id, monthKey)!!.copy(paidCents = 9999))
+        dao.updateActualTransactionAmount(id, monthKey, 9999)
+        dao.updateActualTransactionDetails(id, "Comida", "casa")
+        dao.importStatementRows(StatementSeed202609.rows)
+
+        assertEquals("Mercado corrigido", dao.expense(id)!!.name)
+        assertEquals(9999L, dao.month(id, monthKey)!!.paidCents)
+        val actual = dao.allActualTransactions().single { it.expenseId == id }
+        assertEquals("Compra no debito: No estabelecimento LcLConveniencia", actual.merchant)
+        assertEquals(9999L, actual.amountCents)
+        assertEquals("Comida", actual.category)
+
+        dao.deleteExpenseAndTransactions(id)
+        assertNull(dao.expense(id))
+        assertTrue(dao.allActualTransactions().none { it.expenseId == id })
+        db.close()
+    }
 }

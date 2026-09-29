@@ -1,4 +1,4 @@
-name: Build Gadgety v1.18
+name: Build Gadgety v1.19
 
 on:
   push:
@@ -20,6 +20,8 @@ jobs:
         working-directory: quanto-resta-patient-payments-v2
     steps:
       - uses: actions/checkout@v4
+      - name: Apply reviewed v1.19 income verification patch
+        run: git apply ../.github/patches/gadgety-v1.19-income-verification.patch
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -86,13 +88,13 @@ jobs:
           test -s "$APK"
           "$TOOLS/aapt" dump badging "$APK" > build/verification/badging.txt
           "$TOOLS/aapt" dump permissions "$APK" > build/verification/permissions.txt
-          "$TOOLS/apksigner" verify --verbose --print-certs "$APK" > build/verification/signing-gadgety-v1.18.txt
-          grep -q "package: name='com.andrefiker.gadgety' versionCode='19' versionName='1.18'" build/verification/badging.txt
+          "$TOOLS/apksigner" verify --verbose --print-certs "$APK" > build/verification/signing-gadgety-v1.19.txt
+          grep -q "package: name='com.andrefiker.gadgety' versionCode='20' versionName='1.19'" build/verification/badging.txt
           if grep -Eq 'READ_CONTACTS|READ_SMS|ACCESS_FINE_LOCATION|INTERNET' build/verification/permissions.txt; then
             echo 'Unexpected sensitive/network permission found' >&2
             exit 1
           fi
-          NEW_CERT=$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' build/verification/signing-gadgety-v1.18.txt | head -n 1)
+          NEW_CERT=$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' build/verification/signing-gadgety-v1.19.txt | head -n 1)
           EXPECTED_CERT=24380c7ccb0e5c86c6c98b2638614dcf04df988ee632c9e231c778590b7d24ce
           test "$NEW_CERT" = "$EXPECTED_CERT"
           if unzip -Z1 "$APK" | grep -Eiq '(^|/)assets/.*(\.lir$|private.*roster|private.*backup)'; then
@@ -101,8 +103,8 @@ jobs:
           fi
           {
             echo "package_id=com.andrefiker.gadgety"
-            echo "version_code=19"
-            echo "version_name=1.18"
+            echo "version_code=20"
+            echo "version_name=1.19"
             echo "new_certificate_sha256=$NEW_CERT"
             echo 'side_by_side_with_loot=true'
             echo 'update_from_gadgety_v1_16=false'
@@ -118,7 +120,7 @@ jobs:
           cat build/verification/update-compatibility.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: Gadgety-v1.18-APK-and-verification
+          name: Gadgety-v1.19-APK-and-verification
           path: |
             quanto-resta-patient-payments-v2/app/build/outputs/apk/release/app-release.apk
             quanto-resta-patient-payments-v2/build/verification/

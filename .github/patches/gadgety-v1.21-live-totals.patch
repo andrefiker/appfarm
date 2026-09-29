@@ -1,0 +1,218 @@
+diff --git a/quanto-resta-patient-payments-v2/app/build.gradle.kts b/quanto-resta-patient-payments-v2/app/build.gradle.kts
+index 3f993f8..7087852 100644
+--- a/quanto-resta-patient-payments-v2/app/build.gradle.kts
++++ b/quanto-resta-patient-payments-v2/app/build.gradle.kts
+@@ -25,8 +25,8 @@ android {
+         applicationId = "com.andrefiker.gadgety"
+         minSdk = 26
+         targetSdk = 35
+-        versionCode = 21
+-        versionName = "1.20"
++        versionCode = 22
++        versionName = "1.21"
+         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+     }
+     signingConfigs {
+diff --git a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/ExpensesData.kt b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/ExpensesData.kt
+index 9529fb4..585087d 100644
+--- a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/ExpensesData.kt
++++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/ExpensesData.kt
+@@ -236,6 +236,16 @@ interface ExpensesDao {
+         }
+     }
+
++    /** Create the expense and its selected-month ledger row atomically for live totals. */
++    @Transaction suspend fun createExpenseForMonth(expense: Expense, selected: YearMonth) {
++        put(expense)
++        putMonth(ExpenseMonth(UUID.randomUUID().toString(), expense.id, selected.key(),
++            selected.year, selected.monthValue, expense.defaultCents,
++            included = expense.active &&
++                (expense.archivedFromMonth == null || selected.key() < expense.archivedFromMonth),
++            baselineCents = expense.baselineCents, spendingType = expense.spendingType))
++    }
++
+     /** Add only absent baseline names; never replace existing user-entered amounts or history. */
+     @Transaction suspend fun addMissingBaselineExpenses(baseline: List<Expense>, selected: YearMonth) {
+         val existing = allExpenses()
+diff --git a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/ExpensesScreen.kt b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/ExpensesScreen.kt
+index 72d55b8..0c4222d 100644
+--- a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/ExpensesScreen.kt
++++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/ExpensesScreen.kt
+@@ -79,7 +79,7 @@ fun ExpensesScreen(state: ExpensesState, vm: ExpensesViewModel, incomeTotals: To
+     val limit = vm.spendingLimit(state.month, suggestedLimit)
+     val metrics = BudgetMath.metrics(state.month, LocalDate.now(), state.rows.map { it.toBudgetItem() }, limit,
+         state.plannedExpenses.sumOf { it.amountCents })
+-    val income = incomeTotals?.paid ?: 0L
++    val income = incomeTotals?.expected ?: 0L
+     val goal = vm.savingsGoal(state.month)
+     val home = monthHomeValues(income, state.totals.expected)
+     Column(Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 14.dp)) {
+diff --git a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/ExpensesViewModel.kt b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/ExpensesViewModel.kt
+index bfe46df..d09cb7b 100644
+--- a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/ExpensesViewModel.kt
++++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/ExpensesViewModel.kt
+@@ -126,12 +126,11 @@ class ExpensesViewModel(application: Application) : AndroidViewModel(application
+             val rule = dao.allRules().firstOrNull { it.enabled &&
+                 name.contains(it.pattern, ignoreCase = true) }
+             val id = UUID.randomUUID().toString()
+-            dao.put(Expense(id, name.trim(), amount, active,
++            dao.createExpenseForMonth(Expense(id, name.trim(), amount, active,
+                 if (active) null else month.key(), month.key(), now, now,
+                 category = rule?.category ?: name.trim(),
+                 spendingType = rule?.spendingType ?: SpendingType.FLEXIBLE.stored,
+-                baselineCents = amount, manualCategory = false))
+-            dao.ensureMonth(month)
++                baselineCents = amount, manualCategory = false), month)
+             offerUndo("Despesa adicionada: ${ledgerMoney(amount)}") { dao.delete(id) }
+         }
+     }
+diff --git a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/PatientPaymentsViewModel.kt b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/PatientPaymentsViewModel.kt
+index af24bb4..7242214 100644
+--- a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/PatientPaymentsViewModel.kt
++++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/PatientPaymentsViewModel.kt
+@@ -60,9 +60,8 @@ class PatientPaymentsViewModel(application: Application) : AndroidViewModel(appl
+         viewModelScope.launch {
+             val id = UUID.randomUUID().toString()
+             val now = System.currentTimeMillis()
+-            dao.putPatient(Patient(id, idOwner, name.trim(), amount, active,
+-                if (active) null else month.key(), month.key(), now, now))
+-            dao.ensureMonth(idOwner, month)
++            dao.createPatientForMonth(Patient(id, idOwner, name.trim(), amount, active,
++                if (active) null else month.key(), month.key(), now, now), month)
+         }
+     }
+     fun rename(id: String, name: String) {
+diff --git a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/PaymentsDatabase.kt b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/PaymentsDatabase.kt
+index aff294c..f089940 100644
+--- a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/PaymentsDatabase.kt
++++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/PaymentsDatabase.kt
+@@ -106,6 +106,15 @@ interface PaymentsDao {
+         }
+     }
+
++    /** Create the patient and its selected-month ledger row in one Room invalidation. */
++    @Transaction suspend fun createPatientForMonth(patient: Patient, selected: YearMonth) {
++        putPatient(patient)
++        putMonth(PatientMonth(UUID.randomUUID().toString(), patient.ownerId, patient.id, selected.key(),
++            selected.year, selected.monthValue, patient.defaultCents,
++            included = patient.active &&
++                (patient.archivedFromMonth == null || selected.key() < patient.archivedFromMonth)))
++    }
++
+     @Transaction suspend fun changeDefault(owner: String, id: String, selected: YearMonth, cents: Long) {
+         val patient = patient(owner, id) ?: return
+         snapshotPrior(owner, patient, selected.key())
+diff --git a/quanto-resta-patient-payments-v2/app/src/test/java/com/andrefiker/lootpayments/ExpenseRowDisplayTest.kt b/quanto-resta-patient-payments-v2/app/src/test/java/com/andrefiker/lootpayments/ExpenseRowDisplayTest.kt
+index 81ce4b7..d18239e 100644
+--- a/quanto-resta-patient-payments-v2/app/src/test/java/com/andrefiker/lootpayments/ExpenseRowDisplayTest.kt
++++ b/quanto-resta-patient-payments-v2/app/src/test/java/com/andrefiker/lootpayments/ExpenseRowDisplayTest.kt
+@@ -18,10 +18,10 @@ class ExpenseRowDisplayTest {
+         assertEquals(258_770L, display.remainingCents)
+     }
+
+-    @Test fun monthHomeUsesExpectedExpensesEvenBeforeTheyArePaid() {
+-        val home = monthHomeValues(incomeCents = 110_000, expectedExpenseCents = 1_380_000)
+-        assertEquals(110_000L, home.incomeCents)
++    @Test fun monthHomeUsesExpectedIncomeAndExpectedExpenses() {
++        val home = monthHomeValues(incomeCents = 1_780_000, expectedExpenseCents = 1_380_000)
++        assertEquals(1_780_000L, home.incomeCents)
+         assertEquals(1_380_000L, home.spendingCents)
+-        assertEquals(-1_270_000L, home.remainingCents)
++        assertEquals(400_000L, home.remainingCents)
+     }
+ }
+diff --git a/quanto-resta-patient-payments-v2/app/src/test/java/com/andrefiker/lootpayments/ExpensesDatabaseTest.kt b/quanto-resta-patient-payments-v2/app/src/test/java/com/andrefiker/lootpayments/ExpensesDatabaseTest.kt
+index aa1bcac..82b5598 100644
+--- a/quanto-resta-patient-payments-v2/app/src/test/java/com/andrefiker/lootpayments/ExpensesDatabaseTest.kt
++++ b/quanto-resta-patient-payments-v2/app/src/test/java/com/andrefiker/lootpayments/ExpensesDatabaseTest.kt
+@@ -240,6 +240,36 @@ class ExpensesPersistenceTest {
+         db.close()
+     }
+
++    @Test fun addingEditingAndDeletingExpenseUpdatesExpectedWithoutChangingPaid() = runBlocking {
++        context.deleteDatabase(file)
++        val september = YearMonth.of(2026, 9)
++        var db = open()
++        var dao = db.expenses()
++        val now = System.currentTimeMillis()
++        FixedMonthlyCategories.forMonth(september, now).forEach { expense ->
++            dao.createExpenseForMonth(expense, september)
++        }
++        assertEquals(1_380_000L, dao.months(september.key()).first().sumOf { it.expectedCents })
++
++        val added = Expense("synthetic-extra", "Synthetic expense", 20_000, true, null,
++            september.key(), now, now, category = "Synthetic", baselineCents = 20_000)
++        dao.createExpenseForMonth(added, september)
++        assertEquals(1_400_000L, dao.months(september.key()).first().sumOf { it.expectedCents })
++        dao.putMonth(dao.month(added.id, september.key())!!.copy(paidCents = 7_500))
++        dao.changeDefault(added.id, september, 30_000)
++        assertEquals(1_410_000L, dao.months(september.key()).first().sumOf { it.expectedCents })
++        assertEquals(7_500L, dao.month(added.id, september.key())!!.paidCents)
++
++        db.close()
++        db = open()
++        dao = db.expenses()
++        assertEquals(1_410_000L, dao.months(september.key()).first().sumOf { it.expectedCents })
++        assertEquals(7_500L, dao.month(added.id, september.key())!!.paidCents)
++        dao.delete(added.id)
++        assertEquals(1_380_000L, dao.months(september.key()).first().sumOf { it.expectedCents })
++        db.close()
++    }
++
+     @Test fun versionOnePatientDataSurvivesWhileExpensesStartEmpty() = runBlocking {
+         context.deleteDatabase(file)
+         val legacy = context.openOrCreateDatabase(file, Context.MODE_PRIVATE, null)
+diff --git a/quanto-resta-patient-payments-v2/app/src/test/java/com/andrefiker/lootpayments/PatientDatabaseTest.kt b/quanto-resta-patient-payments-v2/app/src/test/java/com/andrefiker/lootpayments/PatientDatabaseTest.kt
+index d3b4066..32d1492 100644
+--- a/quanto-resta-patient-payments-v2/app/src/test/java/com/andrefiker/lootpayments/PatientDatabaseTest.kt
++++ b/quanto-resta-patient-payments-v2/app/src/test/java/com/andrefiker/lootpayments/PatientDatabaseTest.kt
+@@ -68,6 +68,49 @@ class PatientDatabaseTest {
+         db.close()
+     }
+
++    @Test fun addingPatientCreatesSelectedMonthAndUpdatesTotalsWithoutChangingPaid() = runBlocking {
++        context.deleteDatabase(fileName)
++        val september = YearMonth.of(2026, 9)
++        val october = september.plusMonths(1)
++        var db = Room.databaseBuilder(context, PaymentsDatabase::class.java, fileName).build()
++        var dao = db.dao()
++        val now = System.currentTimeMillis()
++        dao.createPatientForMonth(Patient("synthetic-1", owner, "Synthetic A", 90_000, true, null,
++            september.key(), now, now), september)
++        dao.createPatientForMonth(Patient("synthetic-2", owner, "Synthetic B", 90_000, true, null,
++            september.key(), now, now), september)
++        dao.putMonth(dao.month(owner, "synthetic-1", september.key())!!.copy(paidCents = 90_000))
++        dao.putMonth(dao.month(owner, "synthetic-2", september.key())!!.copy(paidCents = 90_000))
++
++        dao.createPatientForMonth(Patient("synthetic-3", owner, "Synthetic C", 50_000, true, null,
++            september.key(), now, now), september)
++
++        val septemberRows = dao.months(owner, september.key()).first()
++        val septemberTotals = PaymentRules.totals(septemberRows.map {
++            MonthLine(it.expectedCents, it.paidCents, it.included, it.forceIncomplete)
++        })
++        assertEquals(3, septemberRows.size)
++        assertEquals(230_000L, septemberTotals.expected)
++        assertEquals(180_000L, septemberTotals.paid)
++        assertEquals(50_000L, septemberTotals.remaining)
++        dao.ensureMonth(owner, september)
++        assertEquals(3, dao.months(owner, september.key()).first().size)
++
++        dao.createPatientForMonth(Patient("synthetic-october", owner, "Synthetic D", 40_000, true, null,
++            october.key(), now, now), october)
++        assertNotNull(dao.month(owner, "synthetic-october", october.key()))
++        assertNull(dao.month(owner, "synthetic-october", september.key()))
++        db.close()
++
++        db = Room.databaseBuilder(context, PaymentsDatabase::class.java, fileName).build()
++        dao = db.dao()
++        val reopened = dao.incomeMonthAggregate(owner, september.key())
++        assertEquals(3, reopened.patientCount)
++        assertEquals(230_000L, reopened.expectedTotalCents)
++        assertEquals(180_000L, reopened.paidTotalCents)
++        db.close()
++    }
++
+     @Test fun privateIncomeRosterMergeIsIdempotentAndDoesNotDuplicateNames() = runBlocking {
+         context.deleteDatabase(fileName)
+         val september = YearMonth.of(2026, 9)

@@ -1,3 +1,23 @@
+# Verification — Impact Lab Gel 2.1.0
+
+2026-09-29. Package com.andrefiker.impactlabcore.next, versionCode 6. Rollback: 0a727de6d12e1644d7d595c4d5583dfc93063bc4 (2.0.0). This update changes the default presentation to a synthetic amber gel specimen; it does not claim calibrated gelatin physics.
+
+29 automated tests pass. Includes original anatomy/path/bone/persistence tests plus continuous host resistance, weakened previous channels, merged cavity bends, bounded replay and disposal, and rendering-independent entry/exit queries. Initial transparency regression was caught and repaired: visual face discard no longer removes physics backfaces.
+
+Actual browser renders inspected at phone size: intact front/back/head, oblique repeated events, temporary cavity, persistent section, baseline reset. Browser suite also exercised four section modes, five/ten repeated events, head/abdomen, quality state equivalence, small portrait and landscape. Final production regression passed: five events, one retained bone fragment, six merged channel segments, deterministic gel replay image bytes, reload, undo, reset and zero page/shader errors or external asset requests. Reports/screenshots in qa/v2.1. browser-report.json is the broader pre-final visual regression; final-report.json covers the final host-medium and material refinements.
+
+Three inherited acceptance mechanisms remain working: **bone fracture PASS**, **anatomy-aware path reaction PASS**, **persistent post-event cutaway PASS** for the bounded illustrative implementation. Gel cavities follow recorded bent paths and stops. Their temporary radial expansion is a deterministic visual envelope, not solved fluid dynamics.
+
+Performance: final Chrome138/SwiftShader Linux, 390×844 DPR1, five events took 125.2, 71.8, 89.8, 67.3 and 59.0 ms CPU for event processing. Intact gel scene used 144 geometry allocations and two textures. Short RAF samples were misleadingly near 60 Hz; completed-frame probes varied widely (approximately 1.5–60), so they are **not accepted as a steady FPS measurement**. Software rendering remains slow; no phone speedup or physical-device FPS is claimed. Raw timing samples remain available in performance.json. No emulator used.
+
+Remaining visual limits: stylized material rather than accurate volume refraction; head/skull banding and neck seam are visible in close-up; coarse local bone pieces and entry rims; opaque organ inserts can hide a channel until sectioned. No full gel fluid/elastic-volume solver. No new commercial assets or clinical images. Current working anatomy, source licenses and signing identity retained.
+
+Android: build/package verification pending at this checkpoint; final APK report is recorded separately after packaging. Physical-device installation, offline relaunch/resume and actual phone performance remain untested in this environment.
+
+---
+
+## Previous release record
+
 # Verification — Impact Lab Physics 2.0.0
 
 2026-09-29. This is an in-place offline update to package com.andrefiker.impactlabcore.next, versionCode 5. Prior 1.3 source/rollback: c6bbcac49971ccd3734b500701c0c2638b778227. Intermediate physics checkpoint: 2051abe5797118834086e5435c90190abc2c4f78.

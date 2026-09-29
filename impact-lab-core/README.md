@@ -20,3 +20,6 @@ Select a layer; select a surface contact; apply Impact or Projectile. Head/Torso
 The solver is local, deterministic and constrained; it is not FEM, fluid simulation or real ballistics. The inherited neck seam and rough cranial sections remain. Fractures are clearer under rotation than in a single anterior image. Native phone installation, FPS, offline relaunch and resume remain unverified.
 
 Rollback: c6bbcac49971ccd3734b500701c0c2638b778227. Application code MIT; anatomy licenses remain separate: CC BY-SA 4.0 adaptations, original BodyParts3D CC BY 4.0. Credits, exact provenance and processing recipes are bundled.
+
+### Gel update 2.1.0
+Default view is now translucent amber synthetic gel with visible embedded anatomy. Continuous gel resistance, merged persistent cavities and deterministic temporary expansion accompany the existing bone failure/path/replay system. No real-ammunition calibration. Run `npm test`, `npm run build`, and `node scripts/gel-qa.mjs` for the gel pass. See RESEARCH.md and VERIFICATION.md for evidence and limitations.

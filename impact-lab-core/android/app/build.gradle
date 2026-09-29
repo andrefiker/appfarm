@@ -3,6 +3,6 @@ android {
  namespace 'com.andrefiker.impactlabcore'
  compileSdk 35
  buildFeatures { buildConfig true }
- defaultConfig { applicationId 'com.andrefiker.impactlabcore.next'; minSdk 26; targetSdk 34; versionCode 5; versionName '2.0.0' }
+ defaultConfig { applicationId 'com.andrefiker.impactlabcore.next'; minSdk 26; targetSdk 34; versionCode 6; versionName '2.1.0' }
  compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
 }

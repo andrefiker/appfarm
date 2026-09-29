@@ -39,3 +39,16 @@ FICTIONAL GAME PARAMETER: increased penetration budget, local opening widths and
 - https://threejs.org/docs/pages/Plane.html — supports plane normals, offsets and geometric intersections. Decision: shared axial/coronal/sagittal/free section planes used by meshes, caps and paths. Limitation: plane clipping does not supply anatomical interior topology.
 
 SUPPORTED ANATOMY remains the licensed aligned datasets already documented. VISUAL APPROXIMATION: anchored contact-node response, local bone partition/tether displacement, sparse directional deformation and simplified section caps. FICTIONAL GAME PARAMETER: every resistance, failure threshold, path deflection, mass/stiffness/damping value and displacement bound. No weapon-specific, medical or forensic source calibration was attempted.
+
+## Gel-dummy pass — 2.1.0, 2026-09-29
+
+| Source | What it supports | Implementation decision | Limitation |
+|---|---|---|---|
+| https://ballisticdummylab.com/pages/film-production-dummy-supplier-movie-tv-ballistic-props | Manufacturer describes camera-oriented gel props, embedded/prepared effects and slow-motion production use. | Amber transparent specimen with readable internal structures and restrained replay cavity expansion. | Marketing is not biomechanical validation; film effects may be staged. No effects-rig instructions or performance values imported. |
+| https://ballisticdummylab.com/products/perma-gel-ballistic-dummy-deluxe-torso-with-head | Clear gel torso/head with imitation skeleton and optional organ inserts. | Keep existing licensed head/torso meshes; gel replaces opaque outer presentation, bones/organs remain visible. | Page has inconsistent organic/synthetic copy; not used to infer chemistry, calibration or physical constants. Commercial imagery/models are not licensed for reuse and are not bundled. |
+| https://clearballistics.com/shop/10-gel-joe-fit-torso-gel | Commercial molded synthetic torso surrogate. | Treat gel as a continuous host between anatomical inserts. | Manufacturer equivalence claims are not adopted. No recipe or ammunition data used. |
+| https://threejs.org/docs/pages/MeshPhysicalMaterial.html | Clearcoat/transmission/material features and per-pixel cost. | Single-pass transparent clearcoat with Fresnel opacity and locally generated studio environment; no screen-space transmission pass. | Approximate optics: no thickness-resolved absorption or true refraction. |
+
+SUPPORTED ANATOMY: unchanged previously attributed BodyParts3D/Z-Anatomy meshes and spatial relationships.
+VISUAL APPROXIMATION: amber surface scattering, stress whitening, corrugated closed air-cavity geometry, temporary replay expansion, synthetic organ coloration. Gel cavities use the actual recorded deflected path; embedded organs can occlude them until sectioned. The source has a remaining head/neck seam.
+FICTIONAL GAME PARAMETER: normalized continuous gel resistance, weakened existing-channel resistance, cavity radius/growth/caps and expansion timing. Not calibrated against gelatin tests, ammunition, human injury, or television footage. The existing bounded bone/soft-tissue solver remains in use. This is a stylized synthetic surrogate, not a validated ballistic-gel solver.

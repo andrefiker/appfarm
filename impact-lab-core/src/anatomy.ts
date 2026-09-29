@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {gelMaterial} from './gel';
 import {MeshBVH,acceleratedRaycast} from 'three-mesh-bvh';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 export type Layer='skin'|'muscle'|'bone'|'organ';
@@ -12,16 +13,16 @@ export function structuresFromScene(scene:THREE.Object3D):Structure[]{const stru
   const geometry=o.geometry.clone();geometry.applyMatrix4(o.matrixWorld);geometry.computeVertexNormals();
   geometry.boundsTree=new MeshBVH(geometry,{indirect:true,maxLeafTris:10});
   const name=d.anatomicalName as string;const material=tissueMaterial(layer,name);const mesh=new THREE.Mesh(geometry,material);
-  mesh.raycast=acceleratedRaycast;mesh.name=d.structureId;mesh.castShadow=true;mesh.receiveShadow=true;mesh.userData={...d};
+  if(layer==='skin')mesh.renderOrder=5;mesh.raycast=acceleratedRaycast;mesh.name=d.structureId;mesh.castShadow=true;mesh.receiveShadow=true;mesh.userData={...d};
   structures.push({id:d.structureId,name,layer,mesh,base:new Float32Array(geometry.attributes.position.array),normals:new Float32Array(geometry.attributes.normal.array)});
  });return structures;
 }
 export function tissueMaterial(layer:Layer,name:string){
  let color=layer==='skin'?'#b88970':layer==='bone'?'#ddd0ac':layer==='muscle'?'#96483d':'#b97d72';
  if(/lung/.test(name))color='#b98e86';if(name==='Liver')color='#8b4846';if(name==='Stomach')color='#c18b74';if(/colon|Jejunum|Ileum|Duodenum/.test(name))color='#bf9b7c';if(/ventricle|atrium/.test(name))color='#934d46';if(/lobe|Cerebellum/.test(name)&&!/lung/.test(name))color='#b99088';if(name==='Diaphragm')color='#b37160';if(/cartilage|disc/i.test(name))color='#b9c2b7';
- const mat=new THREE.MeshStandardMaterial({color,roughness:layer==='bone'?.84:.82,metalness:0,side:THREE.DoubleSide});
+ const mat=layer==='skin'?gelMaterial():new THREE.MeshStandardMaterial({color,roughness:layer==='bone'?.84:.82,metalness:0,side:THREE.DoubleSide});
  const fiber=/pectoralis/.test(name)?new THREE.Vector3(.35,.9,.12):/oblique/.test(name)?new THREE.Vector3(.8,.45,.2):new THREE.Vector3(1,.08,.25);
- mat.onBeforeCompile=shader=>{
+ const baseCompile=mat.onBeforeCompile.bind(mat);mat.onBeforeCompile=(shader,renderer)=>{baseCompile(shader,renderer);
   shader.uniforms.uTissue={value:layer==='skin'?0:layer==='muscle'?1:layer==='bone'?2:3};shader.uniforms.uFiber={value:fiber};
   shader.vertexShader='varying vec3 vAnatomy;\n'+shader.vertexShader;shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvAnatomy=position;');
   shader.fragmentShader='varying vec3 vAnatomy;\nuniform float uTissue;\nuniform vec3 uFiber;\n'+shader.fragmentShader;

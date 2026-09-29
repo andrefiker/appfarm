@@ -1,0 +1,62 @@
+{
+  "environment": "Chrome138 SwiftShader Linux 390x844 DPR1; intact gel orbit, gl.finish after each frame",
+  "measured": [
+    {
+      "mode": "mobile",
+      "times": [
+        15.099999999627471,
+        17.09999999962747,
+        16.5,
+        16,
+        16.90000000037253,
+        16.59999999962747,
+        16.59999999962747,
+        19.5
+      ],
+      "completedFrameFps": 59.56813105038401,
+      "frames": 10,
+      "memory": {
+        "geometries": 144,
+        "textures": 2
+      }
+    },
+    {
+      "mode": "balanced",
+      "times": [
+        16,
+        16.700000001117587,
+        629.4000000003725,
+        4.599999999627471,
+        16.59999999962747,
+        1359.4000000003725,
+        651,
+        1416.199999999255
+      ],
+      "completedFrameFps": 1.946519380033401,
+      "frames": 10,
+      "memory": {
+        "geometries": 144,
+        "textures": 2
+      }
+    },
+    {
+      "mode": "ultra",
+      "times": [
+        668.8000000007451,
+        1407.699999999255,
+        668.2000000011176,
+        888.6999999992549,
+        1099.300000000745,
+        8.5,
+        683.1999999992549,
+        10.800000000745058
+      ],
+      "completedFrameFps": 1.4718869590812398,
+      "frames": 10,
+      "memory": {
+        "geometries": 144,
+        "textures": 2
+      }
+    }
+  ]
+}

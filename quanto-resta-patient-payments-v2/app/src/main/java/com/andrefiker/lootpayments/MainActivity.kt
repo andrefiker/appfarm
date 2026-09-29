@@ -137,7 +137,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
-                if (dataTransferOpen) LootDataTransferDialog { dataTransferOpen = false }
+                if (dataTransferOpen) LootDataTransferDialog(onDismiss = { dataTransferOpen = false })
                 if (privateIncomeOpen) LootDataTransferDialog(
                     onDismiss = { privateIncomeOpen = false }, rosterOnly = true
                 )

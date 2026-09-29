@@ -54,8 +54,8 @@ private const val BACKUP_FORMAT = "loot-encrypted-backup"
 private const val BACKUP_SCHEMA = 4
 private const val PRIVATE_INCOME_ASSET = "loot-income-2026-09.lir"
 
-internal data class IncomeRosterEntry(val name: String, val monthlyCents: Long)
-internal data class IncomeRoster(
+data class IncomeRosterEntry(val name: String, val monthlyCents: Long)
+data class IncomeRoster(
     val month: YearMonth,
     val markPaid: Boolean,
     val entries: List<IncomeRosterEntry>

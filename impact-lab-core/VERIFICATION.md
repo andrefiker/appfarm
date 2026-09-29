@@ -26,7 +26,7 @@ Chrome 138 / SwiftShader software rasterizer / Linux / 390×844 CSS, DPR2: bound
 
 ## Android verification
 
-CI packaging and local signing pending this source checkpoint. Same privately retained v2/v3 certificate as 1.2/1.3; no new signing identity or requested permissions. No emulator used. No physical-device test of 2.0; native installation/update, offline relaunch, background/resume and physical FPS remain untested. Browser persistence/offline-assets evidence is separate from native-device acceptance.
+APK BUILT / PACKAGE VERIFIED: first CI run 36583553583 passed, source 033c27bfe5ee784dca5fb79c4eacbf003ebce1c5. Signed APK SHA256 d6516ccda5d11c509b3e0391e3e69d0c2f3fa918b9fc9f9998253d28c5dbd843, 9787160 bytes. All fourteen bundled production files match browser-tested assets byte for byte. Correct package/version/launcher, zero permissions, four-byte-aligned stored entries, v2/v3 signature. Same package/certificate as 1.3; versionCode increased 4→5. Same privately retained v2/v3 certificate as 1.2/1.3; no new signing identity or requested permissions. No emulator used. No physical-device test of 2.0; native installation/update, offline relaunch, background/resume and physical FPS remain untested. Browser persistence/offline-assets evidence is separate from native-device acceptance.
 
 ## Remaining limitations / explicitly deferred
 

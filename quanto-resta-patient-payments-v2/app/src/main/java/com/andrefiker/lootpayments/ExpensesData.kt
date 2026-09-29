@@ -91,6 +91,67 @@ data class SplitPart(
     val cents: Long
 )
 
+@Entity(tableName = "actual_transactions", indices = [Index("monthKey"), Index("expenseId")])
+data class ActualTransaction(
+    @PrimaryKey val id: String,
+    val expenseId: String?,
+    val monthKey: Int,
+    val occurredAt: Long,
+    val amountCents: Long,
+    val merchant: String,
+    val category: String,
+    val source: String = "MANUAL",
+    val note: String = "",
+    val tags: String = ""
+)
+
+@Entity(tableName = "planned_expenses", indices = [Index("monthKey")])
+data class PlannedExpense(
+    @PrimaryKey val id: String,
+    val monthKey: Int,
+    val name: String,
+    val category: String,
+    val amountCents: Long,
+    val dueAt: Long?,
+    val status: String = "PLANNED",
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+@Entity(tableName = "personal_rules")
+data class PersonalRule(
+    @PrimaryKey val id: String,
+    val name: String,
+    val thresholdCents: Long,
+    val category: String,
+    val coolingHours: Int,
+    val enabled: Boolean = true,
+    val timesUsed: Int = 0,
+    val purchasesDeclined: Int = 0,
+    val notSpentCents: Long = 0
+)
+
+@Entity(tableName = "cooling_purchases", indices = [Index("status"), Index("ruleId")])
+data class CoolingPurchase(
+    @PrimaryKey val id: String,
+    val item: String,
+    val category: String,
+    val amountCents: Long,
+    val createdAt: Long,
+    val readyAt: Long,
+    val status: String = "WAITING",
+    val ruleId: String?
+)
+
+@Entity(tableName = "strategy_events", indices = [Index("ruleId")])
+data class StrategyEvent(
+    @PrimaryKey val id: String,
+    val ruleId: String?,
+    val coolingPurchaseId: String?,
+    val action: String,
+    val amountCents: Long,
+    val occurredAt: Long = System.currentTimeMillis()
+)
+
 @Dao
 interface ExpensesDao {
     @Query("SELECT * FROM expenses ORDER BY createdAt, id") fun expenses(): Flow<List<Expense>>
@@ -99,11 +160,21 @@ interface ExpensesDao {
     @Query("SELECT * FROM month_closings") fun closingsFlow(): Flow<List<MonthClosing>>
     @Query("SELECT * FROM category_rules ORDER BY pattern") fun rulesFlow(): Flow<List<CategoryRule>>
     @Query("SELECT * FROM split_parts") fun splitPartsFlow(): Flow<List<SplitPart>>
+    @Query("SELECT * FROM actual_transactions") fun actualTransactionsFlow(): Flow<List<ActualTransaction>>
+    @Query("SELECT * FROM planned_expenses") fun plannedExpensesFlow(): Flow<List<PlannedExpense>>
+    @Query("SELECT * FROM personal_rules") fun personalRulesFlow(): Flow<List<PersonalRule>>
+    @Query("SELECT * FROM cooling_purchases") fun coolingPurchasesFlow(): Flow<List<CoolingPurchase>>
+    @Query("SELECT * FROM strategy_events") fun strategyEventsFlow(): Flow<List<StrategyEvent>>
     @Query("SELECT * FROM expenses") suspend fun allExpenses(): List<Expense>
     @Query("SELECT * FROM expense_months") suspend fun allMonths(): List<ExpenseMonth>
     @Query("SELECT * FROM month_closings") suspend fun allClosings(): List<MonthClosing>
     @Query("SELECT * FROM category_rules") suspend fun allRules(): List<CategoryRule>
     @Query("SELECT * FROM split_parts") suspend fun allSplitParts(): List<SplitPart>
+    @Query("SELECT * FROM actual_transactions") suspend fun allActualTransactions(): List<ActualTransaction>
+    @Query("SELECT * FROM planned_expenses") suspend fun allPlannedExpenses(): List<PlannedExpense>
+    @Query("SELECT * FROM personal_rules") suspend fun allPersonalRules(): List<PersonalRule>
+    @Query("SELECT * FROM cooling_purchases") suspend fun allCoolingPurchases(): List<CoolingPurchase>
+    @Query("SELECT * FROM strategy_events") suspend fun allStrategyEvents(): List<StrategyEvent>
     @Query("SELECT * FROM expenses WHERE id = :id LIMIT 1") suspend fun expense(id: String): Expense?
     @Query("SELECT * FROM expense_months WHERE expenseId = :id AND monthKey = :key LIMIT 1")
     suspend fun month(id: String, key: Int): ExpenseMonth?
@@ -117,17 +188,37 @@ interface ExpensesDao {
     @Upsert suspend fun putRules(rules: List<CategoryRule>)
     @Upsert suspend fun putSplitPart(part: SplitPart)
     @Upsert suspend fun putSplitParts(parts: List<SplitPart>)
+    @Upsert suspend fun putActualTransaction(item: ActualTransaction)
+    @Upsert suspend fun putActualTransactions(items: List<ActualTransaction>)
+    @Upsert suspend fun putPlannedExpense(item: PlannedExpense)
+    @Upsert suspend fun putPlannedExpenses(items: List<PlannedExpense>)
+    @Upsert suspend fun putPersonalRule(item: PersonalRule)
+    @Upsert suspend fun putPersonalRules(items: List<PersonalRule>)
+    @Upsert suspend fun putCoolingPurchase(item: CoolingPurchase)
+    @Upsert suspend fun putCoolingPurchases(items: List<CoolingPurchase>)
+    @Upsert suspend fun putStrategyEvent(item: StrategyEvent)
+    @Upsert suspend fun putStrategyEvents(items: List<StrategyEvent>)
     @Query("DELETE FROM category_rules WHERE id = :id") suspend fun deleteRule(id: String)
     @Query("DELETE FROM split_parts WHERE expenseMonthId = :monthId") suspend fun clearSplit(monthId: String)
+    @Query("DELETE FROM planned_expenses WHERE id = :id") suspend fun deletePlannedExpense(id: String)
+    @Query("DELETE FROM actual_transactions WHERE id = :id") suspend fun deleteActualTransaction(id: String)
+    @Query("DELETE FROM personal_rules WHERE id = :id") suspend fun deletePersonalRule(id: String)
+    @Query("DELETE FROM cooling_purchases WHERE id = :id") suspend fun deleteCoolingPurchase(id: String)
     @Query("DELETE FROM expenses WHERE id = :id") suspend fun delete(id: String)
     @Query("DELETE FROM expense_months") suspend fun clearMonths()
     @Query("DELETE FROM expenses") suspend fun clearExpenses()
     @Query("DELETE FROM month_closings") suspend fun clearClosings()
     @Query("DELETE FROM category_rules") suspend fun clearRules()
     @Query("DELETE FROM split_parts") suspend fun clearSplits()
+    @Query("DELETE FROM actual_transactions") suspend fun clearActualTransactions()
+    @Query("DELETE FROM planned_expenses") suspend fun clearPlannedExpenses()
+    @Query("DELETE FROM personal_rules") suspend fun clearPersonalRules()
+    @Query("DELETE FROM cooling_purchases") suspend fun clearCoolingPurchases()
+    @Query("DELETE FROM strategy_events") suspend fun clearStrategyEvents()
 
     @Transaction suspend fun clearAll() {
-        clearSplits(); clearClosings(); clearRules(); clearMonths(); clearExpenses()
+        clearStrategyEvents(); clearCoolingPurchases(); clearPersonalRules(); clearPlannedExpenses()
+        clearActualTransactions(); clearSplits(); clearClosings(); clearRules(); clearMonths(); clearExpenses()
     }
 
     @Transaction suspend fun ensureMonth(selected: YearMonth) {

@@ -87,6 +87,14 @@ class BudgetIntelligenceTest {
         assertEquals(SpendingType.EXTRAORDINARY, general.last().type)
     }
 
+    @Test fun plannedExpenseChangesForecastButNeverActual() {
+        val items = listOf(item("food", 10000, 10000, 10000, SpendingType.FLEXIBLE))
+        val withoutPlan = BudgetMath.metrics(september, LocalDate.of(2026, 9, 30), items, 100000)
+        val withPlan = BudgetMath.metrics(september, LocalDate.of(2026, 9, 30), items, 100000, 60000)
+        assertEquals(10000L, withPlan.actualCents)
+        assertEquals(withoutPlan.forecastCents + 60000L, withPlan.forecastCents)
+    }
+
     private fun item(id: String, actual: Long, planned: Long, baseline: Long, type: SpendingType,
         rollover: Boolean = false) = BudgetItem(id, id, actual, planned, baseline, type,
         rolloverEnabled = rollover)

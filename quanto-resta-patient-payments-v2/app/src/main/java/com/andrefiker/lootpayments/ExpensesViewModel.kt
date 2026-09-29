@@ -31,7 +31,12 @@ data class ExpensesState(
     val closing: MonthClosing? = null,
     val rules: List<CategoryRule> = emptyList(),
     val recurringIds: Set<String> = emptySet(),
-    val unusual: List<UnusualSpend> = emptyList()
+    val unusual: List<UnusualSpend> = emptyList(),
+    val actualTransactions: List<ActualTransaction> = emptyList(),
+    val plannedExpenses: List<PlannedExpense> = emptyList(),
+    val personalRules: List<PersonalRule> = emptyList(),
+    val coolingPurchases: List<CoolingPurchase> = emptyList(),
+    val strategyEvents: List<StrategyEvent> = emptyList()
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -67,7 +72,7 @@ class ExpensesViewModel(application: Application) : AndroidViewModel(application
     }
     val state = selected.flatMapLatest { month -> flow {
         dao.ensureMonth(month)
-        emitAll(combine(dao.expenses(), dao.months(month.key()), dao.allMonthsFlow(),
+        val base = combine(dao.expenses(), dao.months(month.key()), dao.allMonthsFlow(),
             dao.closingsFlow(), dao.rulesFlow()) { expenses, months, history, closings, rules ->
             val byId = expenses.associateBy { it.id }
             val byExpense = history.groupBy { it.expenseId }
@@ -81,6 +86,15 @@ class ExpensesViewModel(application: Application) : AndroidViewModel(application
                 SavingsInsights.forMonth(month, expenses, history), history,
                 closings.firstOrNull { it.monthKey == month.key() }, rules,
                 BudgetMath.recurringExpenseIds(history, month), BudgetMath.unusual(items, history, month))
+        }
+        val behavior = combine(base, dao.plannedExpensesFlow(), dao.personalRulesFlow(),
+            dao.coolingPurchasesFlow(), dao.strategyEventsFlow()) { current, plans, rules, cooling, events ->
+            current.copy(plannedExpenses = plans.filter { it.monthKey == month.key() && it.status == "PLANNED" },
+                personalRules = rules, coolingPurchases = cooling.filter { it.status == "WAITING" },
+                strategyEvents = events)
+        }
+        emitAll(combine(behavior, dao.actualTransactionsFlow()) { current, transactions ->
+            current.copy(actualTransactions = transactions.filter { it.monthKey == month.key() })
         })
     } }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000),
         ExpensesState(selected.value, emptyList(), Totals(0, 0, 0)))
@@ -129,7 +143,12 @@ class ExpensesViewModel(application: Application) : AndroidViewModel(application
                 baselineCents = 0, manualCategory = category != null))
             dao.ensureMonth(month)
             dao.month(id, month.key())?.let { dao.putMonth(it.copy(paidCents = amount, updatedAt = now)) }
-            offerUndo("Gasto aplicado: ${ledgerMoney(amount)}") { dao.delete(id) }
+            val transactionId = UUID.randomUUID().toString()
+            dao.putActualTransaction(ActualTransaction(transactionId, id, month.key(), now, amount,
+                name, category ?: name))
+            offerUndo("Gasto aplicado: ${ledgerMoney(amount)}") {
+                dao.deleteActualTransaction(transactionId); dao.delete(id)
+            }
         }
     }
     fun rename(id: String, name: String) = viewModelScope.launch {
@@ -181,7 +200,67 @@ class ExpensesViewModel(application: Application) : AndroidViewModel(application
 
     fun applyRule(rule: CategoryRule) = viewModelScope.launch { dao.applyRuleToMatches(rule) }
 
-    fun deleteRule(id: String) = viewModelScope.launch { dao.deleteRule(id) }
+    fun deleteCategoryRule(id: String) = viewModelScope.launch { dao.deleteRule(id) }
+
+    fun addPlan(name: String, category: String, cents: Long) = viewModelScope.launch {
+        dao.putPlannedExpense(PlannedExpense(UUID.randomUUID().toString(), selected.value.key(),
+            name.trim(), category.trim(), cents, null))
+    }
+
+    fun deletePlan(id: String) = viewModelScope.launch { dao.deletePlannedExpense(id) }
+
+    fun addPersonalRule(name: String, thresholdCents: Long, category: String, coolingHours: Int) = viewModelScope.launch {
+        dao.putPersonalRule(PersonalRule(UUID.randomUUID().toString(), name.trim(), thresholdCents,
+            category.trim(), coolingHours.coerceAtLeast(1)))
+    }
+
+    fun deletePersonalRule(id: String) = viewModelScope.launch { dao.deletePersonalRule(id) }
+
+    fun addCooling(item: String, category: String, cents: Long, rule: PersonalRule?) = viewModelScope.launch {
+        val now = System.currentTimeMillis()
+        val hours = rule?.coolingHours ?: 48
+        val purchase = CoolingPurchase(UUID.randomUUID().toString(), item.ifBlank { "Compra planejada" },
+            category, cents, now, now + hours * 3_600_000L, ruleId = rule?.id)
+        dao.putCoolingPurchase(purchase)
+        rule?.let { dao.putPersonalRule(it.copy(timesUsed = it.timesUsed + 1)) }
+        dao.putStrategyEvent(StrategyEvent(UUID.randomUUID().toString(), rule?.id, purchase.id,
+            "WAITED", cents))
+    }
+
+    fun postponeCooling(item: CoolingPurchase, hours: Int = 24) = viewModelScope.launch {
+        dao.putCoolingPurchase(item.copy(readyAt = item.readyAt + hours * 3_600_000L))
+        dao.putStrategyEvent(StrategyEvent(UUID.randomUUID().toString(), item.ruleId, item.id,
+            "POSTPONED", item.amountCents))
+    }
+
+    fun discardCooling(item: CoolingPurchase) = viewModelScope.launch {
+        dao.putCoolingPurchase(item.copy(status = "DISCARDED"))
+        item.ruleId?.let { id -> dao.allPersonalRules().firstOrNull { it.id == id }?.let { rule ->
+            dao.putPersonalRule(rule.copy(purchasesDeclined = rule.purchasesDeclined + 1,
+                notSpentCents = rule.notSpentCents + item.amountCents))
+        } }
+        dao.putStrategyEvent(StrategyEvent(UUID.randomUUID().toString(), item.ruleId, item.id,
+            "DISCARDED", item.amountCents))
+    }
+
+    fun buyCooling(item: CoolingPurchase) = viewModelScope.launch {
+        dao.putCoolingPurchase(item.copy(status = "BOUGHT"))
+        recordActual(item.item, item.category, item.amountCents)
+        dao.putStrategyEvent(StrategyEvent(UUID.randomUUID().toString(), item.ruleId, item.id,
+            "BOUGHT", item.amountCents))
+    }
+
+    private suspend fun recordActual(name: String, category: String, amount: Long) {
+        val month = selected.value
+        val now = System.currentTimeMillis()
+        val id = UUID.randomUUID().toString()
+        dao.put(Expense(id, name, 0, true, null, month.key(), now, now, category = category,
+            spendingType = SpendingType.FLEXIBLE.stored, baselineCents = 0, manualCategory = true))
+        dao.ensureMonth(month)
+        dao.month(id, month.key())?.let { dao.putMonth(it.copy(paidCents = amount, updatedAt = now)) }
+        dao.putActualTransaction(ActualTransaction(UUID.randomUUID().toString(), id, month.key(), now,
+            amount, name, category))
+    }
 
     fun replaceSplit(row: ExpenseRow, parts: List<Pair<String, Long>>) = viewModelScope.launch {
         dao.replaceSplit(row.payment, parts.map { (category, cents) ->

@@ -40,13 +40,23 @@ class LootBackupCryptoTest {
             147979, 0, 123456, 0, "Comida", 123456, 1)
         val source = LootBackup(emptyList(), emptyList(), listOf(expense), listOf(payment),
             listOf(closing), listOf(CategoryRule("r", "Patrícia", "Comida", "FLEXIBLE")),
-            listOf(SplitPart("s", payment.id, "Comida", 123456)))
+            listOf(SplitPart("s", payment.id, "Comida", 123456)),
+            actualTransactions = listOf(ActualTransaction("tx", expense.id, month.key(), 4, 123456, "Mercado", "Comida")),
+            plannedExpenses = listOf(PlannedExpense("plan", month.key(), "Projetor", "Compras", 60000, null)),
+            personalRules = listOf(PersonalRule("pr", "Esperar", 30000, "Compras", 48)),
+            coolingPurchases = listOf(CoolingPurchase("cool", "Projetor", "Compras", 60000, 5, 6, ruleId = "pr")),
+            strategyEvents = listOf(StrategyEvent("event", "pr", "cool", "WAITED", 60000, 5)))
         val restored = LootBackupJson.decode(LootBackupJson.encode(source), "local-owner")
         assertEquals(expense, restored.expenses.single())
         assertEquals(payment, restored.expenseMonths.single())
         assertEquals(closing, restored.closings.single())
         assertEquals("Patrícia", restored.rules.single().pattern)
         assertEquals(123456L, restored.splitParts.single().cents)
+        assertEquals(123456L, restored.actualTransactions.single().amountCents)
+        assertEquals("Projetor", restored.plannedExpenses.single().name)
+        assertEquals(48, restored.personalRules.single().coolingHours)
+        assertEquals("WAITING", restored.coolingPurchases.single().status)
+        assertEquals("WAITED", restored.strategyEvents.single().action)
     }
 
     @Test fun versionOneBackupGetsSafeDefaults() {

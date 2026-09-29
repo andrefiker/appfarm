@@ -56,9 +56,14 @@ fun SpendingSummaryScreen(state: ExpensesState, vm: ExpensesViewModel,
         .sumOf { row -> state.history.firstOrNull { it.expenseId == row.expense.id && it.monthKey == previousKey }
             ?.let { (it.expectedCents - it.paidCents).coerceAtLeast(0) } ?: 0 }
     val effectiveLimit = limit + rolloverCredit
-    val metrics = BudgetMath.metrics(state.month, LocalDate.now(), state.rows.map { it.toBudgetItem() }, effectiveLimit)
+    val plannedFuture = state.plannedExpenses.sumOf { it.amountCents }
+    val metrics = BudgetMath.metrics(state.month, LocalDate.now(), state.rows.map { it.toBudgetItem() },
+        effectiveLimit, plannedFuture)
     val simulated = whatIfAmount?.let { amount -> BudgetMath.metrics(state.month, LocalDate.now(),
-        BudgetMath.withWhatIf(state.rows.map { it.toBudgetItem() }, amount, whatIfExpenseId), effectiveLimit) }
+        BudgetMath.withWhatIf(state.rows.map { it.toBudgetItem() }, amount, whatIfExpenseId),
+        effectiveLimit, plannedFuture) }
+    val progressStats = BehaviorScience.monthProgress(state.month, LocalDate.now(), metrics.actualCents, effectiveLimit)
+    val velocity = BehaviorScience.velocity(state.actualTransactions, state.month, LocalDate.now())
     val monthLabel = state.month.format(dateFormatter).replaceFirstChar { it.titlecase(Locale("pt", "BR")) }
     val tip = summaryTip(state, metrics)?.takeIf { it.key != dismissedKey }
     val topRows = state.rows.filter { it.payment.included && it.payment.paidCents > 0 }
@@ -108,15 +113,8 @@ fun SpendingSummaryScreen(state: ExpensesState, vm: ExpensesViewModel,
             } else if (metrics.overCents > 0) Text("Limite já ultrapassado em ${ledgerMoney(metrics.overCents)}.",
                 color = Color(0xFF914B47), fontSize = 13.sp)
             else Text("Defina um limite mensal para calcular o valor por dia.", color = muted, fontSize = 12.sp)
-            val currentMonth = YearMonth.from(LocalDate.now())
-            val elapsedPercent = when {
-                state.month < currentMonth -> 100
-                state.month > currentMonth -> 0
-                else -> LocalDate.now().dayOfMonth * 100 / state.month.lengthOfMonth()
-            }
-            val spentPercent = if (effectiveLimit > 0) (metrics.actualCents * 100 / effectiveLimit).toInt() else 0
-            if (effectiveLimit > 0) Text("$elapsedPercent% do mês · $spentPercent% do limite · " +
-                if (spentPercent <= elapsedPercent) "abaixo do ritmo do limite" else "gasto avança mais rápido que o mês",
+            if (effectiveLimit > 0) Text("${progressStats.elapsedPercent}% do mês · ${progressStats.limitUsedPercent}% do limite · " +
+                if (progressStats.limitUsedPercent <= progressStats.elapsedPercent) "abaixo do ritmo do limite" else "gasto avança mais rápido que o mês",
                 color = muted, fontSize = 10.sp, modifier = Modifier.padding(top = 6.dp))
         }
 
@@ -159,6 +157,16 @@ fun SpendingSummaryScreen(state: ExpensesState, vm: ExpensesViewModel,
                         color = if (metrics.forecastVsLimitCents > 0) Color(0xFF914B47) else teal, fontSize = 11.sp)
                 }
                 Text("estimativa", color = muted, fontSize = 10.sp)
+            }
+        }
+
+        if (velocity.monthPerDayCents != null) {
+            Spacer(Modifier.height(8.dp))
+            WhiteCard {
+                Text("VELOCIDADE REGISTRADA", color = muted, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Text("Mês: ${ledgerMoney(velocity.monthPerDayCents)}/dia" +
+                    (velocity.lastSevenDaysPerDayCents?.let { " · últimos 7 dias: ${ledgerMoney(it)}/dia" } ?: ""),
+                    color = navy, fontSize = 11.sp)
             }
         }
 
@@ -425,7 +433,7 @@ private fun monthPulse(metrics: BudgetMetrics): String = when {
                     Text("Aplicar", color = teal, fontSize = 10.sp,
                         modifier = Modifier.clickable { vm.applyRule(rule) }.padding(5.dp))
                     Text("Remover", color = Color(0xFF914B47), fontSize = 10.sp,
-                        modifier = Modifier.clickable { vm.deleteRule(rule.id) }.padding(5.dp))
+                        modifier = Modifier.clickable { vm.deleteCategoryRule(rule.id) }.padding(5.dp))
                 }
             }
         }

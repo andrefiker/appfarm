@@ -166,8 +166,27 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
     }
 }
 
+/** Explicit local-first behavioral models; existing ledgers remain authoritative and untouched. */
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("""CREATE TABLE IF NOT EXISTS `actual_transactions` (`id` TEXT NOT NULL, `expenseId` TEXT, `monthKey` INTEGER NOT NULL, `occurredAt` INTEGER NOT NULL, `amountCents` INTEGER NOT NULL, `merchant` TEXT NOT NULL, `category` TEXT NOT NULL, `source` TEXT NOT NULL, `note` TEXT NOT NULL, `tags` TEXT NOT NULL, PRIMARY KEY(`id`))""")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_actual_transactions_monthKey` ON `actual_transactions` (`monthKey`)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_actual_transactions_expenseId` ON `actual_transactions` (`expenseId`)")
+        db.execSQL("""CREATE TABLE IF NOT EXISTS `planned_expenses` (`id` TEXT NOT NULL, `monthKey` INTEGER NOT NULL, `name` TEXT NOT NULL, `category` TEXT NOT NULL, `amountCents` INTEGER NOT NULL, `dueAt` INTEGER, `status` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`id`))""")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_planned_expenses_monthKey` ON `planned_expenses` (`monthKey`)")
+        db.execSQL("""CREATE TABLE IF NOT EXISTS `personal_rules` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `thresholdCents` INTEGER NOT NULL, `category` TEXT NOT NULL, `coolingHours` INTEGER NOT NULL, `enabled` INTEGER NOT NULL, `timesUsed` INTEGER NOT NULL, `purchasesDeclined` INTEGER NOT NULL, `notSpentCents` INTEGER NOT NULL, PRIMARY KEY(`id`))""")
+        db.execSQL("""CREATE TABLE IF NOT EXISTS `cooling_purchases` (`id` TEXT NOT NULL, `item` TEXT NOT NULL, `category` TEXT NOT NULL, `amountCents` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, `readyAt` INTEGER NOT NULL, `status` TEXT NOT NULL, `ruleId` TEXT, PRIMARY KEY(`id`))""")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_cooling_purchases_status` ON `cooling_purchases` (`status`)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_cooling_purchases_ruleId` ON `cooling_purchases` (`ruleId`)")
+        db.execSQL("""CREATE TABLE IF NOT EXISTS `strategy_events` (`id` TEXT NOT NULL, `ruleId` TEXT, `coolingPurchaseId` TEXT, `action` TEXT NOT NULL, `amountCents` INTEGER NOT NULL, `occurredAt` INTEGER NOT NULL, PRIMARY KEY(`id`))""")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_strategy_events_ruleId` ON `strategy_events` (`ruleId`)")
+    }
+}
+
 @Database(entities = [Patient::class, PatientMonth::class, Expense::class, ExpenseMonth::class,
-    MonthClosing::class, CategoryRule::class, SplitPart::class], version = 3, exportSchema = false)
+    MonthClosing::class, CategoryRule::class, SplitPart::class, ActualTransaction::class,
+    PlannedExpense::class, PersonalRule::class, CoolingPurchase::class, StrategyEvent::class],
+    version = 4, exportSchema = false)
 abstract class PaymentsDatabase : RoomDatabase() {
     abstract fun dao(): PaymentsDao
     abstract fun expenses(): ExpensesDao
@@ -175,7 +194,7 @@ abstract class PaymentsDatabase : RoomDatabase() {
         @Volatile private var instance: PaymentsDatabase? = null
         fun get(context: Context): PaymentsDatabase = instance ?: synchronized(this) {
             instance ?: Room.databaseBuilder(context.applicationContext, PaymentsDatabase::class.java, "qr-payments-v2.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                 .build().also { instance = it }
         }
     }

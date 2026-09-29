@@ -105,13 +105,14 @@ class MainActivity : ComponentActivity() {
                             0 -> if (ready) PatientPaymentsScreen(state, vm) { dataTransferOpen = true }
                                 else Text("Carregando Loot…", modifier = Modifier.statusBarsPadding().padding(28.dp), color = muted)
                             1 -> ExpensesScreen(expenseState, expenses) { dataTransferOpen = true }
-                            else -> SpendingSummaryScreen(expenseState, expenses, state.totals) { dataTransferOpen = true }
+                            2 -> SpendingSummaryScreen(expenseState, expenses, state.totals) { dataTransferOpen = true }
+                            else -> BehaviorScreen(expenseState, expenses) { dataTransferOpen = true }
                         }
                     }
                     HorizontalDivider(color = divider)
                     Row(Modifier.fillMaxWidth().background(paper).navigationBarsPadding()
                         .padding(horizontal = 14.dp, vertical = 5.dp)) {
-                        listOf("↓" to "Receitas", "↑" to "Gastos", "◷" to "Resumo").forEachIndexed { index, item ->
+                        listOf("↓" to "Receitas", "↑" to "Gastos", "◷" to "Resumo", "◇" to "Planos").forEachIndexed { index, item ->
                             val (glyph, label) = item
                             Box(Modifier.weight(1f).height(44.dp).padding(horizontal = 4.dp)
                                 .clip(RoundedCornerShape(11.dp))

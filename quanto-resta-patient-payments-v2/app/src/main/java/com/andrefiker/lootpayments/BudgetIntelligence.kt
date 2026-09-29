@@ -51,7 +51,8 @@ object BudgetMath {
         return items.map { if (it.id == expenseId) it.copy(actualCents = it.actualCents + amountCents) else it }
     }
 
-    fun metrics(month: YearMonth, today: LocalDate, items: List<BudgetItem>, limitCents: Long): BudgetMetrics {
+    fun metrics(month: YearMonth, today: LocalDate, items: List<BudgetItem>, limitCents: Long,
+        plannedFutureCents: Long = 0): BudgetMetrics {
         val active = items.filter { it.included }
         val actual = active.sumOf { it.actualCents }
         val remaining = (limitCents - actual).coerceAtLeast(0)
@@ -75,7 +76,7 @@ object BudgetMath {
             .sumOf { maxOf(it.actualCents, it.plannedCents) }
         val flexibleForecast = if (elapsed <= 0) active.filter { it.type == SpendingType.FLEXIBLE }.sumOf { it.plannedCents }
             else maxOf(flexible, (flexible.toDouble() / elapsed * month.lengthOfMonth()).roundToLong())
-        val forecast = maxOf(actual, fixedForecast + flexibleForecast + extraordinary)
+        val forecast = maxOf(actual, fixedForecast + flexibleForecast + extraordinary + plannedFutureCents)
         return BudgetMetrics(actual, limitCents, remaining, over, daysRemaining, daily,
             baseline, actual - baseline, fixed, flexible, extraordinary, forecast, forecast - limitCents)
     }

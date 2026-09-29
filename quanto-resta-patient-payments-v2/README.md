@@ -30,13 +30,19 @@ number/progress motion, light haptics, a deterministic month pulse, elapsed-vs-s
 pace and one-step undo for recent amount/classification/add actions. Simulations
 never write data until `Aplicar como gasto` is tapped.
 
+Version 1.9 adds explicit, separate local models for dated actual transactions,
+future planned expenses, user-authored if/then rules, cooling purchases and
+strategy events. The compact `Planos` surface supports `Quero comprar`, explicit
+buy/wait/save choices, reversible cooling decisions and descriptive strategy
+counts. Plans affect forecast but never actual; waiting never auto-buys.
+
 Fresh installs seed only the category names from the September handoff. Every
 starting amount and baseline is R$0, and no category is predeclared fixed. The
 user can enter actual values and deliberately promote recurring spending later.
 The one-time name-based seed never overwrites existing records.
 
-Native Kotlin/Jetpack Compose Android app. Three compact tabs: patient income,
-manual expenses, and a monthly spending summary. The ledger works offline using
+Native Kotlin/Jetpack Compose Android app. Four compact tabs: patient income,
+manual expenses, monthly summary, and plans/rules. The ledger works offline using
 the same Room database. No login, bank integration, cloud sync, OCR, backend or
 internet permission.
 
@@ -51,10 +57,11 @@ and static APK verification without requiring an emulator.
 
 ## Data and months
 
-The Room database `qr-payments-v2.db` is version 3. `MIGRATION_1_2` adds the
+The Room database `qr-payments-v2.db` is version 4. `MIGRATION_1_2` adds the
 expense ledger; additive `MIGRATION_2_3` preserves all existing rows and paid
 amounts while adding baseline/type/detail fields plus closing, rule and split
-tables. No destructive fallback migration is configured.
+tables. `MIGRATION_3_4` adds separate planning and behavioral tables without
+changing existing actuals. No destructive fallback migration is configured.
 
 `Expense` contains ID, name, monthly default in integer cents, activity/archive month and creation/update times. `ExpenseMonth` contains the frozen expected cents, paid cents, inclusion and explicit incomplete flag. Opening a new month adds missing snapshots with zero paid. Changing a fee or archiving first snapshots unvisited earlier months, then changes the selected and future months only. Archive preserves older values. Delete requires one confirmation, or two if prior months or payments exist; a foreign key cascades permanent deletion. Patients retain their existing data model and logic.
 
@@ -70,5 +77,5 @@ Supabase or access the network.
 An APK signed with a different certificate cannot update an installed Loot APK.
 Package ID, signing certificate and a higher version code must all match for an
 in-place update. Do not uninstall a copy with unique data before exporting its
-encrypted backup. A compatible update preserves the version 2 database and runs
-the additive version 3 migration.
+encrypted backup. A compatible update preserves the existing database and runs
+the additive version 3 and 4 migrations as needed.

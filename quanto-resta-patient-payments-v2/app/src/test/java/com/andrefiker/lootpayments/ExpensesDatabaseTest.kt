@@ -20,7 +20,7 @@ class ExpensesPersistenceTest {
     private val file = "expenses-v1-test.db"
     @After fun cleanup() { context.deleteDatabase(file) }
     private fun open() = Room.databaseBuilder(context, PaymentsDatabase::class.java, file)
-        .addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build()
 
     @Test fun starterCategoriesHaveNoPresetAmountsAndNeverOverwriteOrDuplicate() = runBlocking {
         context.deleteDatabase(file)

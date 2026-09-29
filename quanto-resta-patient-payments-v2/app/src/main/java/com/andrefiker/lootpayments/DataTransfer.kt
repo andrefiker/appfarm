@@ -49,7 +49,7 @@ import javax.crypto.spec.SecretKeySpec
 
 private const val BACKUP_NAME = "loot-backup.ltb"
 private const val BACKUP_FORMAT = "loot-encrypted-backup"
-private const val BACKUP_SCHEMA = 2
+private const val BACKUP_SCHEMA = 3
 
 internal data class LootBackup(
     val patients: List<Patient>,
@@ -58,7 +58,12 @@ internal data class LootBackup(
     val expenseMonths: List<ExpenseMonth>,
     val closings: List<MonthClosing> = emptyList(),
     val rules: List<CategoryRule> = emptyList(),
-    val splitParts: List<SplitPart> = emptyList()
+    val splitParts: List<SplitPart> = emptyList(),
+    val actualTransactions: List<ActualTransaction> = emptyList(),
+    val plannedExpenses: List<PlannedExpense> = emptyList(),
+    val personalRules: List<PersonalRule> = emptyList(),
+    val coolingPurchases: List<CoolingPurchase> = emptyList(),
+    val strategyEvents: List<StrategyEvent> = emptyList()
 )
 
 internal object LootBackupCrypto {
@@ -117,6 +122,11 @@ internal object LootBackupJson {
         .put("closings", JSONArray().apply { data.closings.forEach { put(closing(it)) } })
         .put("rules", JSONArray().apply { data.rules.forEach { put(rule(it)) } })
         .put("splitParts", JSONArray().apply { data.splitParts.forEach { put(splitPart(it)) } })
+        .put("actualTransactions", JSONArray().apply { data.actualTransactions.forEach { put(actualTransaction(it)) } })
+        .put("plannedExpenses", JSONArray().apply { data.plannedExpenses.forEach { put(plannedExpense(it)) } })
+        .put("personalRules", JSONArray().apply { data.personalRules.forEach { put(personalRule(it)) } })
+        .put("coolingPurchases", JSONArray().apply { data.coolingPurchases.forEach { put(coolingPurchase(it)) } })
+        .put("strategyEvents", JSONArray().apply { data.strategyEvents.forEach { put(strategyEvent(it)) } })
         .toString()
 
     fun decode(text: String, owner: String): LootBackup {
@@ -177,7 +187,28 @@ internal object LootBackupJson {
         val splits = root.optJSONArray("splitParts")?.objects { o -> SplitPart(
             o.getString("id"), o.getString("expenseMonthId"), o.getString("category"), o.getLong("cents"))
         }?.filter { it.expenseMonthId in monthIds } ?: emptyList()
-        return LootBackup(patients, patientMonths, expenses, expenseMonths, closings, rules, splits)
+        val actual = root.optJSONArray("actualTransactions")?.objects { o -> ActualTransaction(
+            o.getString("id"), o.optString("expenseId").takeIf { it.isNotBlank() }, o.getInt("monthKey"),
+            o.getLong("occurredAt"), o.getLong("amountCents"), o.getString("merchant"),
+            o.getString("category"), o.optString("source", "MANUAL"), o.optString("note", ""),
+            o.optString("tags", "")) } ?: emptyList()
+        val plans = root.optJSONArray("plannedExpenses")?.objects { o -> PlannedExpense(
+            o.getString("id"), o.getInt("monthKey"), o.getString("name"), o.getString("category"),
+            o.getLong("amountCents"), o.nullableLong("dueAt"), o.getString("status"), o.getLong("createdAt")) } ?: emptyList()
+        val personal = root.optJSONArray("personalRules")?.objects { o -> PersonalRule(
+            o.getString("id"), o.getString("name"), o.getLong("thresholdCents"), o.getString("category"),
+            o.getInt("coolingHours"), o.getBoolean("enabled"), o.getInt("timesUsed"),
+            o.getInt("purchasesDeclined"), o.getLong("notSpentCents")) } ?: emptyList()
+        val cooling = root.optJSONArray("coolingPurchases")?.objects { o -> CoolingPurchase(
+            o.getString("id"), o.getString("item"), o.getString("category"), o.getLong("amountCents"),
+            o.getLong("createdAt"), o.getLong("readyAt"), o.getString("status"),
+            o.optString("ruleId").takeIf { it.isNotBlank() }) } ?: emptyList()
+        val events = root.optJSONArray("strategyEvents")?.objects { o -> StrategyEvent(
+            o.getString("id"), o.optString("ruleId").takeIf { it.isNotBlank() },
+            o.optString("coolingPurchaseId").takeIf { it.isNotBlank() }, o.getString("action"),
+            o.getLong("amountCents"), o.getLong("occurredAt")) } ?: emptyList()
+        return LootBackup(patients, patientMonths, expenses, expenseMonths, closings, rules, splits,
+            actual, plans, personal, cooling, events)
     }
 
     private fun patient(p: Patient) = JSONObject().put("id", p.id).put("name", p.name)
@@ -219,8 +250,27 @@ internal object LootBackupJson {
     private fun splitPart(p: SplitPart) = JSONObject().put("id", p.id)
         .put("expenseMonthId", p.expenseMonthId).put("category", p.category).put("cents", p.cents)
 
+    private fun actualTransaction(t: ActualTransaction) = JSONObject().put("id", t.id)
+        .put("expenseId", t.expenseId ?: "").put("monthKey", t.monthKey).put("occurredAt", t.occurredAt)
+        .put("amountCents", t.amountCents).put("merchant", t.merchant).put("category", t.category)
+        .put("source", t.source).put("note", t.note).put("tags", t.tags)
+    private fun plannedExpense(p: PlannedExpense) = JSONObject().put("id", p.id).put("monthKey", p.monthKey)
+        .put("name", p.name).put("category", p.category).put("amountCents", p.amountCents)
+        .put("dueAt", p.dueAt ?: JSONObject.NULL).put("status", p.status).put("createdAt", p.createdAt)
+    private fun personalRule(r: PersonalRule) = JSONObject().put("id", r.id).put("name", r.name)
+        .put("thresholdCents", r.thresholdCents).put("category", r.category).put("coolingHours", r.coolingHours)
+        .put("enabled", r.enabled).put("timesUsed", r.timesUsed).put("purchasesDeclined", r.purchasesDeclined)
+        .put("notSpentCents", r.notSpentCents)
+    private fun coolingPurchase(p: CoolingPurchase) = JSONObject().put("id", p.id).put("item", p.item)
+        .put("category", p.category).put("amountCents", p.amountCents).put("createdAt", p.createdAt)
+        .put("readyAt", p.readyAt).put("status", p.status).put("ruleId", p.ruleId ?: "")
+    private fun strategyEvent(e: StrategyEvent) = JSONObject().put("id", e.id).put("ruleId", e.ruleId ?: "")
+        .put("coolingPurchaseId", e.coolingPurchaseId ?: "").put("action", e.action)
+        .put("amountCents", e.amountCents).put("occurredAt", e.occurredAt)
+
     private fun JSONObject.putNullable(key: String, value: Int?) = put(key, value ?: JSONObject.NULL)
     private fun JSONObject.nullableInt(key: String): Int? = if (isNull(key)) null else getInt(key)
+    private fun JSONObject.nullableLong(key: String): Long? = if (isNull(key)) null else getLong(key)
     private fun <T> JSONArray.objects(block: (JSONObject) -> T): List<T> =
         (0 until length()).map { block(getJSONObject(it)) }
 }
@@ -244,7 +294,9 @@ internal class LootDataTransfer(private val context: Context) {
         val owner = ownerId()
         val payload = LootBackup(db.dao().backupPatients(owner), db.dao().allMonths(owner),
             db.expenses().allExpenses(), db.expenses().allMonths(), db.expenses().allClosings(),
-            db.expenses().allRules(), db.expenses().allSplitParts())
+            db.expenses().allRules(), db.expenses().allSplitParts(), db.expenses().allActualTransactions(),
+            db.expenses().allPlannedExpenses(), db.expenses().allPersonalRules(),
+            db.expenses().allCoolingPurchases(), db.expenses().allStrategyEvents())
         val encrypted = LootBackupCrypto.encrypt(LootBackupJson.encode(payload), password)
         val folder = requireNotNull(DocumentFile.fromTreeUri(context, uri)) { "Pasta indisponível." }
         val file = folder.findFile(BACKUP_NAME)
@@ -273,6 +325,11 @@ internal class LootDataTransfer(private val context: Context) {
             db.expenses().putClosings(payload.closings)
             db.expenses().putRules(payload.rules)
             db.expenses().putSplitParts(payload.splitParts)
+            db.expenses().putActualTransactions(payload.actualTransactions)
+            db.expenses().putPlannedExpenses(payload.plannedExpenses)
+            db.expenses().putPersonalRules(payload.personalRules)
+            db.expenses().putCoolingPurchases(payload.coolingPurchases)
+            db.expenses().putStrategyEvents(payload.strategyEvents)
         }
         "Importado: ${payload.patients.size} pacientes e ${payload.expenses.size} despesas."
     }

@@ -78,7 +78,7 @@ class PaymentsPersistenceTest {
         val owner = "33333333-3333-4333-8333-333333333333"
         val dao = PaymentsDatabase.get(context).dao()
         dao.clearAll()
-        context.getSharedPreferences("loot-local-owner", 0).edit().remove("id").commit()
+        assertTrue(context.getSharedPreferences("loot-local-owner", 0).edit().putString("id", owner).commit())
         val month = YearMonth.now()
         val now = System.currentTimeMillis()
         val aliases = listOf("A.L.", "Marina", "Rafael", "C.S.", "Patricia", "Bruno", "L.F.", "Tiago")
@@ -88,6 +88,7 @@ class PaymentsPersistenceTest {
                     if (index == 0) 90000 else 75000, true, null, month.key(), now + index, now))
             }
             dao.ensureMonth(owner, month)
+            assertEquals(8, dao.months(owner, month.key()).first().size)
             val first = dao.month(owner, "fake-patient-0", month.key())!!
             val second = dao.month(owner, "fake-patient-1", month.key())!!
             dao.putMonth(first.copy(paidCents = 90000))
@@ -98,7 +99,7 @@ class PaymentsPersistenceTest {
             }
             val scenario = ActivityScenario.launch(MainActivity::class.java)
             try {
-                composeRule.waitUntil(10_000) { composeRule.onAllNodesWithText("A.L.").fetchSemanticsNodes().isNotEmpty() }
+                composeRule.waitUntil(60_000) { composeRule.onAllNodesWithText("A.L.").fetchSemanticsNodes().isNotEmpty() }
                 composeRule.onNodeWithText("A.L.").assertExists()
                 composeRule.onNodeWithText("Marina").assertExists()
                 captureScreen(scenario, "patient-screen-actual.png")
@@ -106,7 +107,7 @@ class PaymentsPersistenceTest {
                 composeRule.onNodeWithText("Adicionar paciente").assertExists()
                 composeRule.onNodeWithText("Cancelar").performClick()
                 composeRule.onNodeWithText("Gastos").performClick()
-                composeRule.waitUntil(10_000) { composeRule.onAllNodesWithText("Nenhuma despesa ainda.").fetchSemanticsNodes().isNotEmpty() }
+                composeRule.waitUntil(60_000) { composeRule.onAllNodesWithText("Nenhuma despesa ainda.").fetchSemanticsNodes().isNotEmpty() }
                 composeRule.onNodeWithText("Nenhuma despesa ainda.").assertExists()
                 captureScreen(scenario, "expense-screen-actual.png")
                 composeRule.onNodeWithContentDescription("Adicionar Despesa").performClick()

@@ -68,6 +68,10 @@ class ExpensesViewModel(application: Application) : AndroidViewModel(application
                 dao.addMissingBaselineExpenses(MonthlyExpenseBaseline.forMonth(month), month)
                 check(preferences.edit().putBoolean("monthly_baseline_seeded_v1", true).commit())
             }
+            if (!preferences.getBoolean("fixed_monthly_categories_seeded_v1", false)) {
+                dao.addOrFillFixedMonthlyCategories(FixedMonthlyCategories.forMonth(month), month)
+                check(preferences.edit().putBoolean("fixed_monthly_categories_seeded_v1", true).commit())
+            }
         }
     }
     val state = selected.flatMapLatest { month -> flow {
@@ -344,6 +348,33 @@ internal object MonthlyExpenseBaseline {
             id = "baseline_${index + 1}", name = name, defaultCents = cents, active = true,
             archivedFromMonth = null, createdMonth = month.key(), createdAt = now, updatedAt = now,
             category = name, spendingType = type.stored, baselineCents = cents
+        ) }
+    }
+}
+
+internal object FixedMonthlyCategories {
+    fun forMonth(month: YearMonth, now: Long = System.currentTimeMillis()): List<Expense> {
+        val entries = listOf(
+            "alimentação" to 300_000L,
+            "aluguel" to 180_000L,
+            "cartão xp" to 100_000L,
+            "celular" to 28_000L,
+            "compras" to 100_000L,
+            "Conceição" to 80_000L,
+            "equalize" to 63_000L,
+            "medicação" to 80_000L,
+            "Notredame" to 75_000L,
+            "poupança" to 150_000L,
+            "psiquiatra" to 100_000L,
+            "transporte" to 50_000L,
+            "weed" to 50_000L,
+            "wifi" to 24_000L
+        )
+        return entries.mapIndexed { index, (name, cents) -> Expense(
+            id = "fixed_monthly_${index + 1}", name = name, defaultCents = cents, active = true,
+            archivedFromMonth = null, createdMonth = month.key(), createdAt = now, updatedAt = now,
+            category = name, spendingType = SpendingType.FIXED.stored, baselineCents = cents,
+            manualCategory = true
         ) }
     }
 }

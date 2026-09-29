@@ -41,6 +41,15 @@ class SavingsInsightsTest {
         assertEquals(setOf(SpendingType.FLEXIBLE.stored), baseline.map { it.spendingType }.toSet())
     }
 
+    @Test fun screenshotMonthlyCategoriesTotalThirteenThousandEightHundredAndAreFixed() {
+        val categories = FixedMonthlyCategories.forMonth(YearMonth.of(2026, 9), now = 1L)
+        assertEquals(14, categories.size)
+        assertEquals(1_380_000L, categories.sumOf { it.defaultCents })
+        assertEquals(300_000L, categories.single { it.name == "alimentação" }.defaultCents)
+        assertEquals(50_000L, categories.single { it.name == "weed" }.defaultCents)
+        assertEquals(setOf(SpendingType.FIXED.stored), categories.map { it.spendingType }.toSet())
+    }
+
     private fun record(month: YearMonth, paid: Long) = ExpenseMonth(
         id = "${month.key()}", expenseId = rent.id, monthKey = month.key(), year = month.year,
         month = month.monthValue, expectedCents = paid, paidCents = paid

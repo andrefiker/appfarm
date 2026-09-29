@@ -245,6 +245,39 @@ interface ExpensesDao {
         ensureMonth(selected)
     }
 
+    /**
+     * Add the user-confirmed monthly categories from the previous Loot screen.
+     * Existing zero-value categories are filled in place so processed actual spending stays attached.
+     * A non-zero value entered by the user is never replaced.
+     */
+    @Transaction suspend fun addOrFillFixedMonthlyCategories(plan: List<Expense>, selected: YearMonth) {
+        val existingByName = allExpenses().associateBy { it.name.trim().lowercase(Locale.ROOT) }
+        val now = System.currentTimeMillis()
+        for (planned in plan) {
+            val existing = existingByName[planned.name.trim().lowercase(Locale.ROOT)]
+            if (existing == null) {
+                put(planned)
+                continue
+            }
+            put(existing.copy(
+                defaultCents = existing.defaultCents.takeIf { it != 0L } ?: planned.defaultCents,
+                baselineCents = existing.baselineCents.takeIf { it != 0L } ?: planned.baselineCents,
+                category = existing.category.ifBlank { planned.category },
+                spendingType = SpendingType.FIXED.stored,
+                updatedAt = now
+            ))
+            allMonths().filter { it.expenseId == existing.id && it.monthKey >= selected.key() }.forEach { month ->
+                putMonth(month.copy(
+                    expectedCents = month.expectedCents.takeIf { it != 0L } ?: planned.defaultCents,
+                    baselineCents = month.baselineCents.takeIf { it != 0L } ?: planned.baselineCents,
+                    spendingType = SpendingType.FIXED.stored,
+                    updatedAt = now
+                ))
+            }
+        }
+        ensureMonth(selected)
+    }
+
     @Transaction suspend fun changeDefault(id: String, selected: YearMonth, cents: Long) {
         val expense = expense(id) ?: return
         snapshotPrior(expense, selected.key())

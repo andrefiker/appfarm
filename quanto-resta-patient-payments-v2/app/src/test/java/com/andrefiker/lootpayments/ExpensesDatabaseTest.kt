@@ -130,6 +130,33 @@ class ExpensesPersistenceTest {
         db.close()
     }
 
+    @Test fun fixedMonthlyCategoriesFillExistingZeroRowsWithoutLosingProcessedSpend() = runBlocking {
+        context.deleteDatabase(file)
+        val month = YearMonth.of(2026, 9)
+        val db = open()
+        val dao = db.expenses()
+        val now = 1L
+        dao.addMissingBaselineExpenses(MonthlyExpenseBaseline.forMonth(month, now), month)
+        val compras = dao.allExpenses().single { it.name == "Compras" }
+        val comprasMonth = dao.month(compras.id, month.key())!!
+        dao.putMonth(comprasMonth.copy(paidCents = 51_934L))
+
+        dao.addOrFillFixedMonthlyCategories(FixedMonthlyCategories.forMonth(month, now), month)
+        dao.addOrFillFixedMonthlyCategories(FixedMonthlyCategories.forMonth(month, now), month)
+
+        val all = dao.allExpenses()
+        assertEquals(23, all.size)
+        assertEquals(1, all.count { it.name.equals("compras", ignoreCase = true) })
+        assertEquals(1_380_000L, dao.months(month.key()).first().sumOf { it.expectedCents })
+        val updated = dao.expense(compras.id)!!
+        val updatedMonth = dao.month(compras.id, month.key())!!
+        assertEquals(100_000L, updated.defaultCents)
+        assertEquals(100_000L, updatedMonth.expectedCents)
+        assertEquals(51_934L, updatedMonth.paidCents)
+        assertEquals(SpendingType.FIXED.stored, updated.spendingType)
+        db.close()
+    }
+
     @Test fun blankStartMonthSnapshotsArchiveDeleteAndRestart() = runBlocking {
         context.deleteDatabase(file)
         val sept = YearMonth.of(2026, 9)

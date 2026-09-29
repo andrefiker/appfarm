@@ -183,18 +183,32 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
     }
 }
 
+/** Additive v1.9 -> v1.11 migration. Statement rows stay outside the actual ledger until confirmed. */
+val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("""CREATE TABLE IF NOT EXISTS `statement_inbox` (`id` TEXT NOT NULL, `source` TEXT NOT NULL, `monthKey` INTEGER NOT NULL, `occurredAt` INTEGER NOT NULL, `original` TEXT NOT NULL, `amountCents` INTEGER NOT NULL, `matchKey` TEXT NOT NULL, `correctedName` TEXT NOT NULL, `category` TEXT NOT NULL, `status` TEXT NOT NULL, `resolvedAt` INTEGER, PRIMARY KEY(`id`))""")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_statement_inbox_status` ON `statement_inbox` (`status`)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_statement_inbox_monthKey` ON `statement_inbox` (`monthKey`)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_statement_inbox_matchKey` ON `statement_inbox` (`matchKey`)")
+        db.execSQL("""CREATE TABLE IF NOT EXISTS `statement_ignore_rules` (`id` TEXT NOT NULL, `pattern` TEXT NOT NULL, `label` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`id`))""")
+        db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_statement_ignore_rules_pattern` ON `statement_ignore_rules` (`pattern`)")
+    }
+}
+
 @Database(entities = [Patient::class, PatientMonth::class, Expense::class, ExpenseMonth::class,
     MonthClosing::class, CategoryRule::class, SplitPart::class, ActualTransaction::class,
-    PlannedExpense::class, PersonalRule::class, CoolingPurchase::class, StrategyEvent::class],
-    version = 4, exportSchema = false)
+    PlannedExpense::class, PersonalRule::class, CoolingPurchase::class, StrategyEvent::class,
+    StatementInboxItem::class, StatementIgnoreRule::class],
+    version = 5, exportSchema = false)
 abstract class PaymentsDatabase : RoomDatabase() {
     abstract fun dao(): PaymentsDao
     abstract fun expenses(): ExpensesDao
+    abstract fun statementInbox(): StatementInboxDao
     companion object {
         @Volatile private var instance: PaymentsDatabase? = null
         fun get(context: Context): PaymentsDatabase = instance ?: synchronized(this) {
             instance ?: Room.databaseBuilder(context.applicationContext, PaymentsDatabase::class.java, "qr-payments-v2.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                 .build().also { instance = it }
         }
     }

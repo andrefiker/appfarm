@@ -1,0 +1,92 @@
+name: Build Loot Portable v1.11
+
+on:
+  push:
+    branches: [ quanto-resta-patient-payments-v2 ]
+    paths:
+      - 'quanto-resta-patient-payments-v2/**'
+      - '.github/workflows/quanto-resta-patient-payments-v2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: quanto-resta-patient-payments-v2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Ensure Android API 35
+        run: |
+          if [ ! -f "$ANDROID_HOME/platforms/android-35/android.jar" ]; then
+            yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+              'platforms;android-35' 'build-tools;35.0.0' >/dev/null
+          fi
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Retrieve portable v1.6 reference APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p build/reference
+          gh api /repos/${{ github.repository }}/actions/artifacts/11032756684/zip > build/reference/v1.6.zip
+          unzip -q build/reference/v1.6.zip -d build/reference/v1.6
+          test -s build/reference/v1.6/app-debug.apk
+      - name: Unit tests, lint and APK build
+        run: gradle --no-daemon :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
+      - name: Verify package, version, manifest and signing
+        run: |
+          set -eu
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          OLD=build/reference/v1.6/app-debug.apk
+          TOOLS="$ANDROID_HOME/build-tools/35.0.0"
+          mkdir -p build/verification
+          test -s "$APK"
+          "$TOOLS/aapt" dump badging "$APK" > build/verification/badging.txt
+          "$TOOLS/aapt" dump permissions "$APK" > build/verification/permissions.txt
+          "$TOOLS/apksigner" verify --verbose --print-certs "$APK" > build/verification/signing-v1.11.txt
+          "$TOOLS/apksigner" verify --verbose --print-certs "$OLD" > build/verification/signing-v1.6.txt
+          grep -q "package: name='com.andrefiker.lootpayments.portable' versionCode='12' versionName='1.11'" build/verification/badging.txt
+          if grep -Eq 'READ_CONTACTS|READ_SMS|ACCESS_FINE_LOCATION|INTERNET' build/verification/permissions.txt; then
+            echo 'Unexpected sensitive/network permission found' >&2
+            exit 1
+          fi
+          OLD_CERT=$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' build/verification/signing-v1.6.txt | head -n 1)
+          NEW_CERT=$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' build/verification/signing-v1.11.txt | head -n 1)
+          {
+            echo "package_id=com.andrefiker.lootpayments.portable"
+            echo "version_code=12"
+            echo "version_name=1.11"
+            echo "old_certificate_sha256=$OLD_CERT"
+            echo "new_certificate_sha256=$NEW_CERT"
+            if [ -n "$OLD_CERT" ] && [ "$OLD_CERT" = "$NEW_CERT" ]; then
+              echo 'signing_compatible=true'
+              echo 'in_place_update_preserves_data=true'
+            else
+              echo 'signing_compatible=false'
+              echo 'in_place_update_preserves_data=false'
+            fi
+          } > build/verification/update-compatibility.txt
+          sha256sum "$APK" > build/verification/apk-sha256.txt
+          find app/build/test-results/testDebugUnitTest -name '*.xml' -print > build/verification/unit-test-files.txt
+          grep -Rho '<testsuite[^>]*tests="[0-9]*"[^>]*failures="[0-9]*"[^>]*errors="[0-9]*"[^>]*skipped="[0-9]*"' \
+            app/build/test-results/testDebugUnitTest 2>/dev/null > build/verification/unit-test-suites.txt || true
+          cat build/verification/update-compatibility.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Loot-Portable-v1.11-APK-and-verification
+          path: |
+            quanto-resta-patient-payments-v2/app/build/outputs/apk/debug/app-debug.apk
+            quanto-resta-patient-payments-v2/build/verification/
+            quanto-resta-patient-payments-v2/app/build/reports/tests/testDebugUnitTest/
+            quanto-resta-patient-payments-v2/app/build/reports/lint-results-debug.html
+          if-no-files-found: error

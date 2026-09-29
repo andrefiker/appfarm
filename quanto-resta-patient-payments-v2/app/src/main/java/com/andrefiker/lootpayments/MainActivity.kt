@@ -97,6 +97,8 @@ class MainActivity : ComponentActivity() {
                 val ready by vm.ready.collectAsStateWithLifecycle()
                 val expenses: ExpensesViewModel = viewModel()
                 val expenseState by expenses.state.collectAsStateWithLifecycle()
+                val statementInbox: StatementInboxViewModel = viewModel()
+                val statementState by statementInbox.state.collectAsStateWithLifecycle()
                 var destination by rememberSaveable { mutableStateOf(0) }
                 var dataTransferOpen by rememberSaveable { mutableStateOf(false) }
                 Column(Modifier.fillMaxSize().background(paper)) {
@@ -106,13 +108,15 @@ class MainActivity : ComponentActivity() {
                                 else Text("Carregando Loot…", modifier = Modifier.statusBarsPadding().padding(28.dp), color = muted)
                             1 -> ExpensesScreen(expenseState, expenses) { dataTransferOpen = true }
                             2 -> SpendingSummaryScreen(expenseState, expenses, state.totals) { dataTransferOpen = true }
-                            else -> BehaviorScreen(expenseState, expenses) { dataTransferOpen = true }
+                            3 -> BehaviorScreen(expenseState, expenses) { dataTransferOpen = true }
+                            else -> StatementInboxScreen(statementState, statementInbox)
                         }
                     }
                     HorizontalDivider(color = divider)
                     Row(Modifier.fillMaxWidth().background(paper).navigationBarsPadding()
                         .padding(horizontal = 14.dp, vertical = 5.dp)) {
-                        listOf("↓" to "Receitas", "↑" to "Gastos", "◷" to "Resumo", "◇" to "Planos").forEachIndexed { index, item ->
+                        listOf("↓" to "Receitas", "↑" to "Gastos", "◷" to "Resumo",
+                            "◇" to "Planos", "☷" to "Extratos").forEachIndexed { index, item ->
                             val (glyph, label) = item
                             Box(Modifier.weight(1f).height(44.dp).padding(horizontal = 4.dp)
                                 .clip(RoundedCornerShape(11.dp))
@@ -121,11 +125,11 @@ class MainActivity : ComponentActivity() {
                                 .semantics { selected = destination == index },
                                 contentAlignment = Alignment.Center) {
                                 Row(verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    horizontalArrangement = Arrangement.spacedBy(3.dp)) {
                                     Text(glyph, color = if (destination == index) teal else muted,
-                                        fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                                        fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                                     Text(label, color = if (destination == index) teal else muted,
-                                        fontSize = 13.sp, fontWeight = if (destination == index) FontWeight.Bold else FontWeight.Medium)
+                                        fontSize = 10.sp, fontWeight = if (destination == index) FontWeight.Bold else FontWeight.Medium)
                                 }
                             }
                         }

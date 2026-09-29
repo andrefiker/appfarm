@@ -49,7 +49,7 @@ import javax.crypto.spec.SecretKeySpec
 
 private const val BACKUP_NAME = "loot-backup.ltb"
 private const val BACKUP_FORMAT = "loot-encrypted-backup"
-private const val BACKUP_SCHEMA = 3
+private const val BACKUP_SCHEMA = 4
 
 internal data class LootBackup(
     val patients: List<Patient>,
@@ -63,7 +63,9 @@ internal data class LootBackup(
     val plannedExpenses: List<PlannedExpense> = emptyList(),
     val personalRules: List<PersonalRule> = emptyList(),
     val coolingPurchases: List<CoolingPurchase> = emptyList(),
-    val strategyEvents: List<StrategyEvent> = emptyList()
+    val strategyEvents: List<StrategyEvent> = emptyList(),
+    val statementInbox: List<StatementInboxItem> = emptyList(),
+    val statementIgnoreRules: List<StatementIgnoreRule> = emptyList()
 )
 
 internal object LootBackupCrypto {
@@ -127,6 +129,8 @@ internal object LootBackupJson {
         .put("personalRules", JSONArray().apply { data.personalRules.forEach { put(personalRule(it)) } })
         .put("coolingPurchases", JSONArray().apply { data.coolingPurchases.forEach { put(coolingPurchase(it)) } })
         .put("strategyEvents", JSONArray().apply { data.strategyEvents.forEach { put(strategyEvent(it)) } })
+        .put("statementInbox", JSONArray().apply { data.statementInbox.forEach { put(statementInboxItem(it)) } })
+        .put("statementIgnoreRules", JSONArray().apply { data.statementIgnoreRules.forEach { put(statementIgnoreRule(it)) } })
         .toString()
 
     fun decode(text: String, owner: String): LootBackup {
@@ -207,8 +211,19 @@ internal object LootBackupJson {
             o.getString("id"), o.optString("ruleId").takeIf { it.isNotBlank() },
             o.optString("coolingPurchaseId").takeIf { it.isNotBlank() }, o.getString("action"),
             o.getLong("amountCents"), o.getLong("occurredAt")) } ?: emptyList()
+        val inbox = root.optJSONArray("statementInbox")?.objects { o -> StatementInboxItem(
+            id = o.getString("id"), source = o.getString("source"), monthKey = o.getInt("monthKey"),
+            occurredAt = o.getLong("occurredAt"), original = o.getString("original"),
+            amountCents = o.getLong("amountCents"), matchKey = o.getString("matchKey"),
+            correctedName = o.optString("correctedName", ""), category = o.optString("category", ""),
+            status = o.optString("status", STATEMENT_PENDING), resolvedAt = o.nullableLong("resolvedAt")
+        ) } ?: emptyList()
+        val ignoreRules = root.optJSONArray("statementIgnoreRules")?.objects { o -> StatementIgnoreRule(
+            id = o.getString("id"), pattern = o.getString("pattern"), label = o.getString("label"),
+            createdAt = o.getLong("createdAt")
+        ) } ?: emptyList()
         return LootBackup(patients, patientMonths, expenses, expenseMonths, closings, rules, splits,
-            actual, plans, personal, cooling, events)
+            actual, plans, personal, cooling, events, inbox, ignoreRules)
     }
 
     private fun patient(p: Patient) = JSONObject().put("id", p.id).put("name", p.name)
@@ -267,6 +282,13 @@ internal object LootBackupJson {
     private fun strategyEvent(e: StrategyEvent) = JSONObject().put("id", e.id).put("ruleId", e.ruleId ?: "")
         .put("coolingPurchaseId", e.coolingPurchaseId ?: "").put("action", e.action)
         .put("amountCents", e.amountCents).put("occurredAt", e.occurredAt)
+    private fun statementInboxItem(item: StatementInboxItem) = JSONObject().put("id", item.id)
+        .put("source", item.source).put("monthKey", item.monthKey).put("occurredAt", item.occurredAt)
+        .put("original", item.original).put("amountCents", item.amountCents).put("matchKey", item.matchKey)
+        .put("correctedName", item.correctedName).put("category", item.category).put("status", item.status)
+        .put("resolvedAt", item.resolvedAt ?: JSONObject.NULL)
+    private fun statementIgnoreRule(rule: StatementIgnoreRule) = JSONObject().put("id", rule.id)
+        .put("pattern", rule.pattern).put("label", rule.label).put("createdAt", rule.createdAt)
 
     private fun JSONObject.putNullable(key: String, value: Int?) = put(key, value ?: JSONObject.NULL)
     private fun JSONObject.nullableInt(key: String): Int? = if (isNull(key)) null else getInt(key)
@@ -296,7 +318,8 @@ internal class LootDataTransfer(private val context: Context) {
             db.expenses().allExpenses(), db.expenses().allMonths(), db.expenses().allClosings(),
             db.expenses().allRules(), db.expenses().allSplitParts(), db.expenses().allActualTransactions(),
             db.expenses().allPlannedExpenses(), db.expenses().allPersonalRules(),
-            db.expenses().allCoolingPurchases(), db.expenses().allStrategyEvents())
+            db.expenses().allCoolingPurchases(), db.expenses().allStrategyEvents(),
+            db.statementInbox().allItems(), db.statementInbox().allIgnoreRules())
         val encrypted = LootBackupCrypto.encrypt(LootBackupJson.encode(payload), password)
         val folder = requireNotNull(DocumentFile.fromTreeUri(context, uri)) { "Pasta indisponível." }
         val file = folder.findFile(BACKUP_NAME)
@@ -316,6 +339,8 @@ internal class LootDataTransfer(private val context: Context) {
         }
         val payload = LootBackupJson.decode(LootBackupCrypto.decrypt(encrypted, password), ownerId())
         db.withTransaction {
+            db.statementInbox().clearItems()
+            db.statementInbox().clearIgnoreRules()
             db.expenses().clearAll()
             db.dao().clearAll()
             db.dao().putPatients(payload.patients)
@@ -330,7 +355,10 @@ internal class LootDataTransfer(private val context: Context) {
             db.expenses().putPersonalRules(payload.personalRules)
             db.expenses().putCoolingPurchases(payload.coolingPurchases)
             db.expenses().putStrategyEvents(payload.strategyEvents)
+            db.statementInbox().putItems(payload.statementInbox)
+            db.statementInbox().putIgnoreRules(payload.statementIgnoreRules)
         }
+        StatementInboxRepository(db).seed(StatementSeed202609.rows)
         "Importado: ${payload.patients.size} pacientes e ${payload.expenses.size} despesas."
     }
 

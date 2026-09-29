@@ -28,7 +28,7 @@ class LootBackupCryptoTest {
         }
     }
 
-    @Test fun versionTwoBackupRoundTripsBudgetIntelligenceData() {
+    @Test fun currentBackupRoundTripsBudgetAndStatementInboxData() {
         val month = YearMonth.of(2026, 9)
         val expense = Expense("food", "Comida", 147979, true, null, month.key(), 1, 2,
             category = "Comida", spendingType = SpendingType.FLEXIBLE.stored,
@@ -45,7 +45,10 @@ class LootBackupCryptoTest {
             plannedExpenses = listOf(PlannedExpense("plan", month.key(), "Projetor", "Compras", 60000, null)),
             personalRules = listOf(PersonalRule("pr", "Esperar", 30000, "Compras", 48)),
             coolingPurchases = listOf(CoolingPurchase("cool", "Projetor", "Compras", 60000, 5, 6, ruleId = "pr")),
-            strategyEvents = listOf(StrategyEvent("event", "pr", "cool", "WAITED", 60000, 5)))
+            strategyEvents = listOf(StrategyEvent("event", "pr", "cool", "WAITED", 60000, 5)),
+            statementInbox = listOf(StatementInboxItem("inbox", "Inter", month.key(), 10,
+                "Compra original", 1999, "compra original", "Nome", "Compras")),
+            statementIgnoreRules = listOf(StatementIgnoreRule("ignore", "andre fiker", "Andre Fiker", 11)))
         val restored = LootBackupJson.decode(LootBackupJson.encode(source), "local-owner")
         assertEquals(expense, restored.expenses.single())
         assertEquals(payment, restored.expenseMonths.single())
@@ -57,6 +60,8 @@ class LootBackupCryptoTest {
         assertEquals(48, restored.personalRules.single().coolingHours)
         assertEquals("WAITING", restored.coolingPurchases.single().status)
         assertEquals("WAITED", restored.strategyEvents.single().action)
+        assertEquals("Nome", restored.statementInbox.single().correctedName)
+        assertEquals("andre fiker", restored.statementIgnoreRules.single().pattern)
     }
 
     @Test fun versionOneBackupGetsSafeDefaults() {

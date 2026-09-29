@@ -33,11 +33,12 @@ class SavingsInsightsTest {
         assertNull(SavingsInsights.forMonth(YearMonth.of(2026, 9), listOf(rent), emptyList()))
     }
 
-    @Test fun monthlyBaselineUsesNormalizedWeedReference() {
+    @Test fun starterCategoriesHaveNoAmountsOrFixedClassification() {
         val baseline = MonthlyExpenseBaseline.forMonth(YearMonth.of(2026, 9), now = 1L)
         assertEquals(11, baseline.size)
-        assertEquals(451338L, baseline.sumOf { it.defaultCents })
-        assertEquals(40000L, baseline.single { it.name == "Weed" }.defaultCents)
+        assertEquals(0L, baseline.sumOf { it.defaultCents })
+        assertEquals(0L, baseline.single { it.name == "Weed" }.defaultCents)
+        assertEquals(setOf(SpendingType.FLEXIBLE.stored), baseline.map { it.spendingType }.toSet())
     }
 
     private fun record(month: YearMonth, paid: Long) = ExpenseMonth(

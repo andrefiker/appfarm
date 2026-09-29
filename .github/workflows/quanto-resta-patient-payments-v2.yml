@@ -1,4 +1,4 @@
-name: Build Loot Portable v1.13
+name: Build Loot Portable v1.14
 
 on:
   push:
@@ -53,19 +53,19 @@ jobs:
           test -s "$APK"
           "$TOOLS/aapt" dump badging "$APK" > build/verification/badging.txt
           "$TOOLS/aapt" dump permissions "$APK" > build/verification/permissions.txt
-          "$TOOLS/apksigner" verify --verbose --print-certs "$APK" > build/verification/signing-v1.13.txt
+          "$TOOLS/apksigner" verify --verbose --print-certs "$APK" > build/verification/signing-v1.14.txt
           "$TOOLS/apksigner" verify --verbose --print-certs "$OLD" > build/verification/signing-v1.6.txt
-          grep -q "package: name='com.andrefiker.lootpayments.portable' versionCode='14' versionName='1.13'" build/verification/badging.txt
+          grep -q "package: name='com.andrefiker.lootpayments.portable' versionCode='15' versionName='1.14'" build/verification/badging.txt
           if grep -Eq 'READ_CONTACTS|READ_SMS|ACCESS_FINE_LOCATION|INTERNET' build/verification/permissions.txt; then
             echo 'Unexpected sensitive/network permission found' >&2
             exit 1
           fi
           OLD_CERT=$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' build/verification/signing-v1.6.txt | head -n 1)
-          NEW_CERT=$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' build/verification/signing-v1.13.txt | head -n 1)
+          NEW_CERT=$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' build/verification/signing-v1.14.txt | head -n 1)
           {
             echo "package_id=com.andrefiker.lootpayments.portable"
-            echo "version_code=14"
-            echo "version_name=1.13"
+            echo "version_code=15"
+            echo "version_name=1.14"
             echo "old_certificate_sha256=$OLD_CERT"
             echo "new_certificate_sha256=$NEW_CERT"
             if [ -n "$OLD_CERT" ] && [ "$OLD_CERT" = "$NEW_CERT" ]; then
@@ -83,7 +83,7 @@ jobs:
           cat build/verification/update-compatibility.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: Loot-Portable-v1.13-APK-and-verification
+          name: Loot-Portable-v1.14-APK-and-verification
           path: |
             quanto-resta-patient-payments-v2/app/build/outputs/apk/debug/app-debug.apk
             quanto-resta-patient-payments-v2/build/verification/

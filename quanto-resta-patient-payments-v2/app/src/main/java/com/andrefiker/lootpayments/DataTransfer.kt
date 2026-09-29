@@ -1,5 +1,6 @@
 package com.andrefiker.lootpayments
 
+import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -331,6 +332,24 @@ internal class LootDataTransfer(private val context: Context) {
         "Backup salvo: ${payload.patients.size} pacientes e ${payload.expenses.size} despesas."
     }
 
+    fun emailBackup(uri: Uri) {
+        val backup = requireNotNull(DocumentFile.fromTreeUri(context, uri)?.findFile(BACKUP_NAME)) {
+            "Exporte o backup antes de enviá-lo."
+        }
+        val send = Intent(Intent.ACTION_SEND).apply {
+            type = "application/octet-stream"
+            putExtra(Intent.EXTRA_EMAIL, arrayOf("andrefiker@gmail.com"))
+            putExtra(Intent.EXTRA_SUBJECT, "Backup do Loot")
+            putExtra(Intent.EXTRA_TEXT, "Backup criptografado do Loot. Guarde a senha separadamente.")
+            putExtra(Intent.EXTRA_STREAM, backup.uri)
+            clipData = ClipData.newUri(context.contentResolver, BACKUP_NAME, backup.uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(Intent.createChooser(send, "Enviar backup do Loot").apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        })
+    }
+
     suspend fun import(uri: Uri, password: CharArray): String = withContext(Dispatchers.IO) {
         val file = requireNotNull(DocumentFile.fromTreeUri(context, uri)?.findFile(BACKUP_NAME)) {
             "Nenhum $BACKUP_NAME encontrado nesta pasta."
@@ -437,6 +456,22 @@ internal fun LootDataTransferDialog(onDismiss: () -> Unit) {
                 }) { Text(if (busy) "Salvando…" else "Exportar") }
                 TextButton(enabled = backupFound && password.length >= 6 && !busy,
                     onClick = { importing = true }) { Text("Importar") }
+            }
+            TextButton(enabled = folder != null && password.length >= 6 && !busy,
+                onClick = {
+                    val uri = folder ?: return@TextButton
+                    busy = true
+                    scope.launch {
+                        status = runCatching {
+                            val result = transfer.export(uri, password.toCharArray())
+                            transfer.emailBackup(uri)
+                            "$result E-mail preparado para andrefiker@gmail.com."
+                        }.getOrElse { it.message ?: "Falha ao preparar o e-mail." }
+                        backupFound = runCatching { transfer.hasBackup(uri) }.getOrDefault(false)
+                        password = ""; busy = false
+                    }
+                }, modifier = Modifier.fillMaxWidth()) {
+                Text(if (busy) "Preparando…" else "Enviar backup por e-mail")
             }
             Spacer(Modifier.height(2.dp))
             Text(status, color = muted, fontSize = 12.sp, modifier = Modifier.padding(horizontal = 2.dp))

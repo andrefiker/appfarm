@@ -39,6 +39,7 @@ import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import java.security.SecureRandom
+import java.time.YearMonth
 import java.util.Base64
 import java.util.UUID
 import javax.crypto.Cipher
@@ -359,6 +360,10 @@ internal class LootDataTransfer(private val context: Context) {
             db.statementInbox().putIgnoreRules(payload.statementIgnoreRules)
         }
         StatementInboxRepository(db).seed(StatementSeed202609.rows)
+        val currentMonth = YearMonth.now()
+        db.expenses().addOrFillFixedMonthlyCategories(
+            FixedMonthlyCategories.forMonth(currentMonth), currentMonth
+        )
         "Importado: ${payload.patients.size} pacientes e ${payload.expenses.size} despesas."
     }
 

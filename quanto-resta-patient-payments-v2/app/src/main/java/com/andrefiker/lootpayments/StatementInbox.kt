@@ -59,6 +59,8 @@ interface StatementInboxDao {
     @Query("SELECT * FROM statement_inbox") suspend fun allItems(): List<StatementInboxItem>
     @Query("SELECT * FROM statement_ignore_rules") suspend fun allIgnoreRules(): List<StatementIgnoreRule>
     @Query("SELECT * FROM statement_inbox WHERE id = :id LIMIT 1") suspend fun item(id: String): StatementInboxItem?
+    @Query("SELECT * FROM statement_inbox WHERE status = 'PENDING' AND matchKey = :matchKey ORDER BY occurredAt DESC, id DESC")
+    suspend fun pendingMatching(matchKey: String): List<StatementInboxItem>
     @Upsert suspend fun putItem(item: StatementInboxItem)
     @Upsert suspend fun putItems(items: List<StatementInboxItem>)
     @Upsert suspend fun putIgnoreRule(rule: StatementIgnoreRule)
@@ -137,9 +139,10 @@ internal class StatementInboxRepository(private val db: PaymentsDatabase) {
     suspend fun process(id: String, correctedName: String, category: String, rememberRule: Boolean): Boolean =
         db.withTransaction {
             val item = inbox.item(id) ?: return@withTransaction false
-            if (item.status != STATEMENT_PENDING || correctedName.isBlank() || category.isBlank()) {
+            if (item.status != STATEMENT_PENDING || category.isBlank()) {
                 return@withTransaction false
             }
+            val resolvedName = correctedName.trim().ifBlank { StatementText.ruleLabel(item.original) }
             val actualId = "${item.id}-actual"
             if (expenses.allActualTransactions().any { it.id == actualId }) {
                 inbox.resolve(item.id, STATEMENT_PROCESSED)
@@ -171,7 +174,7 @@ internal class StatementInboxRepository(private val db: PaymentsDatabase) {
                 monthKey = month.key(),
                 occurredAt = item.occurredAt,
                 amountCents = item.amountCents,
-                merchant = correctedName.trim(),
+                merchant = resolvedName,
                 category = category.trim(),
                 source = item.source,
                 note = "Original do extrato: ${item.original}",
@@ -186,10 +189,27 @@ internal class StatementInboxRepository(private val db: PaymentsDatabase) {
                     spendingType = SpendingType.FLEXIBLE.stored
                 ))
             }
-            inbox.updateDraft(item.id, correctedName.trim(), category.trim())
+            inbox.updateDraft(item.id, resolvedName, category.trim())
             inbox.resolve(item.id, STATEMENT_PROCESSED)
             true
         }
+
+    suspend fun processSimilar(
+        id: String,
+        correctedName: String,
+        category: String,
+        rememberRule: Boolean
+    ): Int {
+        val selected = inbox.item(id) ?: return 0
+        if (selected.status != STATEMENT_PENDING || category.isBlank()) return 0
+        val matches = inbox.pendingMatching(selected.matchKey)
+        var processed = 0
+        matches.forEach { item ->
+            val name = correctedName.trim().ifBlank { StatementText.ruleLabel(item.original) }
+            if (process(item.id, name, category, rememberRule)) processed++
+        }
+        return processed
+    }
 
     suspend fun ignoreForever(id: String): Boolean = db.withTransaction {
         val item = inbox.item(id) ?: return@withTransaction false
@@ -227,6 +247,9 @@ class StatementInboxViewModel(application: Application) : AndroidViewModel(appli
     fun process(id: String, name: String, category: String, rememberRule: Boolean) = viewModelScope.launch {
         repository.process(id, name, category, rememberRule)
     }
+
+    fun processSimilar(id: String, name: String, category: String, rememberRule: Boolean) =
+        viewModelScope.launch { repository.processSimilar(id, name, category, rememberRule) }
 
     fun ignoreForever(id: String) = viewModelScope.launch { repository.ignoreForever(id) }
     fun dismiss(id: String) = viewModelScope.launch { repository.dismiss(id) }

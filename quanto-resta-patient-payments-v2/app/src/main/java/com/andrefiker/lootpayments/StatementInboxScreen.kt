@@ -69,7 +69,12 @@ fun StatementInboxScreen(state: StatementInboxState, vm: StatementInboxViewModel
                 verticalArrangement = Arrangement.spacedBy(9.dp)
             ) {
                 items(state.items, key = { it.id }) { item ->
-                    StatementInboxCard(item, state.categories, vm)
+                    StatementInboxCard(
+                        item = item,
+                        categories = state.categories,
+                        similarCount = state.items.count { it.matchKey == item.matchKey },
+                        vm = vm
+                    )
                 }
             }
         }
@@ -107,6 +112,7 @@ private fun StatementInboxHeader(state: StatementInboxState) {
 private fun StatementInboxCard(
     item: StatementInboxItem,
     categories: List<String>,
+    similarCount: Int,
     vm: StatementInboxViewModel
 ) {
     var name by remember(item.id, item.correctedName) { mutableStateOf(item.correctedName) }
@@ -115,7 +121,7 @@ private fun StatementInboxCard(
     var rememberRule by remember(item.id) { mutableStateOf(false) }
     val date = Instant.ofEpochMilli(item.occurredAt).atZone(ZoneId.of("America/Sao_Paulo"))
         .toLocalDate().format(statementDate)
-    val ready = name.isNotBlank() && category.isNotBlank()
+    val ready = category.isNotBlank()
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -181,6 +187,20 @@ private fun StatementInboxCard(
                 }
             }
             Spacer(Modifier.height(4.dp))
+            if (ready && similarCount > 1) {
+                TextButton(
+                    onClick = { vm.processSimilar(item.id, name, category, rememberRule) },
+                    modifier = Modifier.align(Alignment.End),
+                    contentPadding = PaddingValues(horizontal = 9.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        "Processar $similarCount similares",
+                        color = teal,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 TextButton(onClick = { vm.ignoreForever(item.id) }, contentPadding = PaddingValues(horizontal = 7.dp)) {
                     Text("Ignorar sempre", color = teal, fontSize = 11.sp)

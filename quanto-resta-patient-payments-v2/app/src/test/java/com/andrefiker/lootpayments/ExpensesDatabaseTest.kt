@@ -47,17 +47,42 @@ class ExpensesPersistenceTest {
         repository.seed(StatementSeed202609.rows)
         val item = db.statementInbox().pendingFlow().first().first()
 
-        assertTrue(repository.process(item.id, "Nome corrigido", "Compras", rememberRule = true))
+        assertTrue(repository.process(item.id, "", "Compras", rememberRule = true))
         assertFalse(repository.process(item.id, "Duplicado", "Compras", rememberRule = false))
         assertEquals(179, db.statementInbox().pendingFlow().first().size)
         assertEquals(STATEMENT_PROCESSED, db.statementInbox().item(item.id)!!.status)
         val actual = db.expenses().allActualTransactions().single()
-        assertEquals("Nome corrigido", actual.merchant)
+        assertEquals(StatementText.ruleLabel(item.original), actual.merchant)
         assertEquals("Compras", actual.category)
         assertEquals(item.original, actual.note.removePrefix("Original do extrato: "))
         val category = db.expenses().allExpenses().single { it.category == "Compras" }
         assertEquals(0L, category.baselineCents)
         assertEquals(item.amountCents, db.expenses().month(category.id, item.monthKey)!!.paidCents)
+        assertEquals(1, db.expenses().allRules().size)
+        db.close()
+    }
+
+    @Test fun processingSimilarMovesEveryMatchingRowAndUsesOriginalNamesAsFallback() = runBlocking {
+        context.deleteDatabase(file)
+        val db = open()
+        val repository = StatementInboxRepository(db)
+        repository.seed(StatementSeed202609.rows)
+        val initial = db.statementInbox().pendingFlow().first()
+        val repeated = initial.first { candidate -> initial.count { it.matchKey == candidate.matchKey } > 1 }
+        val matches = initial.filter { it.matchKey == repeated.matchKey }
+
+        val processed = repository.processSimilar(
+            repeated.id, correctedName = "", category = "Assinaturas/Google", rememberRule = true
+        )
+
+        assertEquals(matches.size, processed)
+        assertEquals(180 - matches.size, db.statementInbox().pendingFlow().first().size)
+        val actuals = db.expenses().allActualTransactions()
+        assertEquals(matches.size, actuals.size)
+        assertTrue(actuals.all { it.merchant.isNotBlank() && it.category == "Assinaturas/Google" })
+        assertTrue(matches.all { db.statementInbox().item(it.id)!!.status == STATEMENT_PROCESSED })
+        val category = db.expenses().allExpenses().single { it.category == "Assinaturas/Google" }
+        assertEquals(matches.sumOf { it.amountCents }, db.expenses().month(category.id, repeated.monthKey)!!.paidCents)
         assertEquals(1, db.expenses().allRules().size)
         db.close()
     }

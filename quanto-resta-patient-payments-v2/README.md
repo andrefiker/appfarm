@@ -43,6 +43,11 @@ transaction to its category and removes it from the pending list. `Excluir`
 dismisses only that row, while `Ignorar sempre` stores a local matching rule.
 Inbox progress and ignore rules are included in encrypted backup/export.
 
+Version 1.12 lets `Processar` use the original statement merchant whenever the
+optional corrected name is blank. It also offers `Processar N similares` when
+multiple pending rows share the same merchant pattern, applying the selected
+category to all of them and removing each processed row from the inbox.
+
 Fresh installs seed only the category names from the September handoff. Every
 starting amount and baseline is R$0, and no category is predeclared fixed. The
 user can enter actual values and deliberately promote recurring spending later.

@@ -1,4 +1,4 @@
-const CACHE = 'quiet-breakout-1.0.0';
+const CACHE = 'quiet-breakout-1.0.1';
 const FILES = ['./', './index.html', './app.js', './engine.js', './manifest.webmanifest', './icon.svg', './sw.js'];
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(FILES)).then(() => self.skipWaiting())));
 self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim())));

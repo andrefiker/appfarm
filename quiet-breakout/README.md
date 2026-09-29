@@ -9,7 +9,7 @@ Quiet Breakout is an original, portrait, touch-first brick-breaker built as a lo
 - Clear the board to advance. You have three lives in Classic and Endless; Zen has no life limit and a slower ball.
 - Tap the upper-right pause control to pause safely.
 
-Modes: **Classic** (stage run), **Endless** (score chase), and **Zen** (relaxed infinite play). Sound, haptics, and reduced motion are local settings. Best scores and highest Classic stage use local storage only.
+Modes: **Classic** (stage run), **Endless** (score chase), and **Zen** (relaxed infinite play). Comfort Mode starts enabled: it slows the ball, caps its speed, and removes screen shake, trails, particles, shimmer, and bright motion effects. Sound and haptics start off. All settings, best scores, and highest Classic stage stay local on the device.
 
 ## Build and test
 
@@ -40,7 +40,7 @@ cd android && gradle --no-daemon :app:assembleDebug
 
 ## Release
 
-- Version: 1.0.0 (version code 1)
+- Version: 1.0.1 (version code 2)
 - Android package: `com.andrefiker.quietbreakout`
 - Signing: GitHub Actions debug keystore (installable debug APK; not a Play Store release signature)
 - Rollback: `main` at the parent commit recorded in the release metadata.

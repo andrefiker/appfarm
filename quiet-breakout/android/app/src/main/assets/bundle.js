@@ -6,7 +6,13 @@ const BALL_R = 6;
 const PADDLE_W = 82;
 const PADDLE_H = 12;
 const MAX_SPEED = 560;
+const COMFORT_SPEED_CAP = 320;
 const MIN_H_SPEED = 92;
+
+function comfortSpeedFor(stage, mode) {
+  const speed = Math.min(245 + (stage - 1) * 2.4, COMFORT_SPEED_CAP);
+  return mode === 'zen' ? Math.max(200, speed * 0.78) : speed;
+}
 
 const patterns = [
   ['111111111','111111111','111111111'],
@@ -74,16 +80,49 @@ function makeBall(x, y, speed, vxSign = 1) {
   return { x, y, vx, vy, r: BALL_R, trail: [] };
 }
 
-function createRun(mode = 'classic', height = 820) {
+function createRun(mode = 'classic', height = 820, options = {}) {
   const stage = 1;
   const layout = createStage(stage, mode === 'endless');
+  const comfortMode = Boolean(options.comfortMode);
+  const speed = comfortMode ? comfortSpeedFor(stage, mode) : mode === 'zen' ? layout.speed * 0.78 : layout.speed;
   return {
     mode, width: WIDTH, height, phase: 'ready', score: 0, stage, lives: mode === 'zen' ? Infinity : 3,
     paddle: { x: WIDTH / 2, y: height - 122, w: PADDLE_W, h: PADDLE_H, previousX: WIDTH / 2 },
-    balls: [], bricks: layout.bricks, speed: mode === 'zen' ? layout.speed * 0.78 : layout.speed,
+    balls: [], bricks: layout.bricks, speed, speedCap: comfortMode ? COMFORT_SPEED_CAP : MAX_SPEED,
+    comfortMode,
     combo: 0, comboTimer: 0, rally: 0, clearTimer: 0, shake: 0, paddleFlash: 0, lastEvent: 'ready',
     particles: [], shield: 0, elapsed: 0,
   };
+}
+
+function setComfortMode(run, enabled) {
+  run.comfortMode = Boolean(enabled);
+  run.speedCap = run.comfortMode ? COMFORT_SPEED_CAP : MAX_SPEED;
+  const layout = createStage(run.stage, run.mode === 'endless');
+  run.speed = run.comfortMode ? comfortSpeedFor(run.stage, run.mode) : run.mode === 'zen' ? layout.speed * 0.78 : layout.speed;
+  if (run.comfortMode) {
+    run.shake = 0;
+    run.paddleFlash = 0;
+    run.particles = [];
+    for (const ball of run.balls) {
+      ball.trail = [];
+      const speed = Math.hypot(ball.vx, ball.vy);
+      if (speed > run.speed) {
+        const k = run.speed / speed;
+        ball.vx *= k;
+        ball.vy *= k;
+      }
+    }
+  } else {
+    for (const ball of run.balls) {
+      const speed = Math.hypot(ball.vx, ball.vy);
+      if (speed < run.speed) {
+        const k = run.speed / speed;
+        ball.vx *= k;
+        ball.vy *= k;
+      }
+    }
+  }
 }
 
 function attachBall(run) {
@@ -158,9 +197,9 @@ function resolveBallStep(ball, run, dt) {
 
     const p = run.paddle;
     if (ball.vy > 0 && oldY + ball.r <= p.y && ball.y + ball.r >= p.y && ball.x >= p.x - p.w / 2 - ball.r && ball.x <= p.x + p.w / 2 + ball.r) {
-      const data = paddleBounce(ball, p);
+      const data = paddleBounce(ball, p, run.height, run.speedCap || MAX_SPEED);
       run.rally++;
-      run.paddleFlash = 0.18;
+      run.paddleFlash = run.comfortMode ? 0 : 0.18;
       run.comboTimer = 2.2;
       events.push(data.rel > 0.78 || data.rel < -0.78 ? 'paddleEdge' : 'paddle');
     }
@@ -182,9 +221,11 @@ function resolveBallStep(ball, run, dt) {
       run.score += (brick.hp <= 0 ? 10 : 4) * Math.min(5, 1 + Math.floor((run.combo - 1) / 4));
       if (brick.hp <= 0) {
         brick.alive = false;
-        const count = brick.kind === 'tough' ? 9 : 5;
-        for (let n=0;n<count;n++) { const angle=(Math.PI*2*n/count)+(run.stage*.31); const speed=35+(n%3)*18; run.particles.push({x:ball.x,y:ball.y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:.28+(n%3)*.07,maxLife:.42,color:brick.kind==='tough'?'#e4d6be':brick.y%3===0?'#f3bb67':'#75c9bd'}); }
-        if (brick.kind === 'tough') run.shake = Math.max(run.shake, 2.3);
+        if (!run.comfortMode) {
+          const count = brick.kind === 'tough' ? 9 : 5;
+          for (let n=0;n<count;n++) { const angle=(Math.PI*2*n/count)+(run.stage*.31); const speed=35+(n%3)*18; run.particles.push({x:ball.x,y:ball.y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:.28+(n%3)*.07,maxLife:.42,color:brick.kind==='tough'?'#e4d6be':brick.y%3===0?'#f3bb67':'#75c9bd'}); }
+          if (brick.kind === 'tough') run.shake = Math.max(run.shake, 2.3);
+        }
         events.push(brick.kind === 'tough' ? 'toughBreak' : 'brick');
       } else events.push('toughHit');
       run.lastEvent = events[events.length - 1];
@@ -196,7 +237,7 @@ function resolveBallStep(ball, run, dt) {
 
 function resetAfterLoss(run) {
   run.lives--;
-  run.lastEvent = 'lifeLost'; run.shake = 5; run.combo = 0; run.rally = 0;
+  run.lastEvent = 'lifeLost'; run.shake = run.comfortMode ? 0 : 5; run.combo = 0; run.rally = 0;
   if (run.lives <= 0) { run.phase = 'gameover'; run.balls = []; return; }
   run.paddle.x = WIDTH / 2; run.paddle.previousX = run.paddle.x;
   attachBall(run);
@@ -210,7 +251,9 @@ function tick(run, dt) {
       run.stage++;
       const layout = createStage(run.stage, run.mode === 'endless');
       run.bricks = layout.bricks;
-      run.speed = run.mode === 'zen' ? layout.speed * 0.78 : layout.speed;
+      run.speed = run.comfortMode
+        ? comfortSpeedFor(run.stage, run.mode)
+        : run.mode === 'zen' ? layout.speed * 0.78 : layout.speed;
       run.paddle.x = WIDTH / 2; run.paddle.previousX = run.paddle.x;
       run.rally = 0; attachBall(run);
       if (run.mode === 'zen') run.lives = Infinity;
@@ -220,18 +263,20 @@ function tick(run, dt) {
   if (run.phase !== 'running') return [];
   run.elapsed += dt;
   run.comboTimer = Math.max(0, run.comboTimer - dt);
-  run.shake = Math.max(0, run.shake - dt * 18);
+  run.shake = run.comfortMode ? 0 : Math.max(0, run.shake - dt * 18);
   run.paddleFlash = Math.max(0, run.paddleFlash - dt);
   for (const p of run.particles) { p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.985; p.vy *= 0.985; p.life -= dt; }
   run.particles = run.particles.filter(p => p.life > 0);
   const events = [];
   for (const ball of [...run.balls]) {
     const speed = Math.hypot(ball.vx, ball.vy);
-    if (speed > MAX_SPEED) { const k = MAX_SPEED / speed; ball.vx *= k; ball.vy *= k; }
+    const speedCap = run.speedCap || MAX_SPEED;
+    if (speed > speedCap) { const k = speedCap / speed; ball.vx *= k; ball.vy *= k; }
     const found = resolveBallStep(ball, run, dt);
     events.push(...found);
     ball.trail.unshift({ x: ball.x, y: ball.y });
-    if (ball.trail.length > 9) ball.trail.length = 9;
+    if (run.comfortMode) ball.trail.length = 0;
+    else if (ball.trail.length > 9) ball.trail.length = 9;
   }
   run.balls = run.balls.filter(ball => ball.y - ball.r <= run.height + 2);
   if (!run.balls.length) { resetAfterLoss(run); events.push(run.phase === 'gameover' ? 'gameover' : 'lifeLost'); }
@@ -246,9 +291,15 @@ function getBreakableCount(run) { return run.bricks.reduce((n,b) => n + (b.alive
 
 const canvas = document.querySelector('#game');
 const ctx = canvas.getContext('2d', { alpha: false });
-const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-const defaults = { sound: true, haptics: true, reducedMotion: prefersReduced.matches };
-let settings = { ...defaults, ...read('qb-settings', {}) };
+const defaults = { sound: false, haptics: false, reducedMotion: true, comfortProfileVersion: 2 };
+const savedSettings = read('qb-settings', {});
+let settings = { ...defaults, ...savedSettings };
+if (savedSettings.comfortProfileVersion !== 2) {
+  settings.reducedMotion = true;
+  settings.haptics = false;
+  settings.comfortProfileVersion = 2;
+  save('qb-settings', settings);
+}
 let stats = read('qb-stats', { classicBest: 0, endlessBest: 0, highStage: 1 });
 let run = null;
 let screen = 'menu';
@@ -259,7 +310,6 @@ let hitAreas = [];
 let audio = null;
 let dragging = false;
 let autosaveTimer = 0;
-const reducedMotionMedia = prefersReduced;
 
 function read(key, fallback) { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } }
 function save(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch {} }
@@ -350,19 +400,22 @@ function drawBricks() {
 function drawPaddle() {
   const p=run.paddle, y=p.y;
   const glow=ctx.createLinearGradient(p.x-p.w/2,y,p.x+p.w/2,y);glow.addColorStop(0,'#b46e3a');glow.addColorStop(.5,run.paddleFlash>0?'#fff8da':'#ffe1a0');glow.addColorStop(1,'#bf7540');
-  ctx.shadowColor='rgba(245,178,93,.48)';ctx.shadowBlur=13;
+  if(!settings.reducedMotion) { ctx.shadowColor='rgba(245,178,93,.48)';ctx.shadowBlur=13; }
   rounded(p.x-p.w/2,y,p.w,p.h,6,glow,'rgba(255,233,186,.65)',.7);ctx.shadowBlur=0;
-  rounded(p.x-p.w/2+7,y+3,p.w-14,2,1,'rgba(255,255,255,.48)');
+  if(!settings.reducedMotion) rounded(p.x-p.w/2+7,y+3,p.w-14,2,1,'rgba(255,255,255,.48)');
 }
 function drawParticles() {
+  if(settings.reducedMotion) return;
   for(const p of run.particles) { const alpha=Math.max(0,p.life/p.maxLife); ctx.globalAlpha=alpha;ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,1.2+alpha*.7,0,Math.PI*2);ctx.fill(); } ctx.globalAlpha=1;
 }
 function drawBall(ball) {
   if(!settings.reducedMotion) {
     for(let i=ball.trail.length-1;i>=0;i--) { const a=(1-i/ball.trail.length)*.15; ctx.fillStyle=`rgba(255,198,110,${a})`;ctx.beginPath();ctx.arc(ball.trail[i].x,ball.trail[i].y,ball.r*(.35+.42*(1-i/ball.trail.length)),0,Math.PI*2);ctx.fill(); }
   }
-  const g=ctx.createRadialGradient(ball.x-2,ball.y-3,1,ball.x,ball.y,ball.r*2.7);g.addColorStop(0,'#fffef7');g.addColorStop(.24,'#fff2cb');g.addColorStop(.52,'#ffd77e');g.addColorStop(1,'rgba(252,169,65,0)');
-  ctx.fillStyle=g;ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r*2.7,0,Math.PI*2);ctx.fill();
+  if(!settings.reducedMotion) {
+    const g=ctx.createRadialGradient(ball.x-2,ball.y-3,1,ball.x,ball.y,ball.r*2.7);g.addColorStop(0,'#fffef7');g.addColorStop(.24,'#fff2cb');g.addColorStop(.52,'#ffd77e');g.addColorStop(1,'rgba(252,169,65,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r*2.7,0,Math.PI*2);ctx.fill();
+  }
   ctx.fillStyle='#fffdf4';ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r*.78,0,Math.PI*2);ctx.fill();
 }
 function drawPlayfield() {
@@ -401,6 +454,7 @@ function drawMenu() {
   text('A little light. A long rally.',26,logicalHeight*.19,13,'#a9a59e','left',450,.2);
   text('Break the quiet.',26,logicalHeight*.19+43,32,'#f2eee5','left',600,-.7);
   text('One paddle. One bright ball. Your angle.',26,logicalHeight*.19+76,12,'#9c9da0','left',450,.1);
+  if(settings.reducedMotion) text('COMFORT MODE ON  ·  SLOWER, STEADIER PLAY',26,logicalHeight*.19+105,8,'#d0a96d','left',550,1.1);
   const y=logicalHeight*.48;
   button('CLASSIC',26,y,368,58,'start:classic');
   text(`BEST  ${String(stats.classicBest).padStart(5,'0')}     ·     STAGE ${String(stats.highStage).padStart(2,'0')}`,210,y+78,9,'#9e9b95','center',550,1.1);
@@ -418,7 +472,8 @@ function drawSettings() {
   const y=logicalHeight*.38;
   button(`SOUND  ${settings.sound?'ON':'OFF'}`,26,y,368,52,'sound','secondary');
   button(`HAPTICS  ${settings.haptics?'ON':'OFF'}`,26,y+66,368,52,'haptics','secondary');
-  button(`REDUCED MOTION  ${settings.reducedMotion?'ON':'OFF'}`,26,y+132,368,52,'motion','secondary');
+  button(`COMFORT MODE  ${settings.reducedMotion?'ON':'OFF'}`,26,y+132,368,52,'motion','secondary');
+  text(settings.reducedMotion?'Slower ball. No shake, trail, particles or shimmer.':'Normal ball speed and effects.',26,y+199,10,'#85868a','left',450,.1);
   button('BACK TO GAME',26,logicalHeight-95,368,48,run?'resume':'menu');
 }
 function draw() {
@@ -430,7 +485,7 @@ function draw() {
   }
 }
 function start(mode) {
-  run=createRun(mode,logicalHeight);run.paddle.y=logicalHeight-122;attachBall(run);screen='game';
+  run=createRun(mode,logicalHeight,{comfortMode:settings.reducedMotion});run.paddle.y=logicalHeight-122;attachBall(run);screen='game';
   sound('launch');
 }
 function action(name) {
@@ -443,7 +498,7 @@ function action(name) {
   if(name==='resume'&&run) { screen='game';resume(run);return; }
   if(name==='sound') { settings.sound=!settings.sound;save('qb-settings',settings);return; }
   if(name==='haptics') { settings.haptics=!settings.haptics;save('qb-settings',settings);return; }
-  if(name==='motion') { settings.reducedMotion=!settings.reducedMotion;save('qb-settings',settings);return; }
+  if(name==='motion') { settings.reducedMotion=!settings.reducedMotion;save('qb-settings',settings);if(run)setComfortMode(run,settings.reducedMotion);return; }
 }
 function localPoint(e) { const rect=canvas.getBoundingClientRect();return {x:(e.clientX-rect.left)/scale,y:(e.clientY-rect.top)/scale}; }
 canvas.addEventListener('pointerdown',e=>{

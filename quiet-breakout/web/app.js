@@ -1,10 +1,16 @@
-import { WIDTH, createRun, createStage, attachBall, launch, movePaddle, pause, resume, tick, getBreakableCount } from './engine.js';
+import { WIDTH, createRun, createStage, attachBall, launch, movePaddle, pause, resume, tick, getBreakableCount, setComfortMode } from './engine.js';
 
 const canvas = document.querySelector('#game');
 const ctx = canvas.getContext('2d', { alpha: false });
-const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
-const defaults = { sound: true, haptics: true, reducedMotion: prefersReduced.matches };
-let settings = { ...defaults, ...read('qb-settings', {}) };
+const defaults = { sound: false, haptics: false, reducedMotion: true, comfortProfileVersion: 2 };
+const savedSettings = read('qb-settings', {});
+let settings = { ...defaults, ...savedSettings };
+if (savedSettings.comfortProfileVersion !== 2) {
+  settings.reducedMotion = true;
+  settings.haptics = false;
+  settings.comfortProfileVersion = 2;
+  save('qb-settings', settings);
+}
 let stats = read('qb-stats', { classicBest: 0, endlessBest: 0, highStage: 1 });
 let run = null;
 let screen = 'menu';
@@ -15,7 +21,6 @@ let hitAreas = [];
 let audio = null;
 let dragging = false;
 let autosaveTimer = 0;
-const reducedMotionMedia = prefersReduced;
 
 function read(key, fallback) { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } }
 function save(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch {} }
@@ -106,19 +111,22 @@ function drawBricks() {
 function drawPaddle() {
   const p=run.paddle, y=p.y;
   const glow=ctx.createLinearGradient(p.x-p.w/2,y,p.x+p.w/2,y);glow.addColorStop(0,'#b46e3a');glow.addColorStop(.5,run.paddleFlash>0?'#fff8da':'#ffe1a0');glow.addColorStop(1,'#bf7540');
-  ctx.shadowColor='rgba(245,178,93,.48)';ctx.shadowBlur=13;
+  if(!settings.reducedMotion) { ctx.shadowColor='rgba(245,178,93,.48)';ctx.shadowBlur=13; }
   rounded(p.x-p.w/2,y,p.w,p.h,6,glow,'rgba(255,233,186,.65)',.7);ctx.shadowBlur=0;
-  rounded(p.x-p.w/2+7,y+3,p.w-14,2,1,'rgba(255,255,255,.48)');
+  if(!settings.reducedMotion) rounded(p.x-p.w/2+7,y+3,p.w-14,2,1,'rgba(255,255,255,.48)');
 }
 function drawParticles() {
+  if(settings.reducedMotion) return;
   for(const p of run.particles) { const alpha=Math.max(0,p.life/p.maxLife); ctx.globalAlpha=alpha;ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,1.2+alpha*.7,0,Math.PI*2);ctx.fill(); } ctx.globalAlpha=1;
 }
 function drawBall(ball) {
   if(!settings.reducedMotion) {
     for(let i=ball.trail.length-1;i>=0;i--) { const a=(1-i/ball.trail.length)*.15; ctx.fillStyle=`rgba(255,198,110,${a})`;ctx.beginPath();ctx.arc(ball.trail[i].x,ball.trail[i].y,ball.r*(.35+.42*(1-i/ball.trail.length)),0,Math.PI*2);ctx.fill(); }
   }
-  const g=ctx.createRadialGradient(ball.x-2,ball.y-3,1,ball.x,ball.y,ball.r*2.7);g.addColorStop(0,'#fffef7');g.addColorStop(.24,'#fff2cb');g.addColorStop(.52,'#ffd77e');g.addColorStop(1,'rgba(252,169,65,0)');
-  ctx.fillStyle=g;ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r*2.7,0,Math.PI*2);ctx.fill();
+  if(!settings.reducedMotion) {
+    const g=ctx.createRadialGradient(ball.x-2,ball.y-3,1,ball.x,ball.y,ball.r*2.7);g.addColorStop(0,'#fffef7');g.addColorStop(.24,'#fff2cb');g.addColorStop(.52,'#ffd77e');g.addColorStop(1,'rgba(252,169,65,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r*2.7,0,Math.PI*2);ctx.fill();
+  }
   ctx.fillStyle='#fffdf4';ctx.beginPath();ctx.arc(ball.x,ball.y,ball.r*.78,0,Math.PI*2);ctx.fill();
 }
 function drawPlayfield() {
@@ -157,6 +165,7 @@ function drawMenu() {
   text('A little light. A long rally.',26,logicalHeight*.19,13,'#a9a59e','left',450,.2);
   text('Break the quiet.',26,logicalHeight*.19+43,32,'#f2eee5','left',600,-.7);
   text('One paddle. One bright ball. Your angle.',26,logicalHeight*.19+76,12,'#9c9da0','left',450,.1);
+  if(settings.reducedMotion) text('COMFORT MODE ON  ·  SLOWER, STEADIER PLAY',26,logicalHeight*.19+105,8,'#d0a96d','left',550,1.1);
   const y=logicalHeight*.48;
   button('CLASSIC',26,y,368,58,'start:classic');
   text(`BEST  ${String(stats.classicBest).padStart(5,'0')}     ·     STAGE ${String(stats.highStage).padStart(2,'0')}`,210,y+78,9,'#9e9b95','center',550,1.1);
@@ -174,7 +183,8 @@ function drawSettings() {
   const y=logicalHeight*.38;
   button(`SOUND  ${settings.sound?'ON':'OFF'}`,26,y,368,52,'sound','secondary');
   button(`HAPTICS  ${settings.haptics?'ON':'OFF'}`,26,y+66,368,52,'haptics','secondary');
-  button(`REDUCED MOTION  ${settings.reducedMotion?'ON':'OFF'}`,26,y+132,368,52,'motion','secondary');
+  button(`COMFORT MODE  ${settings.reducedMotion?'ON':'OFF'}`,26,y+132,368,52,'motion','secondary');
+  text(settings.reducedMotion?'Slower ball. No shake, trail, particles or shimmer.':'Normal ball speed and effects.',26,y+199,10,'#85868a','left',450,.1);
   button('BACK TO GAME',26,logicalHeight-95,368,48,run?'resume':'menu');
 }
 function draw() {
@@ -186,7 +196,7 @@ function draw() {
   }
 }
 function start(mode) {
-  run=createRun(mode,logicalHeight);run.paddle.y=logicalHeight-122;attachBall(run);screen='game';
+  run=createRun(mode,logicalHeight,{comfortMode:settings.reducedMotion});run.paddle.y=logicalHeight-122;attachBall(run);screen='game';
   sound('launch');
 }
 function action(name) {
@@ -199,7 +209,7 @@ function action(name) {
   if(name==='resume'&&run) { screen='game';resume(run);return; }
   if(name==='sound') { settings.sound=!settings.sound;save('qb-settings',settings);return; }
   if(name==='haptics') { settings.haptics=!settings.haptics;save('qb-settings',settings);return; }
-  if(name==='motion') { settings.reducedMotion=!settings.reducedMotion;save('qb-settings',settings);return; }
+  if(name==='motion') { settings.reducedMotion=!settings.reducedMotion;save('qb-settings',settings);if(run)setComfortMode(run,settings.reducedMotion);return; }
 }
 function localPoint(e) { const rect=canvas.getBoundingClientRect();return {x:(e.clientX-rect.left)/scale,y:(e.clientY-rect.top)/scale}; }
 canvas.addEventListener('pointerdown',e=>{

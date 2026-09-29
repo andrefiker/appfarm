@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { WIDTH, MAX_SPEED, MIN_H_SPEED, createRun, createStage, makeBall, movePaddle, paddleBounce, resolveBallStep, tick, launch, pause, resume, attachBall } from '../web/engine.js';
+import { WIDTH, MAX_SPEED, MIN_H_SPEED, COMFORT_SPEED_CAP, createRun, createStage, makeBall, movePaddle, paddleBounce, resolveBallStep, tick, launch, pause, resume, attachBall, setComfortMode } from '../web/engine.js';
 
 test('30 stages are deterministic and have original playable layouts', () => {
   const signatures = new Set();
@@ -87,4 +87,19 @@ test('pause freezes simulation and resume restores play state', () => {
 test('paddle is clamped to both playfield edges', () => {
   const run=createRun();movePaddle(run,-500);assert.ok(run.paddle.x>=run.paddle.w/2);
   movePaddle(run,1000);assert.ok(run.paddle.x<=WIDTH-run.paddle.w/2);
+});
+
+test('comfort mode starts slower and immediately removes motion effects and caps speed', () => {
+  const run=createRun('classic',820,{comfortMode:true});
+  assert.equal(run.comfortMode,true);
+  assert.ok(run.speed<createRun('classic',820).speed);
+  assert.equal(run.speedCap,COMFORT_SPEED_CAP);
+  run.phase='running';
+  run.balls=[{x:210,y:300,vx:480,vy:0,r:6,trail:[{x:1,y:1}]}];
+  run.shake=5;run.paddleFlash=.2;run.particles=[{x:1,y:1,life:1,maxLife:1}];
+  setComfortMode(run,true);
+  assert.equal(run.shake,0);assert.equal(run.paddleFlash,0);assert.equal(run.particles.length,0);
+  assert.equal(run.balls[0].trail.length,0);
+  tick(run,.01);
+  assert.ok(Math.hypot(run.balls[0].vx,run.balls[0].vy)<=COMFORT_SPEED_CAP);
 });

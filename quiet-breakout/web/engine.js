@@ -6,7 +6,13 @@ export const BALL_R = 6;
 export const PADDLE_W = 82;
 export const PADDLE_H = 12;
 export const MAX_SPEED = 560;
+export const COMFORT_SPEED_CAP = 320;
 export const MIN_H_SPEED = 92;
+
+function comfortSpeedFor(stage, mode) {
+  const speed = Math.min(245 + (stage - 1) * 2.4, COMFORT_SPEED_CAP);
+  return mode === 'zen' ? Math.max(200, speed * 0.78) : speed;
+}
 
 const patterns = [
   ['111111111','111111111','111111111'],
@@ -74,16 +80,49 @@ export function makeBall(x, y, speed, vxSign = 1) {
   return { x, y, vx, vy, r: BALL_R, trail: [] };
 }
 
-export function createRun(mode = 'classic', height = 820) {
+export function createRun(mode = 'classic', height = 820, options = {}) {
   const stage = 1;
   const layout = createStage(stage, mode === 'endless');
+  const comfortMode = Boolean(options.comfortMode);
+  const speed = comfortMode ? comfortSpeedFor(stage, mode) : mode === 'zen' ? layout.speed * 0.78 : layout.speed;
   return {
     mode, width: WIDTH, height, phase: 'ready', score: 0, stage, lives: mode === 'zen' ? Infinity : 3,
     paddle: { x: WIDTH / 2, y: height - 122, w: PADDLE_W, h: PADDLE_H, previousX: WIDTH / 2 },
-    balls: [], bricks: layout.bricks, speed: mode === 'zen' ? layout.speed * 0.78 : layout.speed,
+    balls: [], bricks: layout.bricks, speed, speedCap: comfortMode ? COMFORT_SPEED_CAP : MAX_SPEED,
+    comfortMode,
     combo: 0, comboTimer: 0, rally: 0, clearTimer: 0, shake: 0, paddleFlash: 0, lastEvent: 'ready',
     particles: [], shield: 0, elapsed: 0,
   };
+}
+
+export function setComfortMode(run, enabled) {
+  run.comfortMode = Boolean(enabled);
+  run.speedCap = run.comfortMode ? COMFORT_SPEED_CAP : MAX_SPEED;
+  const layout = createStage(run.stage, run.mode === 'endless');
+  run.speed = run.comfortMode ? comfortSpeedFor(run.stage, run.mode) : run.mode === 'zen' ? layout.speed * 0.78 : layout.speed;
+  if (run.comfortMode) {
+    run.shake = 0;
+    run.paddleFlash = 0;
+    run.particles = [];
+    for (const ball of run.balls) {
+      ball.trail = [];
+      const speed = Math.hypot(ball.vx, ball.vy);
+      if (speed > run.speed) {
+        const k = run.speed / speed;
+        ball.vx *= k;
+        ball.vy *= k;
+      }
+    }
+  } else {
+    for (const ball of run.balls) {
+      const speed = Math.hypot(ball.vx, ball.vy);
+      if (speed < run.speed) {
+        const k = run.speed / speed;
+        ball.vx *= k;
+        ball.vy *= k;
+      }
+    }
+  }
 }
 
 export function attachBall(run) {
@@ -158,9 +197,9 @@ export function resolveBallStep(ball, run, dt) {
 
     const p = run.paddle;
     if (ball.vy > 0 && oldY + ball.r <= p.y && ball.y + ball.r >= p.y && ball.x >= p.x - p.w / 2 - ball.r && ball.x <= p.x + p.w / 2 + ball.r) {
-      const data = paddleBounce(ball, p);
+      const data = paddleBounce(ball, p, run.height, run.speedCap || MAX_SPEED);
       run.rally++;
-      run.paddleFlash = 0.18;
+      run.paddleFlash = run.comfortMode ? 0 : 0.18;
       run.comboTimer = 2.2;
       events.push(data.rel > 0.78 || data.rel < -0.78 ? 'paddleEdge' : 'paddle');
     }
@@ -182,9 +221,11 @@ export function resolveBallStep(ball, run, dt) {
       run.score += (brick.hp <= 0 ? 10 : 4) * Math.min(5, 1 + Math.floor((run.combo - 1) / 4));
       if (brick.hp <= 0) {
         brick.alive = false;
-        const count = brick.kind === 'tough' ? 9 : 5;
-        for (let n=0;n<count;n++) { const angle=(Math.PI*2*n/count)+(run.stage*.31); const speed=35+(n%3)*18; run.particles.push({x:ball.x,y:ball.y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:.28+(n%3)*.07,maxLife:.42,color:brick.kind==='tough'?'#e4d6be':brick.y%3===0?'#f3bb67':'#75c9bd'}); }
-        if (brick.kind === 'tough') run.shake = Math.max(run.shake, 2.3);
+        if (!run.comfortMode) {
+          const count = brick.kind === 'tough' ? 9 : 5;
+          for (let n=0;n<count;n++) { const angle=(Math.PI*2*n/count)+(run.stage*.31); const speed=35+(n%3)*18; run.particles.push({x:ball.x,y:ball.y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:.28+(n%3)*.07,maxLife:.42,color:brick.kind==='tough'?'#e4d6be':brick.y%3===0?'#f3bb67':'#75c9bd'}); }
+          if (brick.kind === 'tough') run.shake = Math.max(run.shake, 2.3);
+        }
         events.push(brick.kind === 'tough' ? 'toughBreak' : 'brick');
       } else events.push('toughHit');
       run.lastEvent = events[events.length - 1];
@@ -196,7 +237,7 @@ export function resolveBallStep(ball, run, dt) {
 
 function resetAfterLoss(run) {
   run.lives--;
-  run.lastEvent = 'lifeLost'; run.shake = 5; run.combo = 0; run.rally = 0;
+  run.lastEvent = 'lifeLost'; run.shake = run.comfortMode ? 0 : 5; run.combo = 0; run.rally = 0;
   if (run.lives <= 0) { run.phase = 'gameover'; run.balls = []; return; }
   run.paddle.x = WIDTH / 2; run.paddle.previousX = run.paddle.x;
   attachBall(run);
@@ -210,7 +251,9 @@ export function tick(run, dt) {
       run.stage++;
       const layout = createStage(run.stage, run.mode === 'endless');
       run.bricks = layout.bricks;
-      run.speed = run.mode === 'zen' ? layout.speed * 0.78 : layout.speed;
+      run.speed = run.comfortMode
+        ? comfortSpeedFor(run.stage, run.mode)
+        : run.mode === 'zen' ? layout.speed * 0.78 : layout.speed;
       run.paddle.x = WIDTH / 2; run.paddle.previousX = run.paddle.x;
       run.rally = 0; attachBall(run);
       if (run.mode === 'zen') run.lives = Infinity;
@@ -220,18 +263,20 @@ export function tick(run, dt) {
   if (run.phase !== 'running') return [];
   run.elapsed += dt;
   run.comboTimer = Math.max(0, run.comboTimer - dt);
-  run.shake = Math.max(0, run.shake - dt * 18);
+  run.shake = run.comfortMode ? 0 : Math.max(0, run.shake - dt * 18);
   run.paddleFlash = Math.max(0, run.paddleFlash - dt);
   for (const p of run.particles) { p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= 0.985; p.vy *= 0.985; p.life -= dt; }
   run.particles = run.particles.filter(p => p.life > 0);
   const events = [];
   for (const ball of [...run.balls]) {
     const speed = Math.hypot(ball.vx, ball.vy);
-    if (speed > MAX_SPEED) { const k = MAX_SPEED / speed; ball.vx *= k; ball.vy *= k; }
+    const speedCap = run.speedCap || MAX_SPEED;
+    if (speed > speedCap) { const k = speedCap / speed; ball.vx *= k; ball.vy *= k; }
     const found = resolveBallStep(ball, run, dt);
     events.push(...found);
     ball.trail.unshift({ x: ball.x, y: ball.y });
-    if (ball.trail.length > 9) ball.trail.length = 9;
+    if (run.comfortMode) ball.trail.length = 0;
+    else if (ball.trail.length > 9) ball.trail.length = 9;
   }
   run.balls = run.balls.filter(ball => ball.y - ball.r <= run.height + 2);
   if (!run.balls.length) { resetAfterLoss(run); events.push(run.phase === 'gameover' ? 'gameover' : 'lifeLost'); }

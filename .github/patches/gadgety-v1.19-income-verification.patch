@@ -1,0 +1,259 @@
+diff --git a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/DataTransfer.kt b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/DataTransfer.kt
+index 9e377d1..2d50690 100644
+--- a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/DataTransfer.kt
++++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/DataTransfer.kt
+@@ -43,6 +43,7 @@ import org.json.JSONObject
+ import java.security.SecureRandom
+ import java.time.YearMonth
+ import java.util.Base64
++import java.util.Locale
+ import java.util.UUID
+ import javax.crypto.AEADBadTagException
+ import javax.crypto.Cipher
+@@ -62,24 +63,61 @@ data class IncomeRoster(
+     val entries: List<IncomeRosterEntry>
+ )
+ 
+-enum class IncomeImportStage { IDLE, FILE_SELECTED, OPENING, READ, DECRYPTING, VALIDATING, IMPORTING, SUCCESS, ERROR }
++enum class IncomeImportStage {
++    IDLE, FILE_SELECTED, OPENING, READ, DECRYPTING, VALIDATING, IMPORTING, VERIFYING, SUCCESS, ERROR
++}
++
++data class IncomeImportProgress(val stage: IncomeImportStage, val recordCount: Int? = null)
+ 
+ data class IncomeImportResult(
+     val month: YearMonth,
++    val rosterEntryCount: Int,
+     val insertedCount: Int,
+     val updatedCount: Int,
+-    val totalCount: Int,
+-    val expectedTotalCents: Long
++    val databasePatientCountForMonth: Int,
++    val expectedTotalCents: Long,
++    val paidTotalCents: Long
+ ) {
+     fun userMessage(): String = buildString {
+-        append("$totalCount receitas importadas para ${month.format(dateFormatter)}.")
+-        if (updatedCount > 0) append(" $updatedCount atualizadas.")
++        append("$databasePatientCountForMonth receitas importadas\n")
++        append("Previsto: ${ledgerMoney(expectedTotalCents)}\n")
++        append("Recebido: ${ledgerMoney(paidTotalCents)}\n")
++        append(month.format(dateFormatter).replaceFirstChar { it.titlecase(Locale("pt", "BR")) })
+     }
+ }
+ 
+ internal class IncomeImportException(val userMessage: String, cause: Throwable? = null) :
+     IllegalArgumentException(userMessage, cause)
+ 
++internal fun verifyIncomeImport(
++    roster: IncomeRoster,
++    merge: IncomeRosterMergeResult,
++    stored: IncomeMonthAggregate
++): IncomeImportResult {
++    val expectedTotal = roster.entries.sumOf { it.monthlyCents }
++    val intendedPaidTotal = if (roster.markPaid) expectedTotal else 0L
++    if (stored.patientCount == 0) {
++        throw IncomeImportException("A lista foi lida, mas nenhum registro foi salvo.")
++    }
++    if (stored.patientCount != roster.entries.size) {
++        throw IncomeImportException(
++            "A lista contém ${roster.entries.size} registros, mas apenas ${stored.patientCount} foram encontrados após salvar."
++        )
++    }
++    if (stored.expectedTotalCents != expectedTotal || stored.paidTotalCents != intendedPaidTotal) {
++        throw IncomeImportException("Os valores salvos não correspondem ao arquivo importado.")
++    }
++    return IncomeImportResult(
++        month = roster.month,
++        rosterEntryCount = roster.entries.size,
++        insertedCount = merge.insertedCount,
++        updatedCount = merge.updatedCount,
++        databasePatientCountForMonth = stored.patientCount,
++        expectedTotalCents = stored.expectedTotalCents,
++        paidTotalCents = stored.paidTotalCents
++    )
++}
++
+ internal object IncomeRosterImportCodec {
+     fun decode(encrypted: String, password: CharArray): IncomeRoster {
+         val plain = try {
+@@ -431,8 +469,8 @@ internal class LootDataTransfer(private val context: Context) {
+     }
+ 
+     suspend fun importPrivateIncome(uri: Uri, password: CharArray,
+-        onStage: suspend (IncomeImportStage) -> Unit = {}): IncomeImportResult {
+-        onStage(IncomeImportStage.OPENING)
++        onProgress: suspend (IncomeImportProgress) -> Unit = {}): IncomeImportResult {
++        onProgress(IncomeImportProgress(IncomeImportStage.OPENING))
+         val encrypted = try {
+             withContext(Dispatchers.IO) {
+                 requireNotNull(context.contentResolver.openInputStream(uri)) {
+@@ -442,18 +480,21 @@ internal class LootDataTransfer(private val context: Context) {
+         } catch (error: Exception) {
+             throw IncomeImportException("Não foi possível abrir o arquivo selecionado.", error)
+         }
+-        onStage(IncomeImportStage.READ)
+-        onStage(IncomeImportStage.DECRYPTING)
++        onProgress(IncomeImportProgress(IncomeImportStage.READ))
++        onProgress(IncomeImportProgress(IncomeImportStage.DECRYPTING))
+         val roster = withContext(Dispatchers.Default) { IncomeRosterImportCodec.decode(encrypted, password) }
+-        onStage(IncomeImportStage.VALIDATING)
+-        onStage(IncomeImportStage.IMPORTING)
++        onProgress(IncomeImportProgress(IncomeImportStage.VALIDATING, roster.entries.size))
++        onProgress(IncomeImportProgress(IncomeImportStage.IMPORTING, roster.entries.size))
+         val owner = ownerId()
+         val merge = withContext(Dispatchers.IO) {
+             db.withTransaction { db.dao().mergeIncomeRoster(owner, roster) }
+         }
+-        val result = IncomeImportResult(roster.month, merge.insertedCount, merge.updatedCount,
+-            merge.totalCount, roster.entries.sumOf { it.monthlyCents })
+-        onStage(IncomeImportStage.SUCCESS)
++        onProgress(IncomeImportProgress(IncomeImportStage.VERIFYING, roster.entries.size))
++        val stored = withContext(Dispatchers.IO) {
++            db.dao().incomeMonthAggregate(owner, roster.month.key())
++        }
++        val result = verifyIncomeImport(roster, merge, stored)
++        onProgress(IncomeImportProgress(IncomeImportStage.SUCCESS, roster.entries.size))
+         return result
+     }
+ 
+@@ -580,14 +621,15 @@ internal fun LootDataTransferDialog(onDismiss: () -> Unit, rosterOnly: Boolean =
+                         busy = true
+                         importResult = null
+                         scope.launch {
+-                        val result = runCatching { transfer.importPrivateIncome(uri, password.toCharArray()) { stage ->
+-                            importStage = stage
+-                            status = when (stage) {
++                        val result = runCatching { transfer.importPrivateIncome(uri, password.toCharArray()) { progress ->
++                            importStage = progress.stage
++                            status = when (progress.stage) {
+                                 IncomeImportStage.OPENING -> "Abrindo arquivo…"
+-                                IncomeImportStage.READ -> "Arquivo lido."
++                                IncomeImportStage.READ -> "Arquivo aberto."
+                                 IncomeImportStage.DECRYPTING -> "Descriptografando…"
+                                 IncomeImportStage.VALIDATING -> "Validando lista…"
+-                                IncomeImportStage.IMPORTING -> "Salvando receitas…"
++                                IncomeImportStage.IMPORTING -> "Salvando ${progress.recordCount ?: 0} registros…"
++                                IncomeImportStage.VERIFYING -> "Verificando dados salvos…"
+                                 else -> status
+                             }
+                         } }
+diff --git a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/PaymentsDatabase.kt b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/PaymentsDatabase.kt
+index 4f24c21..aff294c 100644
+--- a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/PaymentsDatabase.kt
++++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/PaymentsDatabase.kt
+@@ -10,6 +10,11 @@ import java.util.Locale
+ import java.util.UUID
+ 
+ data class IncomeRosterMergeResult(val insertedCount: Int, val updatedCount: Int, val totalCount: Int)
++data class IncomeMonthAggregate(
++    val patientCount: Int,
++    val expectedTotalCents: Long,
++    val paidTotalCents: Long
++)
+ 
+ @Entity(tableName = "patients", indices = [Index("ownerId")])
+ data class Patient(
+@@ -65,6 +70,14 @@ interface PaymentsDao {
+     @Query("SELECT * FROM patients WHERE id = :id AND ownerId = :owner LIMIT 1") suspend fun patient(owner: String, id: String): Patient?
+     @Query("SELECT * FROM patient_months WHERE ownerId = :owner AND patientId = :patientId AND monthKey = :key LIMIT 1")
+     suspend fun month(owner: String, patientId: String, key: Int): PatientMonth?
++    @Query("""
++        SELECT COUNT(*) AS patientCount,
++               COALESCE(SUM(expectedCents), 0) AS expectedTotalCents,
++               COALESCE(SUM(paidCents), 0) AS paidTotalCents
++        FROM patient_months
++        WHERE ownerId = :owner AND monthKey = :key AND included = 1
++    """)
++    suspend fun incomeMonthAggregate(owner: String, key: Int): IncomeMonthAggregate
+     @Upsert suspend fun putPatient(patient: Patient)
+     @Upsert suspend fun putPatients(patients: List<Patient>)
+     @Upsert suspend fun putMonth(month: PatientMonth)
+diff --git a/quanto-resta-patient-payments-v2/app/src/test/java/com/andrefiker/lootpayments/PatientDatabaseTest.kt b/quanto-resta-patient-payments-v2/app/src/test/java/com/andrefiker/lootpayments/PatientDatabaseTest.kt
+index 17cf87e..d3b4066 100644
+--- a/quanto-resta-patient-payments-v2/app/src/test/java/com/andrefiker/lootpayments/PatientDatabaseTest.kt
++++ b/quanto-resta-patient-payments-v2/app/src/test/java/com/andrefiker/lootpayments/PatientDatabaseTest.kt
+@@ -19,6 +19,11 @@ class PatientDatabaseTest {
+     private val context get() = ApplicationProvider.getApplicationContext<Context>()
+     private val fileName = "qr-test.db"
+     private val owner = "fake-owner-uuid"
++    private fun syntheticSeptemberRoster(markPaid: Boolean): IncomeRoster {
++        val entries = (1..20).map { IncomeRosterEntry("Synthetic ${it.toString().padStart(2, '0')}", 80_000) } +
++            listOf(IncomeRosterEntry("Synthetic 21", 90_000), IncomeRosterEntry("Synthetic 22", 90_000))
++        return IncomeRoster(YearMonth.of(2026, 9), markPaid, entries)
++    }
+     @After fun cleanup() { context.deleteDatabase(fileName) }
+     @Test fun completeOfflineWorkflowSurvivesRestart() = runBlocking {
+         context.deleteDatabase(fileName)
+@@ -114,4 +119,71 @@ class PatientDatabaseTest {
+         db.close()
+     }
+ 
++    @Test fun syntheticSeptemberRosterPersistsExpectedAndPaidAggregatesWithoutDuplicates() = runBlocking {
++        context.deleteDatabase(fileName)
++        val september = YearMonth.of(2026, 9)
++        val paidOwner = "synthetic-paid-owner"
++        val unpaidOwner = "synthetic-unpaid-owner"
++        var db = Room.databaseBuilder(context, PaymentsDatabase::class.java, fileName).build()
++        var dao = db.dao()
++
++        val unpaid = syntheticSeptemberRoster(markPaid = false)
++        val unpaidMerge = dao.mergeIncomeRoster(unpaidOwner, unpaid)
++        val unpaidStored = dao.incomeMonthAggregate(unpaidOwner, september.key())
++        val unpaidResult = verifyIncomeImport(unpaid, unpaidMerge, unpaidStored)
++        assertEquals(22, unpaidResult.databasePatientCountForMonth)
++        assertEquals(1_780_000L, unpaidResult.expectedTotalCents)
++        assertEquals(0L, unpaidResult.paidTotalCents)
++
++        val paid = syntheticSeptemberRoster(markPaid = true)
++        val firstMerge = dao.mergeIncomeRoster(paidOwner, paid)
++        val firstStored = dao.incomeMonthAggregate(paidOwner, september.key())
++        val firstResult = verifyIncomeImport(paid, firstMerge, firstStored)
++        assertEquals(22, firstResult.rosterEntryCount)
++        assertEquals(22, firstResult.insertedCount)
++        assertEquals(0, firstResult.updatedCount)
++        assertEquals(22, firstResult.databasePatientCountForMonth)
++        assertEquals(1_780_000L, firstResult.expectedTotalCents)
++        assertEquals(1_780_000L, firstResult.paidTotalCents)
++        assertEquals(22, dao.months(paidOwner, september.key()).first().size)
++
++        val secondMerge = dao.mergeIncomeRoster(paidOwner, paid)
++        val secondStored = dao.incomeMonthAggregate(paidOwner, september.key())
++        val secondResult = verifyIncomeImport(paid, secondMerge, secondStored)
++        assertEquals(0, secondResult.insertedCount)
++        assertEquals(22, secondResult.updatedCount)
++        assertEquals(22, secondResult.databasePatientCountForMonth)
++        assertEquals(1_780_000L, secondResult.expectedTotalCents)
++        assertEquals(1_780_000L, secondResult.paidTotalCents)
++        db.close()
++
++        db = Room.databaseBuilder(context, PaymentsDatabase::class.java, fileName).build()
++        dao = db.dao()
++        val reopened = dao.incomeMonthAggregate(paidOwner, september.key())
++        assertEquals(22, reopened.patientCount)
++        assertEquals(1_780_000L, reopened.expectedTotalCents)
++        assertEquals(1_780_000L, reopened.paidTotalCents)
++        db.close()
++    }
++
++    @Test fun postImportVerificationRejectsMissingOrMismatchedPersistedData() {
++        val roster = syntheticSeptemberRoster(markPaid = true)
++        val merge = IncomeRosterMergeResult(22, 0, 22)
++        val missing = assertThrows(IncomeImportException::class.java) {
++            verifyIncomeImport(roster, merge, IncomeMonthAggregate(0, 0, 0))
++        }
++        assertEquals("A lista foi lida, mas nenhum registro foi salvo.", missing.userMessage)
++
++        val wrongCount = assertThrows(IncomeImportException::class.java) {
++            verifyIncomeImport(roster, merge, IncomeMonthAggregate(21, 1_780_000, 1_780_000))
++        }
++        assertTrue(wrongCount.userMessage.contains("22 registros"))
++        assertTrue(wrongCount.userMessage.contains("21"))
++
++        val wrongTotals = assertThrows(IncomeImportException::class.java) {
++            verifyIncomeImport(roster, merge, IncomeMonthAggregate(22, 1_780_000, 0))
++        }
++        assertEquals("Os valores salvos não correspondem ao arquivo importado.", wrongTotals.userMessage)
++    }
++
+ }

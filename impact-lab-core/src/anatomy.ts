@@ -25,10 +25,13 @@ export function tissueMaterial(layer:Layer,name:string){
   shader.uniforms.uTissue={value:layer==='skin'?0:layer==='muscle'?1:layer==='bone'?2:3};shader.uniforms.uFiber={value:fiber};
   shader.vertexShader='varying vec3 vAnatomy;\n'+shader.vertexShader;shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvAnatomy=position;');
   shader.fragmentShader='varying vec3 vAnatomy;\nuniform float uTissue;\nuniform vec3 uFiber;\n'+shader.fragmentShader;
+  shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
+if(uTissue<.5){float pore=sin(vAnatomy.x*1500.)*sin(vAnatomy.y*1700.+sin(vAnatomy.z*1100.));vec3 qx=dFdx(vAnatomy),qy=dFdy(vAnatomy);vec3 sx=cross(qy,normal),sy=cross(normal,qx);float det=dot(qx,sx);normal=normalize(abs(det)*normal-.000035*sign(det)*(dFdx(pore)*sx+dFdy(pore)*sy));}
+`);
   shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
    float grain=fract(sin(dot(floor(vAnatomy*2300.),vec3(12.9898,78.233,45.164)))*43758.5453);
    float broad=sin(vAnatomy.x*53.+vAnatomy.z*28.)*sin(vAnatomy.y*39.);
-   if(uTissue<.5){diffuseColor.rgb*=.96+.045*grain+.025*broad;}
+   if(uTissue<.5){diffuseColor.rgb*=.965+.025*grain+.025*broad;float warm=.5+.5*sin(vAnatomy.y*38.+vAnatomy.x*26.);diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.06,.96,.94),warm*.22);}
    else if(uTissue<1.5){float phase=dot(vAnatomy,uFiber)*1900.+sin(vAnatomy.y*140.)*.7;float fibers=.5+.5*sin(phase)*(1.-smoothstep(.6,2.5,fwidth(phase)));diffuseColor.rgb*=.88+.20*fibers+.025*grain;}
    else if(uTissue<2.5){diffuseColor.rgb*=.93+.07*grain+.03*broad;}
    else{float mottling=sin(vAnatomy.x*293.+sin(vAnatomy.z*163.)*2.)*sin(vAnatomy.y*337.+sin(vAnatomy.x*89.)*1.8);diffuseColor.rgb*=.98+.02*mottling+.02*grain;}`);

@@ -47,6 +47,9 @@ Version 1.12 lets `Processar` use the original statement merchant whenever the
 optional corrected name is blank. It also offers `Processar N similares` when
 multiple pending rows share the same merchant pattern, applying the selected
 category to all of them and removing each processed row from the inbox.
+Pending rows also receive two transparent defaults without overriding edits:
+descriptions containing `IFD` suggest the name `Ifood`, and descriptions
+containing `Uber` suggest the category `Uber/transporte`.
 
 Fresh installs seed only the category names from the September handoff. Every
 starting amount and baseline is R$0, and no category is predeclared fixed. The

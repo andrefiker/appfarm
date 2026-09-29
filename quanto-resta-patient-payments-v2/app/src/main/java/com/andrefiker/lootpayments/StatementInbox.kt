@@ -67,6 +67,10 @@ interface StatementInboxDao {
     @Upsert suspend fun putIgnoreRules(rules: List<StatementIgnoreRule>)
     @Query("UPDATE statement_inbox SET correctedName = :name, category = :category WHERE id = :id AND status = 'PENDING'")
     suspend fun updateDraft(id: String, name: String, category: String)
+    @Query("UPDATE statement_inbox SET correctedName = 'Ifood' WHERE status = 'PENDING' AND correctedName = '' AND UPPER(original) LIKE '%IFD%'")
+    suspend fun applyIfoodNameDefault()
+    @Query("UPDATE statement_inbox SET category = 'Uber/transporte' WHERE status = 'PENDING' AND category = '' AND UPPER(original) LIKE '%UBER%'")
+    suspend fun applyUberCategoryDefault()
     @Query("UPDATE statement_inbox SET status = :status, resolvedAt = :resolvedAt WHERE id = :id AND status = 'PENDING'")
     suspend fun resolve(id: String, status: String, resolvedAt: Long = System.currentTimeMillis())
     @Query("UPDATE statement_inbox SET status = 'IGNORED', resolvedAt = :resolvedAt WHERE matchKey = :matchKey AND status = 'PENDING'")
@@ -130,6 +134,8 @@ internal class StatementInboxRepository(private val db: PaymentsDatabase) {
                 )
             }
         if (additions.isNotEmpty()) inbox.putItems(additions)
+        inbox.applyIfoodNameDefault()
+        inbox.applyUberCategoryDefault()
     }
 
     suspend fun updateDraft(id: String, name: String, category: String) {

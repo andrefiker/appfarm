@@ -35,6 +35,10 @@ class ExpensesPersistenceTest {
         assertEquals(753595L, pending.filter { it.source == "Inter" }.sumOf { it.amountCents })
         assertEquals(1604574L, pending.filter { it.source == "Nubank" }.sumOf { it.amountCents })
         assertEquals(2358169L, pending.sumOf { it.amountCents })
+        assertTrue(pending.filter { it.original.contains("IFD", ignoreCase = true) }
+            .all { it.correctedName == "Ifood" })
+        assertTrue(pending.filter { it.original.contains("UBER", ignoreCase = true) }
+            .all { it.category == "Uber/transporte" })
         assertTrue(db.expenses().allActualTransactions().isEmpty())
         assertTrue(db.expenses().allMonths().isEmpty())
         db.close()

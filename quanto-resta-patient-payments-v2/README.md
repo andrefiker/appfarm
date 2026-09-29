@@ -64,6 +64,11 @@ It also includes a password-protected, additive September 2026 income roster.
 The 22 private entries total R$17.800, are marked received for September, and
 merge by name without duplicating patients or altering expenses.
 
+Version 1.16 fixes discovery of that roster: an empty Receitas screen now opens
+the private-list importer directly, the 22-patient action appears before backup
+controls, success returns immediately to the populated ledger, and failures show
+their actual cause instead of silently leaving the screen empty.
+
 Fresh installs seed only the category names from the September handoff. Every
 starting amount and baseline is R$0, and no category is predeclared fixed. The
 user can enter actual values and deliberately promote recurring spending later.

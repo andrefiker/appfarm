@@ -440,7 +440,7 @@ internal fun LootDataTransferDialog(onDismiss: () -> Unit) {
     val scope = rememberCoroutineScope()
     var folder by remember { mutableStateOf(transfer.savedFolder()) }
     var password by remember { mutableStateOf("") }
-    var status by remember { mutableStateOf("Escolha uma pasta privada para o backup do Loot.") }
+    var status by remember { mutableStateOf("Digite a senha da lista privada para carregar as receitas.") }
     var backupFound by remember { mutableStateOf(false) }
     var importing by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
@@ -472,6 +472,29 @@ internal fun LootDataTransferDialog(onDismiss: () -> Unit) {
     AlertDialog(onDismissRequest = { if (!busy) onDismiss() },
         title = { Text("Dados do Loot") },
         text = { Column(Modifier.imePadding(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Receitas de setembro", color = navy, fontWeight = FontWeight.SemiBold)
+            Text("Lista privada: 22 pacientes · R$ 17.800. A importação é aditiva e não altera gastos.",
+                color = muted, fontSize = 12.sp)
+            OutlinedTextField(password, { password = it }, modifier = Modifier.fillMaxWidth(), singleLine = true,
+                label = { Text("Senha da lista ou do backup") }, visualTransformation = PasswordVisualTransformation(),
+                supportingText = { Text("Mínimo de 6 caracteres. A senha não é salva.") })
+            TextButton(enabled = password.length >= 6 && !busy,
+                onClick = {
+                    busy = true
+                    scope.launch {
+                        val result = runCatching { transfer.importPrivateIncome(password.toCharArray()) }
+                        password = ""; busy = false
+                        result.onSuccess {
+                            status = it
+                            onDismiss()
+                        }.onFailure {
+                            status = "Falha ao carregar a lista: ${it.message ?: it.javaClass.simpleName}."
+                        }
+                    }
+                }, modifier = Modifier.fillMaxWidth()) {
+                Text(if (busy) "Carregando…" else "Carregar 22 pacientes")
+            }
+            androidx.compose.material3.HorizontalDivider(color = divider)
             Text("Backup local criptografado", color = navy, fontWeight = FontWeight.SemiBold)
             Text("Escolha uma pasta uma vez. Outras versões podem selecionar a mesma pasta e detectar $BACKUP_NAME.",
                 color = muted, fontSize = 12.sp)
@@ -480,9 +503,6 @@ internal fun LootDataTransferDialog(onDismiss: () -> Unit) {
             }
             Text(if (backupFound) "✓ Backup encontrado" else "Nenhum backup detectado",
                 color = if (backupFound) teal else muted, fontSize = 12.sp)
-            OutlinedTextField(password, { password = it }, modifier = Modifier.fillMaxWidth(), singleLine = true,
-                label = { Text("Senha do backup") }, visualTransformation = PasswordVisualTransformation(),
-                supportingText = { Text("Mínimo de 6 caracteres. A senha não é salva.") })
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 TextButton(enabled = folder != null && password.length >= 6 && !busy, onClick = {
                     val uri = folder ?: return@TextButton
@@ -512,17 +532,6 @@ internal fun LootDataTransferDialog(onDismiss: () -> Unit) {
                     }
                 }, modifier = Modifier.fillMaxWidth()) {
                 Text(if (busy) "Preparando…" else "Enviar backup por e-mail")
-            }
-            TextButton(enabled = password.length >= 6 && !busy,
-                onClick = {
-                    busy = true
-                    scope.launch {
-                        status = runCatching { transfer.importPrivateIncome(password.toCharArray()) }
-                            .getOrElse { "Falha ao adicionar receitas. Confira a senha da lista privada." }
-                        password = ""; busy = false
-                    }
-                }, modifier = Modifier.fillMaxWidth()) {
-                Text(if (busy) "Adicionando…" else "Adicionar receitas da lista privada")
             }
             Spacer(Modifier.height(2.dp))
             Text(status, color = muted, fontSize = 12.sp, modifier = Modifier.padding(horizontal = 2.dp))

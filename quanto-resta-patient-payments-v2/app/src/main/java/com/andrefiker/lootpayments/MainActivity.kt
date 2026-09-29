@@ -166,7 +166,7 @@ fun PatientPaymentsScreen(state: ScreenState, vm: PatientPaymentsViewModel, onDa
                 .background(Color.White), contentPadding = PaddingValues(bottom = 12.dp)) {
                 if (active.isEmpty()) item {
                     EmptyLedgerState("Nenhum paciente ativo neste mês.", "Adicione um paciente para começar.",
-                        "Adicionar paciente") { editor = Editor.Add }
+                        "Carregar lista de 22 pacientes") { onData() }
                 }
                 items(active, key = { it.patient.id }) { row -> CompactPaymentRow(
                     name = row.patient.name, expected = row.payment.expectedCents,

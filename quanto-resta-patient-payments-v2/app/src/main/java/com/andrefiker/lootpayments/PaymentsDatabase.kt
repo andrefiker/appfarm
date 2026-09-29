@@ -144,7 +144,30 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
     }
 }
 
-@Database(entities = [Patient::class, PatientMonth::class, Expense::class, ExpenseMonth::class], version = 2, exportSchema = false)
+/** Additive v1.7 -> v1.8 migration. Actual paid values and all existing rows remain untouched. */
+val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `expenses` ADD COLUMN `category` TEXT NOT NULL DEFAULT ''")
+        db.execSQL("ALTER TABLE `expenses` ADD COLUMN `spendingType` TEXT NOT NULL DEFAULT 'FLEXIBLE'")
+        db.execSQL("ALTER TABLE `expenses` ADD COLUMN `baselineCents` INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("ALTER TABLE `expenses` ADD COLUMN `rolloverEnabled` INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("ALTER TABLE `expenses` ADD COLUMN `tags` TEXT NOT NULL DEFAULT ''")
+        db.execSQL("ALTER TABLE `expenses` ADD COLUMN `note` TEXT NOT NULL DEFAULT ''")
+        db.execSQL("ALTER TABLE `expenses` ADD COLUMN `manualCategory` INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("UPDATE `expenses` SET `category` = `name`, `baselineCents` = `defaultCents`")
+        db.execSQL("ALTER TABLE `expense_months` ADD COLUMN `baselineCents` INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("ALTER TABLE `expense_months` ADD COLUMN `spendingType` TEXT NOT NULL DEFAULT 'FLEXIBLE'")
+        db.execSQL("UPDATE `expense_months` SET `baselineCents` = `expectedCents`")
+        db.execSQL("""CREATE TABLE IF NOT EXISTS `month_closings` (`monthKey` INTEGER NOT NULL, `year` INTEGER NOT NULL, `month` INTEGER NOT NULL, `isClosed` INTEGER NOT NULL, `closedAt` INTEGER NOT NULL, `actualCents` INTEGER NOT NULL, `limitCents` INTEGER NOT NULL, `baselineCents` INTEGER NOT NULL, `fixedCents` INTEGER NOT NULL, `flexibleCents` INTEGER NOT NULL, `extraordinaryCents` INTEGER NOT NULL, `biggestName` TEXT NOT NULL, `biggestCents` INTEGER NOT NULL, `recurringCount` INTEGER NOT NULL, PRIMARY KEY(`monthKey`))""")
+        db.execSQL("""CREATE TABLE IF NOT EXISTS `category_rules` (`id` TEXT NOT NULL, `pattern` TEXT NOT NULL, `category` TEXT NOT NULL, `spendingType` TEXT NOT NULL, `enabled` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL, PRIMARY KEY(`id`))""")
+        db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_category_rules_pattern` ON `category_rules` (`pattern`)")
+        db.execSQL("""CREATE TABLE IF NOT EXISTS `split_parts` (`id` TEXT NOT NULL, `expenseMonthId` TEXT NOT NULL, `category` TEXT NOT NULL, `cents` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`expenseMonthId`) REFERENCES `expense_months`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE)""")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_split_parts_expenseMonthId` ON `split_parts` (`expenseMonthId`)")
+    }
+}
+
+@Database(entities = [Patient::class, PatientMonth::class, Expense::class, ExpenseMonth::class,
+    MonthClosing::class, CategoryRule::class, SplitPart::class], version = 3, exportSchema = false)
 abstract class PaymentsDatabase : RoomDatabase() {
     abstract fun dao(): PaymentsDao
     abstract fun expenses(): ExpensesDao
@@ -152,7 +175,7 @@ abstract class PaymentsDatabase : RoomDatabase() {
         @Volatile private var instance: PaymentsDatabase? = null
         fun get(context: Context): PaymentsDatabase = instance ?: synchronized(this) {
             instance ?: Room.databaseBuilder(context.applicationContext, PaymentsDatabase::class.java, "qr-payments-v2.db")
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .build().also { instance = it }
         }
     }

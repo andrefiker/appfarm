@@ -96,22 +96,22 @@ class MainActivity : ComponentActivity() {
                 val state by vm.state.collectAsStateWithLifecycle()
                 val ready by vm.ready.collectAsStateWithLifecycle()
                 val expenses: ExpensesViewModel = viewModel()
+                val expenseState by expenses.state.collectAsStateWithLifecycle()
                 var destination by rememberSaveable { mutableStateOf(0) }
                 var dataTransferOpen by rememberSaveable { mutableStateOf(false) }
                 Column(Modifier.fillMaxSize().background(paper)) {
                     androidx.compose.foundation.layout.Box(Modifier.weight(1f)) {
-                        if (destination == 0) {
-                            if (ready) PatientPaymentsScreen(state, vm) { dataTransferOpen = true }
-                            else Text("Carregando Loot…", modifier = Modifier.statusBarsPadding().padding(28.dp), color = muted)
-                        } else {
-                            val expenseState by expenses.state.collectAsStateWithLifecycle()
-                            ExpensesScreen(expenseState, expenses) { dataTransferOpen = true }
+                        when (destination) {
+                            0 -> if (ready) PatientPaymentsScreen(state, vm) { dataTransferOpen = true }
+                                else Text("Carregando Loot…", modifier = Modifier.statusBarsPadding().padding(28.dp), color = muted)
+                            1 -> ExpensesScreen(expenseState, expenses) { dataTransferOpen = true }
+                            else -> SpendingSummaryScreen(expenseState, expenses, state.totals) { dataTransferOpen = true }
                         }
                     }
                     HorizontalDivider(color = divider)
                     Row(Modifier.fillMaxWidth().background(paper).navigationBarsPadding()
                         .padding(horizontal = 14.dp, vertical = 5.dp)) {
-                        listOf("↓" to "Receitas", "↑" to "Gastos").forEachIndexed { index, item ->
+                        listOf("↓" to "Receitas", "↑" to "Gastos", "◷" to "Resumo").forEachIndexed { index, item ->
                             val (glyph, label) = item
                             Box(Modifier.weight(1f).height(44.dp).padding(horizontal = 4.dp)
                                 .clip(RoundedCornerShape(11.dp))

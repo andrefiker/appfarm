@@ -55,6 +55,7 @@ private sealed interface ExpenseEditor {
     data class Amount(val row: ExpenseRow) : ExpenseEditor
     data class Paid(val row: ExpenseRow) : ExpenseEditor
     data class Manage(val row: ExpenseRow) : ExpenseEditor
+    data class Details(val row: ExpenseRow) : ExpenseEditor
     data class Delete(val row: ExpenseRow) : ExpenseEditor
     data class DeleteFinal(val row: ExpenseRow) : ExpenseEditor
 }
@@ -62,12 +63,36 @@ private sealed interface ExpenseEditor {
 @Composable
 fun ExpensesScreen(state: ExpensesState, vm: ExpensesViewModel, onData: () -> Unit = {}) {
     var editor by remember { mutableStateOf<ExpenseEditor?>(null) }
-    val active = state.rows.filter { it.payment.included }
-    val inactive = state.rows.filterNot { it.payment.included }
+    var searchOpen by remember { mutableStateOf(false) }
+    var query by remember { mutableStateOf("") }
+    var typeFilter by remember { mutableStateOf<SpendingType?>(null) }
+    val filtered = state.rows.filter { row ->
+        val text = listOf(row.expense.name, row.expense.category, row.expense.tags, row.expense.note).joinToString(" ")
+        (query.isBlank() || text.contains(query, ignoreCase = true)) &&
+            (typeFilter == null || SpendingType.from(row.payment.spendingType) == typeFilter)
+    }
+    val active = filtered.filter { it.payment.included }
+    val inactive = filtered.filterNot { it.payment.included }
     Column(Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 14.dp)) {
         LootHeader("Gastos", state.month, { vm.shiftMonth(-1) }, { vm.shiftMonth(1) },
             "Despesa", onData) { editor = ExpenseEditor.Add }
         Summary(state.totals, label = "despesas", paidLabel = "Pago", showOverpayment = true)
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+            TextButton(onClick = { searchOpen = !searchOpen }) { Text(if (searchOpen) "Ocultar busca" else "Buscar e filtrar") }
+        }
+        if (searchOpen) {
+            OutlinedTextField(query, { query = it }, modifier = Modifier.fillMaxWidth(), singleLine = true,
+                label = { Text("Nome, categoria, tag ou nota") })
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                listOf<SpendingType?>(null, SpendingType.FIXED, SpendingType.FLEXIBLE, SpendingType.EXTRAORDINARY).forEach { option ->
+                    val label = option?.label ?: "Todos"
+                    Text(label, fontSize = 10.sp, color = if (typeFilter == option) Color.White else teal,
+                        modifier = Modifier.clip(RoundedCornerShape(9.dp)).background(if (typeFilter == option) teal else accent)
+                            .clickable { typeFilter = option }.padding(horizontal = 8.dp, vertical = 7.dp))
+                }
+            }
+            Spacer(Modifier.height(5.dp))
+        }
         Spacer(Modifier.height(7.dp))
         if (state.rows.isEmpty()) {
             EmptyLedgerState("Nenhuma despesa ainda.", "Adicione a primeira despesa para começar.",
@@ -120,11 +145,15 @@ fun ExpensesScreen(state: ExpensesState, vm: ExpensesViewModel, onData: () -> Un
             text = { Column {
                 Text("Arquivar remove esta despesa do previsto neste mês e nos próximos. Meses anteriores permanecem registrados.")
                 Spacer(Modifier.height(8.dp))
+                TextButton(onClick = { editor = ExpenseEditor.Details(action.row) }) {
+                    Text("Categoria, tipo, rollover, tags e nota…")
+                }
                 TextButton(onClick = { vm.setArchived(action.row, action.row.payment.included); editor = null }) {
                     Text(if (action.row.payment.included) "Arquivar despesa" else "Reativar despesa")
                 }
                 TextButton(onClick = { editor = ExpenseEditor.Delete(action.row) }) { Text("Excluir despesa…", color = Color(0xFF9C4545)) }
             } }, confirmButton = { TextButton(onClick = { editor = null }) { Text("Fechar") } })
+        is ExpenseEditor.Details -> CategoryDetailDialog(action.row, state, vm) { editor = null }
         is ExpenseEditor.Delete -> AlertDialog(onDismissRequest = { editor = null }, title = { Text("Excluir ${action.row.expense.name}?") },
             text = { Text("Isto apagará permanentemente os pagamentos e valores anteriores desta despesa. Para preservar o histórico, prefira arquivar.") },
             confirmButton = { TextButton(onClick = {

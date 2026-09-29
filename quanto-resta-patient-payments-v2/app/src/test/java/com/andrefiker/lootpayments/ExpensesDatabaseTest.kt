@@ -20,7 +20,24 @@ class ExpensesPersistenceTest {
     private val file = "expenses-v1-test.db"
     @After fun cleanup() { context.deleteDatabase(file) }
     private fun open() = Room.databaseBuilder(context, PaymentsDatabase::class.java, file)
-        .addMigrations(MIGRATION_1_2).build()
+        .addMigrations(MIGRATION_1_2, MIGRATION_2_3).build()
+
+    @Test fun baselineAddsMissingFixedMonthlyTotalsWithoutOverwritingOrDuplicating() = runBlocking {
+        context.deleteDatabase(file)
+        val month = YearMonth.of(2026, 9)
+        val db = open()
+        val dao = db.expenses()
+        val now = 1L
+        dao.put(Expense("mine", "Comida", 12345, true, null, month.key(), now, now))
+        dao.addMissingBaselineExpenses(MonthlyExpenseBaseline.forMonth(month, now), month)
+        dao.addMissingBaselineExpenses(MonthlyExpenseBaseline.forMonth(month, now), month)
+        val all = dao.allExpenses()
+        assertEquals(11, all.size)
+        assertEquals(12345L, dao.expense("mine")!!.defaultCents)
+        assertEquals(315704L, dao.months(month.key()).first().sumOf { it.expectedCents })
+        assertEquals(40000L, all.single { it.name == "Weed" }.defaultCents)
+        db.close()
+    }
 
     @Test fun blankStartMonthSnapshotsArchiveDeleteAndRestart() = runBlocking {
         context.deleteDatabase(file)
@@ -92,6 +109,77 @@ class ExpensesPersistenceTest {
         assertEquals(37500L, db.dao().month("fake-owner", "fake-patient", 24321)!!.paidCents)
         assertTrue(db.expenses().allExpenses().isEmpty())
         assertTrue(db.expenses().allMonths().isEmpty())
+        db.close()
+    }
+
+    @Test fun versionTwoExpensesMigrateWithoutLosingActualSpending() = runBlocking {
+        context.deleteDatabase(file)
+        val legacy = context.openOrCreateDatabase(file, Context.MODE_PRIVATE, null)
+        legacy.execSQL("""CREATE TABLE IF NOT EXISTS patients (id TEXT NOT NULL, ownerId TEXT NOT NULL, name TEXT NOT NULL, defaultCents INTEGER NOT NULL, active INTEGER NOT NULL, archivedFromMonth INTEGER, createdMonth INTEGER NOT NULL, createdAt INTEGER NOT NULL, updatedAt INTEGER NOT NULL, dirty INTEGER NOT NULL, deletedAt INTEGER, revision INTEGER NOT NULL, PRIMARY KEY(id))""")
+        legacy.execSQL("CREATE INDEX IF NOT EXISTS index_patients_ownerId ON patients(ownerId)")
+        legacy.execSQL("""CREATE TABLE IF NOT EXISTS patient_months (id TEXT NOT NULL, ownerId TEXT NOT NULL, patientId TEXT NOT NULL, monthKey INTEGER NOT NULL, year INTEGER NOT NULL, month INTEGER NOT NULL, expectedCents INTEGER NOT NULL, paidCents INTEGER NOT NULL, included INTEGER NOT NULL, forceIncomplete INTEGER NOT NULL, updatedAt INTEGER NOT NULL, dirty INTEGER NOT NULL, revision INTEGER NOT NULL, PRIMARY KEY(id), FOREIGN KEY(patientId) REFERENCES patients(id) ON UPDATE NO ACTION ON DELETE CASCADE)""")
+        legacy.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_patient_months_patientId_monthKey ON patient_months(patientId, monthKey)")
+        legacy.execSQL("CREATE INDEX IF NOT EXISTS index_patient_months_ownerId ON patient_months(ownerId)")
+        legacy.execSQL("CREATE INDEX IF NOT EXISTS index_patient_months_patientId ON patient_months(patientId)")
+        legacy.execSQL("""CREATE TABLE IF NOT EXISTS expenses (id TEXT NOT NULL, name TEXT NOT NULL, defaultCents INTEGER NOT NULL, active INTEGER NOT NULL, archivedFromMonth INTEGER, createdMonth INTEGER NOT NULL, createdAt INTEGER NOT NULL, updatedAt INTEGER NOT NULL, PRIMARY KEY(id))""")
+        legacy.execSQL("""CREATE TABLE IF NOT EXISTS expense_months (id TEXT NOT NULL, expenseId TEXT NOT NULL, monthKey INTEGER NOT NULL, year INTEGER NOT NULL, month INTEGER NOT NULL, expectedCents INTEGER NOT NULL, paidCents INTEGER NOT NULL, included INTEGER NOT NULL, forceIncomplete INTEGER NOT NULL, updatedAt INTEGER NOT NULL, PRIMARY KEY(id), FOREIGN KEY(expenseId) REFERENCES expenses(id) ON UPDATE NO ACTION ON DELETE CASCADE)""")
+        legacy.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_expense_months_expenseId_monthKey ON expense_months(expenseId, monthKey)")
+        legacy.execSQL("CREATE INDEX IF NOT EXISTS index_expense_months_expenseId ON expense_months(expenseId)")
+        legacy.execSQL("INSERT INTO expenses VALUES ('food', 'Comida', 147979, 1, NULL, 24321, 1, 1)")
+        legacy.execSQL("INSERT INTO expense_months VALUES ('food-sept', 'food', 24321, 2026, 9, 147979, 87543, 1, 0, 2)")
+        legacy.version = 2
+        legacy.close()
+
+        val db = open()
+        val expense = db.expenses().expense("food")!!
+        val month = db.expenses().month("food", 24321)!!
+        assertEquals("Comida", expense.category)
+        assertEquals(147979L, expense.baselineCents)
+        assertEquals(87543L, month.paidCents)
+        assertEquals(147979L, month.baselineCents)
+        assertTrue(db.expenses().allClosings().isEmpty())
+        db.close()
+    }
+
+    @Test fun rulesRespectManualCorrectionsAndClosingCanReopen() = runBlocking {
+        context.deleteDatabase(file)
+        val month = YearMonth.of(2026, 9)
+        val db = open()
+        val dao = db.expenses()
+        dao.put(Expense("manual", "Google Brasil", 1000, true, null, month.key(), 1, 1,
+            category = "Trabalho", manualCategory = true))
+        dao.put(Expense("auto", "Google One", 2000, true, null, month.key(), 1, 1,
+            category = "Google One"))
+        dao.ensureMonth(month)
+        val rule = CategoryRule("rule", "Google", "Assinaturas", SpendingType.FIXED.stored)
+        dao.putRule(rule)
+        dao.applyRuleToMatches(rule)
+        assertEquals("Trabalho", dao.expense("manual")!!.category)
+        assertEquals("Assinaturas", dao.expense("auto")!!.category)
+        val closing = MonthClosing(month.key(), 2026, 9, true, 3, 3000, 5000, 3000,
+            2000, 1000, 0, "Google One", 2000, 1)
+        dao.putClosing(closing)
+        assertTrue(dao.allClosings().single().isClosed)
+        dao.putClosing(closing.copy(isClosed = false))
+        assertFalse(dao.allClosings().single().isClosed)
+        db.close()
+    }
+
+    @Test fun splitMustConserveTheOriginalTransaction() = runBlocking {
+        context.deleteDatabase(file)
+        val month = YearMonth.of(2026, 9)
+        val db = open()
+        val dao = db.expenses()
+        dao.put(Expense("market", "Mercado", 20000, true, null, month.key(), 1, 1))
+        dao.ensureMonth(month)
+        val payment = dao.month("market", month.key())!!.copy(paidCents = 20000)
+        dao.putMonth(payment)
+        dao.replaceSplit(payment, listOf(SplitPart("a", payment.id, "Comida", 12000),
+            SplitPart("b", payment.id, "Casa", 8000)))
+        assertEquals(20000L, dao.allSplitParts().sumOf { it.cents })
+        assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { dao.replaceSplit(payment, listOf(SplitPart("bad", payment.id, "Comida", 19999))) }
+        }
         db.close()
     }
 }

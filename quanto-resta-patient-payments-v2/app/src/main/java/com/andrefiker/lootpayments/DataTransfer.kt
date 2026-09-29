@@ -49,13 +49,16 @@ import javax.crypto.spec.SecretKeySpec
 
 private const val BACKUP_NAME = "loot-backup.ltb"
 private const val BACKUP_FORMAT = "loot-encrypted-backup"
-private const val BACKUP_SCHEMA = 1
+private const val BACKUP_SCHEMA = 2
 
 internal data class LootBackup(
     val patients: List<Patient>,
     val patientMonths: List<PatientMonth>,
     val expenses: List<Expense>,
-    val expenseMonths: List<ExpenseMonth>
+    val expenseMonths: List<ExpenseMonth>,
+    val closings: List<MonthClosing> = emptyList(),
+    val rules: List<CategoryRule> = emptyList(),
+    val splitParts: List<SplitPart> = emptyList()
 )
 
 internal object LootBackupCrypto {
@@ -111,11 +114,15 @@ internal object LootBackupJson {
         .put("patientMonths", JSONArray().apply { data.patientMonths.forEach { put(patientMonth(it)) } })
         .put("expenses", JSONArray().apply { data.expenses.forEach { put(expense(it)) } })
         .put("expenseMonths", JSONArray().apply { data.expenseMonths.forEach { put(expenseMonth(it)) } })
+        .put("closings", JSONArray().apply { data.closings.forEach { put(closing(it)) } })
+        .put("rules", JSONArray().apply { data.rules.forEach { put(rule(it)) } })
+        .put("splitParts", JSONArray().apply { data.splitParts.forEach { put(splitPart(it)) } })
         .toString()
 
     fun decode(text: String, owner: String): LootBackup {
         val root = JSONObject(text)
-        require(root.getString("format") == "loot-data" && root.getInt("schema") == BACKUP_SCHEMA) {
+        val schema = root.getInt("schema")
+        require(root.getString("format") == "loot-data" && schema in 1..BACKUP_SCHEMA) {
             "Versão de backup incompatível."
         }
         val patients = root.getJSONArray("patients").objects { o -> Patient(
@@ -140,7 +147,11 @@ internal object LootBackupJson {
             id = o.getString("id"), name = o.getString("name"), defaultCents = o.getLong("defaultCents"),
             active = o.getBoolean("active"), archivedFromMonth = o.nullableInt("archivedFromMonth"),
             createdMonth = o.getInt("createdMonth"), createdAt = o.getLong("createdAt"),
-            updatedAt = o.getLong("updatedAt")
+            updatedAt = o.getLong("updatedAt"), category = o.optString("category", o.getString("name")),
+            spendingType = o.optString("spendingType", SpendingType.FLEXIBLE.stored),
+            baselineCents = o.optLong("baselineCents", o.getLong("defaultCents")),
+            rolloverEnabled = o.optBoolean("rolloverEnabled", false), tags = o.optString("tags", ""),
+            note = o.optString("note", ""), manualCategory = o.optBoolean("manualCategory", false)
         ) }
         val expenseIds = expenses.map { it.id }.toSet()
         require(expenseIds.size == expenses.size) { "Backup contém despesas duplicadas." }
@@ -148,10 +159,25 @@ internal object LootBackupJson {
             id = o.getString("id"), expenseId = o.getString("expenseId"), monthKey = o.getInt("monthKey"),
             year = o.getInt("year"), month = o.getInt("month"), expectedCents = o.getLong("expectedCents"),
             paidCents = o.getLong("paidCents"), included = o.getBoolean("included"),
-            forceIncomplete = o.getBoolean("forceIncomplete"), updatedAt = o.getLong("updatedAt")
+            forceIncomplete = o.getBoolean("forceIncomplete"), updatedAt = o.getLong("updatedAt"),
+            baselineCents = o.optLong("baselineCents", o.getLong("expectedCents")),
+            spendingType = o.optString("spendingType", SpendingType.FLEXIBLE.stored)
         ) }
         require(expenseMonths.all { it.expenseId in expenseIds }) { "Backup contém pagamentos sem despesa." }
-        return LootBackup(patients, patientMonths, expenses, expenseMonths)
+        val closings = root.optJSONArray("closings")?.objects { o -> MonthClosing(
+            o.getInt("monthKey"), o.getInt("year"), o.getInt("month"), o.getBoolean("isClosed"),
+            o.getLong("closedAt"), o.getLong("actualCents"), o.getLong("limitCents"),
+            o.getLong("baselineCents"), o.getLong("fixedCents"), o.getLong("flexibleCents"),
+            o.getLong("extraordinaryCents"), o.getString("biggestName"), o.getLong("biggestCents"),
+            o.getInt("recurringCount")) } ?: emptyList()
+        val rules = root.optJSONArray("rules")?.objects { o -> CategoryRule(
+            o.getString("id"), o.getString("pattern"), o.getString("category"),
+            o.getString("spendingType"), o.getBoolean("enabled"), o.getLong("createdAt")) } ?: emptyList()
+        val monthIds = expenseMonths.map { it.id }.toSet()
+        val splits = root.optJSONArray("splitParts")?.objects { o -> SplitPart(
+            o.getString("id"), o.getString("expenseMonthId"), o.getString("category"), o.getLong("cents"))
+        }?.filter { it.expenseMonthId in monthIds } ?: emptyList()
+        return LootBackup(patients, patientMonths, expenses, expenseMonths, closings, rules, splits)
     }
 
     private fun patient(p: Patient) = JSONObject().put("id", p.id).put("name", p.name)
@@ -168,12 +194,30 @@ internal object LootBackupJson {
     private fun expense(e: Expense) = JSONObject().put("id", e.id).put("name", e.name)
         .put("defaultCents", e.defaultCents).put("active", e.active)
         .putNullable("archivedFromMonth", e.archivedFromMonth).put("createdMonth", e.createdMonth)
-        .put("createdAt", e.createdAt).put("updatedAt", e.updatedAt)
+        .put("createdAt", e.createdAt).put("updatedAt", e.updatedAt).put("category", e.category)
+        .put("spendingType", e.spendingType).put("baselineCents", e.baselineCents)
+        .put("rolloverEnabled", e.rolloverEnabled).put("tags", e.tags).put("note", e.note)
+        .put("manualCategory", e.manualCategory)
 
     private fun expenseMonth(m: ExpenseMonth) = JSONObject().put("id", m.id).put("expenseId", m.expenseId)
         .put("monthKey", m.monthKey).put("year", m.year).put("month", m.month)
         .put("expectedCents", m.expectedCents).put("paidCents", m.paidCents)
         .put("included", m.included).put("forceIncomplete", m.forceIncomplete).put("updatedAt", m.updatedAt)
+        .put("baselineCents", m.baselineCents).put("spendingType", m.spendingType)
+
+    private fun closing(c: MonthClosing) = JSONObject().put("monthKey", c.monthKey).put("year", c.year)
+        .put("month", c.month).put("isClosed", c.isClosed).put("closedAt", c.closedAt)
+        .put("actualCents", c.actualCents).put("limitCents", c.limitCents).put("baselineCents", c.baselineCents)
+        .put("fixedCents", c.fixedCents).put("flexibleCents", c.flexibleCents)
+        .put("extraordinaryCents", c.extraordinaryCents).put("biggestName", c.biggestName)
+        .put("biggestCents", c.biggestCents).put("recurringCount", c.recurringCount)
+
+    private fun rule(r: CategoryRule) = JSONObject().put("id", r.id).put("pattern", r.pattern)
+        .put("category", r.category).put("spendingType", r.spendingType).put("enabled", r.enabled)
+        .put("createdAt", r.createdAt)
+
+    private fun splitPart(p: SplitPart) = JSONObject().put("id", p.id)
+        .put("expenseMonthId", p.expenseMonthId).put("category", p.category).put("cents", p.cents)
 
     private fun JSONObject.putNullable(key: String, value: Int?) = put(key, value ?: JSONObject.NULL)
     private fun JSONObject.nullableInt(key: String): Int? = if (isNull(key)) null else getInt(key)
@@ -199,7 +243,8 @@ internal class LootDataTransfer(private val context: Context) {
     suspend fun export(uri: Uri, password: CharArray): String = withContext(Dispatchers.IO) {
         val owner = ownerId()
         val payload = LootBackup(db.dao().backupPatients(owner), db.dao().allMonths(owner),
-            db.expenses().allExpenses(), db.expenses().allMonths())
+            db.expenses().allExpenses(), db.expenses().allMonths(), db.expenses().allClosings(),
+            db.expenses().allRules(), db.expenses().allSplitParts())
         val encrypted = LootBackupCrypto.encrypt(LootBackupJson.encode(payload), password)
         val folder = requireNotNull(DocumentFile.fromTreeUri(context, uri)) { "Pasta indisponível." }
         val file = folder.findFile(BACKUP_NAME)
@@ -225,6 +270,9 @@ internal class LootDataTransfer(private val context: Context) {
             db.dao().putMonths(payload.patientMonths)
             db.expenses().putAll(payload.expenses)
             db.expenses().putMonths(payload.expenseMonths)
+            db.expenses().putClosings(payload.closings)
+            db.expenses().putRules(payload.rules)
+            db.expenses().putSplitParts(payload.splitParts)
         }
         "Importado: ${payload.patients.size} pacientes e ${payload.expenses.size} despesas."
     }

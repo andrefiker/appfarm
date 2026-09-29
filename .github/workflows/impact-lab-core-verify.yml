@@ -1,0 +1,40 @@
+name: Impact Lab Core existing APK verification
+on:
+  push:
+    branches: [impact-lab-core-2026-09-28]
+    paths: ['.github/workflows/impact-lab-core-verify.yml', '.github/scripts/impact-core-android-diagnostic.mjs']
+permissions:
+  contents: read
+  actions: read
+jobs:
+  verify-existing-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.14.0'
+      - uses: actions/download-artifact@v4
+        with:
+          name: Impact-Lab-Core-1.0.0-APK
+          run-id: 36565972980
+          github-token: ${{ github.token }}
+          path: existing-apk
+      - run: sudo chmod 666 /dev/kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        timeout-minutes: 9
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          script: node .github/scripts/impact-core-android-diagnostic.mjs existing-apk/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Impact-Lab-Core-Native-Android-QA
+          path: impact-lab-core/qa-artifacts/
+          retention-days: 7
+          if-no-files-found: ignore

@@ -9,6 +9,14 @@ Version 1.5 adds adaptive status/navigation-bar insets for Android edge-to-edge,
 a clearer compact add action, tighter month navigation, consistent summary
 wording, actionable empty states, refined two-tab navigation, and IME padding.
 
+Version 1.6 is the portable build (`com.andrefiker.lootpayments.portable`). The
+header data action lets the user grant access to a shared folder, export an
+encrypted `loot-backup.ltb`, detect it later, and replace the local database by
+importing it with the same password. The folder permission is remembered per
+installation; passwords are never stored. The backup includes patients,
+expenses, monthly snapshots, paid amounts, and archive state. It requires no
+network or storage permission and uses Android's Storage Access Framework.
+
 Native Kotlin/Jetpack Compose Android app. Two compact tabs: patient income and manual expenses. Both work offline using the same Room database. No login, categories, imported expenses, merchant rules, cloud sync or internet permission. Aliases in tests are fictional; the production expense list starts empty.
 
 The 1.4 UI pass moves `+ Paciente` / `+ Despesa` into the header so no floating button covers a ledger row. The paid status is now a small text control with a 48 dp tap area, while full payments retain a quiet `Editar pago` action. Empty Expenses uses a compact message instead of a full-height blank card. The compact, divided ledger, monetary formatting, Room tables and business rules are unchanged. Tap the name, monthly value, paid value, or status directly; the overflow menu still contains archive and delete. Currency editing retains cents.

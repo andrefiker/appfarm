@@ -97,14 +97,15 @@ class MainActivity : ComponentActivity() {
                 val ready by vm.ready.collectAsStateWithLifecycle()
                 val expenses: ExpensesViewModel = viewModel()
                 var destination by rememberSaveable { mutableStateOf(0) }
+                var dataTransferOpen by rememberSaveable { mutableStateOf(false) }
                 Column(Modifier.fillMaxSize().background(paper)) {
                     androidx.compose.foundation.layout.Box(Modifier.weight(1f)) {
                         if (destination == 0) {
-                            if (ready) PatientPaymentsScreen(state, vm)
+                            if (ready) PatientPaymentsScreen(state, vm) { dataTransferOpen = true }
                             else Text("Carregando Loot…", modifier = Modifier.statusBarsPadding().padding(28.dp), color = muted)
                         } else {
                             val expenseState by expenses.state.collectAsStateWithLifecycle()
-                            ExpensesScreen(expenseState, expenses)
+                            ExpensesScreen(expenseState, expenses) { dataTransferOpen = true }
                         }
                     }
                     HorizontalDivider(color = divider)
@@ -129,6 +130,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
+                if (dataTransferOpen) LootDataTransferDialog { dataTransferOpen = false }
             }
         }
     }
@@ -145,13 +147,13 @@ private sealed interface Editor {
 }
 
 @Composable
-fun PatientPaymentsScreen(state: ScreenState, vm: PatientPaymentsViewModel) {
+fun PatientPaymentsScreen(state: ScreenState, vm: PatientPaymentsViewModel, onData: () -> Unit = {}) {
     var editor by remember { mutableStateOf<Editor?>(null) }
     val active = state.rows.filter { it.terms.active }
     val inactive = state.rows.filterNot { it.terms.active }
     Column(Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 14.dp)) {
         LootHeader("Receitas", state.month, { vm.shiftMonth(-1) }, { vm.shiftMonth(1) },
-            "Paciente") { editor = Editor.Add }
+            "Paciente", onData) { editor = Editor.Add }
         Summary(state.totals)
         Spacer(Modifier.height(7.dp))
         Box(Modifier.weight(1f)) {
@@ -226,7 +228,7 @@ fun PatientPaymentsScreen(state: ScreenState, vm: PatientPaymentsViewModel) {
 
 @Composable
 internal fun LootHeader(section: String, month: YearMonth, previous: () -> Unit, next: () -> Unit,
-    addLabel: String, onAdd: () -> Unit) {
+    addLabel: String, onData: () -> Unit, onAdd: () -> Unit) {
     Row(Modifier.fillMaxWidth().height(48.dp), verticalAlignment = Alignment.CenterVertically) {
         Text("LOOT", color = teal, fontWeight = FontWeight.Bold, fontSize = 11.sp, letterSpacing = 2.sp)
         Spacer(Modifier.width(9.dp))
@@ -235,6 +237,10 @@ internal fun LootHeader(section: String, month: YearMonth, previous: () -> Unit,
         Text(section.uppercase(Locale("pt", "BR")), color = muted, fontWeight = FontWeight.Medium,
             fontSize = 10.sp, letterSpacing = 1.4.sp)
         Spacer(Modifier.weight(1f))
+        Box(Modifier.size(48.dp).clip(RoundedCornerShape(10.dp)).clickable(onClick = onData)
+            .semantics { contentDescription = "Importar ou exportar dados" }, contentAlignment = Alignment.Center) {
+            Text("↕", color = muted, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+        }
         Box(Modifier.height(48.dp).clip(RoundedCornerShape(10.dp)).clickable(onClick = onAdd)
             .semantics { contentDescription = "Adicionar $addLabel" }
             .padding(horizontal = 4.dp), contentAlignment = Alignment.Center) {

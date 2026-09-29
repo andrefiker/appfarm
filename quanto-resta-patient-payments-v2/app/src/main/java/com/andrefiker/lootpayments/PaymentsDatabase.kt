@@ -57,12 +57,15 @@ interface PaymentsDao {
     @Query("SELECT * FROM patient_months WHERE ownerId = :owner")
     fun monthsAllFlow(owner: String): Flow<List<PatientMonth>>
     @Query("SELECT * FROM patients WHERE ownerId = :owner") suspend fun allPatients(owner: String): List<Patient>
+    @Query("SELECT * FROM patients WHERE ownerId = :owner AND deletedAt IS NULL") suspend fun backupPatients(owner: String): List<Patient>
     @Query("SELECT * FROM patient_months WHERE ownerId = :owner") suspend fun allMonths(owner: String): List<PatientMonth>
     @Query("SELECT * FROM patients WHERE id = :id AND ownerId = :owner LIMIT 1") suspend fun patient(owner: String, id: String): Patient?
     @Query("SELECT * FROM patient_months WHERE ownerId = :owner AND patientId = :patientId AND monthKey = :key LIMIT 1")
     suspend fun month(owner: String, patientId: String, key: Int): PatientMonth?
     @Upsert suspend fun putPatient(patient: Patient)
+    @Upsert suspend fun putPatients(patients: List<Patient>)
     @Upsert suspend fun putMonth(month: PatientMonth)
+    @Upsert suspend fun putMonths(months: List<PatientMonth>)
     @Query("UPDATE patients SET dirty = 0 WHERE id = :id AND ownerId = :owner AND revision = :revision")
     suspend fun markPatientSynced(owner: String, id: String, revision: Long)
     @Query("UPDATE patient_months SET dirty = 0 WHERE id = :id AND ownerId = :owner AND revision = :revision")

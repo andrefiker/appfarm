@@ -60,13 +60,13 @@ private sealed interface ExpenseEditor {
 }
 
 @Composable
-fun ExpensesScreen(state: ExpensesState, vm: ExpensesViewModel) {
+fun ExpensesScreen(state: ExpensesState, vm: ExpensesViewModel, onData: () -> Unit = {}) {
     var editor by remember { mutableStateOf<ExpenseEditor?>(null) }
     val active = state.rows.filter { it.payment.included }
     val inactive = state.rows.filterNot { it.payment.included }
     Column(Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 14.dp)) {
         LootHeader("Gastos", state.month, { vm.shiftMonth(-1) }, { vm.shiftMonth(1) },
-            "Despesa") { editor = ExpenseEditor.Add }
+            "Despesa", onData) { editor = ExpenseEditor.Add }
         Summary(state.totals, label = "despesas", paidLabel = "Pago", showOverpayment = true)
         Spacer(Modifier.height(7.dp))
         if (state.rows.isEmpty()) {

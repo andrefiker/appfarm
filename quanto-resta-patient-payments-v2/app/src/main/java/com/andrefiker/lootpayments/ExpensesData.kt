@@ -54,8 +54,14 @@ interface ExpensesDao {
     @Query("SELECT * FROM expense_months WHERE expenseId = :id AND monthKey = :key LIMIT 1")
     suspend fun month(id: String, key: Int): ExpenseMonth?
     @Upsert suspend fun put(expense: Expense)
+    @Upsert suspend fun putAll(expenses: List<Expense>)
     @Upsert suspend fun putMonth(month: ExpenseMonth)
+    @Upsert suspend fun putMonths(months: List<ExpenseMonth>)
     @Query("DELETE FROM expenses WHERE id = :id") suspend fun delete(id: String)
+    @Query("DELETE FROM expense_months") suspend fun clearMonths()
+    @Query("DELETE FROM expenses") suspend fun clearExpenses()
+
+    @Transaction suspend fun clearAll() { clearMonths(); clearExpenses() }
 
     @Transaction suspend fun ensureMonth(selected: YearMonth) {
         val key = selected.key()

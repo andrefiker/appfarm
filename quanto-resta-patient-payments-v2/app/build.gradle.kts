@@ -5,6 +5,11 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
+val gadgetyKeystorePath = System.getenv("GADGETY_KEYSTORE_PATH")
+val gadgetyStorePassword = System.getenv("GADGETY_STORE_PASSWORD")
+val gadgetyKeyAlias = System.getenv("GADGETY_KEY_ALIAS")
+val gadgetyKeyPassword = System.getenv("GADGETY_KEY_PASSWORD")
+
 android {
     namespace = "com.andrefiker.lootpayments"
     compileSdk = 35
@@ -16,11 +21,22 @@ android {
         versionName = "1.17"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+    signingConfigs {
+        if (!gadgetyKeystorePath.isNullOrBlank()) {
+            create("gadgetyStable") {
+                storeFile = file(gadgetyKeystorePath)
+                storePassword = gadgetyStorePassword
+                keyAlias = gadgetyKeyAlias
+                keyPassword = gadgetyKeyPassword
+            }
+        }
+    }
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("gadgetyStable")
+                ?: signingConfigs.getByName("debug")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }

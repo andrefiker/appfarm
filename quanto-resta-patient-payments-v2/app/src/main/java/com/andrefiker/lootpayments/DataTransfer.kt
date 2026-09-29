@@ -419,6 +419,7 @@ internal class LootDataTransfer(private val context: Context) {
             db.expenses().putStrategyEvents(payload.strategyEvents)
             db.statementInbox().putItems(payload.statementInbox)
             db.statementInbox().putIgnoreRules(payload.statementIgnoreRules)
+            db.expenses().removeUntouchedLegacyStarterCategories()
         }
         "Importado: ${payload.patients.size} pacientes e ${payload.expenses.size} despesas."
     }

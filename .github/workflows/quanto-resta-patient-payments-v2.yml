@@ -33,6 +33,33 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+      - name: Restore stable Gadgety signing identity
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/gadgety-signing
+          key: gadgety-signing-v1
+      - name: Prepare stable Gadgety signing identity
+        shell: bash
+        run: |
+          set -eu
+          KEY_DIR="$RUNNER_TEMP/gadgety-signing"
+          KEYSTORE="$KEY_DIR/gadgety-release.p12"
+          PASSWORD_FILE="$KEY_DIR/password"
+          mkdir -p "$KEY_DIR"
+          if [ ! -s "$KEYSTORE" ] || [ ! -s "$PASSWORD_FILE" ]; then
+            PASSWORD=$(openssl rand -base64 36 | tr -dc 'A-Za-z0-9' | head -c 24)
+            printf '%s' "$PASSWORD" > "$PASSWORD_FILE"
+            keytool -genkeypair -noprompt -storetype PKCS12 \
+              -keystore "$KEYSTORE" -storepass "$PASSWORD" -keypass "$PASSWORD" \
+              -alias gadgety -keyalg RSA -keysize 4096 -validity 10000 \
+              -dname 'CN=Gadgety Personal Release, OU=AppFarm, O=Andre Fiker, C=BR'
+          fi
+          PASSWORD=$(cat "$PASSWORD_FILE")
+          echo "::add-mask::$PASSWORD"
+          echo "GADGETY_KEYSTORE_PATH=$KEYSTORE" >> "$GITHUB_ENV"
+          echo "GADGETY_STORE_PASSWORD=$PASSWORD" >> "$GITHUB_ENV"
+          echo "GADGETY_KEY_ALIAS=gadgety" >> "$GITHUB_ENV"
+          echo "GADGETY_KEY_PASSWORD=$PASSWORD" >> "$GITHUB_ENV"
       - name: Unit tests, lint and APK build
         run: gradle --no-daemon :app:testDebugUnitTest :app:lintRelease :app:assembleRelease
       - name: Verify package, version, manifest and signing
@@ -57,6 +84,8 @@ jobs:
             echo "version_name=1.17"
             echo "new_certificate_sha256=$NEW_CERT"
             echo 'side_by_side_with_loot=true'
+            echo 'update_from_gadgety_v1_16=false'
+            echo 'signing_baseline=gadgety_v1_17_stable'
             echo 'data_transfer=encrypted_backup_restore'
           } > build/verification/update-compatibility.txt
           sha256sum "$APK" > build/verification/apk-sha256.txt

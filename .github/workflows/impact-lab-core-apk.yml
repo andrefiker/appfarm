@@ -11,7 +11,7 @@ concurrency:
 jobs:
   package:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -56,22 +56,3 @@ jobs:
           path: impact-lab-core/android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 7
           if-no-files-found: error
-      - name: Enable emulator hardware acceleration
-        run: sudo chmod 666 /dev/kvm
-      - name: Offline Android interaction check
-        uses: reactivecircus/android-emulator-runner@v2
-        timeout-minutes: 12
-        with:
-          api-level: 35
-          target: google_apis
-          arch: x86_64
-          profile: pixel_2
-          disable-animations: true
-          script: node impact-lab-core/android/scripts/emulator-smoke.mjs
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: Impact-Lab-Core-Android-QA
-          path: impact-lab-core/qa-artifacts/
-          retention-days: 7
-          if-no-files-found: ignore

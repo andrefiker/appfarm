@@ -5,7 +5,7 @@ Offline anatomical visualization toy. One adult torso, three fictional blunt int
 ## Build
 Node 22.14.0 or compatible Node >=22.12. `npm ci`, `npm test`, `npm run build`. Open using Vite (`npm run dev`); do not open index.html directly as a file. All runtime assets are bundled; no CDN/backend/accounts/analytics.
 
-Android: `node scripts/bundle-android.mjs`, then Java 17, Gradle 8.10.2, Android SDK 35/build-tools 35.0.0: `gradle --no-daemon -p android :app:assembleDebug`. GitHub workflow `impact-lab-core-apk.yml` performs packaging and bounded emulator checks. Package `com.andrefiker.impactlabcore`, version 1.0.0/code 1, Android 8+. Separate installation from old Impact Lab. No requested permissions.
+Android: `node scripts/bundle-android.mjs`, then Java 17, Gradle 8.10.2, Android SDK 35/build-tools 35.0.0: `gradle --no-daemon -p android :app:assembleDebug`. GitHub workflow `impact-lab-core-apk.yml` performs packaging and structural verification only. Emulator diagnostics are manual-only and are not a delivery gate. Package `com.andrefiker.impactlabcore`, version 1.0.0/code 1, Android 8+. Separate installation from old Impact Lab. No requested permissions.
 
 The delivered build uses the Android debug certificate. No private key is committed. A future build made with a different key cannot update this installation in place. Session damage is intentionally not persistent; local settings survive restarts.
 

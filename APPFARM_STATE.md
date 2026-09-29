@@ -106,9 +106,13 @@ Vercel:
 3. Complete or explicitly cancel the pending Railway/Lovable cleanup in its own execution task.
 4. Update this file only when meaningful state changes.
 
-## Impact Lab: Core — 2026-09-29 recovery checkpoint
+## Impact Lab: Core 1.0.0 — 2026-09-29
 
-- Isolated branch `impact-lab-core-2026-09-28`; anatomy baseline and rollback `53c556dd8bbb902562038bb9ef985367b3a9a99d`.
-- Licensed optimized torso assets, provenance/research and baseline web source are durable. No Core APK exists yet.
-- Later local damage/cutaway work was not committed before workspace pruning; prior successful local tests do not establish the saved branch's functionality.
-- See `impact-lab-core/RECOVERY.md`. Resume from this baseline, recover later code where possible, commit increments promptly, and use bounded build segments. Do not restart broad research or silently claim a release.
+- Isolated branch `impact-lab-core-2026-09-28`; app directory `impact-lab-core`.
+- APK/source build commit `1520d6c1fab67b91b4fc852a166681460ddccf17`; anatomy rollback `53c556dd8bbb902562038bb9ef985367b3a9a99d`; recovered interaction checkpoint `450060ec77533807d632d00137f13496684036b9`.
+- Local-only Three.js/Vite app with licensed aligned Z-Anatomy torso GLB, restrained procedural materials, local blunt/projectile approximations, capped cutaway, rotate/zoom, separate tap/apply, undo/reset and persisted settings. No server, analytics or provider deployment.
+- Fresh production-browser visual acceptance and 13 deterministic geometry/state tests pass. Actual rendered screenshots delivered. Reset canvas matches baseline byte for byte; section geometry allocation remains stable across view cycles.
+- APK BUILT / PACKAGE VERIFIED: `com.andrefiker.impactlabcore`, 1.0.0/code 1; debug signed; no requested permissions; all bundled assets match tested production. SHA256 `e21f38c107281cba23efc12b599f5dd67205263eecc963d93045fbfe39ac8382`.
+- GitHub Actions run `36565972980`; Initial emulator automation timed out during the projectile/cutaway stage; its DevTools captures showed a blank canvas, so Android visual acceptance is NOT established. Diagnostic run 36566694511 was still active when Andre directed abandoning the emulator route. Do not wait/retry emulator jobs as a delivery gate. Packaging now runs without an emulator; the diagnostic workflow is manual-only. PHYSICAL DEVICE: not tested.
+- Visual limits: stylized fibers/organ surfaces, simplified solid section faces, flat cropped torso boundaries and less convincing extreme grazing contacts. No validated tissue mechanics or injury scores.
+- Recovery lesson: commit each working stage promptly; temporary workspace pruning removed earlier uncommitted work. Reconstructed source is now durable. Reuse the optimized licensed GLB; do not reload the full atlas during normal builds.

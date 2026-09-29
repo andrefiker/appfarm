@@ -1,8 +1,6 @@
 name: Impact Lab Core existing APK verification
 on:
-  push:
-    branches: [impact-lab-core-2026-09-28]
-    paths: ['.github/workflows/impact-lab-core-verify.yml', '.github/scripts/impact-core-android-diagnostic.mjs']
+  workflow_dispatch:
 permissions:
   contents: read
   actions: read

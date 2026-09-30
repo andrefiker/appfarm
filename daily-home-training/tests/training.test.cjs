@@ -36,7 +36,7 @@ class FakeElement {
   replaceChildren(...items) { this.children = [...items]; }
   setAttribute(key, value) { this.attributes[key] = String(value); }
   addEventListener(name, callback) { (this.listeners[name] ||= []).push(callback); }
-  fire(name) { for (const callback of this.listeners[name] || []) callback({ target: this }); }
+  fire(name, extra = {}) { const event = { target: this, ...extra }; for (const callback of this.listeners[name] || []) callback(event); }
   click() { this.fire('click'); }
   focus() {}
   set textContent(value) { this._text = String(value); }
@@ -330,6 +330,21 @@ test('compact screen includes target tap, progress count, haptics, reduced motio
   assert.match(java, /HapticFeedbackConstants\.CONFIRM/);
 });
 
+test('Android launcher icon is configured and release version is incremented', () => {
+  const base = path.join(__dirname, '../app/src/main');
+  const manifest = fs.readFileSync(path.join(base, 'AndroidManifest.xml'), 'utf8');
+  const gradle = fs.readFileSync(path.join(__dirname, '../app/build.gradle'), 'utf8');
+  assert.match(manifest, /android:icon="@mipmap\/ic_launcher"/);
+  assert.match(manifest, /android:roundIcon="@mipmap\/ic_launcher"/);
+  assert.match(gradle, /versionCode 4/);
+  assert.match(gradle, /versionName '1\.3\.0'/);
+  for (const density of ['mdpi','hdpi','xhdpi','xxhdpi','xxxhdpi']) {
+    assert.ok(fs.existsSync(path.join(base, `res/mipmap-${density}/ic_launcher.png`)));
+    assert.ok(fs.existsSync(path.join(base, `res/mipmap-${density}/ic_launcher_foreground.png`)));
+  }
+  assert.ok(fs.existsSync(path.join(base, 'res/mipmap-anydpi-v26/ic_launcher.xml')));
+});
+
 test('screen renders and target tap, steppers, baseline save, and next-day goal work together', () => {
   const html = fs.readFileSync(path.join(__dirname, '../app/src/main/assets/training.html'), 'utf8');
   const inline = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)][0][1];
@@ -378,4 +393,26 @@ test('screen renders and target tap, steppers, baseline save, and next-day goal 
   nextSquat.children[1].children[0].click();
   assert.equal(nextSquat.children[1].children[1].value, '10');
   assert.equal(nextSquat.classList.contains('is-complete'), false);
+
+  elements.manage.click();
+  assert.equal(elements.manager.hidden, false);
+  assert.equal(elements['manager-active'].children.length, 9);
+  elements['add-exercise'].click();
+  elements['exercise-name'].value = 'Wall sit';
+  elements['exercise-unit'].value = 'sec';
+  elements['exercise-form'].fire('submit', { preventDefault() {} });
+  assert.equal(elements['manager-active'].children.length, 10);
+  const customRow = elements['manager-active'].children[9];
+  customRow.children[1].click();
+  elements['exercise-name'].value = 'Wall hold';
+  elements['exercise-form'].fire('submit', { preventDefault() {} });
+  assert.equal(elements['manager-active'].children[9].children[0].textContent, 'Wall hold');
+  const remove = elements['manager-active'].children[9].children[2];
+  remove.click();
+  remove.click();
+  assert.equal(elements['manager-active'].children.length, 9);
+  assert.equal(elements['manager-removed'].children.length, 1);
+  elements['manager-removed'].children[0].children[1].click();
+  assert.equal(elements['manager-active'].children.length, 10);
+  assert.equal(elements['exercise-list'].children.length, 10);
 });

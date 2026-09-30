@@ -73,6 +73,11 @@ public final class MainActivity extends Activity {
         }
 
         @JavascriptInterface
+        public void goal() {
+            if (webView != null) webView.post(() -> webView.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK));
+        }
+
+        @JavascriptInterface
         public void saved() {
             if (webView != null) webView.post(() -> webView.performHapticFeedback(
                     android.os.Build.VERSION.SDK_INT >= 30

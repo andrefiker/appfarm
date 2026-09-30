@@ -2,7 +2,7 @@
 
 A tiny offline Android checklist for the nine requested home exercises. No account, network permission, analytics, ads, or third-party services.
 
-Current release: **1.3.0** (`versionCode` 4). The compact screen uses inline steppers, direct numeric entry, one-tap goal fill, haptic feedback, a baseline pass, and previous-result +1 progression. Updating from schema v1.2 triggers one fresh baseline pass while preserving saved history. Exercises can be added, renamed, removed, and restored from the Edit control; removed exercise history is retained locally. The Android launcher uses an adaptive mint-and-ivory training mark.
+Current release: **1.4.0** (`versionCode` 5). The focused workout screen shows each previous result and its +1 goal. Tap the goal to log it, or use the steppers or numeric keyboard. Drafts persist as entered; FINISH completes a session and reveals the next goal. Exercises can still be added, edited, removed, and restored through More (⋮) → Manage exercises. The Android launcher retains its adaptive mint-and-ivory mark.
 
 ## Build
 
@@ -24,8 +24,9 @@ The app stores its small JSON ledger in Android `SharedPreferences`. The WebView
 
 ## Behavior
 
-- First launch, and the one-time v1 migration, ask for a baseline workout without numerical targets.
-- After baseline, each exercise's next target is its last saved actual result plus one, independent of calendar gaps.
-- Blank exercises leave the previous result unchanged; an explicit zero is a valid result and makes the next target one.
-- Targets have no progression caps. Per-leg and per-side amounts are entered for one side. Changing an exercise name retains its history; changing its unit starts a separate progression lineage. Removing an exercise hides it from active sessions but keeps its records for restore.
-- Local historical results and saved target snapshots remain on the device; editing a past result does not rewrite later saved snapshots.
+- Every exercise establishes its own baseline on its first completed actual result. Blank entries leave that exercise unrecorded; explicit zero makes the next goal one.
+- Each exercise's next goal is its most recent completed actual result plus one, independent of calendar gaps, goal misses, or excesses. There are no caps.
+- FINISH locks the completed day. Edit results deliberately unlocks it; later completed target snapshots do not change when old results are edited.
+- Future dates cannot be entered. Drafts and completed history persist locally across restarts.
+- Per-leg and per-side amounts are entered for one side. Changing an exercise unit starts a new progression lineage, while removal keeps its history for restore.
+- Upgrading v1.3 storage preserves actuals, drafts, and saved snapshots once, then uses per-exercise baseline state.

@@ -3,416 +3,413 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const TrainingApi = require('../app/src/main/assets/training.js');
-const {
-  MODEL_VERSION, EXERCISES, addDays, targetLabel, resultLabel, adjustActual, TrainingModel
-} = TrainingApi;
+const API = require('../app/src/main/assets/training.js');
+const { MODEL_VERSION, DATA_SCHEMA, EXERCISES, targetLabel, resultLabel, adjustActual, TrainingModel } = API;
 
 class MemoryStorage {
   value = '';
   load() { return this.value; }
   save(value) { this.value = value; }
 }
-function app(storage = new MemoryStorage(), now = new Date(2026, 8, 30, 10)) {
-  return { model: new TrainingModel(storage, now), storage };
-}
-function fillBaseline(model, date, results) {
+const at = (day, storage = new MemoryStorage()) => new TrainingModel(storage, new Date(`${day}T12:00:00`));
+const record = (model, date, results) => {
   for (const [id, value] of Object.entries(results)) model.setActual(date, id, String(value));
-  return model.saveDay(date);
-}
-function saveResult(model, date, id, value) {
-  model.setActual(date, id, String(value));
-  return model.saveDay(date);
-}
-function legacyStorage(records, startDate = '2026-09-01') {
+  return model.finishDay(date);
+};
+
+test('fresh install has exactly the nine defaults and independent blank baselines', () => {
+  const model = at('2026-09-30');
+  assert.deepEqual(model.getExercises().map(ex => ex.name), [
+    'Jumping jacks', 'Full squat', 'Assisted single-leg squat', 'Standing calf raise',
+    'Normal push-ups', 'Glute bridge', 'Front plank', 'Side plank', 'Knee taps / high knees'
+  ]);
+  assert.equal(model.getExercises().some(ex => /backpack|row/i.test(ex.name)), false);
+  const day = model.getDay('2026-09-30');
+  assert.ok(model.getExercises().every(ex => day.target[ex.id] === null && day.baselineByExercise[ex.id]));
+  assert.ok(model.getExercises().every(ex => day.actual[ex.id] === null));
+  assert.equal(day.completed, false);
+  assert.equal(model.data.schema, DATA_SCHEMA);
+  assert.equal(model.data.progressionModelVersion, MODEL_VERSION);
+  assert.equal('baselinePending' in model.data, false);
+});
+
+test('a partial session establishes a baseline only for exercises with actual results', () => {
+  const model = at('2026-09-30');
+  model.setActual('2026-09-30', 'squat', '10');
+  model.setActual('2026-09-30', 'pushups', '7');
+  assert.equal(model.completedCount('2026-09-30'), 2);
+  assert.equal(model.getDay('2026-09-30').target.squat, null);
+  const finished = model.finishDay('2026-09-30');
+  assert.equal(finished.completed, true);
+  assert.equal(finished.baselineByExercise.squat, true);
+  assert.equal(finished.actual.plank, null);
+  const tomorrow = at('2026-10-01', model.storage).getDay('2026-10-01');
+  assert.equal(tomorrow.target.squat, 11);
+  assert.equal(tomorrow.target.pushups, 8);
+  assert.equal(tomorrow.target.plank, null);
+  assert.equal(tomorrow.baselineByExercise.plank, true);
+  assert.equal(tomorrow.baselineByExercise.squat, false);
+});
+
+test('each exercise can establish its baseline on a different completed day', () => {
+  const model = at('2026-10-02');
+  record(model, '2026-09-30', { squat: 12 });
+  record(model, '2026-10-01', { plank: 30 });
+  const day = model.getDay('2026-10-02');
+  assert.equal(day.target.squat, 13);
+  assert.equal(day.target.plank, 31);
+  assert.equal(day.target.jacks, null);
+  assert.equal(targetLabel(EXERCISES[0], day.target.jacks, day.lastActual.jacks), 'Baseline');
+});
+
+test('all exercises use actual +1, even below and above their goal', () => {
+  const model = at('2026-10-04');
+  record(model, '2026-09-30', { squat: 14, pushups: 14, plank: 30, jacks: 30 });
+  assert.equal(model.getDay('2026-10-01').target.squat, 15);
+  record(model, '2026-10-01', { squat: 8, pushups: 20, plank: 31, jacks: 31 });
+  const next = model.getDay('2026-10-02').target;
+  assert.equal(next.squat, 9);
+  assert.equal(next.pushups, 21);
+  assert.equal(next.plank, 32);
+  assert.equal(next.jacks, 32);
+  record(model, '2026-10-02', { jacks: 1000, plank: 120 });
+  assert.equal(model.getDay('2026-10-03').target.jacks, 1001);
+  assert.equal(model.getDay('2026-10-03').target.plank, 121);
+});
+
+test('blank is not zero and does not replace a previous performance', () => {
+  const model = at('2026-10-03');
+  record(model, '2026-09-30', { squat: 12, pushups: 8 });
+  record(model, '2026-10-01', { squat: 0 });
+  const saved = JSON.parse(model.storage.load());
+  assert.equal(saved.records['2026-10-01'].actual.squat, 0);
+  assert.equal(saved.records['2026-10-01'].actual.pushups, null);
+  assert.equal(model.completedCount('2026-10-01'), 1);
+  assert.equal(model.getDay('2026-10-02').target.squat, 1);
+  assert.equal(model.getDay('2026-10-02').target.pushups, 9);
+  assert.equal(model.getDay('2026-10-02').target.plank, null);
+});
+
+test('missed days do nothing to the last-result goal', () => {
+  const model = at('2026-10-10');
+  record(model, '2026-09-30', { squat: 14 });
+  assert.equal(model.getDay('2026-10-01').target.squat, 15);
+  assert.equal(model.getDay('2026-10-10').target.squat, 15);
+  record(model, '2026-10-03', {});
+  assert.equal(model.getDay('2026-10-10').target.squat, 15);
+});
+
+test('draft values survive restart without finishing the workout', () => {
   const storage = new MemoryStorage();
-  storage.save(JSON.stringify({ schema: 1, startDate, records }));
-  return storage;
-}
+  let model = at('2026-09-30', storage);
+  model.setActual('2026-09-30', 'squat', '0');
+  model.setActual('2026-09-30', 'plank', '30');
+  model = at('2026-09-30', storage);
+  const draft = model.getDay('2026-09-30');
+  assert.equal(draft.completed, false);
+  assert.equal(draft.actual.squat, 0);
+  assert.equal(draft.actual.plank, 30);
+  assert.equal(draft.actual.pushups, null);
+  assert.equal(model.completedCount('2026-09-30'), 2);
+  assert.equal(model.getDay('2026-10-01').target.squat, null); // draft is not progression history
+  model.finishDay('2026-09-30');
+  model = at('2026-10-01', storage);
+  assert.equal(model.getDay('2026-09-30').completed, true);
+  assert.equal(model.getDay('2026-10-01').target.squat, 1);
+  assert.equal(model.getDay('2026-10-01').target.plank, 31);
+});
+
+test('completed history is locked until explicitly unlocked, then locks again', () => {
+  const model = at('2026-10-03');
+  record(model, '2026-09-30', { squat: 10 });
+  assert.equal(model.getDay('2026-09-30').locked, true);
+  assert.throws(() => model.setActual('2026-09-30', 'squat', '11'), /Unlock/);
+  model.unlockDay('2026-09-30');
+  assert.equal(model.getDay('2026-09-30').editing, true);
+  model.setActual('2026-09-30', 'squat', '14');
+  model.finishDay('2026-09-30');
+  assert.equal(model.getDay('2026-09-30').locked, true);
+  assert.equal(model.getDay('2026-09-30').actual.squat, 14);
+  model.unlockDay('2026-09-30');
+  model.setDate('2026-10-01');
+  assert.equal(model.getDay('2026-09-30').locked, true);
+});
+
+test('historical edits leave later completed snapshots intact while future drafts use latest actual', () => {
+  const model = at('2026-10-03');
+  record(model, '2026-09-30', { squat: 10 });
+  record(model, '2026-10-01', { squat: 14 });
+  record(model, '2026-10-02', { squat: 15 });
+  const oldTarget = model.getDay('2026-10-01').target.squat;
+  model.unlockDay('2026-09-30');
+  model.setActual('2026-09-30', 'squat', '999');
+  model.finishDay('2026-09-30');
+  assert.equal(model.getDay('2026-10-01').target.squat, oldTarget);
+  assert.equal(model.getDay('2026-10-02').target.squat, 15);
+  assert.equal(model.getDay('2026-10-03').target.squat, 16);
+  assert.equal(model.getDay('2026-09-30').target.squat, null);
+});
+
+test('future navigation stops at today, and future entry and FINISH are blocked', () => {
+  const model = at('2026-09-30');
+  assert.equal(model.shiftDate(1).date, '2026-09-30');
+  assert.equal(model.selectedDate, '2026-09-30');
+  assert.equal(model.setDate('2026-10-10').date, '2026-09-30');
+  assert.throws(() => model.setActual('2026-10-01', 'squat', '9'), /Future/);
+  assert.throws(() => model.finishDay('2026-10-01'), /Future/);
+  assert.equal(model.data.records['2026-10-01'], undefined);
+  model.shiftDate(-1);
+  assert.equal(model.selectedDate, '2026-09-29');
+  model.shiftDate(1);
+  assert.equal(model.selectedDate, '2026-09-30');
+});
+
+test('per-leg and per-side results progress by one with natural units', () => {
+  const model = at('2026-10-01');
+  record(model, '2026-09-30', { singleSquat: 6, sidePlank: 22 });
+  const day = model.getDay('2026-10-01');
+  assert.equal(day.target.singleSquat, 7);
+  assert.equal(day.target.sidePlank, 23);
+  assert.equal(targetLabel(EXERCISES[2], 7, 6), '6 → 7 / leg');
+  assert.equal(targetLabel(EXERCISES[7], 23, 22), '22 → 23 sec / side');
+  assert.equal(resultLabel(EXERCISES[7], 22), '22 sec / side');
+});
+
+test('v1.3 migration preserves completed history and draft, then runs only once', () => {
+  const storage = new MemoryStorage();
+  storage.save(JSON.stringify({
+    schema: 3, progressionModelVersion: 2, startDate: '2026-09-01', migrationDate: '2026-09-01',
+    baselinePending: false, baselineDate: '2026-09-02', exercises: EXERCISES,
+    removedExercises: [], records: {
+      '2026-09-29': { actual: { squat: 18, pushups: null }, saved: true,
+        targetAtTime: { squat: 17, pushups: null }, lastAtTime: { squat: 16, pushups: null },
+        baseline: false, legacy: false },
+      '2026-09-30': { actual: { pushups: 7, squat: null }, saved: false, targetAtTime: null }
+    }
+  }));
+  let model = at('2026-09-30', storage);
+  assert.equal(model.data.schema, DATA_SCHEMA);
+  assert.equal(model.data.progressionModelVersion, MODEL_VERSION);
+  assert.equal(model.getDay('2026-09-29').target.squat, 17);
+  assert.equal(model.getDay('2026-09-29').actual.squat, 18);
+  assert.equal(model.getDay('2026-09-30').target.squat, 19);
+  assert.equal(model.getDay('2026-09-30').target.pushups, null);
+  assert.equal(model.getDay('2026-09-30').actual.pushups, 7);
+  assert.equal(model.getDay('2026-09-30').completed, false);
+  model = at('2026-09-30', storage);
+  assert.equal(model.getDay('2026-09-30').actual.pushups, 7);
+  assert.equal(model.getDay('2026-09-30').baselineByExercise.pushups, true);
+  model.finishDay('2026-09-30');
+  model = at('2026-10-01', storage);
+  assert.equal(model.getDay('2026-10-01').target.pushups, 8);
+  assert.equal(model.getDay('2026-10-01').target.squat, 19);
+});
+
+test('exercise management retains customized history behind the overflow path', () => {
+  const model = at('2026-10-01');
+  record(model, '2026-09-30', { squat: 10 });
+  const added = model.addExercise({ name: 'Wall sit', unit: 'sec', side: null });
+  model.unlockDay('2026-09-30');
+  model.setActual('2026-09-30', added.id, '22');
+  model.finishDay('2026-09-30');
+  assert.equal(model.getDay('2026-10-01').target[added.id], 23);
+  model.editExercise(added.id, { name: 'Wall hold', unit: 'sec', side: null });
+  assert.equal(model.getDay('2026-10-01').target[added.id], 23);
+  model.removeExercise(added.id);
+  assert.equal(model.getRemovedExercises().length, 1);
+  model.restoreExercise(added.id);
+  assert.equal(model.getDay('2026-10-01').target[added.id], 23);
+  model.editExercise(added.id, { name: 'Wall hold', unit: 'reps', side: null });
+  assert.equal(model.getDay('2026-10-01').target[added.id], null);
+});
+
+test('empty plus starts at one and minus cannot go negative', () => {
+  assert.equal(adjustActual('', 1), 1);
+  assert.equal(adjustActual('', -1), null);
+  assert.equal(adjustActual(0, -1), 0);
+  assert.equal(adjustActual(13, 1), 14);
+});
 
 class FakeElement {
-  constructor(tagName = 'div') { this.tagName = tagName.toUpperCase(); this.children = []; this.listeners = {}; this.attributes = {}; this.dataset = {}; this.value = ''; this.className = ''; this._text = ''; this.hidden = false; }
+  constructor(tag = 'div') {
+    this.tagName = tag.toUpperCase(); this.children = []; this.listeners = {}; this.attributes = {};
+    this.dataset = {}; this.value = ''; this.className = ''; this._text = '';
+    this.hidden = false; this.disabled = false; this.readOnly = false; this.offsetWidth = 50;
+  }
   append(...items) { this.children.push(...items); }
   replaceChildren(...items) { this.children = [...items]; }
   setAttribute(key, value) { this.attributes[key] = String(value); }
-  addEventListener(name, callback) { (this.listeners[name] ||= []).push(callback); }
-  fire(name, extra = {}) { const event = { target: this, ...extra }; for (const callback of this.listeners[name] || []) callback(event); }
-  click() { this.fire('click'); }
+  addEventListener(event, callback) { (this.listeners[event] ||= []).push(callback); }
+  fire(event, extra = {}) { for (const callback of this.listeners[event] || []) callback({ target: this, preventDefault() {}, ...extra }); }
+  click() { if (!this.disabled) this.fire('click'); }
   focus() {}
-  set textContent(value) { this._text = String(value); }
-  get textContent() { return this._text; }
   get classList() {
     const element = this;
     return {
       toggle(name, force) {
-        const names = new Set(element.className.split(/\s+/).filter(Boolean));
-        if (force) names.add(name); else names.delete(name);
-        element.className = [...names].join(' ');
+        const set = new Set(element.className.split(/\s+/).filter(Boolean));
+        if (force) set.add(name); else set.delete(name);
+        element.className = [...set].join(' ');
       },
+      add(name) { if (!this.contains(name)) element.className = `${element.className} ${name}`.trim(); },
+      remove(name) { element.className = element.className.split(/\s+/).filter(value => value !== name).join(' '); },
       contains(name) { return element.className.split(/\s+/).includes(name); }
     };
   }
+  set textContent(value) { this._text = String(value); }
+  get textContent() { return this._text; }
   querySelector(selector) {
-    const wanted = selector.slice(1);
+    const className = selector.slice(1);
     for (const child of this.children) {
-      if (child.className.split(/\s+/).includes(wanted)) return child;
+      if (child.className.split(/\s+/).includes(className)) return child;
       const nested = child.querySelector(selector);
       if (nested) return nested;
     }
     return null;
   }
 }
-
-test('the product contains exactly the nine specified exercises', () => {
-  assert.deepEqual(EXERCISES.map(ex => ex.name), [
-    'Jumping jacks', 'Full squat', 'Assisted single-leg squat',
-    'Standing calf raise', 'Normal push-ups', 'Glute bridge',
-    'Front plank', 'Side plank', 'Knee taps / high knees'
-  ]);
-  assert.equal(EXERCISES.length, 9);
-  assert.equal(EXERCISES.some(ex => /backpack row/i.test(ex.name)), false);
-});
-
-test('fresh install starts with a target-free baseline', () => {
-  const { model } = app();
-  const day = model.getDay('2026-09-30');
-  assert.equal(day.baseline, true);
-  assert.equal(day.saved, false);
-  assert.ok(Object.values(day.target).every(value => value == null));
-  assert.ok(Object.values(day.actual).every(value => value == null));
-  assert.equal(model.data.progressionModelVersion, MODEL_VERSION);
-});
-
-test('baseline actual 10 becomes next target 11', () => {
-  const { model } = app();
-  fillBaseline(model, '2026-09-30', { squat: 10 });
-  const next = model.getDay('2026-10-01');
-  assert.equal(next.baseline, false);
-  assert.equal(next.lastActual.squat, 10);
-  assert.equal(next.target.squat, 11);
-});
-
-test('last actual 17 becomes 18 regardless of the old target', () => {
-  const { model } = app();
-  fillBaseline(model, '2026-09-30', { squat: 17 });
-  assert.equal(model.getDay('2026-10-01').target.squat, 18);
-});
-
-test('a result below the previous goal drives next goal from actual 8 to 9', () => {
-  const { model } = app();
-  fillBaseline(model, '2026-09-30', { squat: 14 });
-  assert.equal(model.getDay('2026-10-01').target.squat, 15);
-  saveResult(model, '2026-10-01', 'squat', 8);
-  assert.equal(model.getDay('2026-10-02').target.squat, 9);
-});
-
-test('an above-goal result 20 becomes 21', () => {
-  const { model } = app();
-  fillBaseline(model, '2026-09-30', { squat: 14 });
-  saveResult(model, '2026-10-01', 'squat', 20);
-  assert.equal(model.getDay('2026-10-02').target.squat, 21);
-});
-
-test('plank and jumping jacks both increase by exactly one', () => {
-  const { model } = app();
-  fillBaseline(model, '2026-09-30', { plank: 30, jacks: 30 });
-  const next = model.getDay('2026-10-01').target;
-  assert.equal(next.plank, 31);
-  assert.equal(next.jacks, 31);
-});
-
-test('one or several missed calendar days do not change a target', () => {
-  const { model } = app();
-  fillBaseline(model, '2026-09-30', { squat: 14 });
-  assert.equal(model.getDay('2026-10-01').target.squat, 15);
-  assert.equal(model.getDay('2026-10-05').target.squat, 15);
-  assert.equal(model.getDay('2026-10-05').lastActual.squat, 14);
-});
-
-test('a blank exercise retains its last result while entered exercises advance', () => {
-  const { model } = app();
-  fillBaseline(model, '2026-09-30', { squat: 12, pushups: 8 });
-  model.saveDay('2026-10-01'); // both blank
-  const next = model.getDay('2026-10-02');
-  assert.equal(next.target.squat, 13);
-  assert.equal(next.target.pushups, 9);
-});
-
-test('explicit zero is a result and makes the next target one', () => {
-  const { model } = app();
-  fillBaseline(model, '2026-09-30', { squat: 0 });
-  assert.equal(model.getDay('2026-10-01').lastActual.squat, 0);
-  assert.equal(model.getDay('2026-10-01').target.squat, 1);
-});
-
-test('single-leg squat and side plank each progress by one per side', () => {
-  const { model } = app();
-  fillBaseline(model, '2026-09-30', { singleSquat: 6, sidePlank: 22 });
-  const next = model.getDay('2026-10-01');
-  assert.equal(next.target.singleSquat, 7);
-  assert.equal(next.target.sidePlank, 23);
-  assert.equal(targetLabel(EXERCISES.find(ex => ex.id === 'singleSquat'), 7, 6), 'Last 6 / leg  →  Goal 7 / leg');
-  assert.equal(targetLabel(EXERCISES.find(ex => ex.id === 'sidePlank'), 23, 22), 'Last 22 sec / side  →  Goal 23 sec / side');
-  assert.equal(resultLabel(EXERCISES.find(ex => ex.id === 'sidePlank'), 22), '22 sec / side');
-});
-
-test('v1 migration preserves saved history but resets the active engine for one baseline', () => {
-  const storage = legacyStorage({
-    '2026-09-29': { target: { squat: 40, jacks: 100 }, actual: { squat: 9, jacks: 30 }, saved: true }
-  });
-  const { model } = app(storage);
-  const old = model.getDay('2026-09-29');
-  const baseline = model.getDay('2026-09-30');
-  assert.equal(old.saved, true);
-  assert.equal(old.actual.squat, 9);
-  assert.equal(old.target.squat, 40); // retained for historical display only
-  assert.equal(baseline.baseline, true);
-  assert.equal(baseline.target.squat, null); // old target 40 cannot control the new model
-  assert.equal(model.data.baselinePending, true);
-});
-
-test('v1.2 schema migration requests exactly one new baseline and preserves old records', () => {
-  const storage = new MemoryStorage();
-  storage.save(JSON.stringify({
-    schema: 2, progressionModelVersion: 2, startDate: '2026-09-01', migrationDate: '2026-09-01',
-    baselinePending: false, baselineDate: '2026-09-02',
-    records: { '2026-09-29': { actual: { squat: 18 }, saved: true, targetAtTime: { squat: 18 }, lastAtTime: { squat: 17 }, baseline: false } }
-  }));
-  let model = app(storage).model;
-  assert.equal(model.data.baselinePending, true);
-  assert.equal(model.getDay('2026-09-29').actual.squat, 18);
-  assert.equal(model.getDay('2026-09-30').baseline, true);
-  assert.equal(model.getDay('2026-09-30').target.squat, null);
-  fillBaseline(model, '2026-09-30', { squat: 6 });
-  model = app(storage).model;
-  assert.equal(model.data.baselinePending, false);
-  assert.equal(model.getDay('2026-10-01').target.squat, 7);
-});
-
-test('migration is persisted once; restart keeps the completed baseline and +1 target', () => {
-  const storage = legacyStorage({
-    '2026-09-29': { target: { squat: 40 }, actual: { squat: 9 }, saved: true }
-  });
-  let model = app(storage).model;
-  fillBaseline(model, '2026-09-30', { squat: 4 });
-  assert.equal(model.data.baselinePending, false);
-  model = app(storage).model;
-  assert.equal(model.data.baselinePending, false);
-  assert.equal(model.getDay('2026-09-30').baseline, true);
-  assert.equal(model.getDay('2026-10-01').target.squat, 5);
-});
-
-test('blank baseline exercise retains legacy last actual; typed baseline result replaces it', () => {
-  const storage = legacyStorage({
-    '2026-09-28': { target: { squat: 10 }, actual: { squat: 9, pushups: 6 }, saved: true }
-  });
-  const { model } = app(storage);
-  fillBaseline(model, '2026-09-30', { pushups: 3 });
-  const next = model.getDay('2026-10-01');
-  assert.equal(next.target.squat, 10); // blank: keep the previous actual 9
-  assert.equal(next.target.pushups, 4); // baseline actual 3 is newer
-});
-
-test('restart preserves a normal saved result and the next target', () => {
-  const storage = new MemoryStorage();
-  let model = app(storage).model;
-  fillBaseline(model, '2026-09-30', { squat: 10 });
-  saveResult(model, '2026-10-01', 'squat', 17);
-  model = app(storage).model;
-  assert.equal(model.getDay('2026-10-02').target.squat, 18);
-  assert.equal(model.getDay('2026-10-01').actual.squat, 17);
-});
-
-test('there are no old targets, +5 steps, or progression caps', () => {
-  const { model } = app();
-  fillBaseline(model, '2026-09-30', { jacks: 30, plank: 120 });
-  assert.equal(model.getDay('2026-10-01').target.jacks, 31);
-  assert.equal(model.getDay('2026-10-01').target.plank, 121);
-  saveResult(model, '2026-10-01', 'jacks', 1000);
-  assert.equal(model.getDay('2026-10-02').target.jacks, 1001);
-  assert.equal('cap' in EXERCISES[0], false);
-  assert.ok(EXERCISES.every(ex => !('start' in ex) && !('step' in ex) && !('cap' in ex)));
-});
-
-test('navigation is stable and saved target snapshots do not change', () => {
-  const { model } = app();
-  fillBaseline(model, '2026-09-30', { squat: 10 });
-  saveResult(model, '2026-10-01', 'squat', 14);
-  saveResult(model, '2026-10-02', 'squat', 15);
-  model.setDate('2026-09-30');
-  assert.equal(model.getDay(model.selectedDate).actual.squat, 10);
-  model.shiftDate(1);
-  assert.equal(model.selectedDate, '2026-10-01');
-  assert.equal(model.getDay(model.selectedDate).target.squat, 11);
-  model.shiftDate(1);
-  assert.equal(model.getDay(model.selectedDate).target.squat, 15);
-});
-
-test('editing an old result updates that record without rewriting later saved sessions', () => {
-  const { model } = app();
-  fillBaseline(model, '2026-09-30', { squat: 10 });
-  saveResult(model, '2026-10-01', 'squat', 14);
-  saveResult(model, '2026-10-02', 'squat', 15);
-  model.setActual('2026-09-30', 'squat', '999');
-  assert.equal(model.getDay('2026-10-01').target.squat, 11);
-  assert.equal(model.getDay('2026-10-02').target.squat, 15);
-  assert.equal(model.getDay('2026-10-03').target.squat, 16); // follows latest saved result
-});
-
-test('blank and intentional zero are distinguishable in storage', () => {
-  const { model, storage } = app();
-  model.setActual('2026-09-30', 'squat', '0');
-  model.saveDay('2026-09-30');
-  const saved = JSON.parse(storage.load());
-  assert.equal(saved.records['2026-09-30'].actual.squat, 0);
-  assert.equal(saved.records['2026-09-30'].actual.pushups, null);
-  assert.equal(model.getDay('2026-10-01').target.squat, 1);
-  assert.equal(model.getDay('2026-10-01').target.pushups, null);
-});
-
-test('empty plus starts at one and minus never goes below zero', () => {
-  assert.equal(adjustActual('', 1), 1);
-  assert.equal(adjustActual('', -1), null);
-  assert.equal(adjustActual(0, -1), 0);
-  assert.equal(adjustActual(13, 1), 14);
-  assert.equal(adjustActual(13, -1), 12);
-});
-
-test('custom exercise add, edit, remove, restore, and persistence preserve its progression', () => {
-  const { model, storage } = app();
-  fillBaseline(model, '2026-09-30', { squat: 10 });
-  const custom = model.addExercise({ name: 'Wall sit', unit: 'sec', side: null });
-  assert.equal(model.getExercises().length, 10);
-  model.setActual('2026-09-30', custom.id, '22');
-  model.saveDay('2026-09-30');
-  assert.equal(model.getDay('2026-10-01').target[custom.id], 23);
-  model.editExercise(custom.id, { name: 'Wall squat hold', unit: 'sec', side: null });
-  assert.equal(model.getExercises().find(ex => ex.id === custom.id).name, 'Wall squat hold');
-  assert.equal(model.removeExercise(custom.id), true);
-  assert.equal(model.getExercises().some(ex => ex.id === custom.id), false);
-  assert.equal(model.getRemovedExercises().some(ex => ex.id === custom.id), true);
-  let restarted = new TrainingModel(storage, new Date(2026, 9, 1, 10));
-  assert.equal(restarted.getRemovedExercises().some(ex => ex.id === custom.id), true);
-  restarted.restoreExercise(custom.id);
-  assert.equal(restarted.getDay('2026-10-01').target[custom.id], 23);
-  assert.equal(restarted.data.records['2026-09-30'].actual[custom.id], 22);
-});
-
-test('changing exercise unit keeps past snapshots but starts a fresh target lineage', () => {
-  const { model } = app();
-  fillBaseline(model, '2026-09-30', { squat: 18 });
-  model.editExercise('squat', { name: 'Full squat', unit: 'sec', side: null });
-  assert.equal(model.getDay('2026-10-01').target.squat, null);
-  model.setActual('2026-10-01', 'squat', '25');
-  model.saveDay('2026-10-01');
-  assert.equal(model.getDay('2026-10-02').target.squat, 26);
-  assert.equal(model.getDay('2026-09-30').target.squat, null);
-});
-
-test('compact screen includes target tap, progress count, haptics, reduced motion, and pinned save', () => {
-  const html = fs.readFileSync(path.join(__dirname, '../app/src/main/assets/training.html'), 'utf8');
-  const css = fs.readFileSync(path.join(__dirname, '../app/src/main/assets/training.css'), 'utf8');
-  const java = fs.readFileSync(path.join(__dirname, '../app/src/main/java/com/andrefiker/dailyhometraining/MainActivity.java'), 'utf8');
-  assert.match(html, /input\.type\s*=\s*'number'/);
-  assert.match(html, /target\.addEventListener\('click'/);
-  assert.match(html, /countEl\.textContent=`\$\{n\}\/\$\{total\}`/);
-  assert.match(html, /model\.addExercise\(detail\)/);
-  assert.match(html, /model\.editExercise\(editingId,detail\)/);
-  assert.match(html, /model\.removeExercise\(ex\.id\)/);
-  assert.match(html, /model\.restoreExercise\(ex\.id\)/);
-  assert.match(html, /haptic\('tick'\)/);
-  assert.match(html, /haptic\('saved'\)/);
-  assert.match(html, /SAVE/);
-  assert.match(css, /\.bottom\s*\{[^}]*position:\s*fixed/s);
-  assert.match(css, /env\(safe-area-inset-bottom\)/);
-  assert.match(css, /prefers-reduced-motion/);
-  assert.match(java, /HapticFeedbackConstants\.KEYBOARD_TAP/);
-  assert.match(java, /HapticFeedbackConstants\.CONFIRM/);
-});
-
-test('Android launcher icon is configured and release version is incremented', () => {
-  const base = path.join(__dirname, '../app/src/main');
-  const manifest = fs.readFileSync(path.join(base, 'AndroidManifest.xml'), 'utf8');
-  const gradle = fs.readFileSync(path.join(__dirname, '../app/build.gradle'), 'utf8');
-  assert.match(manifest, /android:icon="@mipmap\/ic_launcher"/);
-  assert.match(manifest, /android:roundIcon="@mipmap\/ic_launcher"/);
-  assert.match(gradle, /versionCode 4/);
-  assert.match(gradle, /versionName '1\.3\.0'/);
-  for (const density of ['mdpi','hdpi','xhdpi','xxhdpi','xxxhdpi']) {
-    assert.ok(fs.existsSync(path.join(base, `res/mipmap-${density}/ic_launcher.png`)));
-    assert.ok(fs.existsSync(path.join(base, `res/mipmap-${density}/ic_launcher_foreground.png`)));
-  }
-  assert.ok(fs.existsSync(path.join(base, 'res/mipmap-anydpi-v26/ic_launcher.xml')));
-});
-
-test('screen renders and target tap, steppers, baseline save, and next-day goal work together', () => {
+function fakeClock(day) {
+  return class FixedDate extends Date {
+    constructor(...args) { super(...(args.length ? args : [`${day}T12:00:00`])); }
+  };
+}
+function launchUi(storage, day) {
   const html = fs.readFileSync(path.join(__dirname, '../app/src/main/assets/training.html'), 'utf8');
   const inline = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)][0][1];
-  const ids = ['date','count','exercise-list','save-status','previous','next','save','manage','manager','close-manager','manager-active','manager-removed','removed-wrap','add-exercise','editor','exercise-form','editor-title','exercise-name','exercise-unit','exercise-side','editor-error','cancel-editor','cancel-editor-x'];
-  const elements = Object.fromEntries(ids.map(id => [id, new FakeElement(id === 'save' || id === 'previous' || id === 'next' ? 'button' : 'div')]));
-  const storage = new MemoryStorage();
-  const haptics = { tick: 0, saved: 0 };
+  const ids = ['previous','date','today','count','next','more','baseline-note','exercise-list',
+    'save-status','finish','edit-results','done-edit','menu','close-menu','open-manager',
+    'manager','close-manager','manager-active','manager-removed','removed-wrap','add-exercise',
+    'editor','exercise-form','editor-title','exercise-name','exercise-unit','exercise-side',
+    'editor-error','cancel-editor','cancel-editor-x'];
+  const elements = Object.fromEntries(ids.map(id => [id, new FakeElement()]));
+  elements['today'].hidden = true;
+  elements['baseline-note'].hidden = true;
+  elements['menu'].hidden = true;
+  elements['manager'].hidden = true;
+  elements['editor'].hidden = true;
+  const haptics = { tick: 0, goal: 0, saved: 0 };
   const bridge = {
-    load: () => storage.load(),
-    save: value => storage.save(value),
-    tick: () => haptics.tick++,
-    saved: () => haptics.saved++
+    load: () => storage.load(), save: value => storage.save(value),
+    tick: () => haptics.tick++, goal: () => haptics.goal++, saved: () => haptics.saved++
   };
   const document = {
-    getElementById: id => elements[id],
-    createElement: tag => new FakeElement(tag)
+    getElementById: id => elements[id], createElement: tag => new FakeElement(tag),
+    addEventListener() {}
   };
-  vm.runInNewContext(inline, {
-    document,
-    window: { LocalLedger: bridge },
-    TrainingModel: TrainingApi,
-    Intl,
-    setTimeout: () => 1,
-    clearTimeout: () => {}
-  });
+  const boundApi = { ...API, TrainingModel: class extends API.TrainingModel {
+    constructor(store) { super(store, new Date(`${day}T12:00:00`)); }
+  } };
+  vm.runInNewContext(inline, { document, window: { LocalLedger: bridge }, TrainingModel: boundApi,
+    Intl, Date: fakeClock(day), localStorage: null });
+  return { elements, haptics };
+}
 
-  assert.equal(elements['exercise-list'].children.length, 9);
-  assert.match(elements['exercise-list'].children[0].querySelector('.target-line').textContent, /Baseline/);
-  const squat = elements['exercise-list'].children[1];
-  const squatInput = squat.children[1].children[1];
-  squat.children[1].children[2].click(); // empty + becomes 1
-  assert.equal(squatInput.value, '1');
-  assert.equal(elements.count.textContent, '1/9');
-  assert.equal(haptics.tick, 1);
-  squatInput.value = '10';
-  squatInput.fire('input');
-  elements.save.click();
-  assert.match(elements['save-status'].textContent, /SAVED/);
+test('workout UI logs goal in one tap, finishes, locks, and edits deliberately', () => {
+  const storage = new MemoryStorage();
+  const first = launchUi(storage, '2026-09-30');
+  const e = first.elements;
+  assert.equal(e['exercise-list'].children.length, 9);
+  assert.equal(e['baseline-note'].hidden, false);
+  assert.equal(e.next.disabled, true);
+  const squat = e['exercise-list'].children[1];
+  const input = squat.children[1].children[1];
+  assert.equal(input.value, '');
+  input.value = '10'; input.fire('input');
+  assert.equal(e.count.textContent, '1/9');
+  e.finish.click();
+  assert.equal(first.haptics.saved, 1);
+  assert.equal(e.finish.hidden, true);
+  assert.equal(input.readOnly, false); // row was replaced; use the current rendered row below
+  assert.equal(e['exercise-list'].children[1].children[1].children[1].readOnly, true);
+  assert.match(e['save-status'].textContent, /Workout complete/);
+
+  const second = launchUi(storage, '2026-10-01');
+  const d = second.elements;
+  assert.equal(d['baseline-note'].hidden, false); // blank exercises still need a baseline
+  const goal = d['exercise-list'].children[1].querySelector('.goal-value');
+  assert.equal(goal.textContent, '11');
+  goal.click();
+  goal.click(); // repeated tap does not repeat the success haptic
+  assert.equal(d['exercise-list'].children[1].children[1].children[1].value, '11');
+  assert.equal(d.count.textContent, '1/9');
+  assert.equal(second.haptics.goal, 1);
+  assert.equal(second.haptics.tick, 0);
+  d.finish.click();
+  assert.match(d['exercise-list'].children[1].querySelector('.feedback').textContent, /Done 11 · Next 12/);
+  assert.equal(d.next.disabled, true);
+  d.previous.click();
+  assert.equal(d.today.hidden, false);
+  assert.equal(d['exercise-list'].children[1].children[1].children[1].readOnly, true);
+  d['edit-results'].click();
+  const oldInput = d['exercise-list'].children[1].children[1].children[1];
+  assert.equal(oldInput.readOnly, false);
+  oldInput.value = '5'; oldInput.fire('input');
+  d['done-edit'].click();
+  assert.equal(d['exercise-list'].children[1].children[1].children[1].readOnly, true);
+  d.today.click();
+  assert.equal(d.today.hidden, true);
+  assert.equal(d['exercise-list'].children[1].querySelector('.goal-value').textContent, '11');
+  assert.equal(second.haptics.saved, 1); // editing does not repeat FINISH confirmation
+});
+
+test('a normal nine-exercise session takes nine goal taps and no keyboard entry', () => {
+  const storage = new MemoryStorage();
+  const model = at('2026-09-30', storage);
+  record(model, '2026-09-30', Object.fromEntries(EXERCISES.map(ex => [ex.id, 10])));
+  const { elements, haptics } = launchUi(storage, '2026-10-01');
+  for (const row of elements['exercise-list'].children) row.querySelector('.goal-value').click();
+  assert.equal(elements.count.textContent, '9/9');
+  assert.equal(haptics.goal, 9);
+  assert.equal(haptics.tick, 0);
+  assert.equal(elements['exercise-list'].children.every(row => row.classList.contains('is-complete')), true);
+  elements.finish.click();
   assert.equal(haptics.saved, 1);
-  elements.next.click();
-  const nextSquat = elements['exercise-list'].children[1];
-  assert.match(nextSquat.querySelector('.target-line').textContent, /Last 10\s+→\s+Goal 11/);
-  nextSquat.querySelector('.target-line').click();
-  assert.equal(nextSquat.children[1].children[1].value, '11');
-  assert.equal(nextSquat.classList.contains('is-complete'), true);
-  nextSquat.children[1].children[0].click();
-  assert.equal(nextSquat.children[1].children[1].value, '10');
-  assert.equal(nextSquat.classList.contains('is-complete'), false);
+  assert.match(elements['save-status'].textContent, /Workout complete/);
+});
 
-  elements.manage.click();
-  assert.equal(elements.manager.hidden, false);
-  assert.equal(elements['manager-active'].children.length, 9);
-  elements['add-exercise'].click();
-  elements['exercise-name'].value = 'Wall sit';
-  elements['exercise-unit'].value = 'sec';
-  elements['exercise-form'].fire('submit', { preventDefault() {} });
-  assert.equal(elements['manager-active'].children.length, 10);
-  const customRow = elements['manager-active'].children[9];
-  customRow.children[1].click();
-  elements['exercise-name'].value = 'Wall hold';
-  elements['exercise-form'].fire('submit', { preventDefault() {} });
-  assert.equal(elements['manager-active'].children[9].children[0].textContent, 'Wall hold');
-  const remove = elements['manager-active'].children[9].children[2];
-  remove.click();
-  remove.click();
-  assert.equal(elements['manager-active'].children.length, 9);
-  assert.equal(elements['manager-removed'].children.length, 1);
-  elements['manager-removed'].children[0].children[1].click();
-  assert.equal(elements['manager-active'].children.length, 10);
-  assert.equal(elements['exercise-list'].children.length, 10);
+test('overflow menu exposes add/edit/remove/restore without an Edit control on workout screen', () => {
+  const storage = new MemoryStorage(), { elements: e } = launchUi(storage, '2026-09-30');
+  assert.equal(e.more.attributes['aria-label'], undefined); // static HTML supplies the accessible label
+  e.more.click();
+  assert.equal(e.menu.hidden, false);
+  e['open-manager'].click();
+  assert.equal(e.manager.hidden, false);
+  assert.equal(e['manager-active'].children.length, 9);
+  e['add-exercise'].click();
+  e['exercise-name'].value = 'Wall sit'; e['exercise-unit'].value = 'sec';
+  e['exercise-form'].fire('submit');
+  assert.equal(e['manager-active'].children.length, 10);
+  e['manager-active'].children[9].children[1].click();
+  e['exercise-name'].value = 'Wall hold'; e['exercise-form'].fire('submit');
+  assert.equal(e['manager-active'].children[9].children[0].textContent, 'Wall hold');
+  const remove = e['manager-active'].children[9].children[2]; remove.click(); remove.click();
+  assert.equal(e['manager-active'].children.length, 9);
+  assert.equal(e['manager-removed'].children.length, 1);
+  e['manager-removed'].children[0].children[1].click();
+  assert.equal(e['manager-active'].children.length, 10);
+  assert.equal(e['exercise-list'].children.length, 10);
+  const restarted = launchUi(storage, '2026-09-30');
+  assert.equal(restarted.elements['exercise-list'].children.length, 10);
+});
+
+test('Android release retains offline package and icon and updates haptic bridge', () => {
+  const base = path.join(__dirname, '../app/src/main');
+  const html = fs.readFileSync(path.join(base, 'assets/training.html'), 'utf8');
+  const css = fs.readFileSync(path.join(base, 'assets/training.css'), 'utf8');
+  const java = fs.readFileSync(path.join(base, 'java/com/andrefiker/dailyhometraining/MainActivity.java'), 'utf8');
+  const gradle = fs.readFileSync(path.join(__dirname, '../app/build.gradle'), 'utf8');
+  const manifest = fs.readFileSync(path.join(base, 'AndroidManifest.xml'), 'utf8');
+  assert.match(html, /id="more"[^>]*aria-label="More options"/);
+  assert.match(html, /id="open-manager"[^>]*>Manage exercises/);
+  assert.doesNotMatch(html, /id="manage"[^>]*>Edit/);
+  assert.match(css, /env\(safe-area-inset-bottom\)/);
+  assert.match(css, /prefers-reduced-motion/);
+  assert.match(java, /void goal\(\)/);
+  assert.match(java, /HapticFeedbackConstants\.KEYBOARD_TAP/);
+  assert.match(java, /HapticFeedbackConstants\.CONFIRM/);
+  assert.match(gradle, /versionCode 5/);
+  assert.match(gradle, /versionName '1\.4\.0'/);
+  assert.match(gradle, /applicationId 'com\.andrefiker\.dailyhometraining'/);
+  assert.match(manifest, /android:icon="@mipmap\/ic_launcher"/);
+  assert.doesNotMatch(manifest, /INTERNET/);
 });

@@ -4,7 +4,9 @@
   if (root) root.TrainingModel = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
-  const MODEL_VERSION = 2, DATA_SCHEMA = 3;
+
+  const MODEL_VERSION = 3;
+  const DATA_SCHEMA = 4;
   const EXERCISES = [
     { id: 'jacks', name: 'Jumping jacks', unit: 'reps', side: null },
     { id: 'squat', name: 'Full squat', unit: 'reps', side: null },
@@ -16,53 +18,293 @@
     { id: 'sidePlank', name: 'Side plank', unit: 'sec', side: 'side' },
     { id: 'kneeTaps', name: 'Knee taps / high knees', unit: 'reps', side: null }
   ];
-  const SIDES = new Set([null, 'leg', 'side']), UNITS = new Set(['reps', 'sec']);
-  function isoDate(date) { return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`; }
-  function addDays(key, n) { const [y,m,d]=key.split('-').map(Number); return isoDate(new Date(y,m-1,d+n,12)); }
+  const SIDES = new Set([null, 'leg', 'side']);
+  const UNITS = new Set(['reps', 'sec']);
+  const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
+  function isoDate(date) {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  }
+  function addDays(key, amount) {
+    const [year, month, day] = key.split('-').map(Number);
+    return isoDate(new Date(year, month - 1, day + amount, 12));
+  }
   function localToday(now) { return isoDate(now || new Date()); }
-  function parseJson(raw) { try { return typeof raw==='string' ? JSON.parse(raw) : raw; } catch (_) { return null; } }
-  function validId(id) { return typeof id==='string' && /^[a-zA-Z0-9_-]{1,64}$/.test(id); }
+  function parseJson(raw) {
+    try { return typeof raw === 'string' ? JSON.parse(raw) : raw; }
+    catch (_) { return null; }
+  }
+  function validId(id) { return typeof id === 'string' && /^[a-zA-Z0-9_-]{1,64}$/.test(id); }
   function cleanExercise(raw) {
-    if (!raw || !validId(raw.id) || typeof raw.name!=='string' || !raw.name.trim()) return null;
-    const ex={id:raw.id,name:raw.name.trim().slice(0,40),unit:UNITS.has(raw.unit)?raw.unit:'reps',side:SIDES.has(raw.side)?raw.side:null};
-    if (typeof raw.progressionStartDate==='string' && /^\d{4}-\d{2}-\d{2}$/.test(raw.progressionStartDate)) ex.progressionStartDate=raw.progressionStartDate;
-    return ex;
+    if (!raw || !validId(raw.id) || typeof raw.name !== 'string' || !raw.name.trim()) return null;
+    const exercise = {
+      id: raw.id, name: raw.name.trim().slice(0, 40),
+      unit: UNITS.has(raw.unit) ? raw.unit : 'reps',
+      side: SIDES.has(raw.side) ? raw.side : null
+    };
+    if (typeof raw.progressionStartDate === 'string' && DATE_PATTERN.test(raw.progressionStartDate)) {
+      exercise.progressionStartDate = raw.progressionStartDate;
+    }
+    return exercise;
   }
-  function cleanMap(input) { const out={}; if (input&&typeof input==='object') for(const [id,v] of Object.entries(input)) out[id]=Number.isSafeInteger(v)&&v>=0?v:null; return out; }
-  function emptyExerciseMap(exercises) { return Object.fromEntries(exercises.map(ex=>[ex.id,null])); }
-  function cleanMeta(input, fallback=[]) {
-    const out={}; if(input&&typeof input==='object') for(const [id,raw] of Object.entries(input)){const ex=cleanExercise({id,...raw});if(ex)out[id]={name:ex.name,unit:ex.unit,side:ex.side};}
-    for(const ex of fallback) out[ex.id] ||= {name:ex.name,unit:ex.unit,side:ex.side}; return out;
+  function cleanMap(input) {
+    const output = {};
+    if (input && typeof input === 'object') {
+      for (const [id, value] of Object.entries(input)) {
+        if (validId(id)) output[id] = Number.isSafeInteger(value) && value >= 0 ? value : null;
+      }
+    }
+    return output;
   }
-  function migrateLegacy(parsed,today) {
-    const records={}; for(const [date,old] of Object.entries(parsed.records||{})){if(!old||typeof old!=='object')continue;const actual=cleanMap(old.actual),saved=Boolean(old.saved);records[date]={actual:saved?actual:{},legacyActual:saved?null:actual,saved,targetAtTime:cleanMap(old.target),lastAtTime:{},baseline:false,legacy:true,exerciseMeta:cleanMeta(null,EXERCISES)};}
-    return {schema:DATA_SCHEMA,progressionModelVersion:MODEL_VERSION,startDate:typeof parsed.startDate==='string'?parsed.startDate:today,migrationDate:today,baselinePending:true,baselineDate:null,exercises:EXERCISES.map(x=>({...x})),removedExercises:[],records};
+  function emptyMap(exercises) { return Object.fromEntries(exercises.map(ex => [ex.id, null])); }
+  function cleanMeta(input, fallback = []) {
+    const output = {};
+    if (input && typeof input === 'object') {
+      for (const [id, raw] of Object.entries(input)) {
+        const ex = cleanExercise({ id, ...raw });
+        if (ex) output[id] = { name: ex.name, unit: ex.unit, side: ex.side };
+      }
+    }
+    for (const ex of fallback) output[ex.id] ||= { name: ex.name, unit: ex.unit, side: ex.side };
+    return output;
   }
-  function safeData(raw,today) {
-    const p=parseJson(raw); if(!p||typeof p!=='object'||!p.records||typeof p.records!=='object')return null;
-    if(p.progressionModelVersion!==MODEL_VERSION||![2,DATA_SCHEMA].includes(p.schema))return migrateLegacy(p,today);
-    const all=(Array.isArray(p.exercises)?p.exercises:EXERCISES).map(cleanExercise).filter(Boolean), removedIn=(Array.isArray(p.removedExercises)?p.removedExercises:[]).map(cleanExercise).filter(Boolean), seen=new Set();
-    const exercises=all.filter(x=>!seen.has(x.id)&&seen.add(x.id)),removedExercises=removedIn.filter(x=>!seen.has(x.id)&&seen.add(x.id)),records={};
-    for(const [date,r] of Object.entries(p.records)){if(!r||typeof r!=='object')continue;records[date]={actual:cleanMap(r.actual),legacyActual:r.legacyActual?cleanMap(r.legacyActual):null,saved:Boolean(r.saved),targetAtTime:r.targetAtTime?cleanMap(r.targetAtTime):null,lastAtTime:cleanMap(r.lastAtTime),baseline:Boolean(r.baseline),legacy:Boolean(r.legacy),exerciseMeta:cleanMeta(r.exerciseMeta)};}
-    const legacySchema=p.schema===2;return {schema:DATA_SCHEMA,progressionModelVersion:MODEL_VERSION,startDate:typeof p.startDate==='string'?p.startDate:today,migrationDate:legacySchema?today:(typeof p.migrationDate==='string'?p.migrationDate:today),baselinePending:legacySchema?true:Boolean(p.baselinePending),baselineDate:legacySchema?null:(typeof p.baselineDate==='string'?p.baselineDate:null),exercises:exercises.length||removedExercises.length?exercises:EXERCISES.map(x=>({...x})),removedExercises,records};
+  function cleanBaselineMap(input, targets, exercises) {
+    const output = {};
+    for (const ex of exercises) {
+      output[ex.id] = input && typeof input[ex.id] === 'boolean'
+        ? input[ex.id] : !Number.isSafeInteger(targets && targets[ex.id]);
+    }
+    return output;
   }
-  function targetLabel(ex,target,last,baseline=false){if(baseline)return'Baseline';if(!Number.isSafeInteger(target))return'Set baseline';const s=ex.side==='leg'?' / leg':ex.side==='side'?' sec / side':ex.unit==='sec'?' sec':'';return Number.isSafeInteger(last)?`Last ${last}${s}  →  Goal ${target}${s}`:`Goal ${target}${s}`;}
-  function resultLabel(ex,v){if(!Number.isSafeInteger(v))return'';if(ex.side==='leg')return`${v} / leg`;if(ex.side==='side')return`${v} sec / side`;return`${v} ${ex.unit}`;}
-  function adjustActual(current,delta){const t=String(current==null?'':current).trim();if(!t)return delta>0?1:null;return Math.max(0,(/^[0-9]+$/.test(t)?Number(t):0)+delta);}
+  function cleanRecord(raw, exercises, schema) {
+    const actual = cleanMap(raw.actual);
+    const legacyActual = raw.legacyActual ? cleanMap(raw.legacyActual) : null;
+    const targetAtTime = cleanMap(schema === 1 ? raw.target : raw.targetAtTime);
+    const lastAtTime = cleanMap(raw.lastAtTime);
+    const completed = Boolean(schema === DATA_SCHEMA ? raw.completed : raw.saved);
+    return {
+      actual: completed || !legacyActual ? actual : { ...actual, ...legacyActual },
+      completed,
+      targetAtTime,
+      lastAtTime,
+      baselineAtTime: cleanBaselineMap(raw.baselineAtTime, targetAtTime, exercises),
+      exerciseMeta: cleanMeta(raw.exerciseMeta, exercises),
+      legacy: Boolean(raw.legacy || schema === 1)
+    };
+  }
+  function safeData(raw) {
+    const parsed = parseJson(raw);
+    if (!parsed || typeof parsed !== 'object' || !parsed.records || typeof parsed.records !== 'object') return null;
+    if (![1, 2, 3, DATA_SCHEMA].includes(parsed.schema)) return null;
+    const all = (Array.isArray(parsed.exercises) ? parsed.exercises : EXERCISES).map(cleanExercise).filter(Boolean);
+    const removed = (Array.isArray(parsed.removedExercises) ? parsed.removedExercises : []).map(cleanExercise).filter(Boolean);
+    const seen = new Set();
+    const exercises = all.filter(ex => !seen.has(ex.id) && seen.add(ex.id));
+    const removedExercises = removed.filter(ex => !seen.has(ex.id) && seen.add(ex.id));
+    const active = exercises.length || removedExercises.length ? exercises : EXERCISES.map(ex => ({ ...ex }));
+    const records = {};
+    for (const [date, record] of Object.entries(parsed.records)) {
+      if (DATE_PATTERN.test(date) && record && typeof record === 'object') {
+        records[date] = cleanRecord(record, active, parsed.schema);
+      }
+    }
+    return {
+      schema: DATA_SCHEMA, progressionModelVersion: MODEL_VERSION,
+      startDate: DATE_PATTERN.test(parsed.startDate) ? parsed.startDate : null,
+      exercises: active, removedExercises, records
+    };
+  }
+  function unitSuffix(exercise) {
+    if (exercise.side === 'leg') return ' / leg';
+    if (exercise.side === 'side') return ' sec / side';
+    return exercise.unit === 'sec' ? ' sec' : '';
+  }
+  function targetLabel(exercise, target, lastActual) {
+    if (!Number.isSafeInteger(target)) return 'Baseline';
+    return Number.isSafeInteger(lastActual)
+      ? `${lastActual} → ${target}${unitSuffix(exercise)}`
+      : `${target}${unitSuffix(exercise)}`;
+  }
+  function resultLabel(exercise, value) {
+    if (!Number.isSafeInteger(value)) return '';
+    return `${value}${unitSuffix(exercise) || ' reps'}`;
+  }
+  function adjustActual(current, delta) {
+    const text = String(current == null ? '' : current).trim();
+    if (text === '') return delta > 0 ? 1 : null;
+    const value = /^\d+$/.test(text) ? Number(text) : 0;
+    return Math.max(0, value + delta);
+  }
+
   class TrainingModel {
-    constructor(storage,now){this.storage=storage||{load:()=>'',save:()=>{}};this.today=localToday(now);this.selectedDate=this.today;this.data=safeData(this.storage.load(),this.today)||{schema:DATA_SCHEMA,progressionModelVersion:MODEL_VERSION,startDate:this.today,migrationDate:this.today,baselinePending:true,baselineDate:null,exercises:EXERCISES.map(x=>({...x})),removedExercises:[],records:{}};this.ensureRecord(this.today);this.persist();}
-    persist(){this.storage.save(JSON.stringify(this.data));} getExercises(){return this.data.exercises.map(x=>({...x}));} getRemovedExercises(){return this.data.removedExercises.map(x=>({...x}));} exercise(id){return this.data.exercises.find(x=>x.id===id);}
-    ensureRecord(date){if(!this.data.records[date])this.data.records[date]={actual:emptyExerciseMap(this.data.exercises),legacyActual:null,saved:false,targetAtTime:null,lastAtTime:null,baseline:this.data.baselinePending&&date>=this.data.migrationDate,legacy:false,exerciseMeta:{}};return this.data.records[date];}
-    latestPerformanceBefore(date,id){const ex=this.exercise(id);if(!ex)return null;let latest=null;for(const [d,r] of Object.entries(this.data.records)){if(d>=date||!r.saved||(ex.progressionStartDate&&d<ex.progressionStartDate))continue;const a=r.actual&&r.actual[id];if(!Number.isSafeInteger(a)||a<0)continue;const meta=r.exerciseMeta&&r.exerciseMeta[id];if(meta&&(meta.unit!==ex.unit||meta.side!==ex.side))continue;if(!latest||d>latest.date)latest={date:d,actual:a};}return latest;}
-    snapshotFor(date){const targets=emptyExerciseMap(this.data.exercises),lastActual=emptyExerciseMap(this.data.exercises);for(const ex of this.data.exercises){const p=this.latestPerformanceBefore(date,ex.id);if(p){lastActual[ex.id]=p.actual;targets[ex.id]=p.actual+1;}}return{targets,lastActual};}
-    getDay(date){const r=this.ensureRecord(date),baseline=r.saved?Boolean(r.baseline):Boolean(this.data.baselinePending&&date>=this.data.migrationDate);let target,lastActual;if(r.saved){target=r.targetAtTime?{...r.targetAtTime}:{};lastActual=r.lastAtTime?{...r.lastAtTime}:{}}else if(baseline){target=emptyExerciseMap(this.data.exercises);lastActual=emptyExerciseMap(this.data.exercises)}else({targets:target,lastActual}=this.snapshotFor(date));const actual=r.legacy&&!r.saved&&date<this.data.migrationDate&&r.legacyActual?r.legacyActual:r.actual;return{date,target,lastActual,actual:{...actual},saved:Boolean(r.saved),baseline,legacy:Boolean(r.legacy),exerciseMeta:cleanMeta(r.exerciseMeta,this.data.exercises)};}
-    setActual(date,id,raw){if(!this.exercise(id))throw Error('Unknown exercise');const r=this.ensureRecord(date),t=String(raw==null?'':raw).trim(),v=t===''?null:(/^\d+$/.test(t)?Number(t):null),dest=r.legacy&&!r.saved&&date<this.data.migrationDate&&r.legacyActual?r.legacyActual:r.actual;dest[id]=Number.isSafeInteger(v)&&v>=0?v:null;this.persist();return this.getDay(date);}
-    saveDay(date){const r=this.ensureRecord(date);if(r.legacy&&!r.saved&&date<this.data.migrationDate){r.actual=r.legacyActual?{...r.legacyActual}:{};r.saved=true;this.persist();return this.getDay(date);}if(r.saved&&r.legacy){this.persist();return this.getDay(date);}const baseline=this.data.baselinePending&&date>=this.data.migrationDate,s=baseline?{targets:emptyExerciseMap(this.data.exercises),lastActual:emptyExerciseMap(this.data.exercises)}:this.snapshotFor(date);r.targetAtTime={...s.targets};r.lastAtTime={...s.lastActual};r.saved=true;r.legacy=false;r.baseline=baseline;r.exerciseMeta=cleanMeta(null,this.data.exercises);if(baseline){this.data.baselinePending=false;this.data.baselineDate=date;}this.persist();return this.getDay(date);}
-    addExercise(details){const name=String(details&&details.name||'').trim(),unit=UNITS.has(details&&details.unit)?details.unit:'reps',side=SIDES.has(details&&details.side)?details.side:null;if(!name||name.length>40)throw Error('Name must be 1–40 characters');if(side==='side'&&unit!=='sec')throw Error('Per-side timing requires seconds');let id;do{id=`custom_${Math.random().toString(36).slice(2,10)}`;}while(this.data.exercises.some(x=>x.id===id)||this.data.removedExercises.some(x=>x.id===id));const ex={id,name,unit,side};this.data.exercises.push(ex);this.persist();return{...ex};}
-    editExercise(id,updates){const ex=this.exercise(id);if(!ex)throw Error('Unknown exercise');const name=String(updates.name==null?ex.name:updates.name).trim(),unit=UNITS.has(updates.unit)?updates.unit:ex.unit,side=SIDES.has(updates.side)?updates.side:null;if(!name||name.length>40)throw Error('Name must be 1–40 characters');if(side==='side'&&unit!=='sec')throw Error('Per-side timing requires seconds');if(unit!==ex.unit||side!==ex.side)ex.progressionStartDate=this.today;else delete ex.progressionStartDate;ex.name=name;ex.unit=unit;ex.side=side;this.persist();return{...ex};}
-    removeExercise(id){const i=this.data.exercises.findIndex(x=>x.id===id);if(i<0)return false;this.data.removedExercises.push(this.data.exercises.splice(i,1)[0]);this.persist();return true;}
-    restoreExercise(id){const i=this.data.removedExercises.findIndex(x=>x.id===id);if(i<0)return false;this.data.exercises.push(this.data.removedExercises.splice(i,1)[0]);this.persist();return true;}
-    setDate(date){this.selectedDate=date;this.ensureRecord(date);this.persist();return this.getDay(date);}shiftDate(amount){return this.setDate(addDays(this.selectedDate,amount));}completedCount(date){const d=this.getDay(date);return this.data.exercises.filter(ex=>Number.isSafeInteger(d.actual[ex.id])).length;}
+    constructor(storage, now) {
+      this.storage = storage || { load: () => '', save: () => {} };
+      this.today = localToday(now);
+      this.selectedDate = this.today;
+      this.editingDates = new Set();
+      this.data = safeData(this.storage.load()) || {
+        schema: DATA_SCHEMA, progressionModelVersion: MODEL_VERSION, startDate: this.today,
+        exercises: EXERCISES.map(ex => ({ ...ex })), removedExercises: [], records: {}
+      };
+      this.data.startDate ||= this.today;
+      this.ensureRecord(this.today);
+      this.persist();
+    }
+    persist() { this.storage.save(JSON.stringify(this.data)); }
+    getExercises() { return this.data.exercises.map(ex => ({ ...ex })); }
+    getRemovedExercises() { return this.data.removedExercises.map(ex => ({ ...ex })); }
+    exercise(id) { return this.data.exercises.find(ex => ex.id === id); }
+    ensureRecord(date) {
+      if (!DATE_PATTERN.test(date)) throw new Error('Invalid date');
+      if (!this.data.records[date]) {
+        this.data.records[date] = {
+          actual: emptyMap(this.data.exercises), completed: false, targetAtTime: {},
+          lastAtTime: {}, baselineAtTime: {}, exerciseMeta: {}, legacy: false
+        };
+      }
+      return this.data.records[date];
+    }
+    latestPerformanceBefore(date, id) {
+      const exercise = this.exercise(id);
+      if (!exercise) return null;
+      let latest = null;
+      for (const [recordDate, record] of Object.entries(this.data.records)) {
+        if (recordDate >= date || !record.completed ||
+            (exercise.progressionStartDate && recordDate < exercise.progressionStartDate)) continue;
+        const actual = record.actual[id];
+        if (!Number.isSafeInteger(actual) || actual < 0) continue;
+        const meta = record.exerciseMeta[id];
+        if (meta && (meta.unit !== exercise.unit || meta.side !== exercise.side)) continue;
+        if (!latest || recordDate > latest.date) latest = { date: recordDate, actual };
+      }
+      return latest;
+    }
+    snapshotFor(date) {
+      const targets = emptyMap(this.data.exercises), lastActual = emptyMap(this.data.exercises);
+      for (const ex of this.data.exercises) {
+        const prior = this.latestPerformanceBefore(date, ex.id);
+        if (prior) { lastActual[ex.id] = prior.actual; targets[ex.id] = prior.actual + 1; }
+      }
+      return { targets, lastActual };
+    }
+    getDay(date) {
+      const record = this.ensureRecord(date);
+      const snapshot = record.completed
+        ? { targets: record.targetAtTime, lastActual: record.lastAtTime }
+        : this.snapshotFor(date);
+      const target = { ...emptyMap(this.data.exercises), ...snapshot.targets };
+      const lastActual = { ...emptyMap(this.data.exercises), ...snapshot.lastActual };
+      const baselineByExercise = record.completed
+        ? { ...cleanBaselineMap(record.baselineAtTime, target, this.data.exercises) }
+        : cleanBaselineMap(null, target, this.data.exercises);
+      return {
+        date, target, lastActual, baselineByExercise,
+        baseline: Object.values(baselineByExercise).some(Boolean),
+        actual: { ...emptyMap(this.data.exercises), ...record.actual },
+        completed: record.completed, locked: record.completed && !this.editingDates.has(date),
+        editing: this.editingDates.has(date), legacy: record.legacy,
+        exerciseMeta: cleanMeta(record.exerciseMeta, this.data.exercises)
+      };
+    }
+    setActual(date, id, raw) {
+      if (date > this.today) throw new Error('Future workouts are unavailable');
+      if (!this.exercise(id)) throw new Error('Unknown exercise');
+      const record = this.ensureRecord(date);
+      if (record.completed && !this.editingDates.has(date)) throw new Error('Unlock completed results first');
+      const text = String(raw == null ? '' : raw).trim();
+      if (text && !/^\d+$/.test(text)) throw new Error('Enter a whole number');
+      const value = text === '' ? null : Number(text);
+      if (value != null && (!Number.isSafeInteger(value) || value < 0)) throw new Error('Enter a valid whole number');
+      record.actual[id] = value;
+      this.persist();
+      return this.getDay(date);
+    }
+    finishDay(date) {
+      if (date > this.today) throw new Error('Future workouts are unavailable');
+      const record = this.ensureRecord(date);
+      if (record.completed) {
+        if (!this.editingDates.has(date)) throw new Error('Workout already complete');
+        this.editingDates.delete(date);
+      } else {
+        const snapshot = this.snapshotFor(date);
+        record.targetAtTime = { ...snapshot.targets };
+        record.lastAtTime = { ...snapshot.lastActual };
+        record.baselineAtTime = cleanBaselineMap(null, snapshot.targets, this.data.exercises);
+        record.exerciseMeta = cleanMeta(null, this.data.exercises);
+        record.completed = true;
+        record.legacy = false;
+      }
+      this.persist();
+      return this.getDay(date);
+    }
+    unlockDay(date) {
+      if (date > this.today || !this.ensureRecord(date).completed) throw new Error('No completed workout to edit');
+      this.editingDates.add(date);
+      return this.getDay(date);
+    }
+    setDate(date) {
+      if (!DATE_PATTERN.test(date)) throw new Error('Invalid date');
+      if (date > this.today) return this.getDay(this.selectedDate);
+      this.editingDates.clear();
+      this.selectedDate = date;
+      this.ensureRecord(date);
+      this.persist();
+      return this.getDay(date);
+    }
+    shiftDate(amount) { return this.setDate(addDays(this.selectedDate, amount)); }
+    refreshToday(now) {
+      const next = localToday(now);
+      if (next === this.today) return false;
+      const wasToday = this.selectedDate === this.today;
+      this.today = next;
+      if (wasToday) this.setDate(next);
+      return true;
+    }
+    completedCount(date) {
+      const day = this.getDay(date);
+      return this.data.exercises.filter(ex => Number.isSafeInteger(day.actual[ex.id])).length;
+    }
+    addExercise(details) {
+      const name = String(details && details.name || '').trim();
+      const unit = UNITS.has(details && details.unit) ? details.unit : 'reps';
+      const side = SIDES.has(details && details.side) ? details.side : null;
+      if (!name || name.length > 40) throw new Error('Name must be 1–40 characters');
+      if (side === 'side' && unit !== 'sec') throw new Error('Per-side timing requires seconds');
+      let id;
+      do { id = `custom_${Math.random().toString(36).slice(2, 10)}`; }
+      while (this.data.exercises.some(ex => ex.id === id) || this.data.removedExercises.some(ex => ex.id === id));
+      const exercise = { id, name, unit, side };
+      this.data.exercises.push(exercise);
+      this.persist();
+      return { ...exercise };
+    }
+    editExercise(id, updates) {
+      const exercise = this.exercise(id);
+      if (!exercise) throw new Error('Unknown exercise');
+      const name = String(updates.name == null ? exercise.name : updates.name).trim();
+      const unit = UNITS.has(updates.unit) ? updates.unit : exercise.unit;
+      const side = SIDES.has(updates.side) ? updates.side : null;
+      if (!name || name.length > 40) throw new Error('Name must be 1–40 characters');
+      if (side === 'side' && unit !== 'sec') throw new Error('Per-side timing requires seconds');
+      if (unit !== exercise.unit || side !== exercise.side) exercise.progressionStartDate = this.today;
+      exercise.name = name; exercise.unit = unit; exercise.side = side;
+      this.persist();
+      return { ...exercise };
+    }
+    removeExercise(id) {
+      const index = this.data.exercises.findIndex(ex => ex.id === id);
+      if (index < 0) return false;
+      this.data.removedExercises.push(this.data.exercises.splice(index, 1)[0]);
+      this.persist();
+      return true;
+    }
+    restoreExercise(id) {
+      const index = this.data.removedExercises.findIndex(ex => ex.id === id);
+      if (index < 0) return false;
+      this.data.exercises.push(this.data.removedExercises.splice(index, 1)[0]);
+      this.persist();
+      return true;
+    }
   }
-  return{MODEL_VERSION,DATA_SCHEMA,EXERCISES,addDays,localToday,targetLabel,resultLabel,adjustActual,safeData,TrainingModel};
+  return { MODEL_VERSION, DATA_SCHEMA, EXERCISES, addDays, localToday, targetLabel, resultLabel, adjustActual, safeData, TrainingModel };
 });

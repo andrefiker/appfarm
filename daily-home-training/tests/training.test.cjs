@@ -17,6 +17,12 @@ test('first launch exposes only the nine specified exercises and starting target
   const { model } = app();
   const day = model.getDay('2026-09-30');
   assert.equal(EXERCISES.length, 9);
+  assert.deepEqual(EXERCISES.map(ex => ex.name), [
+    'Jumping jacks', 'Full squat', 'Assisted single-leg squat',
+    'Standing calf raise', 'Normal push-ups', 'Glute bridge',
+    'Front plank', 'Side plank', 'Knee taps / high knees'
+  ]);
+  assert.equal(EXERCISES.some(ex => /backpack row/i.test(ex.name)), false);
   assert.deepEqual(day.target, BASE);
   assert.equal(day.target.singleSquat, 5);
   assert.equal(day.target.sidePlank, 15);

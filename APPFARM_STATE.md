@@ -101,7 +101,7 @@ Vercel:
 
 ## Current app releases
 
-- Daily Home Training v1.3.0: source commit `246d27a8982f088b7e3e70358f37f31686798e75`; package `com.andrefiker.dailyhometraining`, version code 4. Adds local exercise add/edit/remove/restore and a custom Android launcher icon; v1.2 schema migration requests one fresh baseline and preserves history. GitHub Actions run `36743828068` passed 26 tests and verified package/version, APK v2 signature, and no Internet permission. Physical-device visual QA was unavailable. APK and source are in Library as the current Daily Home Training deliverables. Rollback: `d5560d7d47d6495088341777ff194a1f271776d9` (v1.2.0).
+- Daily Home Training v1.4.0: source commit `73baf33db2a3528d90397bf3d796feff648204a1` on `main`; package `com.andrefiker.dailyhometraining`, version code 5. Per-exercise baselines, actual +1 goals, persistent drafts, one-tap goal logging, FINISH, locked historical results, blocked future dates, compact dark UI, and add/edit/remove/restore in `⋮ → Manage exercises`. GitHub Actions run `36751138500` passed 18 tests, APK assembly, package/version and v2 signature checks, and no Internet permission. APK and source archived as v1.4.0 deliverables. Emulator/physical-device visual QA was unavailable; scripted UI flow and static layout checks passed. Rollback: `246d27a8982f088b7e3e70358f37f31686798e75` (v1.3.0).
 
 ## Unresolved blockers / next reconciliation work
 

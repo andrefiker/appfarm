@@ -1,0 +1,32 @@
+:root {
+  color-scheme: dark;
+  --bg: #121314;
+  --panel: #1b1c1e;
+  --line: #2a2c2f;
+  --text: #f2f2f0;
+  --muted: #a1a3a5;
+  --accent: #c8d8c4;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+body { padding: 0 17px env(safe-area-inset-bottom); }
+.page { width: min(100%, 560px); margin: 0 auto; padding-bottom: 96px; }
+.topline { position: sticky; top: 0; z-index: 2; display: grid; grid-template-columns: 48px 1fr 48px; align-items: center; gap: 6px; padding: 12px 0 11px; background: var(--bg); border-bottom: 1px solid var(--line); }
+.date-arrow { width: 44px; height: 42px; border: 0; border-radius: 10px; color: var(--text); background: transparent; font-size: 30px; line-height: 1; }
+.date-arrow:active { background: var(--panel); }
+.date-label { text-align: center; font-size: 17px; font-weight: 600; letter-spacing: .01em; }
+.list { padding-top: 2px; }
+.exercise { padding: 13px 1px 12px; border-bottom: 1px solid var(--line); }
+.exercise-name { font-size: 16px; line-height: 1.25; font-weight: 570; }
+.details { margin-top: 3px; color: var(--muted); font-size: 12px; }
+.input-line { display: flex; align-items: center; gap: 10px; margin-top: 9px; min-height: 44px; }
+input { width: 104px; height: 44px; border: 1px solid #414448; border-radius: 9px; background: var(--panel); color: var(--text); padding: 0 12px; font: inherit; font-size: 17px; font-variant-numeric: tabular-nums; outline: none; }
+input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgb(200 216 196 / 14%); }
+input::-webkit-inner-spin-button, input::-webkit-outer-spin-button { margin: 0; -webkit-appearance: none; }
+.unit { color: var(--muted); font-size: 13px; }
+.progress { margin-left: auto; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.bottom { position: fixed; z-index: 3; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 12px; padding: 10px 17px max(12px, env(safe-area-inset-bottom)); background: linear-gradient(180deg, rgb(18 19 20 / 0%), var(--bg) 22%); }
+.save-status { flex: 1; min-width: 0; color: var(--muted); font-size: 12px; }
+.save-button { min-height: 48px; padding: 0 20px; border: 0; border-radius: 10px; background: var(--accent); color: #172019; font: inherit; font-size: 14px; font-weight: 750; letter-spacing: .04em; }
+.save-button:active { filter: brightness(.9); }
+@media (max-width: 360px) { body { padding-left: 13px; padding-right: 13px; } .exercise { padding: 11px 1px; } .exercise-name { font-size: 15px; } input { width: 92px; } }

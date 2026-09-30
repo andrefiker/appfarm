@@ -1,0 +1,56 @@
+name: Daily Home Training APK
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'daily-home-training/**'
+      - '.github/workflows/daily-home-training-apk.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+    defaults:
+      run:
+        working-directory: daily-home-training
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run progression and persistence tests
+        run: node --test tests/*.test.cjs
+      - name: Install Android 35
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-35' 'build-tools;35.0.0' >/dev/null
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Build and inspect APK
+        run: |
+          gradle --no-daemon :app:assembleDebug
+          mkdir -p dist
+          cp app/build/outputs/apk/debug/app-debug.apk dist/Daily-Home-Training.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging dist/Daily-Home-Training.apk | head -n 4
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose dist/Daily-Home-Training.apk
+          ! "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions dist/Daily-Home-Training.apk | grep -q 'android.permission.INTERNET'
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Daily-Home-Training
+          path: daily-home-training/dist/Daily-Home-Training.apk
+          if-no-files-found: error

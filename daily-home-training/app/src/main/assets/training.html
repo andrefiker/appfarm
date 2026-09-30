@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="theme-color" content="#121314">
+  <title>Daily Training</title>
+  <link rel="stylesheet" href="training.css">
+</head>
+<body>
+  <main class="page">
+    <header class="topline">
+      <button id="previous" class="date-arrow" type="button" aria-label="Previous day">‹</button>
+      <div id="date" class="date-label"></div>
+      <button id="next" class="date-arrow" type="button" aria-label="Next day">›</button>
+    </header>
+    <div class="list" id="exercise-list" aria-label="Today's exercises"></div>
+    <footer class="bottom">
+      <span id="save-status" class="save-status" aria-live="polite"></span>
+      <button id="save" class="save-button" type="button">SAVE TODAY</button>
+    </footer>
+  </main>
+  <script src="training.js"></script>
+  <script>
+    (function () {
+      const bridge = window.LocalLedger;
+      const storage = bridge ? {
+        load: () => bridge.load(),
+        save: value => bridge.save(value)
+      } : {
+        load: () => window.localStorage.getItem('daily-training-ledger') || '',
+        save: value => window.localStorage.setItem('daily-training-ledger', value)
+      };
+      const model = new TrainingModel.TrainingModel(storage);
+      const dateEl = document.getElementById('date');
+      const list = document.getElementById('exercise-list');
+      const status = document.getElementById('save-status');
+
+      function formatDate(key) {
+        const [y, m, d] = key.split('-').map(Number);
+        return new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(y, m - 1, d, 12));
+      }
+      function render() {
+        const day = model.getDay(model.selectedDate);
+        dateEl.textContent = formatDate(model.selectedDate);
+        list.replaceChildren();
+        for (const ex of TrainingModel.EXERCISES) {
+          const row = document.createElement('section');
+          row.className = 'exercise';
+          const title = document.createElement('div');
+          title.className = 'exercise-name';
+          title.textContent = ex.name;
+          const details = document.createElement('div');
+          details.className = 'details';
+          details.textContent = `Target: ${day.target[ex.id]} ${ex.side ? ex.side + ' ' : ''}${ex.unit}`;
+          const inputLine = document.createElement('div');
+          inputLine.className = 'input-line';
+          const input = document.createElement('input');
+          input.type = 'number';
+          input.inputMode = 'numeric';
+          input.min = '0';
+          input.step = '1';
+          input.autocomplete = 'off';
+          input.setAttribute('aria-label', `${ex.name}, completed ${ex.unit}${ex.side ? ' ' + ex.side : ''}`);
+          input.value = day.actual[ex.id] == null ? '' : String(day.actual[ex.id]);
+          input.placeholder = '0';
+          const unit = document.createElement('span');
+          unit.className = 'unit';
+          unit.textContent = ex.unit;
+          const progress = document.createElement('span');
+          progress.className = 'progress';
+          progress.textContent = `${day.actual[ex.id] == null ? '—' : day.actual[ex.id]} / ${day.target[ex.id]}`;
+          input.addEventListener('input', () => {
+            model.setActual(model.selectedDate, ex.id, input.value);
+            progress.textContent = `${input.value === '' ? '—' : input.value} / ${day.target[ex.id]}`;
+            status.textContent = model.getStatus(model.selectedDate);
+          });
+          inputLine.append(input, unit, progress);
+          row.append(title, details, inputLine);
+          list.append(row);
+        }
+        status.textContent = model.getStatus(model.selectedDate);
+      }
+
+      document.getElementById('previous').addEventListener('click', () => { model.shiftDate(-1); render(); });
+      document.getElementById('next').addEventListener('click', () => { model.shiftDate(1); render(); });
+      document.getElementById('save').addEventListener('click', () => { model.saveDay(model.selectedDate); render(); });
+      render();
+    })();
+  </script>
+</body>
+</html>

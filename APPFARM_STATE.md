@@ -99,6 +99,10 @@ Vercel:
 - Andre prefers Quiet Solitaire's portrait table design over Quiet Video Poker v1.0: brighter green felt, legible classic cards, clear hierarchy, compact controls, and a left-handed primary action. Apply the principle where it fits, rather than copying Solitaire's exact layout into every app.
 - Use actual playtesting for controls, responsiveness, safe areas, resume behavior, sound/haptics, fairness, and fast restart.
 
+## Current app releases
+
+- Daily Home Training v1.2.0: source commit `d5560d7d47d6495088341777ff194a1f271776d9`; package `com.andrefiker.dailyhometraining`, version code 3. Replaces target presets with a one-time baseline migration, then each exercise's next target is its most recent saved actual +1; blank results retain the previous performance, and explicit zero is valid. Historical saved target snapshots remain stable. GitHub Actions run `36727238683` passed 22 tests and verified package/version, APK v2 signature, and no Internet permission. Mobile emulator/device visual QA was unavailable. APK and source are in Library as the current Daily Home Training deliverables. Rollback: `52e68d2f16bc439d0d14c14f079f6ccd2b584e42` (v1.1.0).
+
 ## Unresolved blockers / next reconciliation work
 
 1. Locate or recover canonical source for late-September apps that were reported built but are absent from current GitHub default-branch evidence.

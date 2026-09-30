@@ -2,6 +2,8 @@
 
 A tiny offline Android checklist for the nine requested home exercises. No account, network permission, analytics, ads, or third-party services.
 
+Current release: **1.1.0** (`versionCode` 2). The compact screen uses inline steppers, direct numeric entry, completion checks, and a small next-day target preview after saving.
+
 ## Build
 
 From this directory with Android SDK 35 and Gradle 8.10.2 available:

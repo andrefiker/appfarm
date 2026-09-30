@@ -19,6 +19,15 @@
   const BY_ID = Object.fromEntries(EXERCISES.map(x => [x.id, x]));
   const BASE = Object.fromEntries(EXERCISES.map(x => [x.id, x.start]));
 
+  function targetLabel(exercise, target) {
+    if (exercise.side === 'per leg') return `Target ${target} / leg`;
+    if (exercise.side === 'per side') return `Target ${target} sec / side`;
+    return `Target ${target} ${exercise.unit}`;
+  }
+  function adjustActual(current, delta) {
+    return Math.max(0, (Number(current) || 0) + delta);
+  }
+
   function isoDate(date) {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -125,5 +134,5 @@
     }
   }
 
-  return { EXERCISES, BASE, addDays, localToday, TrainingModel };
+  return { EXERCISES, BASE, addDays, localToday, targetLabel, adjustActual, TrainingModel };
 });

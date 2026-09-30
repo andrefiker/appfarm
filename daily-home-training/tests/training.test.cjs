@@ -1,6 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { EXERCISES, BASE, TrainingModel } = require('../app/src/main/assets/training.js');
+const fs = require('node:fs');
+const path = require('node:path');
+const { EXERCISES, BASE, targetLabel, adjustActual, addDays, TrainingModel } = require('../app/src/main/assets/training.js');
 
 class MemoryStorage {
   value = '';
@@ -98,4 +100,35 @@ test('per-side entries use one-side targets and invalid values are ignored', () 
   assert.equal(model.getDay('2026-09-30').actual.sidePlank, 15);
   model.setActual('2026-09-30', 'squat', '-1');
   assert.equal(model.getDay('2026-09-30').actual.squat, null);
+});
+
+test('compact target language is correct and steppers clamp at zero', () => {
+  assert.equal(targetLabel(EXERCISES.find(x => x.id === 'singleSquat'), 5), 'Target 5 / leg');
+  assert.equal(targetLabel(EXERCISES.find(x => x.id === 'sidePlank'), 15), 'Target 15 sec / side');
+  assert.equal(targetLabel(EXERCISES.find(x => x.id === 'squat'), 10), 'Target 10 reps');
+  assert.equal(adjustActual(0, -1), 0);
+  assert.equal(adjustActual(12, -1), 11);
+  assert.equal(adjustActual(12, 1), 13);
+});
+
+test('tomorrow preview uses the saved progression and a failed target repeats', () => {
+  const { model } = app();
+  model.setActual('2026-09-30', 'squat', '10');
+  model.saveDay('2026-09-30');
+  assert.equal(model.getDay(addDays('2026-09-30', 1)).target.squat, 11);
+  model.setActual('2026-10-01', 'squat', '9');
+  model.saveDay('2026-10-01');
+  assert.equal(model.getDay(addDays('2026-10-01', 1)).target.squat, 11);
+});
+
+test('compact screen has direct-entry fields, stepper buttons, completion, preview, and pinned save', () => {
+  const html = fs.readFileSync(path.join(__dirname, '../app/src/main/assets/training.html'), 'utf8');
+  const css = fs.readFileSync(path.join(__dirname, '../app/src/main/assets/training.css'), 'utf8');
+  assert.match(html, /input\.type = 'number'/);
+  assert.match(html, /Decrease \$\{ex\.name\}/);
+  assert.match(html, /Increase \$\{ex\.name\}/);
+  assert.match(html, /row\.classList\.toggle\('is-complete', complete\)/);
+  assert.match(html, /model\.getDay\(TrainingModel\.addDays\(selectedDate, 1\)\)/);
+  assert.match(css, /\.bottom\s*\{[^}]*position:\s*fixed/s);
+  assert.match(css, /padding-bottom:\s*78px/);
 });

@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
   <meta name="theme-color" content="#121314">
   <title>Daily Training</title>
   <link rel="stylesheet" href="training.css">
 </head>
 <body>
   <main class="page">
-    <header class="topline">
+    <header class="topline" aria-label="Selected training day">
       <button id="previous" class="date-arrow" type="button" aria-label="Previous day">‹</button>
       <div id="date" class="date-label"></div>
       <button id="next" class="date-arrow" type="button" aria-label="Next day">›</button>
@@ -38,23 +38,42 @@
 
       function formatDate(key) {
         const [y, m, d] = key.split('-').map(Number);
-        return new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(y, m - 1, d, 12));
+        return new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).format(new Date(y, m - 1, d, 12));
       }
+
+      function paintValue(row, input, ex, target, value) {
+        const complete = Number.isInteger(value) && value >= target;
+        row.classList.toggle('is-complete', complete);
+        row.querySelector('.completion').textContent = complete ? '✓' : '';
+        input.setAttribute('aria-valuenow', value == null ? '0' : String(value));
+      }
+
       function render() {
-        const day = model.getDay(model.selectedDate);
-        dateEl.textContent = formatDate(model.selectedDate);
+        const selectedDate = model.selectedDate;
+        const day = model.getDay(selectedDate);
+        dateEl.textContent = formatDate(selectedDate);
         list.replaceChildren();
         for (const ex of TrainingModel.EXERCISES) {
+          const value = day.actual[ex.id];
           const row = document.createElement('section');
           row.className = 'exercise';
+          const info = document.createElement('div');
+          info.className = 'exercise-info';
           const title = document.createElement('div');
           title.className = 'exercise-name';
           title.textContent = ex.name;
           const details = document.createElement('div');
           details.className = 'details';
-          details.textContent = `Target: ${day.target[ex.id]} ${ex.side ? ex.side + ' ' : ''}${ex.unit}`;
-          const inputLine = document.createElement('div');
-          inputLine.className = 'input-line';
+          details.textContent = TrainingModel.targetLabel(ex, day.target[ex.id]);
+          info.append(title, details);
+
+          const controls = document.createElement('div');
+          controls.className = 'controls';
+          const minus = document.createElement('button');
+          minus.type = 'button';
+          minus.className = 'stepper';
+          minus.textContent = '−';
+          minus.setAttribute('aria-label', `Decrease ${ex.name}`);
           const input = document.createElement('input');
           input.type = 'number';
           input.inputMode = 'numeric';
@@ -62,24 +81,48 @@
           input.step = '1';
           input.autocomplete = 'off';
           input.setAttribute('aria-label', `${ex.name}, completed ${ex.unit}${ex.side ? ' ' + ex.side : ''}`);
-          input.value = day.actual[ex.id] == null ? '' : String(day.actual[ex.id]);
-          input.placeholder = '0';
-          const unit = document.createElement('span');
-          unit.className = 'unit';
-          unit.textContent = ex.unit;
-          const progress = document.createElement('span');
-          progress.className = 'progress';
-          progress.textContent = `${day.actual[ex.id] == null ? '—' : day.actual[ex.id]} / ${day.target[ex.id]}`;
-          input.addEventListener('input', () => {
-            model.setActual(model.selectedDate, ex.id, input.value);
-            progress.textContent = `${input.value === '' ? '—' : input.value} / ${day.target[ex.id]}`;
-            status.textContent = model.getStatus(model.selectedDate);
+          input.setAttribute('role', 'spinbutton');
+          input.value = value == null ? '0' : String(value);
+          const plus = document.createElement('button');
+          plus.type = 'button';
+          plus.className = 'stepper';
+          plus.textContent = '+';
+          plus.setAttribute('aria-label', `Increase ${ex.name}`);
+          const check = document.createElement('span');
+          check.className = 'completion';
+          check.setAttribute('aria-label', 'Target reached');
+          controls.append(minus, input, plus, check);
+
+          const preview = document.createElement('div');
+          preview.className = 'tomorrow';
+          if (day.saved) {
+            const next = model.getDay(TrainingModel.addDays(selectedDate, 1)).target[ex.id];
+            preview.textContent = `Tomorrow ${next}${ex.side === 'per leg' ? ' / leg' : ex.side === 'per side' ? ' sec / side' : ` ${ex.unit}`}`;
+          }
+
+          const change = raw => {
+            model.setActual(selectedDate, ex.id, raw);
+            const current = model.getDay(selectedDate);
+            paintValue(row, input, ex, current.target[ex.id], current.actual[ex.id]);
+            status.textContent = model.getStatus(selectedDate);
+            status.className = 'save-status unsaved';
+            preview.textContent = '';
+          };
+          input.addEventListener('input', () => change(input.value));
+          minus.addEventListener('click', () => {
+            input.value = String(TrainingModel.adjustActual(input.value, -1));
+            change(input.value);
           });
-          inputLine.append(input, unit, progress);
-          row.append(title, details, inputLine);
+          plus.addEventListener('click', () => {
+            input.value = String(TrainingModel.adjustActual(input.value, 1));
+            change(input.value);
+          });
+          paintValue(row, input, ex, day.target[ex.id], value);
+          row.append(info, controls, preview);
           list.append(row);
         }
-        status.textContent = model.getStatus(model.selectedDate);
+        status.textContent = model.getStatus(selectedDate);
+        status.className = `save-status ${day.saved ? 'saved' : 'unsaved'}`;
       }
 
       document.getElementById('previous').addEventListener('click', () => { model.shiftDate(-1); render(); });

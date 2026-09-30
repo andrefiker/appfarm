@@ -1,198 +1,61 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-  <meta name="theme-color" content="#111315">
-  <title>Daily Training</title>
-  <link rel="stylesheet" href="training.css">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#111315"><title>Daily Training</title><link rel="stylesheet" href="training.css">
 </head>
 <body>
   <main class="page">
     <header class="topline" aria-label="Selected training day">
       <button id="previous" class="date-arrow" type="button" aria-label="Previous day">‹</button>
-      <div id="date" class="date-label"></div>
-      <div id="count" class="day-count" aria-live="polite">0/9</div>
+      <div id="date" class="date-label"></div><div id="count" class="day-count" aria-live="polite">0/9</div>
       <button id="next" class="date-arrow" type="button" aria-label="Next day">›</button>
+      <button id="manage" class="manage-button" type="button">Edit</button>
     </header>
     <div class="list" id="exercise-list" aria-label="Today's exercises"></div>
-    <footer class="bottom">
-      <span id="save-status" class="save-status" aria-live="polite"></span>
-      <button id="save" class="save-button" type="button">SAVE</button>
-    </footer>
+    <footer class="bottom"><span id="save-status" class="save-status" aria-live="polite"></span><button id="save" class="save-button" type="button">SAVE</button></footer>
   </main>
-  <script src="training.js"></script>
-  <script>
+  <section id="manager" class="sheet" hidden aria-labelledby="manager-title">
+    <div class="sheet-panel">
+      <div class="sheet-heading"><div><h1 id="manager-title">Exercises</h1><p>Keep the list that works for you.</p></div><button id="close-manager" class="icon-button" type="button" aria-label="Close">×</button></div>
+      <div id="manager-active" class="manager-list"></div>
+      <button id="add-exercise" class="add-button" type="button">＋ Add exercise</button>
+      <div id="removed-wrap" class="removed-wrap" hidden><div class="section-label">Removed</div><div id="manager-removed" class="manager-list"></div></div>
+    </div>
+  </section>
+  <section id="editor" class="sheet" hidden aria-labelledby="editor-title">
+    <form id="exercise-form" class="sheet-panel editor-panel">
+      <div class="sheet-heading"><div><h1 id="editor-title">Add exercise</h1><p>Set the name and how you record it.</p></div><button id="cancel-editor-x" class="icon-button" type="button" aria-label="Close">×</button></div>
+      <label class="field-label" for="exercise-name">Name</label><input id="exercise-name" class="text-field" maxlength="40" required autocomplete="off">
+      <div class="field-pair"><label class="field-label">Unit<select id="exercise-unit" class="select-field"><option value="reps">Reps</option><option value="sec">Seconds</option></select></label>
+      <label class="field-label">Count each<select id="exercise-side" class="select-field"><option value="none">Once</option><option value="leg">Per leg</option><option value="side">Per side</option></select></label></div>
+      <p id="editor-error" class="editor-error" aria-live="polite"></p>
+      <div class="form-actions"><button id="cancel-editor" class="text-button" type="button">Cancel</button><button class="save-button" type="submit">SAVE</button></div>
+    </form>
+  </section>
+  <script src="training.js"></script><script>
     (function () {
-      const bridge = window.LocalLedger;
-      const storage = bridge ? {
-        load: () => bridge.load(),
-        save: value => bridge.save(value)
-      } : {
-        load: () => window.localStorage.getItem('daily-training-ledger') || '',
-        save: value => window.localStorage.setItem('daily-training-ledger', value)
-      };
-      const model = new TrainingModel.TrainingModel(storage);
-      const dateEl = document.getElementById('date');
-      const countEl = document.getElementById('count');
-      const list = document.getElementById('exercise-list');
-      const status = document.getElementById('save-status');
-      let savedTimer = 0;
-
-      function formatDate(key) {
-        const [y, m, d] = key.split('-').map(Number);
-        return new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).format(new Date(y, m - 1, d, 12));
-      }
-      function haptic(kind) {
-        try { if (bridge && typeof bridge[kind] === 'function') bridge[kind](); } catch (_) {}
-      }
-      function unitSuffix(ex) {
-        if (ex.side === 'leg') return ' / leg';
-        if (ex.side === 'side') return ' sec / side';
-        return ex.unit === 'sec' ? ' sec' : '';
-      }
-      function feedbackText(day, ex, nextTarget) {
-        const actual = day.actual[ex.id];
-        if (day.saved && day.legacy) return 'Saved history · baseline reset';
-        if (day.saved) {
-          if (Number.isSafeInteger(actual)) return `Done ${actual}${unitSuffix(ex)} · Next ${nextTarget == null ? 'baseline' : `${nextTarget}${unitSuffix(ex)}`}`;
-          return `Skipped · Next ${nextTarget == null ? 'baseline' : `${nextTarget}${unitSuffix(ex)}`}`;
-        }
-        if (Number.isSafeInteger(actual) && Number.isSafeInteger(day.target[ex.id]) && actual >= day.target[ex.id]) {
-          const extra = actual - day.target[ex.id];
-          return `✓ ${actual}${extra ? ` · +${extra}` : ''}`;
-        }
-        return '';
-      }
-      function updateRow(row, input, ex, day, nextTarget) {
-        const value = day.actual[ex.id];
-        const goal = day.target[ex.id];
-        const complete = Number.isSafeInteger(goal) && Number.isSafeInteger(value) && value >= goal;
-        const above = complete && value > goal;
-        row.classList.toggle('is-complete', complete);
-        row.classList.toggle('is-above', above);
-        row.classList.toggle('is-empty', value == null);
-        row.querySelector('.completion').textContent = complete ? '✓' : '';
-        row.querySelector('.feedback').textContent = feedbackText(day, ex, nextTarget);
-        input.setAttribute('aria-valuenow', value == null ? '' : String(value));
-      }
-      function render() {
-        const selectedDate = model.selectedDate;
-        const day = model.getDay(selectedDate);
-        const nextDay = model.getDay(TrainingModel.addDays(selectedDate, 1));
-        dateEl.textContent = formatDate(selectedDate);
-        const completed = model.completedCount(selectedDate);
-        countEl.textContent = `${completed}/9`;
-        countEl.setAttribute('aria-label', `${completed} of 9 exercises entered`);
-        list.replaceChildren();
-
-        for (const ex of TrainingModel.EXERCISES) {
-          const value = day.actual[ex.id];
-          const goal = day.target[ex.id];
-          const last = day.lastActual[ex.id];
-          const row = document.createElement('section');
-          row.className = 'exercise';
-
-          const info = document.createElement('div');
-          info.className = 'exercise-info';
-          const title = document.createElement('div');
-          title.className = 'exercise-name';
-          title.textContent = ex.name;
-          const canFillGoal = Number.isSafeInteger(goal) && !day.baseline && !day.saved;
-          const targetLine = document.createElement(canFillGoal ? 'button' : 'div');
-          targetLine.className = 'target-line';
-          if (targetLine.tagName === 'BUTTON') {
-            targetLine.type = 'button';
-            targetLine.setAttribute('aria-label', `Fill ${ex.name} goal ${goal}${unitSuffix(ex)}`);
-          }
-          targetLine.textContent = TrainingModel.targetLabel(ex, goal, last, day.baseline);
-          const feedback = document.createElement('div');
-          feedback.className = 'feedback';
-          info.append(title, targetLine, feedback);
-
-          const controls = document.createElement('div');
-          controls.className = 'controls';
-          const minus = document.createElement('button');
-          minus.type = 'button';
-          minus.className = 'stepper';
-          minus.textContent = '−';
-          minus.setAttribute('aria-label', `Decrease ${ex.name}`);
-          const input = document.createElement('input');
-          input.type = 'number';
-          input.inputMode = 'numeric';
-          input.min = '0';
-          input.step = '1';
-          input.autocomplete = 'off';
-          input.enterKeyHint = 'done';
-          input.setAttribute('aria-label', `${ex.name}, completed ${ex.unit}${unitSuffix(ex)}`);
-          input.setAttribute('role', 'spinbutton');
-          input.value = value == null ? '' : String(value);
-          input.placeholder = '';
-          const plus = document.createElement('button');
-          plus.type = 'button';
-          plus.className = 'stepper';
-          plus.textContent = '+';
-          plus.setAttribute('aria-label', `Increase ${ex.name}`);
-          const check = document.createElement('span');
-          check.className = 'completion';
-          check.setAttribute('aria-label', 'Target reached');
-          controls.append(minus, input, plus, check);
-          row.append(info, controls);
-
-          const change = (raw, tactile = false) => {
-            model.setActual(selectedDate, ex.id, raw);
-            if (tactile) haptic('tick');
-            const current = model.getDay(selectedDate);
-            updateRow(row, input, ex, current, model.getDay(TrainingModel.addDays(selectedDate, 1)).target[ex.id]);
-            updateBottom(current);
-          };
-          input.addEventListener('input', () => change(input.value));
-          input.addEventListener('change', () => {
-            const current = model.getDay(selectedDate);
-            if (current.actual[ex.id] == null) input.value = '';
-          });
-          minus.addEventListener('click', () => {
-            const next = TrainingModel.adjustActual(input.value, -1);
-            if (next == null) return;
-            input.value = String(next);
-            change(input.value, true);
-          });
-          plus.addEventListener('click', () => {
-            input.value = String(TrainingModel.adjustActual(input.value, 1));
-            change(input.value, true);
-          });
-          targetLine.addEventListener('click', () => {
-            if (!canFillGoal) return;
-            input.value = String(goal);
-            change(input.value, true);
-          });
-          updateRow(row, input, ex, day, nextDay.target[ex.id]);
-          list.append(row);
-        }
-        updateBottom(day);
-      }
-      function updateBottom(day) {
-        const n = model.completedCount(model.selectedDate);
-        countEl.textContent = `${n}/9`;
-        countEl.setAttribute('aria-label', `${n} of 9 exercises entered`);
-        if (day.saved && savedTimer) status.textContent = 'TODAY SAVED ✓';
-        else if (day.saved) status.textContent = 'Saved ✓';
-        else if (day.baseline) status.textContent = `Baseline · ${n}/9 entered`;
-        else status.textContent = `${n}/9 completed`;
-        status.className = `save-status ${day.saved ? 'saved' : ''}`;
-      }
-
-      document.getElementById('previous').addEventListener('click', () => { model.shiftDate(-1); render(); });
-      document.getElementById('next').addEventListener('click', () => { model.shiftDate(1); render(); });
-      document.getElementById('save').addEventListener('click', () => {
-        model.saveDay(model.selectedDate);
-        haptic('saved');
-        clearTimeout(savedTimer);
-        savedTimer = setTimeout(() => { savedTimer = 0; render(); }, 1400);
-        render();
-      });
-      render();
+      const bridge=window.LocalLedger, storage=bridge?{load:()=>bridge.load(),save:v=>bridge.save(v)}:{load:()=>localStorage.getItem('daily-training-ledger')||'',save:v=>localStorage.setItem('daily-training-ledger',v)};
+      const model=new TrainingModel.TrainingModel(storage), $=id=>document.getElementById(id), dateEl=$('date'),countEl=$('count'),list=$('exercise-list'),status=$('save-status');let savedTimer=0,editingId=null;
+      function formatDate(key){const [y,m,d]=key.split('-').map(Number);return new Intl.DateTimeFormat(undefined,{weekday:'short',month:'short',day:'numeric'}).format(new Date(y,m-1,d,12));}
+      function haptic(kind){try{if(bridge&&typeof bridge[kind]==='function')bridge[kind]();}catch(_){}}
+      function unitSuffix(ex){return ex.side==='leg'?' / leg':ex.side==='side'?' sec / side':ex.unit==='sec'?' sec':'';}
+      function feedbackText(day,ex,nextTarget){const v=day.actual[ex.id],g=day.target[ex.id],s=unitSuffix(ex);if(day.saved&&day.legacy)return'Saved history';if(day.saved)return Number.isSafeInteger(v)?`Done ${v}${s} · Next ${nextTarget==null?'baseline':`${nextTarget}${s}`}`:`Skipped · Next ${nextTarget==null?'baseline':`${nextTarget}${s}`}`;if(Number.isSafeInteger(v)&&Number.isSafeInteger(g)&&v>=g)return`✓ ${v}${s}${v>g?` · +${v-g}`:''}`;return'';}
+      function updateBottom(day){const n=model.completedCount(model.selectedDate),total=model.getExercises().length;countEl.textContent=`${n}/${total}`;countEl.setAttribute('aria-label',`${n} of ${total} exercises entered`);if(day.saved&&savedTimer)status.textContent='TODAY SAVED ✓';else if(day.saved)status.textContent='Saved ✓';else if(day.baseline)status.textContent=`Baseline · ${n}/${total}`;else status.textContent=`${n}/${total} entered`;status.className=`save-status ${day.saved?'saved':''}`;}
+      function render(){const date=model.selectedDate,day=model.getDay(date),tomorrow=model.getDay(TrainingModel.addDays(date,1)),exercises=model.getExercises();dateEl.textContent=formatDate(date);list.replaceChildren();for(const currentEx of exercises){const ex=day.saved&&day.exerciseMeta[currentEx.id]?{...currentEx,...day.exerciseMeta[currentEx.id]}:currentEx;const value=day.actual[ex.id],goal=day.target[ex.id],last=day.lastActual[ex.id],row=document.createElement('section');row.className='exercise';const info=document.createElement('div');info.className='exercise-info';const title=document.createElement('div');title.className='exercise-name';title.textContent=ex.name;const canFill=Number.isSafeInteger(goal)&&!day.baseline&&!day.saved;const target=document.createElement(canFill?'button':'div');target.className='target-line';if(canFill){target.type='button';target.setAttribute('aria-label',`Fill ${ex.name} goal ${goal}${unitSuffix(ex)}`);}target.textContent=TrainingModel.targetLabel(ex,goal,last,day.baseline);const feedback=document.createElement('div');feedback.className='feedback';info.append(title,target,feedback);
+        const controls=document.createElement('div');controls.className='controls';const minus=document.createElement('button');minus.type='button';minus.className='stepper';minus.textContent='−';minus.setAttribute('aria-label',`Decrease ${ex.name}`);const input=document.createElement('input');input.type = 'number';input.inputMode='numeric';input.min='0';input.step='1';input.autocomplete='off';input.enterKeyHint='done';input.setAttribute('aria-label',`${ex.name}, completed ${ex.unit}${unitSuffix(ex)}`);input.setAttribute('role','spinbutton');input.value=value==null?'':String(value);const plus=document.createElement('button');plus.type='button';plus.className='stepper';plus.textContent='+';plus.setAttribute('aria-label',`Increase ${ex.name}`);const check=document.createElement('span');check.className='completion';controls.append(minus,input,plus,check);row.append(info,controls);
+        const change=(raw,tactile=false)=>{model.setActual(date,ex.id,raw);if(tactile)haptic('tick');const current=model.getDay(date),v=current.actual[ex.id],g=current.target[ex.id],complete=Number.isSafeInteger(g)&&Number.isSafeInteger(v)&&v>=g;row.classList.toggle('is-complete',complete);row.classList.toggle('is-above',complete&&v>g);row.classList.toggle('is-empty',v==null);check.textContent=complete?'✓':'';feedback.textContent=feedbackText(current,ex,model.getDay(TrainingModel.addDays(date,1)).target[ex.id]);input.setAttribute('aria-valuenow',v==null?'':String(v));updateBottom(current);};
+        input.addEventListener('input',()=>change(input.value));input.addEventListener('change',()=>{if(model.getDay(date).actual[ex.id]==null)input.value='';});minus.addEventListener('click',()=>{const n=TrainingModel.adjustActual(input.value,-1);if(n==null)return;input.value=String(n);change(input.value,true);});plus.addEventListener('click',()=>{input.value=String(TrainingModel.adjustActual(input.value,1));change(input.value,true);});target.addEventListener('click',()=>{if(!canFill)return;input.value=String(goal);change(input.value,true);});
+        row.classList.toggle('is-empty',value==null);const complete=Number.isSafeInteger(goal)&&Number.isSafeInteger(value)&&value>=goal;row.classList.toggle('is-complete',complete);row.classList.toggle('is-above',complete&&value>goal);check.textContent=complete?'✓':'';feedback.textContent=feedbackText(day,ex,tomorrow.target[ex.id]);list.append(row);}
+        updateBottom(day);}
+      function openManager(){renderManager();$('manager').hidden=false;}
+      function renderManager(){const active=$('manager-active'),removed=$('manager-removed');active.replaceChildren();removed.replaceChildren();for(const ex of model.getExercises()){const row=document.createElement('div');row.className='manage-row';const name=document.createElement('span');name.className='manage-name';name.textContent=ex.name;const edit=document.createElement('button');edit.type='button';edit.className='text-button';edit.textContent='Edit';edit.addEventListener('click',()=>openEditor(ex));const remove=document.createElement('button');remove.type='button';remove.className='text-button danger';remove.textContent='Remove';remove.addEventListener('click',()=>{if(remove.dataset.confirm==='yes'){model.removeExercise(ex.id);render();renderManager();}else{remove.dataset.confirm='yes';remove.textContent='Confirm';}});row.append(name,edit,remove);active.append(row);}for(const ex of model.getRemovedExercises()){const row=document.createElement('div');row.className='manage-row';const name=document.createElement('span');name.className='manage-name removed-name';name.textContent=ex.name;const restore=document.createElement('button');restore.type='button';restore.className='text-button';restore.textContent='Restore';restore.addEventListener('click',()=>{model.restoreExercise(ex.id);render();renderManager();});row.append(name,restore);removed.append(row);} $('removed-wrap').hidden=model.getRemovedExercises().length===0;}
+      function openEditor(ex){editingId=ex?ex.id:null;$('editor-title').textContent=ex?'Edit exercise':'Add exercise';$('exercise-name').value=ex?ex.name:'';$('exercise-unit').value=ex?ex.unit:'reps';$('exercise-side').value=ex&&ex.side?ex.side:'none';$('editor-error').textContent='';$('manager').hidden=true;$('editor').hidden=false;$('exercise-name').focus();}
+      function closeEditor(){ $('editor').hidden=true;editingId=null;openManager(); }
+      $('previous').addEventListener('click',()=>{model.shiftDate(-1);render();});$('next').addEventListener('click',()=>{model.shiftDate(1);render();});$('manage').addEventListener('click',openManager);$('close-manager').addEventListener('click',()=>$('manager').hidden=true);$('add-exercise').addEventListener('click',()=>openEditor(null));$('cancel-editor').addEventListener('click',closeEditor);$('cancel-editor-x').addEventListener('click',closeEditor);
+      $('exercise-unit').addEventListener('change',()=>{if($('exercise-unit').value!=='sec'&&$('exercise-side').value==='side')$('exercise-side').value='none';});
+      $('exercise-form').addEventListener('submit',event=>{event.preventDefault();try{const detail={name:$('exercise-name').value,unit:$('exercise-unit').value,side:$('exercise-side').value==='none'?null:$('exercise-side').value};if(editingId)model.editExercise(editingId,detail);else model.addExercise(detail);$('editor').hidden=true;editingId=null;render();openManager();}catch(err){$('editor-error').textContent=err.message;}});
+      $('save').addEventListener('click',()=>{model.saveDay(model.selectedDate);haptic('saved');clearTimeout(savedTimer);savedTimer=setTimeout(()=>{savedTimer=0;render();},1400);render();});render();
     })();
   </script>
-</body>
-</html>
+</body></html>

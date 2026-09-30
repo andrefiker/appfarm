@@ -31,13 +31,14 @@ function legacyStorage(records, startDate = '2026-09-01') {
 }
 
 class FakeElement {
-  constructor(tagName = 'div') { this.tagName = tagName.toUpperCase(); this.children = []; this.listeners = {}; this.attributes = {}; this.value = ''; this.className = ''; this._text = ''; }
+  constructor(tagName = 'div') { this.tagName = tagName.toUpperCase(); this.children = []; this.listeners = {}; this.attributes = {}; this.dataset = {}; this.value = ''; this.className = ''; this._text = ''; this.hidden = false; }
   append(...items) { this.children.push(...items); }
   replaceChildren(...items) { this.children = [...items]; }
   setAttribute(key, value) { this.attributes[key] = String(value); }
   addEventListener(name, callback) { (this.listeners[name] ||= []).push(callback); }
   fire(name) { for (const callback of this.listeners[name] || []) callback({ target: this }); }
   click() { this.fire('click'); }
+  focus() {}
   set textContent(value) { this._text = String(value); }
   get textContent() { return this._text; }
   get classList() {
@@ -150,8 +151,8 @@ test('single-leg squat and side plank each progress by one per side', () => {
   const next = model.getDay('2026-10-01');
   assert.equal(next.target.singleSquat, 7);
   assert.equal(next.target.sidePlank, 23);
-  assert.equal(targetLabel(EXERCISES.find(ex => ex.id === 'singleSquat'), 7, 6), 'Goal 7 / leg · Last 6 / leg');
-  assert.equal(targetLabel(EXERCISES.find(ex => ex.id === 'sidePlank'), 23, 22), 'Goal 23 sec / side · Last 22 sec / side');
+  assert.equal(targetLabel(EXERCISES.find(ex => ex.id === 'singleSquat'), 7, 6), 'Last 6 / leg  →  Goal 7 / leg');
+  assert.equal(targetLabel(EXERCISES.find(ex => ex.id === 'sidePlank'), 23, 22), 'Last 22 sec / side  →  Goal 23 sec / side');
   assert.equal(resultLabel(EXERCISES.find(ex => ex.id === 'sidePlank'), 22), '22 sec / side');
 });
 
@@ -168,6 +169,24 @@ test('v1 migration preserves saved history but resets the active engine for one 
   assert.equal(baseline.baseline, true);
   assert.equal(baseline.target.squat, null); // old target 40 cannot control the new model
   assert.equal(model.data.baselinePending, true);
+});
+
+test('v1.2 schema migration requests exactly one new baseline and preserves old records', () => {
+  const storage = new MemoryStorage();
+  storage.save(JSON.stringify({
+    schema: 2, progressionModelVersion: 2, startDate: '2026-09-01', migrationDate: '2026-09-01',
+    baselinePending: false, baselineDate: '2026-09-02',
+    records: { '2026-09-29': { actual: { squat: 18 }, saved: true, targetAtTime: { squat: 18 }, lastAtTime: { squat: 17 }, baseline: false } }
+  }));
+  let model = app(storage).model;
+  assert.equal(model.data.baselinePending, true);
+  assert.equal(model.getDay('2026-09-29').actual.squat, 18);
+  assert.equal(model.getDay('2026-09-30').baseline, true);
+  assert.equal(model.getDay('2026-09-30').target.squat, null);
+  fillBaseline(model, '2026-09-30', { squat: 6 });
+  model = app(storage).model;
+  assert.equal(model.data.baselinePending, false);
+  assert.equal(model.getDay('2026-10-01').target.squat, 7);
 });
 
 test('migration is persisted once; restart keeps the completed baseline and +1 target', () => {
@@ -259,13 +278,48 @@ test('empty plus starts at one and minus never goes below zero', () => {
   assert.equal(adjustActual(13, -1), 12);
 });
 
+test('custom exercise add, edit, remove, restore, and persistence preserve its progression', () => {
+  const { model, storage } = app();
+  fillBaseline(model, '2026-09-30', { squat: 10 });
+  const custom = model.addExercise({ name: 'Wall sit', unit: 'sec', side: null });
+  assert.equal(model.getExercises().length, 10);
+  model.setActual('2026-09-30', custom.id, '22');
+  model.saveDay('2026-09-30');
+  assert.equal(model.getDay('2026-10-01').target[custom.id], 23);
+  model.editExercise(custom.id, { name: 'Wall squat hold', unit: 'sec', side: null });
+  assert.equal(model.getExercises().find(ex => ex.id === custom.id).name, 'Wall squat hold');
+  assert.equal(model.removeExercise(custom.id), true);
+  assert.equal(model.getExercises().some(ex => ex.id === custom.id), false);
+  assert.equal(model.getRemovedExercises().some(ex => ex.id === custom.id), true);
+  let restarted = new TrainingModel(storage, new Date(2026, 9, 1, 10));
+  assert.equal(restarted.getRemovedExercises().some(ex => ex.id === custom.id), true);
+  restarted.restoreExercise(custom.id);
+  assert.equal(restarted.getDay('2026-10-01').target[custom.id], 23);
+  assert.equal(restarted.data.records['2026-09-30'].actual[custom.id], 22);
+});
+
+test('changing exercise unit keeps past snapshots but starts a fresh target lineage', () => {
+  const { model } = app();
+  fillBaseline(model, '2026-09-30', { squat: 18 });
+  model.editExercise('squat', { name: 'Full squat', unit: 'sec', side: null });
+  assert.equal(model.getDay('2026-10-01').target.squat, null);
+  model.setActual('2026-10-01', 'squat', '25');
+  model.saveDay('2026-10-01');
+  assert.equal(model.getDay('2026-10-02').target.squat, 26);
+  assert.equal(model.getDay('2026-09-30').target.squat, null);
+});
+
 test('compact screen includes target tap, progress count, haptics, reduced motion, and pinned save', () => {
   const html = fs.readFileSync(path.join(__dirname, '../app/src/main/assets/training.html'), 'utf8');
   const css = fs.readFileSync(path.join(__dirname, '../app/src/main/assets/training.css'), 'utf8');
   const java = fs.readFileSync(path.join(__dirname, '../app/src/main/java/com/andrefiker/dailyhometraining/MainActivity.java'), 'utf8');
-  assert.match(html, /input\.type = 'number'/);
-  assert.match(html, /targetLine\.addEventListener\('click'/);
-  assert.match(html, /countEl\.textContent = `\$\{completed\}\/9`/);
+  assert.match(html, /input\.type\s*=\s*'number'/);
+  assert.match(html, /target\.addEventListener\('click'/);
+  assert.match(html, /countEl\.textContent=`\$\{n\}\/\$\{total\}`/);
+  assert.match(html, /model\.addExercise\(detail\)/);
+  assert.match(html, /model\.editExercise\(editingId,detail\)/);
+  assert.match(html, /model\.removeExercise\(ex\.id\)/);
+  assert.match(html, /model\.restoreExercise\(ex\.id\)/);
   assert.match(html, /haptic\('tick'\)/);
   assert.match(html, /haptic\('saved'\)/);
   assert.match(html, /SAVE/);
@@ -279,7 +333,7 @@ test('compact screen includes target tap, progress count, haptics, reduced motio
 test('screen renders and target tap, steppers, baseline save, and next-day goal work together', () => {
   const html = fs.readFileSync(path.join(__dirname, '../app/src/main/assets/training.html'), 'utf8');
   const inline = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)][0][1];
-  const ids = ['date', 'count', 'exercise-list', 'save-status', 'previous', 'next', 'save'];
+  const ids = ['date','count','exercise-list','save-status','previous','next','save','manage','manager','close-manager','manager-active','manager-removed','removed-wrap','add-exercise','editor','exercise-form','editor-title','exercise-name','exercise-unit','exercise-side','editor-error','cancel-editor','cancel-editor-x'];
   const elements = Object.fromEntries(ids.map(id => [id, new FakeElement(id === 'save' || id === 'previous' || id === 'next' ? 'button' : 'div')]));
   const storage = new MemoryStorage();
   const haptics = { tick: 0, saved: 0 };
@@ -317,7 +371,7 @@ test('screen renders and target tap, steppers, baseline save, and next-day goal 
   assert.equal(haptics.saved, 1);
   elements.next.click();
   const nextSquat = elements['exercise-list'].children[1];
-  assert.match(nextSquat.querySelector('.target-line').textContent, /Goal 11 · Last 10/);
+  assert.match(nextSquat.querySelector('.target-line').textContent, /Last 10\s+→\s+Goal 11/);
   nextSquat.querySelector('.target-line').click();
   assert.equal(nextSquat.children[1].children[1].value, '11');
   assert.equal(nextSquat.classList.contains('is-complete'), true);

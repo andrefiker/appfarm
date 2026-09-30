@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.graphics.Color;
 import android.view.View;
+import android.view.HapticFeedbackConstants;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -18,12 +19,12 @@ public final class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setStatusBarColor(Color.rgb(18, 19, 20));
-        getWindow().setNavigationBarColor(Color.rgb(18, 19, 20));
+        getWindow().setStatusBarColor(Color.rgb(17, 19, 21));
+        getWindow().setNavigationBarColor(Color.rgb(17, 19, 21));
         getWindow().getDecorView().setSystemUiVisibility(0);
 
         webView = new WebView(this);
-        webView.setBackgroundColor(Color.rgb(18, 19, 20));
+        webView.setBackgroundColor(Color.rgb(17, 19, 21));
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
@@ -64,6 +65,19 @@ public final class MainActivity extends Activity {
             if (json != null && json.length() <= 2000000) {
                 preferences.edit().putString("ledger", json).commit();
             }
+        }
+
+        @JavascriptInterface
+        public void tick() {
+            if (webView != null) webView.post(() -> webView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP));
+        }
+
+        @JavascriptInterface
+        public void saved() {
+            if (webView != null) webView.post(() -> webView.performHapticFeedback(
+                    android.os.Build.VERSION.SDK_INT >= 30
+                            ? HapticFeedbackConstants.CONFIRM
+                            : HapticFeedbackConstants.CONTEXT_CLICK));
         }
     }
 }

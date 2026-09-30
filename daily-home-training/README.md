@@ -2,7 +2,7 @@
 
 A tiny offline Android checklist for the nine requested home exercises. No account, network permission, analytics, ads, or third-party services.
 
-Current release: **1.1.0** (`versionCode` 2). The compact screen uses inline steppers, direct numeric entry, completion checks, and a small next-day target preview after saving.
+Current release: **1.2.0** (`versionCode` 3). The compact screen uses inline steppers, direct numeric entry, one-tap goal fill, haptic feedback, a baseline pass, and previous-result +1 progression.
 
 ## Build
 
@@ -24,8 +24,8 @@ The app stores its small JSON ledger in Android `SharedPreferences`. The WebView
 
 ## Behavior
 
-- First launch starts on the device's local calendar date with the specified initial targets.
-- Each exercise progresses independently on the day after a saved day where its completed amount meets its target.
-- Blank days and missed targets keep the next target unchanged; caps limit targets only.
-- Per-leg and per-side amounts are entered as the amount for one side.
-- Daily values and target snapshots remain on the device and can be edited later.
+- First launch, and the one-time v1 migration, ask for a baseline workout without numerical targets.
+- After baseline, each exercise's next target is its last saved actual result plus one, independent of calendar gaps.
+- Blank exercises leave the previous result unchanged; an explicit zero is a valid result and makes the next target one.
+- Targets have no progression caps. Per-leg and per-side amounts are entered for one side.
+- Local historical results and saved target snapshots remain on the device; editing a past result does not rewrite later saved snapshots.

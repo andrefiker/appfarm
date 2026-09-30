@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-  <meta name="theme-color" content="#121314">
+  <meta name="theme-color" content="#111315">
   <title>Daily Training</title>
   <link rel="stylesheet" href="training.css">
 </head>
@@ -12,12 +12,13 @@
     <header class="topline" aria-label="Selected training day">
       <button id="previous" class="date-arrow" type="button" aria-label="Previous day">‹</button>
       <div id="date" class="date-label"></div>
+      <div id="count" class="day-count" aria-live="polite">0/9</div>
       <button id="next" class="date-arrow" type="button" aria-label="Next day">›</button>
     </header>
     <div class="list" id="exercise-list" aria-label="Today's exercises"></div>
     <footer class="bottom">
       <span id="save-status" class="save-status" aria-live="polite"></span>
-      <button id="save" class="save-button" type="button">SAVE TODAY</button>
+      <button id="save" class="save-button" type="button">SAVE</button>
     </footer>
   </main>
   <script src="training.js"></script>
@@ -33,39 +34,81 @@
       };
       const model = new TrainingModel.TrainingModel(storage);
       const dateEl = document.getElementById('date');
+      const countEl = document.getElementById('count');
       const list = document.getElementById('exercise-list');
       const status = document.getElementById('save-status');
+      let savedTimer = 0;
 
       function formatDate(key) {
         const [y, m, d] = key.split('-').map(Number);
         return new Intl.DateTimeFormat(undefined, { weekday: 'short', month: 'short', day: 'numeric' }).format(new Date(y, m - 1, d, 12));
       }
-
-      function paintValue(row, input, ex, target, value) {
-        const complete = Number.isInteger(value) && value >= target;
-        row.classList.toggle('is-complete', complete);
-        row.querySelector('.completion').textContent = complete ? '✓' : '';
-        input.setAttribute('aria-valuenow', value == null ? '0' : String(value));
+      function haptic(kind) {
+        try { if (bridge && typeof bridge[kind] === 'function') bridge[kind](); } catch (_) {}
       }
-
+      function unitSuffix(ex) {
+        if (ex.side === 'leg') return ' / leg';
+        if (ex.side === 'side') return ' sec / side';
+        return ex.unit === 'sec' ? ' sec' : '';
+      }
+      function feedbackText(day, ex, nextTarget) {
+        const actual = day.actual[ex.id];
+        if (day.saved && day.legacy) return 'Saved history · baseline reset';
+        if (day.saved) {
+          if (Number.isSafeInteger(actual)) return `Done ${actual}${unitSuffix(ex)} · Next ${nextTarget == null ? 'baseline' : `${nextTarget}${unitSuffix(ex)}`}`;
+          return `Skipped · Next ${nextTarget == null ? 'baseline' : `${nextTarget}${unitSuffix(ex)}`}`;
+        }
+        if (Number.isSafeInteger(actual) && Number.isSafeInteger(day.target[ex.id]) && actual >= day.target[ex.id]) {
+          const extra = actual - day.target[ex.id];
+          return `✓ ${actual}${extra ? ` · +${extra}` : ''}`;
+        }
+        return '';
+      }
+      function updateRow(row, input, ex, day, nextTarget) {
+        const value = day.actual[ex.id];
+        const goal = day.target[ex.id];
+        const complete = Number.isSafeInteger(goal) && Number.isSafeInteger(value) && value >= goal;
+        const above = complete && value > goal;
+        row.classList.toggle('is-complete', complete);
+        row.classList.toggle('is-above', above);
+        row.classList.toggle('is-empty', value == null);
+        row.querySelector('.completion').textContent = complete ? '✓' : '';
+        row.querySelector('.feedback').textContent = feedbackText(day, ex, nextTarget);
+        input.setAttribute('aria-valuenow', value == null ? '' : String(value));
+      }
       function render() {
         const selectedDate = model.selectedDate;
         const day = model.getDay(selectedDate);
+        const nextDay = model.getDay(TrainingModel.addDays(selectedDate, 1));
         dateEl.textContent = formatDate(selectedDate);
+        const completed = model.completedCount(selectedDate);
+        countEl.textContent = `${completed}/9`;
+        countEl.setAttribute('aria-label', `${completed} of 9 exercises entered`);
         list.replaceChildren();
+
         for (const ex of TrainingModel.EXERCISES) {
           const value = day.actual[ex.id];
+          const goal = day.target[ex.id];
+          const last = day.lastActual[ex.id];
           const row = document.createElement('section');
           row.className = 'exercise';
+
           const info = document.createElement('div');
           info.className = 'exercise-info';
           const title = document.createElement('div');
           title.className = 'exercise-name';
           title.textContent = ex.name;
-          const details = document.createElement('div');
-          details.className = 'details';
-          details.textContent = TrainingModel.targetLabel(ex, day.target[ex.id]);
-          info.append(title, details);
+          const canFillGoal = Number.isSafeInteger(goal) && !day.baseline && !day.saved;
+          const targetLine = document.createElement(canFillGoal ? 'button' : 'div');
+          targetLine.className = 'target-line';
+          if (targetLine.tagName === 'BUTTON') {
+            targetLine.type = 'button';
+            targetLine.setAttribute('aria-label', `Fill ${ex.name} goal ${goal}${unitSuffix(ex)}`);
+          }
+          targetLine.textContent = TrainingModel.targetLabel(ex, goal, last, day.baseline);
+          const feedback = document.createElement('div');
+          feedback.className = 'feedback';
+          info.append(title, targetLine, feedback);
 
           const controls = document.createElement('div');
           controls.className = 'controls';
@@ -80,9 +123,11 @@
           input.min = '0';
           input.step = '1';
           input.autocomplete = 'off';
-          input.setAttribute('aria-label', `${ex.name}, completed ${ex.unit}${ex.side ? ' ' + ex.side : ''}`);
+          input.enterKeyHint = 'done';
+          input.setAttribute('aria-label', `${ex.name}, completed ${ex.unit}${unitSuffix(ex)}`);
           input.setAttribute('role', 'spinbutton');
-          input.value = value == null ? '0' : String(value);
+          input.value = value == null ? '' : String(value);
+          input.placeholder = '';
           const plus = document.createElement('button');
           plus.type = 'button';
           plus.className = 'stepper';
@@ -92,42 +137,60 @@
           check.className = 'completion';
           check.setAttribute('aria-label', 'Target reached');
           controls.append(minus, input, plus, check);
+          row.append(info, controls);
 
-          const preview = document.createElement('div');
-          preview.className = 'tomorrow';
-          if (day.saved) {
-            const next = model.getDay(TrainingModel.addDays(selectedDate, 1)).target[ex.id];
-            preview.textContent = `Tomorrow ${next}${ex.side === 'per leg' ? ' / leg' : ex.side === 'per side' ? ' sec / side' : ` ${ex.unit}`}`;
-          }
-
-          const change = raw => {
+          const change = (raw, tactile = false) => {
             model.setActual(selectedDate, ex.id, raw);
+            if (tactile) haptic('tick');
             const current = model.getDay(selectedDate);
-            paintValue(row, input, ex, current.target[ex.id], current.actual[ex.id]);
-            status.textContent = model.getStatus(selectedDate);
-            status.className = 'save-status unsaved';
-            preview.textContent = '';
+            updateRow(row, input, ex, current, model.getDay(TrainingModel.addDays(selectedDate, 1)).target[ex.id]);
+            updateBottom(current);
           };
           input.addEventListener('input', () => change(input.value));
+          input.addEventListener('change', () => {
+            const current = model.getDay(selectedDate);
+            if (current.actual[ex.id] == null) input.value = '';
+          });
           minus.addEventListener('click', () => {
-            input.value = String(TrainingModel.adjustActual(input.value, -1));
-            change(input.value);
+            const next = TrainingModel.adjustActual(input.value, -1);
+            if (next == null) return;
+            input.value = String(next);
+            change(input.value, true);
           });
           plus.addEventListener('click', () => {
             input.value = String(TrainingModel.adjustActual(input.value, 1));
-            change(input.value);
+            change(input.value, true);
           });
-          row.append(info, controls, preview);
-          paintValue(row, input, ex, day.target[ex.id], value);
+          targetLine.addEventListener('click', () => {
+            if (!canFillGoal) return;
+            input.value = String(goal);
+            change(input.value, true);
+          });
+          updateRow(row, input, ex, day, nextDay.target[ex.id]);
           list.append(row);
         }
-        status.textContent = model.getStatus(selectedDate);
-        status.className = `save-status ${day.saved ? 'saved' : 'unsaved'}`;
+        updateBottom(day);
+      }
+      function updateBottom(day) {
+        const n = model.completedCount(model.selectedDate);
+        countEl.textContent = `${n}/9`;
+        countEl.setAttribute('aria-label', `${n} of 9 exercises entered`);
+        if (day.saved && savedTimer) status.textContent = 'TODAY SAVED ✓';
+        else if (day.saved) status.textContent = 'Saved ✓';
+        else if (day.baseline) status.textContent = `Baseline · ${n}/9 entered`;
+        else status.textContent = `${n}/9 completed`;
+        status.className = `save-status ${day.saved ? 'saved' : ''}`;
       }
 
       document.getElementById('previous').addEventListener('click', () => { model.shiftDate(-1); render(); });
       document.getElementById('next').addEventListener('click', () => { model.shiftDate(1); render(); });
-      document.getElementById('save').addEventListener('click', () => { model.saveDay(model.selectedDate); render(); });
+      document.getElementById('save').addEventListener('click', () => {
+        model.saveDay(model.selectedDate);
+        haptic('saved');
+        clearTimeout(savedTimer);
+        savedTimer = setTimeout(() => { savedTimer = 0; render(); }, 1400);
+        render();
+      });
       render();
     })();
   </script>

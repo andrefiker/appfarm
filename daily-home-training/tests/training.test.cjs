@@ -276,16 +276,15 @@ function fakeClock(day) {
 function launchUi(storage, day) {
   const html = fs.readFileSync(path.join(__dirname, '../app/src/main/assets/training.html'), 'utf8');
   const inline = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)][0][1];
-  const ids = ['previous','date','today','count','next','more','baseline-note','exercise-list',
-    'save-status','finish','edit-results','done-edit','menu','close-menu','open-manager',
-    'manager','close-manager','manager-active','manager-removed','removed-wrap','add-exercise',
+  const ids = ['previous','date','today','count','next','manage-toggle','baseline-note','exercise-list',
+    'save-status','finish','edit-results','done-edit','done-list','list-tools',
+    'manager-removed','removed-wrap','add-exercise',
     'editor','exercise-form','editor-title','exercise-name','exercise-unit','exercise-side',
     'editor-error','cancel-editor','cancel-editor-x'];
   const elements = Object.fromEntries(ids.map(id => [id, new FakeElement()]));
   elements['today'].hidden = true;
   elements['baseline-note'].hidden = true;
-  elements['menu'].hidden = true;
-  elements['manager'].hidden = true;
+  elements['list-tools'].hidden = true;
   elements['editor'].hidden = true;
   const haptics = { tick: 0, goal: 0, saved: 0 };
   const bridge = {
@@ -367,27 +366,28 @@ test('a normal nine-exercise session takes nine goal taps and no keyboard entry'
   assert.match(elements['save-status'].textContent, /Workout complete/);
 });
 
-test('overflow menu exposes add/edit/remove/restore without an Edit control on workout screen', () => {
+test('inline list mode exposes add/edit/remove/restore on the workout screen', () => {
   const storage = new MemoryStorage(), { elements: e } = launchUi(storage, '2026-09-30');
-  assert.equal(e.more.attributes['aria-label'], undefined); // static HTML supplies the accessible label
-  e.more.click();
-  assert.equal(e.menu.hidden, false);
-  e['open-manager'].click();
-  assert.equal(e.manager.hidden, false);
-  assert.equal(e['manager-active'].children.length, 9);
+  assert.equal(e['list-tools'].hidden, true);
+  e['manage-toggle'].click();
+  assert.equal(e['list-tools'].hidden, false);
+  assert.equal(e.finish.hidden, true);
+  assert.equal(e['exercise-list'].children.length, 9);
   e['add-exercise'].click();
   e['exercise-name'].value = 'Wall sit'; e['exercise-unit'].value = 'sec';
   e['exercise-form'].fire('submit');
-  assert.equal(e['manager-active'].children.length, 10);
-  e['manager-active'].children[9].children[1].click();
+  assert.equal(e['exercise-list'].children.length, 10);
+  e['exercise-list'].children[9].children[1].children[0].click();
   e['exercise-name'].value = 'Wall hold'; e['exercise-form'].fire('submit');
-  assert.equal(e['manager-active'].children[9].children[0].textContent, 'Wall hold');
-  const remove = e['manager-active'].children[9].children[2]; remove.click(); remove.click();
-  assert.equal(e['manager-active'].children.length, 9);
+  assert.equal(e['exercise-list'].children[9].children[0].children[0].textContent, 'Wall hold');
+  const remove = e['exercise-list'].children[9].children[1].children[1]; remove.click(); remove.click();
+  assert.equal(e['exercise-list'].children.length, 9);
   assert.equal(e['manager-removed'].children.length, 1);
   e['manager-removed'].children[0].children[1].click();
-  assert.equal(e['manager-active'].children.length, 10);
   assert.equal(e['exercise-list'].children.length, 10);
+  e['done-list'].click();
+  assert.equal(e['list-tools'].hidden, true);
+  assert.equal(e.finish.hidden, false);
   const restarted = launchUi(storage, '2026-09-30');
   assert.equal(restarted.elements['exercise-list'].children.length, 10);
 });
@@ -399,16 +399,17 @@ test('Android release retains offline package and icon and updates haptic bridge
   const java = fs.readFileSync(path.join(base, 'java/com/andrefiker/dailyhometraining/MainActivity.java'), 'utf8');
   const gradle = fs.readFileSync(path.join(__dirname, '../app/build.gradle'), 'utf8');
   const manifest = fs.readFileSync(path.join(base, 'AndroidManifest.xml'), 'utf8');
-  assert.match(html, /id="more"[^>]*aria-label="More options"/);
-  assert.match(html, /id="open-manager"[^>]*>Manage exercises/);
-  assert.doesNotMatch(html, /id="manage"[^>]*>Edit/);
+  assert.match(html, /id="manage-toggle"[^>]*>Edit list/);
+  assert.match(html, /id="list-tools"[^>]*aria-label="Exercise list controls"/);
   assert.match(css, /env\(safe-area-inset-bottom\)/);
   assert.match(css, /prefers-reduced-motion/);
   assert.match(java, /void goal\(\)/);
   assert.match(java, /HapticFeedbackConstants\.KEYBOARD_TAP/);
   assert.match(java, /HapticFeedbackConstants\.CONFIRM/);
-  assert.match(gradle, /versionCode 5/);
-  assert.match(gradle, /versionName '1\.4\.0'/);
+  assert.match(java, /setOnApplyWindowInsetsListener/);
+  assert.match(java, /WindowInsets\.Type\.statusBars\(\)/);
+  assert.match(gradle, /versionCode 6/);
+  assert.match(gradle, /versionName '1\.4\.1'/);
   assert.match(gradle, /applicationId 'com\.andrefiker\.dailyhometraining'/);
   assert.match(manifest, /android:icon="@mipmap\/ic_launcher"/);
   assert.doesNotMatch(manifest, /INTERNET/);

@@ -2,7 +2,7 @@
 
 A tiny offline Android checklist for the nine requested home exercises. No account, network permission, analytics, ads, or third-party services.
 
-Current release: **1.4.0** (`versionCode` 5). The focused workout screen shows each previous result and its +1 goal. Tap the goal to log it, or use the steppers or numeric keyboard. Drafts persist as entered; FINISH completes a session and reveals the next goal. Exercises can still be added, edited, removed, and restored through More (⋮) → Manage exercises. The Android launcher retains its adaptive mint-and-ivory mark.
+Current release: **1.4.1** (`versionCode` 6). The focused workout screen shows each previous result and its +1 goal. Tap the goal to log it, or use the steppers or numeric keyboard. Drafts persist as entered; FINISH completes a session and reveals the next goal. Tap **Edit list** in the date bar to add, edit, remove, or restore exercises directly on the workout screen. Native window insets keep the date bar below the Android status icons. The Android launcher retains its adaptive mint-and-ivory mark.
 
 ## Build
 

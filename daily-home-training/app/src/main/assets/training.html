@@ -117,8 +117,8 @@
             input.value = String(TrainingModel.adjustActual(input.value, 1));
             change(input.value);
           });
-          paintValue(row, input, ex, day.target[ex.id], value);
           row.append(info, controls, preview);
+          paintValue(row, input, ex, day.target[ex.id], value);
           list.append(row);
         }
         status.textContent = model.getStatus(selectedDate);

@@ -129,6 +129,7 @@ test('compact screen has direct-entry fields, stepper buttons, completion, previ
   assert.match(html, /Increase \$\{ex\.name\}/);
   assert.match(html, /row\.classList\.toggle\('is-complete', complete\)/);
   assert.match(html, /model\.getDay\(TrainingModel\.addDays\(selectedDate, 1\)\)/);
+  assert.match(html, /row\.append\(info, controls, preview\);\s*paintValue\(row, input, ex, day\.target\[ex\.id\], value\)/);
   assert.match(css, /\.bottom\s*\{[^}]*position:\s*fixed/s);
   assert.match(css, /padding-bottom:\s*78px/);
 });

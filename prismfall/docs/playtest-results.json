@@ -1,0 +1,761 @@
+{
+  "startedAt": "2026-10-02T19:08:30.035Z",
+  "browser": "Chromium 141.0.7390.37 (headless, Playwright)",
+  "viewport": "1366x768",
+  "runs": [
+    {
+      "label": "Run 1 — Marathon (fresh save, strong bot, human pace ~2 pieces/s)",
+      "endedOn": "results",
+      "result": {
+        "mode": "marathon",
+        "score": 231708,
+        "lines": 145,
+        "level": 15,
+        "time": 194.62560000003083,
+        "gems": 106,
+        "won": false,
+        "label": "LOCK OUT",
+        "newBest": true,
+        "pieces": 456,
+        "shards": 198,
+        "bonus": 92,
+        "best": 231708,
+        "xpBefore": 0,
+        "xpAfter": 145,
+        "levelUp": true,
+        "unlockedThemes": [
+          "Candy Shop",
+          "Sea Glass"
+        ],
+        "ach": [
+          {
+            "id": "burst",
+            "name": "Refraction",
+            "desc": "Fire your first Prism Burst",
+            "r": 10
+          },
+          {
+            "id": "lvl10",
+            "name": "Altitude",
+            "desc": "Reach level 10 in Marathon",
+            "r": 30
+          },
+          {
+            "id": "gems100",
+            "name": "Magpie",
+            "desc": "Collect 100 gems in total",
+            "r": 30
+          }
+        ]
+      },
+      "finalState": {
+        "lines": 145,
+        "level": 15,
+        "score": 231708,
+        "time": 194.6,
+        "pieces": 456,
+        "gems": 106
+      },
+      "botPieces": 456,
+      "bursts": 10,
+      "holds": 51,
+      "wallMs": 194816,
+      "timeline": {
+        "firstClear": 3.7665999999999946,
+        "firstGem": 3.7665999999999946,
+        "firstBurst": 14.649499999999941
+      },
+      "firstMinuteWallMs": 196054
+    },
+    {
+      "label": "Run 2 — Sprint 40 (strong bot, keyboard)",
+      "endedOn": "results",
+      "result": {
+        "mode": "sprint",
+        "score": 11584,
+        "lines": 40,
+        "level": 1,
+        "time": 17.34929999999986,
+        "gems": 12,
+        "won": true,
+        "label": "FINISH!",
+        "newBest": true,
+        "pieces": 110,
+        "shards": 21,
+        "bonus": 9,
+        "best": 17.34929999999986,
+        "xpBefore": 145,
+        "xpAfter": 185,
+        "levelUp": true,
+        "unlockedThemes": [],
+        "ach": [
+          {
+            "id": "sprint",
+            "name": "Forty Winks",
+            "desc": "Finish a Sprint 40",
+            "r": 15
+          },
+          {
+            "id": "sprint150",
+            "name": "Quicksilver",
+            "desc": "Sprint 40 in under 2:30",
+            "r": 40
+          }
+        ]
+      },
+      "finalState": {
+        "lines": 40,
+        "level": 1,
+        "score": 11584,
+        "time": 17.3,
+        "pieces": 110,
+        "gems": 12
+      },
+      "botPieces": 110,
+      "bursts": 19,
+      "holds": 0,
+      "wallMs": 18806,
+      "timeline": {
+        "firstClear": 0.13330000000001746,
+        "firstGem": 0.5998999999999943,
+        "firstBurst": 4.349800000000011
+      }
+    },
+    {
+      "label": "Run 3 — Daily Bloom (left-handed keys A/D/W/J/K/L/I/O, human pace)",
+      "endedOn": "results",
+      "result": {
+        "mode": "daily",
+        "score": 137248,
+        "lines": 112,
+        "level": 12,
+        "time": 180,
+        "gems": 26,
+        "won": true,
+        "label": "TIME'S UP",
+        "newBest": true,
+        "pieces": 323,
+        "shards": 80,
+        "bonus": 54,
+        "best": 137248,
+        "xpBefore": 185,
+        "xpAfter": 297,
+        "levelUp": true,
+        "unlockedThemes": [
+          "Citrus Grove"
+        ],
+        "ach": [
+          {
+            "id": "daily30",
+            "name": "Sunrise Shift",
+            "desc": "Score 30,000 in Daily Bloom",
+            "r": 30
+          }
+        ]
+      },
+      "finalState": {
+        "lines": 112,
+        "level": 12,
+        "score": 137248,
+        "time": 180,
+        "pieces": 323,
+        "gems": 26
+      },
+      "botPieces": 323,
+      "bursts": 8,
+      "holds": 30,
+      "wallMs": 181487,
+      "timeline": {
+        "firstClear": 2.766599999999974,
+        "firstGem": 8.866299999999951,
+        "firstBurst": 17.649199999999798
+      }
+    },
+    {
+      "label": "Run 4 — Marathon (novice bot: heavy random noise)",
+      "endedOn": "results",
+      "result": {
+        "mode": "marathon",
+        "score": 7364,
+        "lines": 17,
+        "level": 2,
+        "time": 8.91639999999994,
+        "gems": 6,
+        "won": false,
+        "label": "TOP OUT",
+        "newBest": false,
+        "pieces": 89,
+        "shards": 8,
+        "bonus": 2,
+        "best": 231708,
+        "xpBefore": 297,
+        "xpAfter": 314,
+        "levelUp": false,
+        "unlockedThemes": [],
+        "ach": []
+      },
+      "finalState": {
+        "lines": 17,
+        "level": 2,
+        "score": 7364,
+        "time": 8.9,
+        "pieces": 89,
+        "gems": 6
+      },
+      "botPieces": 89,
+      "bursts": 10,
+      "holds": 0,
+      "wallMs": 10348,
+      "timeline": {
+        "firstClear": 0.24989999999996507,
+        "firstGem": 0.599899999999965,
+        "firstBurst": 4.666500000000008
+      }
+    },
+    {
+      "label": "Run 5 — Marathon retry, hard-drop spam until top-out",
+      "endedOn": "results",
+      "result": {
+        "mode": "marathon",
+        "score": 234,
+        "lines": 0,
+        "level": 1,
+        "time": 0.4332999999999884,
+        "gems": 0,
+        "won": false,
+        "label": "LOCK OUT",
+        "newBest": false,
+        "pieces": 12,
+        "shards": 0,
+        "bonus": 0,
+        "best": 231708,
+        "xpBefore": 314,
+        "xpAfter": 314,
+        "levelUp": false,
+        "unlockedThemes": [],
+        "ach": []
+      },
+      "wallMs": 2239
+    },
+    {
+      "label": "Run 6 — Zen Garden, mouse only (hover aim, right-click rotate, click drop)",
+      "endedOn": "game",
+      "result": null,
+      "finalState": {
+        "lines": 38,
+        "level": 4,
+        "score": 27525,
+        "time": 25.1,
+        "pieces": 120,
+        "gems": 12
+      },
+      "botPieces": 120,
+      "bursts": 18,
+      "holds": 0,
+      "wallMs": 25118,
+      "timeline": {
+        "firstClear": 0.6000999999999768,
+        "firstGem": 0.6000999999999768,
+        "firstBurst": 4.799799999999997
+      }
+    },
+    {
+      "label": "Run 7 — Marathon, gamepad only (mocked standard-mapping pad)",
+      "endedOn": "game",
+      "result": null,
+      "finalState": {
+        "lines": 12,
+        "level": 2,
+        "score": 3978,
+        "time": 22.7,
+        "pieces": 40,
+        "gems": 3
+      },
+      "botPieces": 40,
+      "bursts": 6,
+      "holds": 0,
+      "wallMs": 22713,
+      "timeline": {
+        "firstClear": 1.1500000000000004,
+        "firstGem": 1.1500000000000004,
+        "firstBurst": 16.94939999999991
+      }
+    }
+  ],
+  "checks": [
+    {
+      "name": "Game boots from file:// with no errors",
+      "pass": true,
+      "detail": "screen=title"
+    },
+    {
+      "name": "Enter on title starts Marathon (keyboard-only start)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Sprint ends at 40 lines with a FINISH result",
+      "pass": true,
+      "detail": "40 lines, 17.3s"
+    },
+    {
+      "name": "Daily Bloom ends at the 3:00 time limit",
+      "pass": true,
+      "detail": "180.00s"
+    },
+    {
+      "name": "Left-handed key cluster can play a full run",
+      "pass": true,
+      "detail": "323 pieces"
+    },
+    {
+      "name": "Prism Burst fired at least once in Daily run",
+      "pass": true,
+      "detail": "8 bursts"
+    },
+    {
+      "name": "Daily Bloom piece order is identical across runs on the same day",
+      "pass": true,
+      "detail": "SZLIJO vs SZLIJO"
+    },
+    {
+      "name": "Esc pauses the game",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Esc resumes the game",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Window blur auto-pauses and releases held keys (no stuck auto-shift)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Novice run reaches a TOP OUT game over and the results screen",
+      "pass": true,
+      "detail": "TOP OUT"
+    },
+    {
+      "name": "Enter on results restarts instantly (retry loop)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Hard-drop spam ends in game over without errors, results reachable",
+      "pass": true,
+      "detail": "LOCK OUT"
+    },
+    {
+      "name": "Space mashed during game over did not skip the results screen",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Zen never ends: top-out triggers \"Fresh Soil\" rescue instead of game over",
+      "pass": true,
+      "detail": "state=play"
+    },
+    {
+      "name": "Gamepad A button starts a game from the title menu",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Gamepad Start pauses",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Gamepad Start resumes",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "T-spin double detected and scored 1200 at level 1",
+      "pass": true,
+      "detail": "delta=1200 bottom=...#......"
+    },
+    {
+      "name": "Perfect clear awards +3000 and empties the board",
+      "pass": true,
+      "detail": "delta=3338"
+    },
+    {
+      "name": "Prism Burst removes 4 bottom rows, collects gems, starts Fever, empties meter",
+      "pass": true,
+      "detail": "{\"gems\":1,\"fever\":7.9,\"filledRows\":2,\"prism\":0}"
+    },
+    {
+      "name": "Prism Burst pressed during a line-clear animation is buffered and fires right after",
+      "pass": true,
+      "detail": "pressedMidClear=true {\"fever\":7.750000000000001,\"prism\":0}"
+    },
+    {
+      "name": "Hold swaps once, second press is refused until the next piece",
+      "pass": true,
+      "detail": "held=I cur=L"
+    },
+    {
+      "name": "Lock delay is capped (no infinite stalling by wiggling)",
+      "pass": true,
+      "detail": "pieces 3 -> 4"
+    },
+    {
+      "name": "Second Wind perk survives the first top-out",
+      "pass": true,
+      "detail": "{\"used\":true,\"state\":\"play\",\"topRowsEmpty\":true}"
+    },
+    {
+      "name": "Fuzz: 3000 random key events, active piece never overlapped the stack or walls",
+      "pass": true,
+      "detail": "violations=0"
+    },
+    {
+      "name": "Fuzz: no runtime exceptions in the game loop",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "After fuzzing (left on \"game\"), Esc/Quit returns to the title and a new game starts (no softlock)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Buying a perk spends shards and raises the perk level",
+      "pass": true,
+      "detail": "552 -> 532 {\"lens\":1,\"magnet\":0,\"wide\":0,\"fever\":0,\"steady\":0,\"wind\":0}"
+    },
+    {
+      "name": "Progress (runs, shards, bests) persists in localStorage across reload",
+      "pass": true,
+      "detail": "{\"runs\":8,\"shards\":532,\"best\":231708}"
+    },
+    {
+      "name": "Layout fits 1024x600 (cell 25px)",
+      "pass": true,
+      "detail": "{\"lx\":235,\"right\":793,\"top\":73,\"bottom\":573}"
+    },
+    {
+      "name": "Layout fits 1920x1080 (cell 46px)",
+      "pass": true,
+      "detail": "{\"lx\":449,\"right\":1478,\"top\":121,\"bottom\":1041}"
+    },
+    {
+      "name": "Layout fits 800x600 (cell 25px)",
+      "pass": true,
+      "detail": "{\"lx\":123,\"right\":681,\"top\":73,\"bottom\":573}"
+    }
+  ],
+  "errors": [],
+  "fps": [
+    {
+      "label": "Run 1 — Marathon (fresh save, strong bot, human pace ~2 pieces/s) @40 pieces",
+      "avgFps": 59.75351674343338,
+      "worstFrameMs": 33.30000000000291,
+      "samples": 240
+    },
+    {
+      "label": "Run 1 — Marathon (fresh save, strong bot, human pace ~2 pieces/s) @80 pieces",
+      "avgFps": 60.00300015000767,
+      "worstFrameMs": 16.80000000000291,
+      "samples": 240
+    },
+    {
+      "label": "Run 1 — Marathon (fresh save, strong bot, human pace ~2 pieces/s) @120 pieces",
+      "avgFps": 60.00300015000756,
+      "worstFrameMs": 16.80000000000291,
+      "samples": 240
+    },
+    {
+      "label": "Run 1 — Marathon (fresh save, strong bot, human pace ~2 pieces/s) @160 pieces",
+      "avgFps": 60.003000150007594,
+      "worstFrameMs": 16.80000000000291,
+      "samples": 240
+    },
+    {
+      "label": "Run 1 — Marathon (fresh save, strong bot, human pace ~2 pieces/s) @200 pieces",
+      "avgFps": 59.75202907932088,
+      "worstFrameMs": 33.40000000000873,
+      "samples": 240
+    },
+    {
+      "label": "Run 1 — Marathon (fresh save, strong bot, human pace ~2 pieces/s) @240 pieces",
+      "avgFps": 60.00300015000782,
+      "worstFrameMs": 16.80000000000291,
+      "samples": 240
+    },
+    {
+      "label": "Run 1 — Marathon (fresh save, strong bot, human pace ~2 pieces/s) @280 pieces",
+      "avgFps": 60.00300015000761,
+      "worstFrameMs": 16.80000000000291,
+      "samples": 240
+    },
+    {
+      "label": "Run 1 — Marathon (fresh save, strong bot, human pace ~2 pieces/s) @320 pieces",
+      "avgFps": 60.00300015000777,
+      "worstFrameMs": 16.800000000017462,
+      "samples": 240
+    },
+    {
+      "label": "Run 1 — Marathon (fresh save, strong bot, human pace ~2 pieces/s) @360 pieces",
+      "avgFps": 60.003000150007786,
+      "worstFrameMs": 16.800000000017462,
+      "samples": 240
+    },
+    {
+      "label": "Run 1 — Marathon (fresh save, strong bot, human pace ~2 pieces/s) @400 pieces",
+      "avgFps": 60.001500037500676,
+      "worstFrameMs": 16.800000000017462,
+      "samples": 240
+    },
+    {
+      "label": "Run 1 — Marathon (fresh save, strong bot, human pace ~2 pieces/s) @440 pieces",
+      "avgFps": 60.003000150007296,
+      "worstFrameMs": 16.800000000017462,
+      "samples": 240
+    },
+    {
+      "label": "Run 1 — Marathon (fresh save, strong bot, human pace ~2 pieces/s) end",
+      "avgFps": 60.00150003750109,
+      "worstFrameMs": 16.800000000017462,
+      "samples": 240
+    },
+    {
+      "label": "Run 2 — Sprint 40 (strong bot, keyboard) @40 pieces",
+      "avgFps": 60.001500037501074,
+      "worstFrameMs": 16.800000000017462,
+      "samples": 240
+    },
+    {
+      "label": "Run 2 — Sprint 40 (strong bot, keyboard) @80 pieces",
+      "avgFps": 60.00300015000731,
+      "worstFrameMs": 16.800000000017462,
+      "samples": 240
+    },
+    {
+      "label": "Run 2 — Sprint 40 (strong bot, keyboard) end",
+      "avgFps": 60.00300015000772,
+      "worstFrameMs": 16.800000000017462,
+      "samples": 240
+    },
+    {
+      "label": "Run 3 — Daily Bloom (left-handed keys A/D/W/J/K/L/I/O, human pace) @40 pieces",
+      "avgFps": 59.75500448162542,
+      "worstFrameMs": 33.39999999999418,
+      "samples": 240
+    },
+    {
+      "label": "Run 3 — Daily Bloom (left-handed keys A/D/W/J/K/L/I/O, human pace) @80 pieces",
+      "avgFps": 60.00150003750042,
+      "worstFrameMs": 16.800000000046566,
+      "samples": 240
+    },
+    {
+      "label": "Run 3 — Daily Bloom (left-handed keys A/D/W/J/K/L/I/O, human pace) @120 pieces",
+      "avgFps": 60.00300015000746,
+      "worstFrameMs": 16.800000000046566,
+      "samples": 240
+    },
+    {
+      "label": "Run 3 — Daily Bloom (left-handed keys A/D/W/J/K/L/I/O, human pace) @160 pieces",
+      "avgFps": 60.00450033752496,
+      "worstFrameMs": 16.800000000046566,
+      "samples": 240
+    },
+    {
+      "label": "Run 3 — Daily Bloom (left-handed keys A/D/W/J/K/L/I/O, human pace) @200 pieces",
+      "avgFps": 60.00150003750041,
+      "worstFrameMs": 16.800000000046566,
+      "samples": 240
+    },
+    {
+      "label": "Run 3 — Daily Bloom (left-handed keys A/D/W/J/K/L/I/O, human pace) @240 pieces",
+      "avgFps": 60.00300015000747,
+      "worstFrameMs": 16.800000000046566,
+      "samples": 240
+    },
+    {
+      "label": "Run 3 — Daily Bloom (left-handed keys A/D/W/J/K/L/I/O, human pace) @280 pieces",
+      "avgFps": 60.00300015000751,
+      "worstFrameMs": 16.800000000046566,
+      "samples": 240
+    },
+    {
+      "label": "Run 3 — Daily Bloom (left-handed keys A/D/W/J/K/L/I/O, human pace) @320 pieces",
+      "avgFps": 60.00150003750041,
+      "worstFrameMs": 16.800000000046566,
+      "samples": 240
+    },
+    {
+      "label": "Run 3 — Daily Bloom (left-handed keys A/D/W/J/K/L/I/O, human pace) end",
+      "avgFps": 60.00150003750129,
+      "worstFrameMs": 16.800000000046566,
+      "samples": 240
+    },
+    {
+      "label": "Run 4 — Marathon (novice bot: heavy random noise) @40 pieces",
+      "avgFps": 60.003000150007495,
+      "worstFrameMs": 16.800000000046566,
+      "samples": 240
+    },
+    {
+      "label": "Run 4 — Marathon (novice bot: heavy random noise) @80 pieces",
+      "avgFps": 60.003000150006635,
+      "worstFrameMs": 16.800000000046566,
+      "samples": 240
+    },
+    {
+      "label": "Run 4 — Marathon (novice bot: heavy random noise) end",
+      "avgFps": 60.00150003750037,
+      "worstFrameMs": 16.79999999998836,
+      "samples": 240
+    },
+    {
+      "label": "Run 6 — Zen Garden, mouse only (hover aim, right-click rotate, click drop) @40 pieces",
+      "avgFps": 60.00150003750037,
+      "worstFrameMs": 16.800000000046566,
+      "samples": 240
+    },
+    {
+      "label": "Run 6 — Zen Garden, mouse only (hover aim, right-click rotate, click drop) @80 pieces",
+      "avgFps": 59.507574818377215,
+      "worstFrameMs": 50,
+      "samples": 240
+    },
+    {
+      "label": "Run 6 — Zen Garden, mouse only (hover aim, right-click rotate, click drop) @120 pieces",
+      "avgFps": 60.003000150007495,
+      "worstFrameMs": 16.800000000046566,
+      "samples": 240
+    },
+    {
+      "label": "Run 6 — Zen Garden, mouse only (hover aim, right-click rotate, click drop) end",
+      "avgFps": 60.00300015000751,
+      "worstFrameMs": 16.800000000046566,
+      "samples": 240
+    },
+    {
+      "label": "Run 7 — Marathon, gamepad only (mocked standard-mapping pad) @40 pieces",
+      "avgFps": 56.91924581999288,
+      "worstFrameMs": 50,
+      "samples": 240
+    },
+    {
+      "label": "Run 7 — Marathon, gamepad only (mocked standard-mapping pad) end",
+      "avgFps": 55.17495057244006,
+      "worstFrameMs": 50,
+      "samples": 240
+    },
+    {
+      "label": "after fuzz",
+      "avgFps": 50.708867713241126,
+      "worstFrameMs": 50,
+      "samples": 240
+    }
+  ],
+  "lag": {
+    "n": 500,
+    "median": 7,
+    "p95": 17.899999999906868,
+    "max": 39.799999999813735
+  },
+  "screenshots": [
+    {
+      "file": "docs/screenshots/01-title.png",
+      "caption": "Title screen, fresh save (light theme)"
+    },
+    {
+      "file": "docs/screenshots/02-first-seconds.png",
+      "caption": "First seconds of a first run: tutorial hint bar under the well"
+    },
+    {
+      "file": "docs/screenshots/03-marathon-early.png",
+      "caption": "Marathon about 25 pieces in: gems in the stack, ghost piece, Prism meter filling"
+    },
+    {
+      "file": "docs/screenshots/04-marathon-mid.png",
+      "caption": "Marathon mid-run"
+    },
+    {
+      "file": "docs/screenshots/05-results-marathon.png",
+      "caption": "Results screen after Run 1 (shards, XP bar, achievements)"
+    },
+    {
+      "file": "docs/screenshots/06-modes.png",
+      "caption": "Mode select"
+    },
+    {
+      "file": "docs/screenshots/07-results-sprint.png",
+      "caption": "Sprint 40 results"
+    },
+    {
+      "file": "docs/screenshots/08-prism-burst-fever.png",
+      "caption": "Prism Burst just fired: rainbow Fever x2 overlay"
+    },
+    {
+      "file": "docs/screenshots/09-pause.png",
+      "caption": "Pause menu"
+    },
+    {
+      "file": "docs/screenshots/10-zen-mouse.png",
+      "caption": "Zen Garden played with the mouse only"
+    },
+    {
+      "file": "docs/screenshots/11-gamepad.png",
+      "caption": "Marathon driven by the (mocked) gamepad"
+    },
+    {
+      "file": "docs/screenshots/12-tspin.png",
+      "caption": "T-SPIN DOUBLE callout after a scripted T-spin"
+    },
+    {
+      "file": "docs/screenshots/13-workshop.png",
+      "caption": "Workshop with shards earned from the test runs"
+    },
+    {
+      "file": "docs/screenshots/14-collection-themes.png",
+      "caption": "Collection: themes unlocked by player level"
+    },
+    {
+      "file": "docs/screenshots/15-collection-achievements.png",
+      "caption": "Collection: achievements"
+    },
+    {
+      "file": "docs/screenshots/16-settings.png",
+      "caption": "Settings (DAS/ARR, soft drop, volume, toggles)"
+    },
+    {
+      "file": "docs/screenshots/17-help.png",
+      "caption": "How to Play, including the left-handed key cluster"
+    },
+    {
+      "file": "docs/screenshots/18-title-returning.png",
+      "caption": "Title screen for a returning player (level, shards, bests)"
+    },
+    {
+      "file": "docs/screenshots/19-theme-prism.png",
+      "caption": "Prism theme (unlocks at player level 9)"
+    },
+    {
+      "file": "docs/screenshots/20-res-1024x600.png",
+      "caption": "Gameplay at 1024x600"
+    },
+    {
+      "file": "docs/screenshots/20-res-1920x1080.png",
+      "caption": "Gameplay at 1920x1080"
+    },
+    {
+      "file": "docs/screenshots/20-res-800x600.png",
+      "caption": "Gameplay at 800x600"
+    }
+  ],
+  "finishedAt": "2026-10-02T19:18:17.854Z",
+  "summary": {
+    "checks": 33,
+    "passed": 33,
+    "errors": 0
+  }
+}

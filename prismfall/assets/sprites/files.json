@@ -1,0 +1,54 @@
+[
+  {
+    "file": "assets/sprites/sheet-paper.png",
+    "bytes": 44437
+  },
+  {
+    "file": "assets/sprites/sheet-candy.png",
+    "bytes": 43222
+  },
+  {
+    "file": "assets/sprites/sheet-seaglass.png",
+    "bytes": 44187
+  },
+  {
+    "file": "assets/sprites/sheet-citrus.png",
+    "bytes": 44407
+  },
+  {
+    "file": "assets/sprites/sheet-lavender.png",
+    "bytes": 43740
+  },
+  {
+    "file": "assets/sprites/sheet-prism.png",
+    "bytes": 63397
+  },
+  {
+    "file": "assets/sprites/icon-16.png",
+    "bytes": 774
+  },
+  {
+    "file": "assets/sprites/icon-32.png",
+    "bytes": 2261
+  },
+  {
+    "file": "assets/sprites/icon-48.png",
+    "bytes": 4363
+  },
+  {
+    "file": "assets/sprites/icon-64.png",
+    "bytes": 6424
+  },
+  {
+    "file": "assets/sprites/icon-128.png",
+    "bytes": 16468
+  },
+  {
+    "file": "assets/sprites/icon-256.png",
+    "bytes": 41329
+  },
+  {
+    "file": "assets/sprites/gem.png",
+    "bytes": 4219
+  }
+]

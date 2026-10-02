@@ -1,0 +1,899 @@
+{
+ "game": "Prismfall",
+ "generated": "2026-10-02",
+ "spritecook": {
+  "connected": false,
+  "credits_checked": false,
+  "credits_spent": 0,
+  "note": "SpriteCook tools were not available in the build session; all art is procedural placeholder art built from one style reference (assets/art.js drawTile)."
+ },
+ "mojulo": {
+  "used": false,
+  "reason": "2D puzzle game; no 3D/world generation needed"
+ },
+ "audio": "Web Audio API synthesis, no files",
+ "assets": [
+  {
+   "id": "proc:tile:paper:I",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-paper.png"
+  },
+  {
+   "id": "proc:ghost:paper:I",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-paper.png"
+  },
+  {
+   "id": "proc:tile:paper:O",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-paper.png"
+  },
+  {
+   "id": "proc:ghost:paper:O",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-paper.png"
+  },
+  {
+   "id": "proc:tile:paper:T",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-paper.png"
+  },
+  {
+   "id": "proc:ghost:paper:T",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-paper.png"
+  },
+  {
+   "id": "proc:tile:paper:S",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-paper.png"
+  },
+  {
+   "id": "proc:ghost:paper:S",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-paper.png"
+  },
+  {
+   "id": "proc:tile:paper:Z",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-paper.png"
+  },
+  {
+   "id": "proc:ghost:paper:Z",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-paper.png"
+  },
+  {
+   "id": "proc:tile:paper:J",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-paper.png"
+  },
+  {
+   "id": "proc:ghost:paper:J",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-paper.png"
+  },
+  {
+   "id": "proc:tile:paper:L",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-paper.png"
+  },
+  {
+   "id": "proc:ghost:paper:L",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-paper.png"
+  },
+  {
+   "id": "proc:tile:candy:I",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-candy.png"
+  },
+  {
+   "id": "proc:ghost:candy:I",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-candy.png"
+  },
+  {
+   "id": "proc:tile:candy:O",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-candy.png"
+  },
+  {
+   "id": "proc:ghost:candy:O",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-candy.png"
+  },
+  {
+   "id": "proc:tile:candy:T",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-candy.png"
+  },
+  {
+   "id": "proc:ghost:candy:T",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-candy.png"
+  },
+  {
+   "id": "proc:tile:candy:S",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-candy.png"
+  },
+  {
+   "id": "proc:ghost:candy:S",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-candy.png"
+  },
+  {
+   "id": "proc:tile:candy:Z",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-candy.png"
+  },
+  {
+   "id": "proc:ghost:candy:Z",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-candy.png"
+  },
+  {
+   "id": "proc:tile:candy:J",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-candy.png"
+  },
+  {
+   "id": "proc:ghost:candy:J",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-candy.png"
+  },
+  {
+   "id": "proc:tile:candy:L",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-candy.png"
+  },
+  {
+   "id": "proc:ghost:candy:L",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-candy.png"
+  },
+  {
+   "id": "proc:tile:seaglass:I",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-seaglass.png"
+  },
+  {
+   "id": "proc:ghost:seaglass:I",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-seaglass.png"
+  },
+  {
+   "id": "proc:tile:seaglass:O",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-seaglass.png"
+  },
+  {
+   "id": "proc:ghost:seaglass:O",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-seaglass.png"
+  },
+  {
+   "id": "proc:tile:seaglass:T",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-seaglass.png"
+  },
+  {
+   "id": "proc:ghost:seaglass:T",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-seaglass.png"
+  },
+  {
+   "id": "proc:tile:seaglass:S",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-seaglass.png"
+  },
+  {
+   "id": "proc:ghost:seaglass:S",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-seaglass.png"
+  },
+  {
+   "id": "proc:tile:seaglass:Z",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-seaglass.png"
+  },
+  {
+   "id": "proc:ghost:seaglass:Z",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-seaglass.png"
+  },
+  {
+   "id": "proc:tile:seaglass:J",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-seaglass.png"
+  },
+  {
+   "id": "proc:ghost:seaglass:J",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-seaglass.png"
+  },
+  {
+   "id": "proc:tile:seaglass:L",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-seaglass.png"
+  },
+  {
+   "id": "proc:ghost:seaglass:L",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-seaglass.png"
+  },
+  {
+   "id": "proc:tile:citrus:I",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-citrus.png"
+  },
+  {
+   "id": "proc:ghost:citrus:I",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-citrus.png"
+  },
+  {
+   "id": "proc:tile:citrus:O",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-citrus.png"
+  },
+  {
+   "id": "proc:ghost:citrus:O",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-citrus.png"
+  },
+  {
+   "id": "proc:tile:citrus:T",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-citrus.png"
+  },
+  {
+   "id": "proc:ghost:citrus:T",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-citrus.png"
+  },
+  {
+   "id": "proc:tile:citrus:S",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-citrus.png"
+  },
+  {
+   "id": "proc:ghost:citrus:S",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-citrus.png"
+  },
+  {
+   "id": "proc:tile:citrus:Z",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-citrus.png"
+  },
+  {
+   "id": "proc:ghost:citrus:Z",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-citrus.png"
+  },
+  {
+   "id": "proc:tile:citrus:J",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-citrus.png"
+  },
+  {
+   "id": "proc:ghost:citrus:J",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-citrus.png"
+  },
+  {
+   "id": "proc:tile:citrus:L",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-citrus.png"
+  },
+  {
+   "id": "proc:ghost:citrus:L",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-citrus.png"
+  },
+  {
+   "id": "proc:tile:lavender:I",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-lavender.png"
+  },
+  {
+   "id": "proc:ghost:lavender:I",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-lavender.png"
+  },
+  {
+   "id": "proc:tile:lavender:O",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-lavender.png"
+  },
+  {
+   "id": "proc:ghost:lavender:O",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-lavender.png"
+  },
+  {
+   "id": "proc:tile:lavender:T",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-lavender.png"
+  },
+  {
+   "id": "proc:ghost:lavender:T",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-lavender.png"
+  },
+  {
+   "id": "proc:tile:lavender:S",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-lavender.png"
+  },
+  {
+   "id": "proc:ghost:lavender:S",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-lavender.png"
+  },
+  {
+   "id": "proc:tile:lavender:Z",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-lavender.png"
+  },
+  {
+   "id": "proc:ghost:lavender:Z",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-lavender.png"
+  },
+  {
+   "id": "proc:tile:lavender:J",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-lavender.png"
+  },
+  {
+   "id": "proc:ghost:lavender:J",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-lavender.png"
+  },
+  {
+   "id": "proc:tile:lavender:L",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-lavender.png"
+  },
+  {
+   "id": "proc:ghost:lavender:L",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-lavender.png"
+  },
+  {
+   "id": "proc:tile:prism:I",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-prism.png"
+  },
+  {
+   "id": "proc:ghost:prism:I",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-prism.png"
+  },
+  {
+   "id": "proc:tile:prism:O",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-prism.png"
+  },
+  {
+   "id": "proc:ghost:prism:O",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-prism.png"
+  },
+  {
+   "id": "proc:tile:prism:T",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-prism.png"
+  },
+  {
+   "id": "proc:ghost:prism:T",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-prism.png"
+  },
+  {
+   "id": "proc:tile:prism:S",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-prism.png"
+  },
+  {
+   "id": "proc:ghost:prism:S",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-prism.png"
+  },
+  {
+   "id": "proc:tile:prism:Z",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-prism.png"
+  },
+  {
+   "id": "proc:ghost:prism:Z",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-prism.png"
+  },
+  {
+   "id": "proc:tile:prism:J",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-prism.png"
+  },
+  {
+   "id": "proc:ghost:prism:J",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-prism.png"
+  },
+  {
+   "id": "proc:tile:prism:L",
+   "kind": "tile",
+   "source": "procedural (assets/art.js drawTile)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-prism.png"
+  },
+  {
+   "id": "proc:ghost:prism:L",
+   "kind": "ghost",
+   "source": "procedural (assets/art.js drawGhost)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-prism.png"
+  },
+  {
+   "id": "proc:gem",
+   "kind": "overlay",
+   "source": "procedural (drawGem)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/gem.png"
+  },
+  {
+   "id": "proc:tile:grey",
+   "kind": "tile",
+   "source": "procedural (drawTile #c9cbd6)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/sheet-*.png"
+  },
+  {
+   "id": "proc:icon:16",
+   "kind": "icon",
+   "source": "procedural (buildIcon)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/icon-16.png"
+  },
+  {
+   "id": "proc:icon:32",
+   "kind": "icon",
+   "source": "procedural (buildIcon)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/icon-32.png"
+  },
+  {
+   "id": "proc:icon:48",
+   "kind": "icon",
+   "source": "procedural (buildIcon)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/icon-48.png"
+  },
+  {
+   "id": "proc:icon:64",
+   "kind": "icon",
+   "source": "procedural (buildIcon)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/icon-64.png"
+  },
+  {
+   "id": "proc:icon:128",
+   "kind": "icon",
+   "source": "procedural (buildIcon)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/icon-128.png"
+  },
+  {
+   "id": "proc:icon:256",
+   "kind": "icon",
+   "source": "procedural (buildIcon)",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": "assets/sprites/icon-256.png"
+  },
+  {
+   "id": "proc:bg",
+   "kind": "background",
+   "source": "procedural / runtime",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": null
+  },
+  {
+   "id": "proc:deco",
+   "kind": "background",
+   "source": "procedural / runtime",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": null
+  },
+  {
+   "id": "proc:chrome",
+   "kind": "ui",
+   "source": "procedural / runtime",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": null
+  },
+  {
+   "id": "proc:meter",
+   "kind": "ui",
+   "source": "procedural / runtime",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": null
+  },
+  {
+   "id": "proc:fx",
+   "kind": "animation",
+   "source": "procedural / runtime",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": null
+  },
+  {
+   "id": "css:ui-kit",
+   "kind": "ui",
+   "source": "procedural / runtime",
+   "spritecook_id": null,
+   "prompt": null,
+   "credits": 0,
+   "export": null
+  }
+ ]
+}

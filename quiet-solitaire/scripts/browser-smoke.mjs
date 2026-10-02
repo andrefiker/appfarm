@@ -58,7 +58,8 @@ try {
     tableau:[[card('clubs',9,false),card('hearts',8),card('clubs',7),card('diamonds',6)],
       [card('spades',9)],[],[],[],[],[]]});
   assert.equal(await page.locator('#app').getAttribute('class').then(x=>x.includes('hand-left')),true);
-  await page.locator('.tableau-column[data-index="0"] .card[data-card-index="1"]').tap();
+  const exposed=await page.locator('.tableau-column[data-index="0"] .card[data-card-index="1"]').boundingBox();
+  await page.touchscreen.tap(exposed.x+12,exposed.y+12);
   await wait(() => JSON.parse(localStorage.getItem('quiet-current')).tableau[1].length===4);
   assert.equal((await state()).tableau[0][0].faceUp,true,'sequence tap reveals the hidden card');
   await page.locator('#undo').tap();

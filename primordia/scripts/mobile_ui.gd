@@ -1,6 +1,7 @@
 class_name MobileUI
 extends Node
 
+const SCREEN_SCALE=2.0/3.0
 var game
 var pad:TouchControls
 var stats_label:Label
@@ -11,9 +12,10 @@ var hud_time=0.11
 
 func setup(root):
  game=root
- game.get_window().content_scale_size=Vector2i(1440,720)
+ game.get_window().content_scale_size=Vector2i(960,480)
  game.get_window().content_scale_mode=Window.CONTENT_SCALE_MODE_VIEWPORT
  game.get_window().min_size=Vector2i(640,320)
+ game.layer.transform=Transform2D().scaled(Vector2.ONE*SCREEN_SCALE)
  Input.emulate_mouse_from_touch=true
  game.ui.theme.default_font_size=24
  game.ui.theme.set_font_size("font_size","Button",24)
@@ -24,6 +26,10 @@ func configure_habitat():
  game.habitat.aim_mouse=false
  game.habitat.player.lite_animation=true
  for a in game.habitat.agents:a.node.lite_animation=true
+ game.habitat.camera.zoom=Vector2.ONE*0.72
+
+func ui_position(screen_position:Vector2) -> Vector2:
+ return screen_position/SCREEN_SCALE
 
 func clear(mode:String,dim:bool=true):
  if is_instance_valid(pad):pad.reset()
@@ -263,8 +269,9 @@ func unhandled(event):
  if game.mode!="editor":return
  if event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT:
   if not event.pressed:game.dragging=false;return
-  if not Rect2(390,197,611,313).has_point(event.position):return
-  var v=(event.position-game.editor_origin)/game.editor_scale
+  var pos=ui_position(event.position)
+  if not Rect2(390,197,611,313).has_point(pos):return
+  var v=(pos-game.editor_origin)/game.editor_scale
   var near=-1;var distance=22.0/game.editor_scale
   for i in range(game.draft.parts.size()):
    var d=v.distance_to(game.editor_preview.attachment(game.draft.parts[i]))
@@ -277,7 +284,7 @@ func unhandled(event):
    game.selected_tool="";game.dragging=true
   refresh_editor();get_viewport().set_input_as_handled()
  if event is InputEventMouseMotion and game.dragging and game.selected_part>=0:
-  var v=(event.position-game.editor_origin)/game.editor_scale
+  var v=(ui_position(event.position)-game.editor_origin)/game.editor_scale
   var fixed=Vector2(v.x/game.draft.aspect,v.y)
   game.draft.parts[game.selected_part].angle=fixed.angle();game.draft.parts[game.selected_part].radial=clampf(fixed.length()/game.draft.size,0.45,1.25)
   refresh_editor()

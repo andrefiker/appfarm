@@ -28,30 +28,31 @@ func move_to(pos:Vector2):
 
 func _input(event):
  if game.mode!="play":return
+ var pos=game.mobile_ui.ui_position(event.position) if event is InputEventScreenTouch or event is InputEventScreenDrag or event is InputEventMouse else Vector2.ZERO
  if event is InputEventScreenTouch:
   if event.pressed and not event.canceled:
-   if event.position.distance_to(joystick)<145 and move_finger<0:
-    move_finger=event.index;move_to(event.position);get_viewport().set_input_as_handled()
-   elif event.position.distance_to(primary_pos)<82:
+   if pos.distance_to(joystick)<145 and move_finger<0:
+    move_finger=event.index;move_to(pos);get_viewport().set_input_as_handled()
+   elif pos.distance_to(primary_pos)<82:
     primary_finger=event.index;game.habitat.primary();get_viewport().set_input_as_handled()
-   elif event.position.distance_to(secondary_pos)<74:
+   elif pos.distance_to(secondary_pos)<74:
     secondary_finger=event.index;game.habitat.secondary();get_viewport().set_input_as_handled()
   else:
    if event.index==move_finger:move_finger=-1;move_to(joystick)
    if event.index==primary_finger:primary_finger=-1
    if event.index==secondary_finger:secondary_finger=-1
  if event is InputEventScreenDrag and event.index==move_finger:
-  move_to(event.position);get_viewport().set_input_as_handled()
+  move_to(pos);get_viewport().set_input_as_handled()
  # A mouse fallback is useful for the phone-layout QA harness. Touch input
  # owns multitouch; emulated mouse events must not fire abilities twice.
  if event is InputEventMouseButton and event.device!=-1:
   if event.button_index==MOUSE_BUTTON_LEFT:
    if event.pressed:
-    if event.position.distance_to(joystick)<145:mouse_drag=true;move_to(event.position)
-    elif event.position.distance_to(primary_pos)<82:game.habitat.primary()
-    elif event.position.distance_to(secondary_pos)<74:game.habitat.secondary()
+    if pos.distance_to(joystick)<145:mouse_drag=true;move_to(pos)
+    elif pos.distance_to(primary_pos)<82:game.habitat.primary()
+    elif pos.distance_to(secondary_pos)<74:game.habitat.secondary()
    elif mouse_drag:mouse_drag=false;move_to(joystick)
- if event is InputEventMouseMotion and mouse_drag:move_to(event.position)
+ if event is InputEventMouseMotion and mouse_drag:move_to(pos)
  queue_redraw()
 
 func _exit_tree():reset()

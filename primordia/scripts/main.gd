@@ -1,6 +1,6 @@
 extends Node2D
 
-const VERSION="1.1.1"
+const VERSION="1.1.2"
 const INK=Color("e1efe5")
 const MUTED=Color("81a29e")
 const MINT=Color("a4e4ba")

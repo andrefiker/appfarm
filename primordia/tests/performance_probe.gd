@@ -10,6 +10,14 @@ func run():
  var game=load("res://main.tscn").instantiate();root.add_child(game)
  await process_frame
  game.start_new();game.habitat.active=false
+ var args=OS.get_cmdline_user_args()
+ if "--perf-no-shaders" in args:
+  game.water.visible=false
+  game.veil.visible=false
+ if "--perf-no-bodies" in args:
+  game.habitat.player.visible=false
+  for a in game.habitat.agents:a.node.visible=false
+ if "--perf-no-habitat" in args:game.habitat.visible=false
  var simulation=[]
  for i in range(600):
   var start=Time.get_ticks_usec()

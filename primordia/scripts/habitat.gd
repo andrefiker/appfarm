@@ -122,7 +122,7 @@ func simulate(dt:float,input_override:Vector2=Vector2.INF):
   tick_time-=8; ecology.tick(8)
  if spawn_time>=4:
   spawn_time-=4; _replenish()
- var target_zoom=clampf(1.08-pow(genome.size/22.0-1.0,0.8)*0.12,0.62,1.08)
+ var target_zoom=clampf(1.08-pow(genome.size/22.0-1.0,0.8)*0.12,0.62,1.08)*(MobileUI.SCREEN_SCALE if touch_enabled else 1.0)
  camera.zoom=camera.zoom.lerp(Vector2.ONE*target_zoom,minf(1,dt*0.6))
  camera.position=camera.position.lerp(player.position,minf(1,dt*4))
  for e in effects: e.life-=dt
@@ -131,7 +131,7 @@ func simulate(dt:float,input_override:Vector2=Vector2.INF):
  if new_zone!=zone_name: zone_name=new_zone; message.emit(new_zone)
  if Genome.can_reproduce(energy,dna,breed_cd) and not ready_notified:
   ready_notified=true; message.emit("A new generation is possible · press E to evolve")
- if not touch_enabled or sim_steps%2==0:queue_redraw()
+ if not touch_enabled or sim_steps%4==0:queue_redraw()
 
 func _eat(dt:float):
  var radius=genome.size*(1.2+stats.filter*0.55)
@@ -203,7 +203,7 @@ func _agents(dt:float):
   var step=dt
   if distance>1200:
    if sim_steps%6!=0: continue
-   step=dt*6
+   step=dt*(3.0 if touch_enabled else 6.0)
   a.age+=step; a.energy-=step*0.23; a.decision-=step
   a.nibble=a.get("nibble",0.0)-step
   if a.poison>0: a.poison-=step; a.hp-=step*5

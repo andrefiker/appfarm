@@ -13,17 +13,20 @@ func frames(n:int=3):
  for i in range(n):await get_tree().process_frame
 
 func click(pos:Vector2):
+ pos*=MobileUI.SCREEN_SCALE
  var motion=InputEventMouseMotion.new();motion.position=pos;get_viewport().push_input(motion,true)
  for pressed in [true,false]:
   var e=InputEventMouseButton.new();e.position=pos;e.button_index=MOUSE_BUTTON_LEFT;e.pressed=pressed
   get_viewport().push_input(e,true);await frames(2)
 
 func touch(index:int,pos:Vector2,pressed:bool=true,canceled:bool=false):
+ pos*=MobileUI.SCREEN_SCALE
  var e=InputEventScreenTouch.new();e.index=index;e.position=pos;e.pressed=pressed;e.canceled=canceled
  get_viewport().push_input(e,true)
  await frames(2)
 
 func drag(index:int,pos:Vector2):
+ pos*=MobileUI.SCREEN_SCALE
  var e=InputEventScreenDrag.new();e.index=index;e.position=pos
  get_viewport().push_input(e,true);await frames(2)
 

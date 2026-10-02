@@ -8,4 +8,4 @@ cd "$(dirname "$0")/.."
 export GODOT_ANDROID_KEYSTORE_RELEASE_PATH GODOT_ANDROID_KEYSTORE_RELEASE_USER GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD
 mkdir -p build
 "$GODOT_BIN" --headless --editor --import --quit
-"$GODOT_BIN" --headless --export-release Android build/Primordia-1.1.1-Android.apk
+"$GODOT_BIN" --headless --export-release Android build/Primordia-1.1.2-Android.apk

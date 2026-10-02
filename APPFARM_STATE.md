@@ -169,3 +169,13 @@ Vercel:
   process-death draft/result persistence, undo, baseline/failed-target progression,
   safe system bars, and coexistence with Daily Home Training. Final pass adds
   explicit bounds checks for the set button against the app navigation.
+
+- Final release independently verified at source
+  `5bb7a7d0ac38a80fa7f478cc63f5e4d645f3c075`; Actions run `37073183113`
+  passed 21 core tests, phone browser QA, debug/release build and lint, and
+  API35 emulator install/offline/resume/safe-area/coexistence QA.
+- Delivered `ONE-MORE-v1.0.0.apk` SHA-256:
+  `eea92741a999aaca920bd4aeb92edacaf92c28f934e8739fb6262fa0948fe14b`.
+  Its compiled payload matches the final CI unsigned release and all bundled
+  source assets byte-for-byte. v2/v3 signatures and zip alignment verified;
+  no Android permissions or debug flag. Physical handset testing remains open.

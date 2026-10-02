@@ -82,6 +82,8 @@ Vercel:
 
 ## Known current source anchors / rollback references
 
+- Quiet Solitaire v1.3.0: source and Android workflow at `10c697349963bc6a2a598050508a2bfb2a099713`; APK `Quiet-Solitaire-v1.3.0.apk` built and structurally verified in Actions run `37031039995`. Package `com.andrefiker.quietsolitaire`, versionCode 14. Offline PWA and rules/interaction tests passed. Android device install/play QA unavailable. Temporary test signing means in-place upgrades from other temporary-key builds may fail. Rollback: `57526788ff6abf1a8cd771111a288aaa5d0a7a7f`.
+
 - Settlement Zero / Android packaging baseline: `4dc5aaa0bfb60f118055370483c8b3471ecbf940`.
 - Quiet Video Poker v1.3.0: current main source commit `20db9fc85e0b204c830b213b171e36d30377be09`, package `com.appfarm.quietvideopoker`, version code 4. Fresh bankroll: 1,000 credits; untouched v1.2 100,000-credit opening balances migrate to 1,000 while played balances/stats remain intact. Bets unchanged: 100, 200, 500, 1,000, 5,000. GitHub Actions run `36446596437` passed 22 tests, APK structure/signature, emulator install/play/resume/reopen/offline QA, and phone screenshots. APK: `Quiet-Video-Poker-v1.3.0.apk` in Library. Rollback: `4d7e1fb5375db5f996e82d3c0fc7b61f256ed7ab` (v1.2.0); v1.1: `7a2d3978156a61cf444a4b605432f5c774e8e839`; v1.0: `2026ab088ff01eb3c2bc0ab27413aa77a26fcf43`.
 - Quiet Knight most recent default-branch game change found: `ebaf078f1148b764f1da013b7c2f7871ec76f9c6` (`fix(quiet-knight): smooth strong difficulty ladder`, 2026-09-24).

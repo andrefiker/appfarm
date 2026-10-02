@@ -156,9 +156,16 @@ Vercel:
   `8bfdfdc2fa9f078021065b3bce7fa16bf73347ece15664bb7464352894c92c2d`.
   Key filename `ONE-MORE-signing-key.p12`, alias `onemore`, password `android`;
   retain privately and use for every subsequent update.
-- Retained four bounded improvements: compact session/scroll reset; cap and
+- Retained five bounded improvements: compact session/scroll reset; cap and
   weekly-improvement correctness; stable Easy Day promotion snapshots and
   corrections; corrupted-data restore. Core suite now has 21 passing tests.
 - Native API35 debug/release assembly and lint passed at source
   `99ec546f6cd57ebecf451d6d2a5f9821ad993284`; final source additionally contains
-  damaged-data restore regression coverage. Physical phone QA is not claimed.
+  damaged-data restore regression coverage and short-screen spacing. Physical
+  phone QA is not claimed.
+
+- API35 emulator QA passed in Actions run `37072487279` at
+  `a50e0221ed0257a3366bcd52d0f9b5323ee66f27`: fresh install, offline full workout,
+  process-death draft/result persistence, undo, baseline/failed-target progression,
+  safe system bars, and coexistence with Daily Home Training. Final pass adds
+  explicit bounds checks for the set button against the app navigation.

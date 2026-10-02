@@ -68,6 +68,9 @@ are omitted. User-added exercises participate in the main program.
 4. Damaged-data recovery preserves the original bytes and provides a working
    backup restore preview. Browser QA exercises this recovery path.
 
+5. Short-screen spacing keeps the set button above the app navigation without
+   shrinking text or touch targets. Browser and native QA check its bounds.
+
 Core suite: 21 tests. Browser QA covers 320×568, 393×760 and 720×480 viewports.
 No physical handset test has been performed. The app has no scheduled reminder
 notifications. Easy Day promotion records only the first set; it does not invent

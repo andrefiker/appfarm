@@ -14,6 +14,42 @@ export function isDoubleTap(previous, key, now, windowMs = 330) {
   return Boolean(previous?.key === key && now - previous.at >= 0 && now - previous.at <= windowMs);
 }
 
+/** Delay only cards that can go to a foundation so a double tap is atomic. */
+export function createTapDispatcher({ single, double, schedule = setTimeout, cancel = clearTimeout, windowMs = 280 }) {
+  let pending = null;
+  function flush() {
+    if (!pending) return;
+    const item = pending; pending = null; cancel(item.timer); single(item.source);
+  }
+  return {
+    flush,
+    clear() { if (pending) cancel(pending.timer); pending = null; },
+    tap(source, key, now, canDouble) {
+      if (pending && isDoubleTap(pending, key, now, windowMs)) {
+        cancel(pending.timer); pending = null; double(source); return 'double';
+      }
+      flush();
+      if (canDouble) {
+        pending = { source, key, at: now, timer: schedule(flush, windowMs) };
+        return 'pending';
+      }
+      single(source); return 'single';
+    },
+  };
+}
+
+/** A foundation card is automatic only when the opposite colors are ready. */
+export function safeFoundationMove(state, source) {
+  const pile = sourcePile(state, source);
+  const index = source.cardIndex ?? (pile?.length ?? 0) - 1;
+  const card = pile?.[index];
+  if (!card || index !== pile.length - 1 || source.type === 'foundation') return false;
+  if (card.rank <= 2) return true;
+  const opposite = state.foundations
+    .filter(foundation => foundation.length && RED.has(foundation[0].suit) !== RED.has(card.suit));
+  return opposite.length === 2 && opposite.every(foundation => foundation.length >= card.rank - 1);
+}
+
 export function pickExpandedDropTarget(point, candidates, padding = 14) {
   let best = null;
   for (const candidate of candidates ?? []) {
@@ -63,18 +99,11 @@ export function chooseSmartDestination(state, source, targets, enabled = true) {
 
   const tableauTargets = targets.filter(target => target.type === 'tableau');
   const revealsHiddenCard = source.type === 'tableau'
-    && cardIndex === pile.length - 1
     && cardIndex > 0
     && pile[cardIndex - 1].faceUp === false;
   if (revealsHiddenCard && tableauTargets.length === 1) return tableauTargets[0];
 
   const foundationTargets = targets.filter(target => target.type === 'foundation');
-  if (foundationTargets.length !== 1) return null;
-  const oppositeFoundations = state.foundations.filter(foundation =>
-    foundation.length && RED.has(foundation[0].suit) !== RED.has(card.suit)
-  );
-  const oppositeSuitProgress = oppositeFoundations.map(foundation => foundation.length);
-  if (oppositeFoundations.length < 2) oppositeSuitProgress.push(0);
-  const leastAdvancedOppositeSuit = Math.min(...oppositeSuitProgress);
-  return card.rank <= leastAdvancedOppositeSuit + 2 ? foundationTargets[0] : null;
+  if (foundationTargets.length === 1 && safeFoundationMove(state, source)) return foundationTargets[0];
+  return null;
 }

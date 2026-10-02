@@ -18,6 +18,19 @@ test('waste and foundation moves, including foundation back to tableau',()=>{con
 test('undo restores exact board state and can be repeated',()=>{const g=newGame(45,1);const before=JSON.stringify({stock:g.stock,waste:g.waste,foundations:g.foundations,tableau:g.tableau,moves:g.moves,score:g.score});drawFromStock(g);drawFromStock(g);assert.equal(undo(g),true);assert.equal(undo(g),true);assert.equal(JSON.stringify({stock:g.stock,waste:g.waste,foundations:g.foundations,tableau:g.tableau,moves:g.moves,score:g.score}),before);assert.equal(undo(g),false)});
 test('won state requires all 52 cards on foundations',()=>{const g=fixture();g.foundations=Array.from({length:4},(_,i)=>Array.from({length:13},(_,j)=>card(['hearts','diamonds','clubs','spades'][i],j+1)));assert.equal(isWon(g),true);g.foundations[0].pop();assert.equal(isWon(g),false)});
 test('auto-finish safety follows foundation suits when Aces occupy arbitrary slots',()=>{const g=fixture();g.stock=[];g.waste=[];g.foundations=[[...Array.from({length:8},(_,i)=>card('hearts',i+1))],[...Array.from({length:8},(_,i)=>card('clubs',i+1))],[...Array.from({length:3},(_,i)=>card('spades',i+1))],[...Array.from({length:3},(_,i)=>card('diamonds',i+1))]];g.tableau[0]=[card('hearts',10)];assert.equal(autoFinishSafe(g),false)});
+test('auto-finish requires a foundation-only path through every remaining card',()=>{
+  const g=fixture();
+  g.foundations=['hearts','diamonds','clubs','spades'].map(suit=>Array.from({length:11},(_,i)=>card(suit,i+1)));
+  g.tableau[0]=[card('hearts',13),card('hearts',12)];
+  g.tableau[1]=[card('diamonds',13),card('diamonds',12)];
+  g.tableau[2]=[card('clubs',13),card('clubs',12)];
+  g.tableau[3]=[card('spades',13),card('spades',12)];
+  const before=serialize(g);
+  assert.equal(autoFinishSafe(g),true);
+  assert.equal(serialize(g),before);
+  g.tableau[0].reverse();
+  assert.equal(autoFinishSafe(g),false);
+});
 test('foundation-to-tableau rule rejects incorrect rank/color',()=>{const g=fixture();g.foundations[0]=[card('hearts',1)];g.tableau[0]=[card('diamonds',3)];assert.equal(legalMove(g,{type:'foundation',index:0},{type:'tableau',index:0}),false);g.tableau[0]=[card('clubs',2)];assert.equal(legalMove(g,{type:'foundation',index:0},{type:'tableau',index:0}),true)});
 test('hints prefer revealing a hidden tableau card over a foundation return',()=>{const g=fixture();g.foundations[0]=[card('hearts',1)];g.tableau[0]=[card('spades',8,false),card('hearts',7)];g.tableau[1]=[card('clubs',8)];g.tableau[2]=[card('clubs',2)];const hint=getHint(g);assert.equal(hint.source.type,'tableau');assert.equal(hint.source.index,0);assert.equal(hint.dest.index,1);assert.equal(legalMove(g,hint.source,hint.dest,hint.cardIndex),true)});
 test('hint identifies recycling the waste when no board move exists',()=>{const g=fixture();g.waste=[card('hearts',5)];const hint=getHint(g);assert.equal(hint.source.type,'stock');assert.equal(hint.dest.type,'waste')});

@@ -1,5 +1,22 @@
 # Quiet Solitaire APK verification
 
+## v1.3.0 release candidate
+
+- Package: `com.andrefiker.quietsolitaire`
+- Version: `1.3.0`, versionCode `14`
+- Artifact: `Quiet-Solitaire-v1.3.0.apk`
+- Rollback source: `57526788ff6abf1a8cd771111a288aaa5d0a7a7f`
+- Local Node tests and offline PWA build pass. The Android workflow verifies
+  package metadata, signature, ZIP alignment, permissions and bundled bytes.
+- Android uses the default decor fitting system windows, with a portrait
+  WebView and CSS safe-area insets; no edge-to-edge opt-in.
+- Temporary generated test signing remains. A previous APK signed with a
+  different temporary key cannot be updated in place.
+- Android installation and device touch/visual QA remain unverified until run
+  on an emulator or physical phone.
+
+## Historical v1.2.0 verification
+
 ## Package
 
 - Application: **Quiet Solitaire**

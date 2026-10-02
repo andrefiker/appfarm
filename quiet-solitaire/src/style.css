@@ -46,6 +46,16 @@
 @media(max-height:720px) and (orientation:portrait){.topbar{margin-bottom:5px}.tableau{margin-top:clamp(10px,2.4vw,18px)}.controls{bottom:calc(5px + var(--safe-bottom))}}
 @media(orientation:landscape) and (max-height:600px){.topbar:after{bottom:-3px}.upper-row{margin-top:1px}}
 @media(prefers-reduced-motion:reduce){.card,.control-button,.menu-row{transition-duration:.01ms}}
+
+/* Keep Android's page fixed; only unusually tall tableau stacks may scroll. */
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+@media(orientation:portrait) and (max-width:600px){
+  .tableau-viewport{overscroll-behavior:contain}
+  .card.face-down{opacity:1;background-color:#25483e;background-blend-mode:normal}
+  .card .corner:not(.bottom){z-index:1}
+  #undo,#new-game{flex-grow:1.25}
+  #menu-open,#game-number-open{flex-grow:.8}
+}
 @media(max-width:600px){.topbar{display:grid;grid-template-areas:'brand menu' 'meta meta';grid-template-columns:minmax(0,1fr) 34px;grid-template-rows:26px 16px;height:auto;align-items:center;column-gap:6px;row-gap:2px;margin-bottom:14px}.brand{grid-area:brand;min-width:0}.game-meta{grid-area:meta;min-width:0;overflow:hidden}.menu-button{grid-area:menu;justify-self:end}}
 @media(orientation:landscape) and (max-height:600px){:root{--card-w:min(10.6vw,11.8vh,72px);--gap:clamp(5px,1.4vw,12px);--card-overlap:clamp(12px,3.2vh,18px)}.tableau{margin-top:8px}}
 @media(orientation:landscape) and (min-width:600px) and (max-height:600px){

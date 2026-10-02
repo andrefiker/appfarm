@@ -1,5 +1,20 @@
 # Quiet Solitaire
 
+## v1.3.0 (2026-10-02)
+
+Smart tap keeps ambiguous destinations visible and moves complete tableau sequences.
+Foundation promotion uses both opposite-color suits for a conservative safety check.
+Cards eligible for double-tap foundation wait 280 ms before the single-tap
+action, preventing two actions from one gesture. Auto-finish now proves every
+remaining card can reach foundation by foundation moves alone, runs in a few
+seconds, and can be interrupted. The portrait board keeps page scrolling off,
+preserves system insets, and gives Undo and New Game more space.
+
+Android versionCode 14; package `com.andrefiker.quietsolitaire`. The previous
+source checkpoint is `57526788ff6abf1a8cd771111a288aaa5d0a7a7f`.
+The APK uses a temporary signing key unless a stable key is supplied; it may
+require uninstalling an older temporary-key build.
+
 Quiet Solitaire is a local-first Klondike game delivered as a browser/PWA build and a thin Android WebView application. The game rules and PWA were preserved; the Android wrapper packages the built files locally and does not point to a remote site.
 
 ## Run and test the PWA

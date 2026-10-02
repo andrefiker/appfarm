@@ -139,19 +139,25 @@ export function getHint(state) {
 }
 
 export function autoFinishSafe(state) {
+  if(state.status!=='playing') return false;
   if(state.stock.length||state.waste.length) return false;
   if(state.tableau.some(col=>col.some(c=>!c.faceUp))) return false;
-  const redProgress=state.foundations.filter(p=>p.length&&RED.has(p[0].suit)).map(p=>p.length);
-  const blackProgress=state.foundations.filter(p=>p.length&&!RED.has(p[0].suit)).map(p=>p.length);
-  if(redProgress.length<2)redProgress.push(0);
-  if(blackProgress.length<2)blackProgress.push(0);
-  const minRed=Math.min(...redProgress);
-  const minBlack=Math.min(...blackProgress);
-  for(const col of state.tableau) if(col.length) {
-    const c=top(col); if(c.rank>minRed+2&&color(c)==='red') return false;
-    if(c.rank>minBlack+2&&color(c)==='black') return false;
+  // Prove the remaining game finishes through foundation moves alone.
+  // A visible board can still contain an obstructed card, so visibility is
+  // insufficient proof by itself.
+  const tableau=state.tableau.map(col=>col.slice());
+  const foundations=state.foundations.map(pile=>pile.slice());
+  let moved=true;
+  while(moved) {
+    moved=false;
+    for(const col of tableau) {
+      const card=top(col);
+      if(!card) continue;
+      const destination=foundations.find(pile=>canFoundationAccept(card,pile));
+      if(destination) { destination.push(col.pop()); moved=true; }
+    }
   }
-  return true;
+  return tableau.every(col=>!col.length) && foundations.every(pile=>pile.length===13);
 }
 
 export function serialize(state) { const copy=cloneState(state); return JSON.stringify(copy); }

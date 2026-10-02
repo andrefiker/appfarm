@@ -136,3 +136,19 @@ Vercel:
 2. Confirm whether their APK artifacts/workflow branches still exist before resuming them.
 3. Complete or explicitly cancel the pending Railway/Lovable cleanup in its own execution task.
 4. Update this file only when meaningful state changes.
+
+## ONE MORE — isolated new app (2026-10-02)
+
+- New source directory `one-more-training/`, branch `one-more-training-v1`.
+- Display `ONE MORE`; unique ID `com.andrefiker.onemore`; v1.0.0/code 1.
+- Offline Java WebView + bundled assets + private SharedPreferences, following
+  the verified Daily Home Training packaging pattern. Other app source unchanged.
+- 12 requested exercises as editable seed records, Monday/Wednesday/Friday,
+  per-set/per-side progression (+1 rep/+5 sec on met targets; missed targets
+  repeat), baseline push-ups, caps, draft resume, undo/correction, progress,
+  exercise CRUD/reorder/enable/reset, Easy Day isolation, themes and SAF backups.
+- CI workflow: `.github/workflows/one-more-training-apk.yml`; node tests,
+  phone browser flow, Gradle lint/build, API35 emulator and coexistence checks.
+- Delivered APK must be signed with the dedicated persistent ONE MORE key,
+  privately retained with the release. Never reuse Daily Home Training's key.
+- No unrelated apps merged. Base/rollback: `00b33d9a5aa45b1e8cd89ca0659837762da99ab4`.

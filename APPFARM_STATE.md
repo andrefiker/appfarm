@@ -82,6 +82,18 @@ Vercel:
 
 ## Known current source anchors / rollback references
 
+- Quiet Solitaire Windows v1.4.0: offline x64 NSIS installer
+  `Quiet-Solitaire-Windows-Setup-v1.4.0.exe` built from
+  `02ace1a7af636dcbe1cfca91638f770527f3332b` in Windows Actions run
+  `37048258153`. Size 120,171,182 bytes; SHA-256
+  `8893b40dce40076ba0aa194ffcbe946071eba0f5b33658f5bfbbec331b228312`.
+  Four Node test files passed, browser gameplay smoke passed, and Windows
+  packaged and silently installed app each launched and resumed saved stock.
+  Packaged app also checked tableau offsets, left-handed default, page fit,
+  and blocked remote fetch. NSIS installed per user on the hosted Windows
+  runner. Authenticode status `NotSigned`; Windows may show an unknown publisher
+  warning. No physical PC test. Source rollback before Windows packaging:
+  `c478c853b875fffaf7e5da5c711b7045e0621f8c`.
 - Quiet Solitaire v1.4.0: merged improvement loop at
   `ed264988019aab41f3630cfc5b172b926e1536fe`. Android package
   `com.andrefiker.quietsolitaire`, versionCode 15; APK

@@ -1,0 +1,1046 @@
+MODEL:
+GPT-6 Astra
+
+REASONING:
+HIGH
+
+PROJECT:
+PRIMORDIA — EVOLUTION SANDBOX
+
+MISSION:
+
+Build a complete, polished, offline Windows PC game called:
+
+PRIMORDIA
+
+This is an IMPLEMENTATION task.
+
+Do NOT merely design, propose, or write a game document.
+
+Actually build the game, run it, play it, test it, repair problems, package it for Windows, and deliver the working Windows build plus complete source.
+
+Repository:
+andrefiker/appfarm
+
+Create a new top-level directory:
+primordia/
+
+GitHub is source of truth.
+
+==================================================
+CORE IDEA
+==================================================
+
+PRIMORDIA is an original evolution sandbox inspired by the broad fantasy of games such as Spore’s microorganism stage:
+
+START AS A TINY ORGANISM
+→ SWIM
+→ EAT
+→ SURVIVE
+→ GROW
+→ MUTATE
+→ REPRODUCE
+→ ADAPT
+→ COMPETE
+→ EVOLVE INTO SOMETHING DISTINCT
+
+Do NOT copy Spore’s:
+
+- creatures
+- art
+- sounds
+- user interface
+- editor layout
+- names
+- assets
+- exact progression
+- levels
+- animations
+- visual identity
+
+Create an original biological world and game system.
+
+The ambition is:
+
+“what I remember Spore’s cell stage feeling like, but deeper, more systemic, stranger, and built as a modern small indie game.”
+
+==================================================
+PLATFORM
+==================================================
+
+PRIMARY TARGET:
+Windows 10/11 desktop PC.
+
+This game should work well on a modest PC.
+
+Prefer a lightweight engine and architecture.
+
+Godot 4 is preferred if practical.
+
+Do NOT require:
+
+- cloud backend
+- login
+- online account
+- analytics
+- external server
+- internet connection
+
+Everything should run locally and offline.
+
+==================================================
+PLAYER EXPERIENCE
+==================================================
+
+The game begins almost immediately.
+
+Minimal title screen:
+
+PRIMORDIA
+
+NEW ORGANISM
+CONTINUE
+SETTINGS
+QUIT
+
+Starting a new game should place the player into the primordial environment within seconds.
+
+The first organism is tiny, weak, simple, and visually unimpressive.
+
+Evolution must make it gradually feel like YOUR creature.
+
+The player should eventually look at the organism and think:
+
+“How the hell did I end up becoming this thing?”
+
+==================================================
+WORLD
+==================================================
+
+Create a large continuous microscopic ecosystem.
+
+Visual inspiration:
+
+- pond water
+- plankton
+- microscope photography
+- translucent tissue
+- suspended particles
+- cellular structures
+- bioluminescent organisms
+- deep-water microbial ecosystems
+
+But use a stylized original visual language rather than photorealism.
+
+The environment should feel alive at all times.
+
+Include:
+
+- drifting organic particles
+- nutrient clouds
+- currents
+- light gradients
+- debris
+- microbial colonies
+- predators
+- prey
+- scavengers
+- parasites
+- neutral organisms
+
+Organisms should exist and interact even when the player ignores them.
+
+==================================================
+MOVEMENT
+==================================================
+
+Movement should feel biological rather than like a spaceship.
+
+Support:
+
+WASD:
+directional movement
+
+Mouse:
+aim / orient organism
+
+SPACE:
+burst action or primary ability
+
+SHIFT:
+secondary ability where appropriate
+
+Movement characteristics should be affected by morphology.
+
+Examples:
+
+Flagella:
+strong forward propulsion
+
+Cilia:
+high maneuverability
+
+Broad fins/membranes:
+efficient turning
+
+Large organisms:
+more inertia
+
+Streamlined organisms:
+higher top speed
+
+Heavy armor:
+slower acceleration
+
+Movement should visually correspond to anatomy.
+
+==================================================
+ENERGY SYSTEM
+==================================================
+
+All biological actions consume energy.
+
+Energy comes from:
+
+- consuming organisms
+- photosynthesis
+- scavenging
+- nutrient absorption
+- symbiosis
+- specialized later mutations
+
+Energy powers:
+
+- movement
+- attacks
+- defensive abilities
+- healing
+- reproduction
+- growth
+
+Avoid dozens of resource bars.
+
+Keep the core readable.
+
+==================================================
+DIETS
+==================================================
+
+Allow organisms to evolve toward multiple strategies.
+
+Examples:
+
+HERBIVORE / FILTER FEEDER
+absorbs nutrients and microorganisms
+
+PREDATOR
+actively hunts other creatures
+
+SCAVENGER
+feeds on dead organisms
+
+PHOTOSYNTHETIC
+gains energy from illuminated regions
+
+PARASITIC
+attaches to larger organisms
+
+OMNIVORE
+flexible but less specialized
+
+SYMBIOTIC
+benefits from relationships with another organism type
+
+Do not hard-lock the player into a class.
+
+Behavior should emerge from anatomy and mutations.
+
+==================================================
+CREATURE BODY SYSTEM
+==================================================
+
+The creature must be physically assembled from functional biological parts.
+
+Core body:
+
+- membrane/body mass
+- nucleus/core
+- mouth structures
+- sensory structures
+- propulsion structures
+- defensive structures
+- offensive structures
+- metabolic structures
+
+Parts should have meaningful tradeoffs.
+
+Examples:
+
+FLAGELLUM
++ speed
++ acceleration
+- energy consumption
+
+CILIA
++ turning
++ fine movement
+- less efficient at high speed
+
+SPIKE
++ collision damage
+- increased drag
+
+ARMOR PLATE
++ damage resistance
+- mass
+- turning penalty
+
+TOXIN GLAND
++ poison attack
+- substantial energy cost
+
+PHOTORECEPTOR
++ better awareness / visibility
+- mutation cost
+
+CHEMORECEPTOR
++ detect food through obscured areas
+
+FILTER MOUTH
++ efficient passive feeding
+- poor against large prey
+
+PREDATORY JAW
++ high damage
+- costly
+- requires proximity
+
+PHOTOSYNTHETIC ORGANELLE
++ passive energy in light
+- reduced efficiency in darkness
+
+FAT STORAGE
++ energy reserves
+- mass
+
+REGENERATION TISSUE
++ healing
+- high metabolic cost
+
+==================================================
+EVOLUTION EDITOR
+==================================================
+
+Create an excellent organism editor.
+
+The player enters it when reproducing or reaching a mutation threshold.
+
+The organism should appear enlarged.
+
+The player can modify its body using earned mutation points.
+
+Allow:
+
+- adding parts
+- removing parts
+- moving parts
+- rotating parts
+- resizing within sensible limits
+- changing body proportions
+- adjusting symmetry
+- changing coloration/patterns
+
+The editor must immediately communicate stat changes.
+
+Show only important effects:
+
+Speed
+Turn
+Defense
+Attack
+Energy
+Senses
+
+Avoid spreadsheet overload.
+
+Creature shape should affect actual gameplay.
+
+Do not make morphology purely cosmetic.
+
+==================================================
+GENETICS / MUTATION
+==================================================
+
+Evolution should involve both deliberate and emergent variation.
+
+At reproduction:
+
+player receives mutation opportunities.
+
+Offer several mutation choices based partly on:
+
+- player behavior
+- environment
+- diet
+- threats encountered
+- anatomy
+- ancestry
+
+Examples:
+
+Player escapes predators frequently:
+movement-related adaptations become more likely.
+
+Player hunts heavily:
+predatory mutations become more likely.
+
+Player lives near bright surface water:
+photosynthetic adaptations become more likely.
+
+Player receives repeated physical damage:
+defensive adaptations become more likely.
+
+This should create a feeling that the environment influences evolution.
+
+==================================================
+NPC EVOLUTION
+==================================================
+
+This is critically important.
+
+Other organisms should ALSO evolve.
+
+Do not spawn static enemies forever.
+
+Track simplified inheritable characteristics for NPC species.
+
+Allow population-level changes over generations.
+
+Examples:
+
+If player heavily hunts slow prey:
+surviving prey gradually become faster.
+
+If armored prey dominates:
+predators may gradually gain stronger attacks.
+
+If a predator becomes too successful:
+its prey population falls and predator numbers may subsequently collapse.
+
+If nutrient abundance changes:
+different feeding strategies become viable.
+
+This does NOT need a university-grade evolutionary simulation.
+
+It DOES need visible ecosystem adaptation.
+
+==================================================
+SPECIES SYSTEM
+==================================================
+
+Procedurally generate species based on modular anatomy.
+
+Each species should possess:
+
+- body shape
+- color/pattern
+- movement method
+- diet
+- aggression
+- preferred depth
+- senses
+- defenses
+- reproduction tendency
+
+Species can:
+
+- expand
+- decline
+- mutate
+- split into related variants
+- go extinct
+
+Maintain a lightweight ecosystem ledger.
+
+==================================================
+FOOD WEB
+==================================================
+
+Create a functional food web.
+
+Small organisms feed on nutrients.
+
+Larger organisms may feed on smaller ones.
+
+Dead organisms become scavenging opportunities.
+
+Population pressure should matter.
+
+Avoid infinite arbitrary spawning directly beside the player.
+
+Spawn according to ecosystem and biome logic.
+
+==================================================
+BIOMES
+==================================================
+
+Create several connected ecological zones.
+
+Examples:
+
+SUNLIT SHALLOWS
+bright
+nutrient rich
+high photosynthesis
+many small organisms
+
+ALGAL BLOOM
+dense vegetation
+low visibility
+high resource availability
+
+OPEN WATER
+fast predators
+few hiding places
+
+DETRITUS FIELD
+dead organic matter
+scavengers
+parasites
+
+THERMAL VENT
+high energy
+hostile conditions
+strange extremophiles
+
+DEEP DARK
+minimal light
+bioluminescence
+specialized predators
+
+TRANSITION ZONES
+mixed ecology
+
+Do not use loading screens between ordinary zones if avoidable.
+
+==================================================
+SCALE
+==================================================
+
+As the organism evolves, slowly change perceived scale.
+
+Early:
+individual particles feel large.
+
+Later:
+tiny organisms become almost irrelevant.
+
+Eventually:
+the player competes with significantly larger creatures.
+
+Do this through camera, world scaling, ecology, and creature growth.
+
+Avoid endlessly making every NPC scale numerically with the player.
+
+Small organisms should remain small.
+
+==================================================
+COMBAT
+==================================================
+
+Combat should be mostly physical/systemic.
+
+Examples:
+
+- biting
+- piercing
+- poisoning
+- ramming
+- grappling
+- attaching
+- stunning
+- defensive discharge
+- camouflage
+- escape burst
+
+Bodies should visually respond to impacts.
+
+Avoid health-bar swordfight behavior.
+
+Position and anatomy should matter.
+
+==================================================
+SENSORY SYSTEM
+==================================================
+
+Different organisms should perceive the world differently.
+
+Player mutations can improve:
+
+- visual radius
+- chemical detection
+- vibration detection
+- threat awareness
+- food detection
+
+Visualize these elegantly.
+
+Examples:
+
+chemical trails
+subtle pulses
+directional indicators
+faint outlines
+
+Do not clutter the screen with giant HUD widgets.
+
+==================================================
+LIFE CYCLE
+==================================================
+
+Core loop:
+
+EXPLORE
+→ FEED
+→ SURVIVE
+→ BUILD ENERGY
+→ REPRODUCE
+→ MUTATE
+→ RETURN TO WORLD
+
+Death should matter but not be brutally punishing.
+
+Maintain lineage progression.
+
+Possible structure:
+
+Death returns player to the latest viable descendant.
+
+Some accumulated evolutionary progress survives through lineage genetics.
+
+==================================================
+LINEAGE
+==================================================
+
+Track the player's evolutionary lineage.
+
+Show a simple branching timeline.
+
+Each reproductive generation should save:
+
+- generation number
+- approximate morphology
+- major mutations
+- ecological role
+- approximate size
+
+Allow the player to see their organism changing over time.
+
+This feature should feel delightful but remain lightweight.
+
+==================================================
+PROCEDURAL CREATURE VISUALS
+==================================================
+
+Creature bodies should appear soft, translucent, wet, cellular, and alive.
+
+Use:
+
+- layered translucent shapes
+- procedural membranes
+- organelles
+- subtle deformation
+- animated internal structures
+- simple shaders where performant
+- appendage animation
+- body wobble
+- reactive motion
+
+Avoid looking like flat circles with eyes.
+
+NO cartoon eyes.
+
+NO smiling faces.
+
+NO generic cute mobile-game creatures.
+
+Aim for:
+
+beautiful
+alien
+biological
+slightly unsettling
+
+==================================================
+ANIMATION
+==================================================
+
+Organism movement should have secondary motion.
+
+Examples:
+
+- membranes flex
+- tails trail
+- cilia oscillate
+- internal structures drift
+- bodies compress on impact
+- predators lunge
+- organisms recoil when damaged
+
+Even simple procedural animation is preferable to static sprites.
+
+==================================================
+SOUND
+==================================================
+
+Create restrained ambient sound.
+
+Use:
+
+- underwater/microscopic ambience
+- soft biological pulses
+- feeding sounds
+- impact sounds
+- membrane movement
+- low-frequency predator cues
+
+No constant arcade music.
+
+Music may appear subtly during major evolutionary transitions.
+
+==================================================
+UI
+==================================================
+
+Minimal UI.
+
+During normal play show primarily:
+
+Energy
+Health / integrity
+Mutation progress
+
+Contextual information appears only when useful.
+
+Hide most UI when unnecessary.
+
+The organism and ecosystem should dominate the screen.
+
+==================================================
+CAMERA
+==================================================
+
+Smooth camera.
+
+No nausea-inducing aggressive movement.
+
+Use:
+
+- gentle follow
+- mild dynamic zoom
+- restrained screen shake
+- optional shake disable
+- no rapid zoom pulses
+
+==================================================
+SIMULATION PERFORMANCE
+==================================================
+
+Do NOT simulate every organism at maximum fidelity globally.
+
+Use multiple simulation layers.
+
+Near player:
+full physical simulation.
+
+Medium distance:
+simplified behavioral simulation.
+
+Far ecosystem:
+statistical population simulation.
+
+This should allow the world to feel much larger than the number of actively rendered creatures.
+
+==================================================
+SAVE SYSTEM
+==================================================
+
+Local autosave.
+
+Persist:
+
+- organism
+- genome/body
+- generation
+- ecosystem state
+- discovered species
+- lineage
+- biome state
+- settings
+
+Save safely and atomically where practical.
+
+==================================================
+CREATURE INDEX
+==================================================
+
+Add a lightweight discovery screen.
+
+When player encounters species, record them.
+
+Show:
+
+- visual thumbnail
+- approximate diet
+- habitat
+- observed behavior
+- relative danger
+- relationship to player's lineage when relevant
+
+Avoid turning it into a giant encyclopedic chore.
+
+==================================================
+EMERGENT EVENTS
+==================================================
+
+Allow ecosystem events such as:
+
+- nutrient bloom
+- predator population explosion
+- mass die-off
+- migration
+- temperature change
+- toxic bloom
+- temporary darkness
+- invasive species
+- resource collapse
+
+Events should alter ecology rather than merely displaying messages.
+
+==================================================
+DIFFICULTY
+==================================================
+
+Difficulty should arise from ecology.
+
+Not from stat inflation.
+
+Examples:
+
+predators adapt
+resources become contested
+new ecological niches appear
+successful species multiply
+player specialization creates vulnerabilities
+
+==================================================
+PROGRESSION
+==================================================
+
+Do NOT add:
+
+- XP levels
+- battle passes
+- currencies
+- daily rewards
+- loot boxes
+- equipment inventories
+- quests everywhere
+- crafting trees
+
+Evolution itself IS progression.
+
+==================================================
+GAME LENGTH
+==================================================
+
+The game should support a satisfying session in 20–40 minutes but allow a lineage to continue for hours.
+
+There is no need for a traditional final boss.
+
+A successful prototype/end-state can be reaching a sufficiently complex organism and stable ecological niche.
+
+==================================================
+POLISH PRIORITIES
+==================================================
+
+Prioritize, in this order:
+
+1. movement feel
+2. living ecosystem
+3. organism editor
+4. meaningful morphology
+5. feeding/hunting
+6. NPC behavior
+7. evolutionary feedback
+8. visual responsiveness
+9. sound
+10. secondary systems
+
+Do not build huge amounts of content before the core organism feels good to control.
+
+==================================================
+AUTONOMOUS QUALITY LOOP
+==================================================
+
+After reaching a playable build, perform up to 10 disciplined improvement passes.
+
+For each pass:
+
+PLAY
+→ IDENTIFY HIGHEST-VALUE PROBLEM
+→ IMPLEMENT ONE COHERENT IMPROVEMENT
+→ TEST
+→ PLAY AGAIN
+→ KEEP OR REVERT
+
+Potential areas:
+
+- movement
+- responsiveness
+- creature animation
+- ecosystem density
+- predator behavior
+- feeding feedback
+- mutation balance
+- editor usability
+- visual readability
+- performance
+- pacing
+- sound
+- UI
+- save reliability
+
+Do not make changes merely to reach ten iterations.
+
+Stop early if remaining changes are low-value.
+
+==================================================
+TESTING
+==================================================
+
+Create automated tests where practical for:
+
+- mutation costs
+- energy consumption
+- reproduction conditions
+- damage
+- feeding
+- save/load
+- procedural generation
+- species inheritance
+- ecosystem population calculations
+
+Also perform actual gameplay QA.
+
+Automated tests are not a substitute for playing.
+
+==================================================
+WINDOWS DELIVERY
+==================================================
+
+Windows is the finish line for this task.
+
+Produce a working Windows build.
+
+Prefer:
+
+Primordia/
+Primordia.exe
+required local game files
+
+Also package a convenient ZIP:
+
+Primordia-Windows-vX.Y.Z.zip
+
+If practical, create an installer:
+
+Primordia-Setup-vX.Y.Z.exe
+
+Do NOT claim the Windows build is complete unless the executable was actually produced and verified.
+
+Verify:
+
+- executable exists
+- launches
+- no development-server dependency
+- all assets bundled
+- save/load works
+- fullscreen/windowed modes work
+- keyboard and mouse work
+- game can be played offline
+- no unnecessary permissions/network requirement
+- reasonable performance on modest hardware
+
+==================================================
+SOURCE CONTROL
+==================================================
+
+Work only inside:
+
+appfarm/primordia/
+
+Do not modify unrelated apps.
+
+Commit meaningful working checkpoints.
+
+Record:
+
+- branch
+- commit
+- version
+- engine version
+- build path
+- tests
+- QA performed
+- rollback target
+
+Never leave the newest working source only inside a build provider.
+
+==================================================
+SCOPE CONTROL
+==================================================
+
+This is ambitious.
+
+Do NOT respond to scope pressure by building fifty shallow systems.
+
+Build the smallest version that convincingly delivers:
+
+A LIVING MICROSCOPIC WORLD
++
+A CREATURE THAT PHYSICALLY EVOLVES
++
+AN EDITOR WHERE ANATOMY CHANGES GAMEPLAY
++
+OTHER ORGANISMS THAT ADAPT OVER TIME
+
+Those four things matter more than feature count.
+
+A polished simulation of 10 species is better than a broken simulation of 200.
+
+==================================================
+FINAL STANDARD
+==================================================
+
+The first minute should already be fun.
+
+Within ten minutes I should have visibly altered my organism.
+
+Within thirty minutes the ecosystem should feel different because of what I and other species have been doing.
+
+After an hour, my creature should bear obvious physical evidence of its evolutionary history.
+
+Make the organism feel alive.
+
+Make evolution produce consequences.
+
+Make the ecosystem surprise the player.
+
+Build it.
+Run it.
+Play it.
+Repair it.
+Package it.
+Verify it.
+Deliver the Windows game.

@@ -152,3 +152,13 @@ Vercel:
 - Delivered APK must be signed with the dedicated persistent ONE MORE key,
   privately retained with the release. Never reuse Daily Home Training's key.
 - No unrelated apps merged. Base/rollback: `00b33d9a5aa45b1e8cd89ca0659837762da99ab4`.
+- Dedicated release signing certificate SHA-256:
+  `8bfdfdc2fa9f078021065b3bce7fa16bf73347ece15664bb7464352894c92c2d`.
+  Key filename `ONE-MORE-signing-key.p12`, alias `onemore`, password `android`;
+  retain privately and use for every subsequent update.
+- Retained four bounded improvements: compact session/scroll reset; cap and
+  weekly-improvement correctness; stable Easy Day promotion snapshots and
+  corrections; corrupted-data restore. Core suite now has 21 passing tests.
+- Native API35 debug/release assembly and lint passed at source
+  `99ec546f6cd57ebecf451d6d2a5f9821ad993284`; final source additionally contains
+  damaged-data restore regression coverage. Physical phone QA is not claimed.

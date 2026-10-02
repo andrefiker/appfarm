@@ -56,3 +56,19 @@ Physical handset verification remains with the user. Progression is a transparen
 personal logging rule, not an individualized medical or physiological model.
 Easy Day references the seeded exercise IDs; removed/disabled Easy Day members
 are omitted. User-added exercises participate in the main program.
+
+## Retained improvement passes
+1. Compact session layout and scroll reset on next exercise, so the new name
+   and target remain visible; phone browser QA asserts scroll position.
+2. Cap prompts require actually reaching the cap. Weekly improvements compare
+   actual results with prior actual results, instead of counting only overshoots.
+3. Easy Day promotion uses the original main exercise snapshot, even if the
+   exercise is edited or removed during that workout. Corrections preserve the
+   other sets, and running timer deadlines survive process restart.
+4. Damaged-data recovery preserves the original bytes and provides a working
+   backup restore preview. Browser QA exercises this recovery path.
+
+Core suite: 21 tests. Browser QA covers 320×568, 393×760 and 720×480 viewports.
+No physical handset test has been performed. The app has no scheduled reminder
+notifications. Easy Day promotion records only the first set; it does not invent
+results for the remaining main-workout sets.

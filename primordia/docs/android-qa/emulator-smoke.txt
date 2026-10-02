@@ -1,0 +1,19 @@
+API 34 x86_64 / emulator 37.2.12 / CPU emulation without KVM
+APK: com.andrefiker.primordia 1.1.0 (code 1)
+Install: Success
+In-place signed update: Success
+Godot engine initialization and main-loop startup: observed below.
+Native UI play verification: LIMITED by Android system ANR dialogs and SwiftShader.
+No physical-phone test claimed.
+
+10-02 17:41:49.869  4554  4578 E godot   : ERROR: SceneShaderGLES3: Program linking failed:
+10-02 17:41:49.869  4554  4578 E godot   : Fragment shader active uniforms exceed GL_MAX_FRAGMENT_UNIFORM_VECTORS (261)
+10-02 17:41:49.903  4554  4578 E godot   : ERROR: SceneShaderGLES3: Program linking failed:
+10-02 17:41:49.903  4554  4578 E godot   : Fragment shader active uniforms exceed GL_MAX_FRAGMENT_UNIFORM_VECTORS (261)
+10-02 17:41:49.925  4554  4578 E godot   : ERROR: SceneShaderGLES3: Program linking failed:
+10-02 17:41:49.925  4554  4578 E godot   : Fragment shader active uniforms exceed GL_MAX_FRAGMENT_UNIFORM_VECTORS (261)
+10-02 17:41:49.942  4554  4578 E godot   : ERROR: SceneShaderGLES3: Program linking failed:
+10-02 17:41:49.942  4554  4578 E godot   : Fragment shader active uniforms exceed GL_MAX_FRAGMENT_UNIFORM_VECTORS (261)
+10-02 17:41:49.991  4554  4578 I godot   : OpenGL API OpenGL ES 3.0 (OpenGL ES 3.0 SwiftShader 4.0.0.1) - Compatibility - Using Device: Google (Google Inc.) - Android Emulator OpenGL ES Translator (Google SwiftShader)
+10-02 17:42:13.250  4554  4578 V Godot   : OnGodotSetupCompleted
+10-02 17:42:17.681  4554  4578 V Godot   : OnGodotMainLoopStarted

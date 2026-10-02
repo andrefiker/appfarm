@@ -1,0 +1,8 @@
+.gradle/
+app/build/
+build/
+dist/
+node_modules/
+local.properties
+*.apk
+*.p12

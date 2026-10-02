@@ -29,7 +29,7 @@ function start(state,mode,date=dateKey()){
  const exercise=clone(e); if(mode==='easy'){exercise.sets=1;exercise.baseline=false;}
  const isBaseline=mode==='main'&&e.baseline&&history(state,e).length===0;
  const target=mode==='easy'?entries(exercise,Math.max(1,Math.min(e.unit==='seconds'?15:5,e.starter||5))):targets(state,e);
- return {exercise,target,actual:target.map(r=>r.map(()=>null)),isBaseline,status:'pending'};
+ return {exercise,mainExercise:clone(e),target,actual:target.map(r=>r.map(()=>null)),isBaseline,status:'pending'};
  });
  if(!list.length)throw Error('Enable an exercise first.');
  state.draft={id:uid(),date,mode,list,index:0,set:0,side:0,entry:list[0].isBaseline?0:list[0].target[0][0],undo:[],timer:null};return state.draft;
@@ -42,7 +42,7 @@ function advance(state,skip=false){let d=state.draft,r=d.list[d.index];if(!skip&
 function undo(state){let d=state.draft,last=d.undo.pop();if(!last)return false;let stack=d.undo;Object.assign(d,last,{undo:stack,timer:null});return true;}
 function finish(state,asMain=false){let d=state.draft;if(d.list.some(r=>r.status==='pending'))throw Error('Finish or skip remaining exercises.');let mode=asMain?'main':d.mode;
 const results=d.list.filter(r=>r.status==='done').map(r=>({...clone(r),next:progress(r.exercise,r.target,r.actual,r.isBaseline)}));
-if(asMain){for(const r of results){let e=state.exercises.find(x=>x.id===r.exercise.id);r.exercise=clone(e);let full=targets(state,e);r.target=full;r.actual=entries(e,0).map((row,i)=>row.map((_,j)=>i===0?d.list.find(x=>x.exercise.id===e.id).actual[0][j]:null)); // Explicit promotion only updates the logged first set.
+if(asMain){for(const r of results){let source=d.list.find(x=>x.exercise.id===r.exercise.id);let e=source.mainExercise||state.exercises.find(x=>x.id===r.exercise.id);if(!e)throw Error('Original exercise unavailable.');r.exercise=clone(e);let full=targets(state,e);r.target=full;r.actual=entries(e,0).map((row,i)=>row.map((_,j)=>i===0?d.list.find(x=>x.exercise.id===e.id).actual[0][j]:null)); // Explicit promotion only updates the logged first set.
 r.promoted=true;r.next=full.map((row,i)=>row.map((t,j)=>r.actual[i][j]===null?t:Math.min(e.cap,r.actual[i][j]>=t?t+e.increment:t)));}}
 let session={id:d.id,date:d.date,mode,results,skipped:d.list.filter(r=>r.status==='skipped').length};state.sessions.push(session);state.summary=clone(session);state.draft=null;return session;}
 function ready(state,e){let last=history(state,e).at(-1);return !!last&&last.actual.length===e.sets&&last.actual.every(row=>row.every(v=>v!==null&&v>=e.cap));}
@@ -53,7 +53,7 @@ function validate(state){
  if(!Array.isArray(s.schedule)||!s.schedule.length||s.schedule.some(d=>!Number.isInteger(d)||d<0||d>6))throw Error('Invalid schedule.');
  if(!s.settings||!['dark','light','system'].includes(s.settings.theme)||['haptics','easy','keepAwake'].some(k=>typeof s.settings[k]!=='boolean'))throw Error('Invalid settings.');
  const matrix=(m,e,nullable=false)=>Array.isArray(m)&&m.length===e.sets&&m.every(r=>Array.isArray(r)&&r.length===(e.bilateral?2:1)&&r.every(v=>(nullable&&v===null)||(Number.isInteger(v)&&v>=0&&v<=3600)));
- const checkRecord=(r,draft=false)=>{normalizeExercise(r.exercise);if(!matrix(r.target,r.exercise)||!matrix(r.actual,r.exercise,true)||(!draft&&!matrix(r.next,r.exercise)))throw Error('Invalid set records.');if(!['pending','done','skipped'].includes(r.status)||typeof r.isBaseline!=='boolean')throw Error('Invalid result status.');if(r.status==='done'&&r.actual.flat().some(v=>v===null)&&!(!draft&&r.promoted===true&&r.actual.slice(1).every(row=>row.every(v=>v===null))&&r.actual[0].every(v=>v!==null)))throw Error('Incomplete result.');};
+ const checkRecord=(r,draft=false)=>{normalizeExercise(r.exercise);if(r.mainExercise)normalizeExercise(r.mainExercise);if(!matrix(r.target,r.exercise)||!matrix(r.actual,r.exercise,true)||(!draft&&!matrix(r.next,r.exercise)))throw Error('Invalid set records.');if(!['pending','done','skipped'].includes(r.status)||typeof r.isBaseline!=='boolean')throw Error('Invalid result status.');if(r.status==='done'&&r.actual.flat().some(v=>v===null)&&!(!draft&&r.promoted===true&&r.actual.slice(1).every(row=>row.every(v=>v===null))&&r.actual[0].every(v=>v!==null)))throw Error('Incomplete result.');};
  for(const session of s.sessions){if(!session||typeof session.id!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(session.date)||!['main','easy'].includes(session.mode)||!Array.isArray(session.results))throw Error('Invalid session.');session.results.forEach(r=>checkRecord(r));}
  if(s.draft){let d=s.draft;if(!Array.isArray(d.list)||!d.list.length||d.list.length>100||!['main','easy'].includes(d.mode)||!Number.isInteger(d.index)||d.index<0||d.index>d.list.length)throw Error('Invalid workout draft.');d.list.forEach(r=>checkRecord(r,true));if(d.index<d.list.length&&(!d.list[d.index].actual[d.set]||d.side<0||d.side>=d.list[d.index].actual[d.set].length))throw Error('Invalid set cursor.');d.undo=[];if(d.timer&&(!Number.isFinite(d.timer.started)||!Number.isFinite(d.timer.deadline)))throw Error('Invalid timer.');}
  s.summary=null;return s;

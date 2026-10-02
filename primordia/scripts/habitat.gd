@@ -33,6 +33,8 @@ var invincible=0.0
 var attached=-1
 var ready_notified=false
 var aim_mouse=true
+var touch_enabled=false
+var touch_direction=Vector2.ZERO
 var sim_steps=0
 var zone_name="Sunlit shallows"
 var clouds:Array=[]
@@ -78,6 +80,7 @@ func simulate(dt:float,input_override:Vector2=Vector2.INF):
  playtime+=dt; sim_steps+=1
  attack_cd=maxf(0,attack_cd-dt); secondary_cd=maxf(0,secondary_cd-dt); breed_cd=maxf(0,breed_cd-dt); invincible=maxf(0,invincible-dt)
  var dir=input_override
+ if dir==Vector2.INF and touch_enabled:dir=touch_direction
  if dir==Vector2.INF:
   dir=Vector2(float(Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT))-float(Input.is_physical_key_pressed(KEY_A) or Input.is_physical_key_pressed(KEY_LEFT)),float(Input.is_physical_key_pressed(KEY_S) or Input.is_physical_key_pressed(KEY_DOWN))-float(Input.is_physical_key_pressed(KEY_W) or Input.is_physical_key_pressed(KEY_UP))).limit_length()
  var aim=get_global_mouse_position()-player.position

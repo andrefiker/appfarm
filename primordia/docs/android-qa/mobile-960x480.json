@@ -1,0 +1,107 @@
+{
+  "checks": [
+    {
+      "name": "phone title launches",
+      "passed": true
+    },
+    {
+      "name": "large New Organism button starts game",
+      "passed": true
+    },
+    {
+      "name": "finger on swim pad moves organism",
+      "passed": true
+    },
+    {
+      "name": "second finger activates primary while swimming",
+      "passed": true
+    },
+    {
+      "name": "third finger activates escape without losing movement",
+      "passed": true
+    },
+    {
+      "name": "drag changes swim direction",
+      "passed": true
+    },
+    {
+      "name": "canceled touch clears held movement",
+      "passed": true
+    },
+    {
+      "name": "backgrounding pauses and clears all held controls",
+      "passed": true
+    },
+    {
+      "name": "backgrounding saves local progress",
+      "passed": true
+    },
+    {
+      "name": "Resume button returns to habitat",
+      "passed": true
+    },
+    {
+      "name": "feeding unlocks evolution naturally on mobile",
+      "passed": true
+    },
+    {
+      "name": "Evolve button opens touch editor",
+      "passed": true
+    },
+    {
+      "name": "palette and canvas taps add structures",
+      "passed": true
+    },
+    {
+      "name": "Larger button changes selected part",
+      "passed": true
+    },
+    {
+      "name": "Rotate button changes selected part",
+      "passed": true
+    },
+    {
+      "name": "body proportions return safely to draft",
+      "passed": true
+    },
+    {
+      "name": "large evolved anatomy stays inside phone editor",
+      "passed": true
+    },
+    {
+      "name": "Reproduce commits descendant anatomy",
+      "passed": true
+    },
+    {
+      "name": "descendant retains added structures",
+      "passed": true
+    },
+    {
+      "name": "Species button opens phone index",
+      "passed": true
+    },
+    {
+      "name": "phone lineage records both generations",
+      "passed": true
+    },
+    {
+      "name": "pause menu opens phone settings",
+      "passed": true
+    },
+    {
+      "name": "handedness setting toggles",
+      "passed": true
+    },
+    {
+      "name": "swim pad moves to chosen side",
+      "passed": true
+    },
+    {
+      "name": "phone autosave preserves edited anatomy",
+      "passed": true
+    }
+  ],
+  "engine": "4.4.1-stable (official)",
+  "failures": [],
+  "window": "(960, 480)"
+}

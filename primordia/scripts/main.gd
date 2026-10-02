@@ -1,10 +1,11 @@
 extends Node2D
 
-const VERSION="1.0.0"
+const VERSION="1.1.0"
 const INK=Color("e1efe5")
 const MUTED=Color("81a29e")
 const MINT=Color("a4e4ba")
 const GOLD=Color("d8c795")
+var mobile_ui:MobileUI
 var habitat:Habitat
 var audio:BioSound
 var layer:CanvasLayer
@@ -20,7 +21,7 @@ var toast_time=0.0
 var save_clock=0.0
 var has_game=false
 var status_message=""
-var settings={"muted":false,"fullscreen":false,"reduced_motion":true,"mouse_aim":true}
+var settings={"muted":false,"fullscreen":false,"reduced_motion":true,"mouse_aim":true,"left_handed":true}
 var draft={}
 var editor_preview:OrganismBody
 var editor_origin=Vector2(700,431)
@@ -43,6 +44,7 @@ var pending_new=false
 func _ready():
  Engine.max_fps=60
  get_tree().auto_accept_quit=false
+ get_tree().quit_on_go_back=false
  var cfg=ConfigFile.new()
  if cfg.load("user://settings.cfg")==OK:
   for k in settings: settings[k]=cfg.get_value("preferences",k,settings[k])
@@ -55,10 +57,13 @@ func _ready():
  ui.mouse_filter=Control.MOUSE_FILTER_IGNORE
  _theme()
  habitat.aim_mouse=settings.mouse_aim
- if settings.fullscreen: DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+ if OS.has_feature("android") or "--mobile" in OS.get_cmdline_user_args():
+  mobile_ui=MobileUI.new();add_child(mobile_ui);mobile_ui.setup(self)
+ elif settings.fullscreen: DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
  show_title()
  if "--qa" in OS.get_cmdline_user_args(): call_deferred("_qa_run")
  if "--qa-resume" in OS.get_cmdline_user_args(): call_deferred("_qa_resume")
+ if "--qa-mobile" in OS.get_cmdline_user_args():call_deferred("_qa_mobile")
 
 func _background():
  var bg=CanvasLayer.new(); bg.layer=-10; add_child(bg)
@@ -112,6 +117,7 @@ func _specimen(g:Dictionary,pos:Vector2,zoom:float) -> OrganismBody:
  var b=OrganismBody.new(); b.genome=g.duplicate(true); b.position=pos; b.scale=Vector2.ONE*zoom; ui.add_child(b); return b
 
 func show_title():
+ if mobile_ui:mobile_ui.show_title();return
  mode="title"; habitat.active=false; clear_ui(); veil.visible=false
  habitat.modulate=Color(1,1,1,0.15)
  label_text("A SMALL WORLD. AN UNWRITTEN LINEAGE.",Vector2(88,133),14,MINT)
@@ -134,6 +140,7 @@ func show_title():
  rule(Vector2(811,652),380)
 
 func confirm_new():
+ if mobile_ui:mobile_ui.confirm_new();return
  clear_ui(); panel(Rect2(420,260,600,330))
  label_text("Begin a new lineage?",Vector2(462,302),32)
  label_text("Your current autosave will be replaced.\nThe previous save is retained as a local backup.",Vector2(462,366),19,MUTED)
@@ -144,7 +151,7 @@ func start_new():
  habitat.queue_free(); remove_child(habitat)
  habitat=Habitat.new(); add_child(habitat)
  habitat.message.connect(show_message); habitat.sound.connect(func(k):audio.cue(k)); habitat.death.connect(_died)
- habitat.aim_mouse=settings.mouse_aim; has_game=true; resume_game(); save_game(); show_message("WASD to swim · graze the golden particles · E when ready to evolve")
+ habitat.aim_mouse=settings.mouse_aim; has_game=true; resume_game(); save_game(); show_message("Drag SWIM · graze golden particles · tap EVOLVE when ready" if mobile_ui else "WASD to swim · graze the golden particles · E when ready to evolve")
 
 func continue_game():
  if not has_game:
@@ -155,6 +162,7 @@ func continue_game():
  resume_game()
 
 func resume_game():
+ if mobile_ui:mobile_ui.resume();return
  mode="play"; clear_ui(); habitat.active=true; veil.visible=true; _hud()
  habitat.modulate=Color.WHITE
 
@@ -187,8 +195,9 @@ func _process(dt):
  var shadow=1.0 if habitat.ecology.event=="Long shadow" and habitat.ecology.event_zone==Ecology.zone(pos) else 0.0
  water.material.set_shader_parameter("darkness",shadow)
  veil.material.set_shader_parameter("sight",clampf(habitat.stats.senses*habitat.camera.zoom.x/780.0,0.48,1.2))
- veil.material.set_shader_parameter("aspect",1.6)
- if mode=="play":
+ veil.material.set_shader_parameter("aspect",2.0 if mobile_ui else 1.6)
+ if mode=="play" and mobile_ui:mobile_ui.update_play(dt)
+ elif mode=="play":
   hud_labels.energy.text="ENERGY  %d / %d"%[habitat.energy,habitat.stats.energy]
   hud_labels.integrity.text="INTEGRITY  %d%%"%habitat.integrity
   hud_labels.dna.text="MUTATION  %d / 18"%habitat.dna
@@ -215,6 +224,7 @@ func save_game():
  if not SaveStore.write(habitat.snapshot()): show_message("Autosave could not be written · check disk space")
 
 func show_pause():
+ if mobile_ui:mobile_ui.show_pause();return
  mode="pause"; habitat.active=false; save_game(); clear_ui()
  panel(Rect2(470,195,500,515))
  label_text("Still water",Vector2(520,238),42)
@@ -225,6 +235,7 @@ func show_pause():
  button("SAVE & QUIT",Rect2(520,568,400,52),quit_game)
 
 func show_settings():
+ if mobile_ui:mobile_ui.show_settings();return
  if mode!="settings": previous_mode=mode
  mode="settings"; habitat.active=false; clear_ui(); panel(Rect2(410,150,620,620))
  label_text("Settings",Vector2(460,194),42)
@@ -248,6 +259,7 @@ func toggle_fullscreen():
  save_settings()
 
 func _died():
+ if mobile_ui:mobile_ui.died();return
  mode="dead"; habitat.active=false; save_game(); clear_ui()
  panel(Rect2(385,240,670,400))
  label_text("One life. A longer lineage.",Vector2(429,281),35)
@@ -264,6 +276,7 @@ func _modal_header(kicker:String,title:String):
 func sixty() -> float: return 65.0
 
 func show_index():
+ if mobile_ui:mobile_ui.show_index();return
  if not has_game: return
  mode="index"; _modal_header("FIELD NOTES", "Life you have encountered")
  if habitat.discovered.is_empty(): label_text("Swim toward other organisms to observe them.",Vector2(66,190),22,MUTED)
@@ -283,6 +296,7 @@ func show_index():
   label_text(danger+"\nSpeed adaptation ×%.2f"%s.speed,Vector2(22,192),15,INK,area)
 
 func show_lineage():
+ if mobile_ui:mobile_ui.show_lineage();return
  if not has_game: return
  mode="lineage"; _modal_header("ANCESTRY", "The shapes you have survived in")
  var scroll=ScrollContainer.new(); scroll.position=Vector2(64,165); scroll.size=Vector2(1305,660); ui.add_child(scroll)
@@ -298,6 +312,7 @@ func show_lineage():
  label_text("The player follows one surviving branch. Species variants branch in the ecosystem ledger.",Vector2(64,832),14,MUTED)
 
 func show_map():
+ if mobile_ui:mobile_ui.show_map();return
  if not has_game: return
  mode="map"; _modal_header("HABITAT", "One connected drop of water")
  var colors=["294d46","374e36","233f50","49433b","4a3839","292e4b"]
@@ -317,6 +332,7 @@ func show_map():
  label_text("Move south to descend. Move east to cross into the neighboring habitat.",Vector2(70,824),16,MUTED)
 
 func open_editor():
+ if mobile_ui:mobile_ui.open_editor();return
  if not has_game: return
  if not Genome.can_reproduce(habitat.energy,habitat.dna,habitat.breed_cd):
   show_message("Reproduction needs 18 mutation, 60 energy, and a settled membrane"); return
@@ -377,6 +393,7 @@ func editor_spent() -> int:
  return maxi(0,spent)
 
 func _editor_refresh():
+ if mobile_ui:mobile_ui.refresh_editor();return
  editor_preview.genome=draft
  editor_preview.selected=selected_part
  var extent=preview_extent(draft)
@@ -418,6 +435,7 @@ func commit_evolution():
  habitat.evolve(draft,adaptation); resume_game(); save_game()
 
 func _unhandled_input(event):
+ if mobile_ui:mobile_ui.unhandled(event);return
  if event is InputEventKey and event.pressed and not event.echo:
   match event.physical_keycode:
    KEY_F11:toggle_fullscreen()
@@ -465,8 +483,12 @@ func _unhandled_input(event):
   _editor_refresh()
 
 func _notification(what):
+ if what==NOTIFICATION_WM_GO_BACK_REQUEST and mobile_ui:mobile_ui.back();return
+ if what==NOTIFICATION_APPLICATION_PAUSED and has_game:
+  save_game()
+  if mobile_ui and mode=="play":show_pause()
  if what==NOTIFICATION_WM_CLOSE_REQUEST:quit_game()
- if what==NOTIFICATION_APPLICATION_FOCUS_OUT and mode=="play" and not "--qa" in OS.get_cmdline_user_args() and not "--qa-resume" in OS.get_cmdline_user_args():show_pause()
+ if what==NOTIFICATION_APPLICATION_FOCUS_OUT and mode=="play" and not "--qa" in OS.get_cmdline_user_args() and not "--qa-resume" in OS.get_cmdline_user_args() and not "--qa-mobile" in OS.get_cmdline_user_args():show_pause()
 
 func quit_game():
  save_game();save_settings();audio.shutdown();get_tree().quit()
@@ -478,3 +500,7 @@ func _qa_run():
 func _qa_resume():
  var runner=load("res://tests/gameplay_qa.gd").new()
  add_child(runner);runner.run_resume(self)
+
+func _qa_mobile():
+ var runner=load("res://tests/mobile_qa.gd").new()
+ add_child(runner);runner.run(self)

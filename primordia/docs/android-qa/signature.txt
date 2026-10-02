@@ -1,0 +1,17 @@
+Verifies
+Verified using v1 scheme (JAR signing): true
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): true
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+Signer #1 certificate DN: CN=Primordia, OU=Independent Games, O=Andre Fiker, C=BR
+Signer #1 certificate SHA-256 digest: cdec6027804b655af5ab0d547621f4f77524aed3a010228e5a5943e525a614c7
+Signer #1 certificate SHA-1 digest: 93554e82a7d26968a146e4188e8c30545d455593
+Signer #1 certificate MD5 digest: f24b431b71ea127f9141c6044fc6b343
+Signer #1 key algorithm: RSA
+Signer #1 key size (bits): 3072
+Signer #1 public key SHA-256 digest: dde2d5bd69b30400d28294aa1e3b3e4fa365a01f63edf3e5c30dafd87aec646d
+Signer #1 public key SHA-1 digest: 737652029eb4d1a87cfe8c2381f413aa611837cd
+Signer #1 public key MD5 digest: a7e2dc4cb4405a251985cf9df2b2770d

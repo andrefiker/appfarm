@@ -1,0 +1,27 @@
+{
+  "checks": [
+    {
+      "name": "phone title launches",
+      "passed": true
+    },
+    {
+      "name": "Continue restores saved phone game after restart",
+      "passed": true
+    },
+    {
+      "name": "anatomy survives full process restart",
+      "passed": true
+    },
+    {
+      "name": "generation survives full process restart",
+      "passed": true
+    },
+    {
+      "name": "ecosystem survives full process restart",
+      "passed": true
+    }
+  ],
+  "engine": "4.4.1-stable (official)",
+  "failures": [],
+  "window": "(960, 480)"
+}

@@ -1,8 +1,34 @@
-# Primordia 1.0.0
+# Primordia 1.1.0
 
-An original, offline Windows evolution sandbox. Godot 4.4.1, GDScript, OpenGL compatibility renderer. No login, backend, telemetry, web service or downloaded assets.
+An original, offline Android and Windows evolution sandbox. Godot 4.4.1, GDScript, OpenGL compatibility renderer. No login, backend, telemetry, web service or downloaded assets.
 
-## Play
+## Android phone
+
+Install `Primordia-1.1.0-Android.apk`. It is a signed ARM64 + x86_64 build, with Android API 21 minimum and an OpenGL ES 3.0 requirement. It runs in landscape, offline. The default left-handed layout places the swim pad on the right and ability buttons on the left; Settings can mirror them. Two fingers can swim and activate an ability simultaneously. Menus and the evolution editor have dedicated touch layouts. Android Back navigates menus and pauses gameplay; backgrounding saves and clears held touches.
+
+Saves are private app data, with the same checksum and backup recovery as the desktop game. Uninstalling or clearing app data deletes progress. Updates must use the same package ID and private release key. See `docs/ANDROID_README.txt` for controls and `docs/ANDROID_RELEASE.md` for package details, evidence and remaining device checks.
+
+To build, install Godot **4.4.1 stable**, the complete matching Android export templates, OpenJDK 17, Android SDK platform 34, build-tools 34.0.0 and platform-tools. In Godot Editor Settings > Export > Android, set the Java SDK and Android SDK paths. The standard prebuilt-template exporter is used; Gradle, the NDK and a network service are unnecessary. Android texture import is enabled in the project.
+
+Set the following environment variables privately, then run `bash tools/build_android.sh` (set `GODOT_BIN` if Godot is not on PATH):
+
+- `GODOT_ANDROID_KEYSTORE_RELEASE_PATH`: release keystore path.
+- `GODOT_ANDROID_KEYSTORE_RELEASE_USER`: key alias.
+- `GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD`: key password.
+
+The private release key is supplied separately to the app owner. Never commit it or its password. A new key will not update installations signed with the original key. Increment `version/code` for subsequent releases.
+
+Phone-layout QA on a desktop rendering display:
+
+```sh
+godot --path . --resolution 1280x640 -- --mobile --qa-mobile
+godot --path . --resolution 960x480 -- --mobile --qa-mobile
+godot --path . --resolution 960x480 -- --mobile --qa-mobile --qa-mobile-resume
+```
+
+Use an isolated profile/XDG data directory: QA exercises the real save slot. Evidence goes to `user://mobile-qa`. The Android release excludes the QA scripts.
+
+## Windows play
 
 Run the setup executable, or extract the entire portable ZIP and run `Primordia.exe`. Keep `Primordia.pck` next to it. Windows 10/11 x64 with OpenGL 3.3 support. No administrator access is needed. This independent build is not Authenticode signed.
 

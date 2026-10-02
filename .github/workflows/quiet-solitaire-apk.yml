@@ -67,6 +67,13 @@ jobs:
       - name: Test PWA
         run: npm test
 
+      - name: Browser gameplay smoke
+        run: |
+          npm run build
+          npm install --no-save --no-package-lock playwright
+          npx playwright install chromium
+          node scripts/browser-smoke.mjs
+
       - name: Build and verify APK
         run: |
           set -o pipefail
@@ -83,4 +90,5 @@ jobs:
             quiet-solitaire/android-build/apk-permissions.txt
             quiet-solitaire/android-build/apk-signature.txt
             quiet-solitaire/android-build/apk-alignment.txt
+            quiet-solitaire/browser-smoke.png
           if-no-files-found: error

@@ -67,6 +67,13 @@ jobs:
       - name: Test PWA
         run: npm test
 
+      - name: Browser gameplay smoke
+        run: |
+          npm run build
+          npm install --no-save --no-package-lock playwright
+          npx playwright install chromium
+          node scripts/browser-smoke.mjs
+
       - name: Build and verify APK
         run: |
           set -o pipefail
@@ -75,12 +82,13 @@ jobs:
       - name: Upload verified APK and reports
         uses: actions/upload-artifact@v4
         with:
-          name: quiet-solitaire-v1.3.0
+          name: quiet-solitaire-v1.4.0
           path: |
-            quiet-solitaire/Quiet-Solitaire-v1.3.0.apk
+            quiet-solitaire/Quiet-Solitaire-v1.4.0.apk
             quiet-solitaire/android-build.log
             quiet-solitaire/android-build/apk-badging.txt
             quiet-solitaire/android-build/apk-permissions.txt
             quiet-solitaire/android-build/apk-signature.txt
             quiet-solitaire/android-build/apk-alignment.txt
+            quiet-solitaire/browser-smoke.png
           if-no-files-found: error

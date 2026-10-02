@@ -34,5 +34,14 @@ test('auto-finish requires a foundation-only path through every remaining card',
 test('foundation-to-tableau rule rejects incorrect rank/color',()=>{const g=fixture();g.foundations[0]=[card('hearts',1)];g.tableau[0]=[card('diamonds',3)];assert.equal(legalMove(g,{type:'foundation',index:0},{type:'tableau',index:0}),false);g.tableau[0]=[card('clubs',2)];assert.equal(legalMove(g,{type:'foundation',index:0},{type:'tableau',index:0}),true)});
 test('hints prefer revealing a hidden tableau card over a foundation return',()=>{const g=fixture();g.foundations[0]=[card('hearts',1)];g.tableau[0]=[card('spades',8,false),card('hearts',7)];g.tableau[1]=[card('clubs',8)];g.tableau[2]=[card('clubs',2)];const hint=getHint(g);assert.equal(hint.source.type,'tableau');assert.equal(hint.source.index,0);assert.equal(hint.dest.index,1);assert.equal(legalMove(g,hint.source,hint.dest,hint.cardIndex),true)});
 test('hint identifies recycling the waste when no board move exists',()=>{const g=fixture();g.waste=[card('hearts',5)];const hint=getHint(g);assert.equal(hint.source.type,'stock');assert.equal(hint.dest.type,'waste')});
+test('hint prefers drawing over a lone foundation-to-tableau churn',()=>{
+  const g=fixture();
+  g.foundations[0]=[card('hearts',1)];
+  g.tableau[0]=[card('clubs',2)];
+  g.stock=[card('spades',9,false)];
+  assert.equal(legalMoves(g).length,1);
+  assert.equal(legalMoves(g)[0].source.type,'foundation');
+  assert.equal(getHint(g).source.type,'stock');
+});
 test('serialized state retains the full undo history',()=>{const g=newGame(909,1);drawFromStock(g);const copy=restore(serialize(g));assert.equal(copy.waste.length,1);assert.equal(copy.history.length,1);assert.equal(undo(copy),true);assert.equal(copy.waste.length,0)});
 test('scripted play across multiple seeded games preserves all 52 cards',()=>{for(const seed of [13,27,51,94,2026]){const g=newGame(seed,seed%2?1:3);for(let turn=0;turn<240&&g.status==='playing';turn++){const moves=legalMoves(g).filter(m=>m.source.type!=='foundation');if(moves.length){const choice=moves.find(m=>m.dest.type==='tableau'&&g.tableau[m.source.index]?.some(c=>!c.faceUp))||moves[0];moveCards(g,choice.source,choice.dest,choice.cardIndex)}else if(g.stock.length||g.waste.length)drawFromStock(g);else break;const cards=[...g.stock,...g.waste,...g.foundations.flat(),...g.tableau.flat()];assert.equal(cards.length,52);assert.equal(new Set(cards.map(c=>`${c.suit}-${c.rank}`)).size,52);assert.ok(g.tableau.every(col=>col.every((c,i)=>!c.faceUp||col.slice(i).every(x=>x.faceUp))))}}});

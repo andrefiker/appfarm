@@ -7,3 +7,12 @@ export function tableauOverlapLayout({ availableHeight, cardHeight, layers, pref
     needsScroll: fit < minimum,
   };
 }
+
+/** Use more portrait height early, then smoothly return to compact stacking. */
+export function portraitPreferredOverlap(cardHeight, layers, baseOverlap, availableHeight) {
+  if (layers <= 1) return baseOverlap;
+  const factor = Math.max(.39, .76 - Math.max(0, layers - 7) * .045);
+  const comfortable = cardHeight * factor;
+  const fit = (availableHeight - cardHeight) / (layers - 1);
+  return Math.min(fit, Math.max(baseOverlap, comfortable));
+}

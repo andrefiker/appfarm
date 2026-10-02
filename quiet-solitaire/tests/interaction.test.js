@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { newGame } from '../src/engine.js';
-import { chooseAceFoundation, chooseSmartDestination, createTapDispatcher, dragThreshold, hasExceededDragThreshold, isDoubleTap, pickExpandedDropTarget, safeFoundationMove } from '../src/interaction.js';
+import { chooseAceFoundation, chooseSmartDestination, createTapDispatcher, dragThreshold, hasExceededDragThreshold, isDoubleTap, pickExpandedDropTarget, pileDropRect, safeFoundationMove } from '../src/interaction.js';
 
 function fixture() {
   const game = newGame(1);
@@ -35,6 +35,12 @@ test('expanded drop targets accept a near miss but reject distant drops', () => 
   assert.deepEqual(pickExpandedDropTarget({ x: 61, y: 55 }, candidates), { type: 'tableau', index: 0 });
   assert.deepEqual(pickExpandedDropTarget({ x: 63, y: 55 }, candidates), { type: 'tableau', index: 1 });
   assert.equal(pickExpandedDropTarget({ x: 140, y: 55 }, candidates), null);
+});
+
+test('drop region reaches the bottom card of an absolutely positioned long column',()=>{
+  const rect=pileDropRect({left:10,right:60,top:20,bottom:90},[{bottom:210},{bottom:300}]);
+  assert.deepEqual(rect,{left:10,right:60,top:20,bottom:300});
+  assert.deepEqual(pickExpandedDropTarget({x:63,y:292},[{target:{type:'tableau',index:2},rect}],16),{type:'tableau',index:2});
 });
 
 test('an Ace is assigned to a randomly selected empty foundation slot', () => {
@@ -101,6 +107,18 @@ test('whole sequence can reveal a hidden card and ambiguous destinations remain 
   const destination={type:'tableau',index:2};
   assert.equal(chooseSmartDestination(game,source,[destination]),destination);
   assert.equal(chooseSmartDestination(game,source,[destination,{type:'tableau',index:3}]),null);
+});
+
+test('a King taps into equivalent empty columns without useless tableau churn', () => {
+  const game=fixture();
+  const left={type:'tableau',index:0},right={type:'tableau',index:6};
+  game.waste=[{suit:'spades',rank:13,faceUp:true}];
+  assert.deepEqual(chooseSmartDestination(game,{type:'waste'},[left,right],true,'left'),left);
+  assert.deepEqual(chooseSmartDestination(game,{type:'waste'},[left,right],true,'right'),right);
+  game.tableau[3]=[{suit:'hearts',rank:12,faceUp:false},{suit:'spades',rank:13,faceUp:true}];
+  assert.deepEqual(chooseSmartDestination(game,{type:'tableau',index:3,cardIndex:1},[left,right]),left);
+  game.tableau[3].shift();
+  assert.equal(chooseSmartDestination(game,{type:'tableau',index:3,cardIndex:0},[left,right]),null);
 });
 
 test('low foundation cards are safe, higher cards wait for both opposite suits', () => {

@@ -16,7 +16,7 @@ Set the following environment variables privately, then run `bash tools/build_an
 - `GODOT_ANDROID_KEYSTORE_RELEASE_USER`: key alias.
 - `GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD`: key password.
 
-The private release key is supplied separately to the app owner. Never commit it or its password. A new key will not update installations signed with the original key. Increment `version/code` for subsequent releases.
+The private release key is kept separately from the source. Never commit it or its password. A new key will not update installations signed with the original key. Increment `version/code` for subsequent releases.
 
 Phone-layout QA on a desktop rendering display:
 

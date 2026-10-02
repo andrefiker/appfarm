@@ -22,6 +22,8 @@ Desktop release evidence remains in `docs/RELEASE.md`.
 
 Future Ghost: preserve the working Godot game, local saves and rollback
 checkpoints. Reuse the private Android release key for updates and increment
-version/code. It is supplied as `Primordia-Android-Signing-Key-PRIVATE.zip` to the owner,
-never in this repository.
+version/code. A local backup is named `Primordia-Android-Signing-Key-PRIVATE.zip`.
+Persistent saving of that credential backup was blocked by automatic approval
+review and awaits explicit owner approval. Do not expose it or its password
+in this repository. The APK and source contain no signing credentials.
 Do not add services to address packaging. Keep changes inside `primordia/`.

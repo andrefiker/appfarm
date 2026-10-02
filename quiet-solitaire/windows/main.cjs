@@ -16,7 +16,7 @@ app.whenReady().then(async () => {
       const body = await fs.readFile(file);
       return new Response(body, { headers: {
         'Content-Type': types[path.extname(file)] || 'application/octet-stream',
-        'Content-Security-Policy': "default-src 'self' data:; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'"
+        'Content-Security-Policy': "default-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; object-src 'none'"
       } });
     } catch { return new Response('Not found', { status: 404 }); }
   });

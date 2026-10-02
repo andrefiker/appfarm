@@ -17,6 +17,8 @@ try {
   assert.equal(await opened.page.title(), 'Quiet Solitaire');
   assert.equal(await opened.page.locator('#tableau .card').count(), 28);
   assert.equal(await opened.page.evaluate(() => document.querySelector('#app').classList.contains('hand-left')), true);
+  const stacked = await opened.page.locator('.tableau-column[data-index="1"] .card').evaluateAll(cards => cards.map(card => card.getBoundingClientRect().top));
+  assert.ok(stacked[1] > stacked[0], 'tableau overlap offsets render in the packaged app');
   const before = await opened.page.evaluate(() => JSON.parse(localStorage.getItem('quiet-current')).stock.length);
   assert.ok(before > 0);
   await opened.page.locator('#stock-pile').click();

@@ -32,3 +32,11 @@ func cue(kind:String):
 func set_muted(value:bool):
  muted=value
  if ambience: ambience.volume_db=-80 if value else -23
+
+func shutdown():
+ for player in get_children():
+  if player is AudioStreamPlayer:
+   player.stop(); player.stream=null
+
+func _exit_tree():
+ shutdown()

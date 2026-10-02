@@ -20,7 +20,7 @@ In the editor, select a structure in the scrollable palette and click by the mem
 - Nutrient grazing, directional biting, carrion, poison, attachment, light harvesting and cooperation.
 - Near physics, reduced-frequency medium simulation and regional population simulation. Active bodies are bounded; replacements materialize outside the viewport against a regional population budget.
 - Inherited prey speed under hunting pressure; predator attack adaptation to regional defenses; population decline without prey; variants and extinction.
-- Resource blooms, resource collapse, cold-current events, toxic blooms and temporary darkness. Some event types share resource/population mechanisms; this is an intentionally simplified ecology, not a biological research model.
+- Fixed nutrient patches with capped renewal, resource blooms, resource collapse, cold currents, toxic blooms and temporary darkness. This is an intentionally simplified ecology, not a biological research model.
 - Procedural animated membranes, internal organelles and appendages; synthesized local audio.
 - Local autosave with checksum, temporary-file validation and a last-good backup. Settings and world/lineage data persist locally.
 
@@ -37,6 +37,7 @@ Install Godot **4.4.1 stable** and its matching official export templates. Open 
 ```sh
 godot --headless --path . --editor --import --quit
 godot --headless --path . --script tests/rules_test.gd
+godot --headless --path . --script tests/ecosystem_soak.gd
 godot --path . -- --qa
 godot --path . -- --qa-resume
 mkdir -p build/Primordia

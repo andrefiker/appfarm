@@ -41,6 +41,7 @@ var editor_hint:Label
 var pending_new=false
 
 func _ready():
+ Engine.max_fps=60
  get_tree().auto_accept_quit=false
  var cfg=ConfigFile.new()
  if cfg.load("user://settings.cfg")==OK:
@@ -468,7 +469,7 @@ func _notification(what):
  if what==NOTIFICATION_APPLICATION_FOCUS_OUT and mode=="play" and not "--qa" in OS.get_cmdline_user_args() and not "--qa-resume" in OS.get_cmdline_user_args():show_pause()
 
 func quit_game():
- save_game();save_settings();get_tree().quit()
+ save_game();save_settings();audio.shutdown();get_tree().quit()
 
 func _qa_run():
  var runner=load("res://tests/gameplay_qa.gd").new()

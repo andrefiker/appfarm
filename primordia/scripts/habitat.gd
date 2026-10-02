@@ -35,12 +35,15 @@ var ready_notified=false
 var aim_mouse=true
 var sim_steps=0
 var zone_name="Sunlit shallows"
+var clouds:Array=[]
 
 func _ready():
  rng.seed=341008
  player=OrganismBody.new(); player.genome=genome; player.is_player=true; player.position=Vector2(1750,1250); add_child(player)
  camera=Camera2D.new(); camera.position=player.position; camera.position_smoothing_enabled=false; add_child(camera)
  camera.make_current()
+ for x in range(7):
+  for y in range(6):clouds.append(Vector2(600+x*1200,500+y*1000))
  lineage=[{"generation":1,"parent":0,"genome":genome.duplicate(true),"role":Genome.role(genome),"mutation":"First membrane"}]
  populate()
 
@@ -59,7 +62,7 @@ func populate():
   if not options.is_empty(): spawn_agent(options[rng.randi_range(0,options.size()-1)].id,pos)
 
 func add_food(pos:Vector2,kind:String="nutrient",value:float=1.0):
- if food.size()>1050: return
+ if food.size()>=1050: return
  food.append({"pos":pos.clamp(Vector2(20,20),Ecology.WORLD-Vector2(20,20)),"kind":kind,"size":rng.randf_range(2.5,5.0)*(1.8 if kind=="carrion" else 1.0),"phase":rng.randf()*TAU,"value":value})
 
 func spawn_agent(id:int,pos:Vector2):
@@ -209,7 +212,7 @@ func _agents(dt:float):
      if b==a or b.id==a.id or b.node.genome.size>a.node.genome.size*0.90: continue
      var dd=a.pos.distance_to(b.pos)
      if dd<nearest: nearest=dd; target=b.pos
-   else:
+   elif s.diet!="photo":
     for f in food:
      if s.diet=="scavenger" and f.kind!="carrion": continue
      var dd=a.pos.distance_to(f.pos)
@@ -224,6 +227,13 @@ func _agents(dt:float):
   var speed=a.stats.speed*s.speed*(0.70 if s.diet in ["photo","symbiont"] else 0.90)
   a.vel=a.vel.lerp(a.direction*speed,minf(1,step*2.0)); a.pos+=a.vel*step
   a.pos=a.pos.clamp(Vector2(35,35),Ecology.WORLD-Vector2(35,35))
+  for b in agents:
+   if b==a:continue
+   var delta=a.pos-b.pos
+   var separation=(a.node.genome.size+b.node.genome.size)*0.78
+   var squared=delta.length_squared()
+   if squared>0.01 and squared<separation*separation:
+    a.pos+=delta.normalized()*(separation-sqrt(squared))*minf(0.25,step*3.0)
   a.heading=lerp_angle(a.heading,a.direction.angle(),minf(1,step*a.stats.turn))
   a.node.position=a.pos; a.node.rotation=a.heading; a.node.motion=a.vel.length()
   if s.diet=="photo": a.energy+=step*Ecology.light(a.pos)*1.0
@@ -245,7 +255,7 @@ func _agents(dt:float):
     if b==a or b.id==a.id or b.node.genome.size>a.node.genome.size*0.90: continue
     if a.pos.distance_to(b.pos)<a.node.genome.size+b.node.genome.size:
      b.hp-=Genome.damage(a.stats.attack*s.attack*0.55,b.stats.defense); b.node.impact=0.6; a.cooldown=1.2; a.energy+=5; break
-  elif s.diet not in ["predator","parasite"] and a.nibble<=0:
+  elif s.diet not in ["predator","parasite","photo"] and a.nibble<=0:
    a.nibble=0.25
    for j in range(food.size()-1,-1,-1):
     if a.pos.distance_squared_to(food[j].pos)<pow(a.node.genome.size+7,2):
@@ -268,6 +278,7 @@ func _replenish():
  var local=agents.filter(func(a):return a.pos.distance_to(player.position)<1600).size()
  if local<48 and agents.size()<105 and not candidates.is_empty():
   for j in range(4):
+   if agents.size()>=105:break
    var s=candidates[rng.randi_range(0,candidates.size()-1)]
    var count=agents.filter(func(a):return a.id==s.id).size()
    if s.population>float(count)*4:
@@ -278,6 +289,17 @@ func _replenish():
   var pos=player.position+Vector2.from_angle(rng.randf()*TAU)*rng.randf_range(650,1850)
   var z=Ecology.zone(pos)
   if rng.randf()<ecology.resources[z]*0.65: add_food(pos,"carrion" if z==3 else "nutrient")
+ # Fixed nutrient patches renew according to regional productivity. They cap
+ # their standing crop, so this is a habitat resource rather than a player drop.
+ for center in clouds:
+  if center.distance_to(player.position)>1900:continue
+  var z=Ecology.zone(center)
+  var crop=0
+  for f in food:
+   if center.distance_squared_to(f.pos)<32400:crop+=1
+  var capacity=int(14*ecology.resources[z])
+  for i in range(mini(4,maxi(0,capacity-crop))):
+   add_food(center+Vector2.from_angle(rng.randf()*TAU)*sqrt(rng.randf())*175,"carrion" if z==3 else "nutrient")
 
 func evolve(g:Dictionary,adaptation:String):
  var parent=generation
@@ -316,6 +338,11 @@ func restore(d:Dictionary):
 func _draw():
  if not player: return
  var p=player.position
+ for center in clouds:
+  if center.distance_squared_to(p)>1500000:continue
+  var resource=ecology.resources[Ecology.zone(center)]
+  for ring in range(4):
+   draw_circle(center,180.0-ring*32,Color(0.23,0.44,0.27,resource*0.011))
  # Suspended particles are a deterministic infinite-looking field, not entities.
  var cell=160.0
  var base=Vector2(floor(p.x/cell),floor(p.y/cell))

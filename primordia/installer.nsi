@@ -27,7 +27,7 @@ Section "Primordia"
  CreateShortcut "$DESKTOP\Primordia.lnk" "$INSTDIR\Primordia.exe"
  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Primordia" "DisplayName" "Primordia"
  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Primordia" "DisplayVersion" "1.0.0"
- WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Primordia" "UninstallString" '$"$INSTDIR\Uninstall.exe$"'
+ WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Primordia" "UninstallString" '"$INSTDIR\Uninstall.exe"'
  WriteRegStr HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Primordia" "InstallLocation" "$INSTDIR"
  WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Primordia" "NoModify" 1
  WriteRegDWORD HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\Primordia" "NoRepair" 1

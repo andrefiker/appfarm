@@ -98,6 +98,7 @@ func run(root):
  var f=FileAccess.open(out+"/results.json",FileAccess.WRITE)
  f.store_string(JSON.stringify({"checks":checks,"failures":failures,"simulation_cpu_ms_per_tick":cpu_ms,"first_evolution_seconds":h.playtime,"engine":Engine.get_version_info().string,"os":OS.get_name(),"renderer":RenderingServer.get_video_adapter_name()},"  "));f.close()
  print("QA_RESULT ",JSON.stringify({"checks":checks.size(),"failures":failures,"cpu_ms":cpu_ms,"path":ProjectSettings.globalize_path(out)}))
+ game.audio.shutdown()
  get_tree().call_deferred("quit",0 if failures.is_empty() else 1)
 
 func run_resume(root):
@@ -122,4 +123,5 @@ func run_resume(root):
  var f=FileAccess.open(out+"/resume-results.json",FileAccess.WRITE)
  f.store_string(JSON.stringify({"checks":checks,"failures":failures,"os":OS.get_name()},"  "));f.close()
  print("RESUME_QA ",JSON.stringify({"checks":checks.size(),"failures":failures}))
+ game.audio.shutdown()
  get_tree().call_deferred("quit",0 if failures.is_empty() else 1)

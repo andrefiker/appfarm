@@ -1,0 +1,11 @@
+{
+  "deaths": 0,
+  "ecology_epochs": 74,
+  "generations": 18,
+  "max_agents": 85,
+  "max_food": 710,
+  "mean_tick_ms": 2.51757588888889,
+  "passed": true,
+  "simulated_seconds": 600,
+  "species": 12
+}

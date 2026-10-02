@@ -1,0 +1,74 @@
+{
+  "checks": [
+    {
+      "name": "title launches",
+      "passed": true
+    },
+    {
+      "name": "new organism button starts game",
+      "passed": true
+    },
+    {
+      "name": "keyboard input moves organism",
+      "passed": true
+    },
+    {
+      "name": "primary ability responds to key",
+      "passed": true
+    },
+    {
+      "name": "feeding reaches first reproduction naturally",
+      "passed": true
+    },
+    {
+      "name": "first evolution is available within ten minutes",
+      "passed": true
+    },
+    {
+      "name": "E opens editor at biological threshold",
+      "passed": true
+    },
+    {
+      "name": "palette and membrane click add real structures",
+      "passed": true
+    },
+    {
+      "name": "selected anatomical part can be resized",
+      "passed": true
+    },
+    {
+      "name": "mature morphology remains inside editor canvas",
+      "passed": true
+    },
+    {
+      "name": "reproduction commits editor anatomy",
+      "passed": true
+    },
+    {
+      "name": "descendant physically retains added structures",
+      "passed": true
+    },
+    {
+      "name": "species index opens",
+      "passed": true
+    },
+    {
+      "name": "lineage records both morphologies",
+      "passed": true
+    },
+    {
+      "name": "habitat map opens",
+      "passed": true
+    },
+    {
+      "name": "pause persists local lineage",
+      "passed": true
+    }
+  ],
+  "engine": "4.4.1-stable (official)",
+  "failures": [],
+  "first_evolution_seconds": 13.4000000000002,
+  "os": "Windows",
+  "renderer": "llvmpipe (LLVM 20.1.2, 256 bits)",
+  "simulation_cpu_ms_per_tick": 4.13083448275862
+}

@@ -1,0 +1,42 @@
+{
+  "checks": [
+    {
+      "name": "saved lineage available after full process restart",
+      "passed": true
+    },
+    {
+      "name": "Continue restores saved game",
+      "passed": true
+    },
+    {
+      "name": "generation persists across launch",
+      "passed": true
+    },
+    {
+      "name": "edited anatomy persists across launch",
+      "passed": true
+    },
+    {
+      "name": "ecosystem state persists across launch",
+      "passed": true
+    },
+    {
+      "name": "saved location persists across launch",
+      "passed": true
+    },
+    {
+      "name": "fullscreen keyboard toggle",
+      "passed": true
+    },
+    {
+      "name": "windowed keyboard toggle",
+      "passed": true
+    },
+    {
+      "name": "Escape pauses gameplay",
+      "passed": true
+    }
+  ],
+  "failures": [],
+  "os": "Windows"
+}

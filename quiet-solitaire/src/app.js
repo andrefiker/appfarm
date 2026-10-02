@@ -80,7 +80,7 @@ function onCardTap(source){
     if(dest.type==='foundation'&&perform(selected,dest,selected.cardIndex))return true;
   }
   const targets=targetPiles(source),aceTarget=chooseAceFoundation(game,source,targets);if(aceTarget)return perform(source,aceTarget,source.cardIndex);
-  const smartTarget=chooseSmartDestination(game,source,targets,settings.smart);if(smartTarget)return perform(source,smartTarget,source.cardIndex);
+  const smartTarget=chooseSmartDestination(game,source,targets,settings.smart,settings.hand);if(smartTarget)return perform(source,smartTarget,source.cardIndex);
   selected={type:source.type,index:source.index,cardIndex:source.cardIndex};render();sound('pickup');buzz('light');selectionTip();
   return false;
 }

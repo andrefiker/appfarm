@@ -88,7 +88,7 @@ export function chooseAceFoundation(state, source, targets, random = Math.random
  * documented priority: uncover a hidden tableau card, then advance a safe card
  * to its foundation. Return null when a tap should select instead.
  */
-export function chooseSmartDestination(state, source, targets, enabled = true) {
+export function chooseSmartDestination(state, source, targets, enabled = true, hand = 'left') {
   if (!enabled || !targets?.length) return null;
   if (targets.length === 1) return targets[0];
 
@@ -102,6 +102,20 @@ export function chooseSmartDestination(state, source, targets, enabled = true) {
     && cardIndex > 0
     && pile[cardIndex - 1].faceUp === false;
   if (revealsHiddenCard && tableauTargets.length === 1) return tableauTargets[0];
+
+  // Empty columns are equivalent destinations for a King. Make this tap useful
+  // only when it exposes a hidden card or moves a King from the waste.
+  if (card.rank === 13 && tableauTargets.length === targets.length
+    && tableauTargets.every(target => !state.tableau[target.index].length)
+    && (source.type === 'waste' || revealsHiddenCard)) {
+    return [...tableauTargets].sort((a, b) => {
+      if (source.type === 'tableau') {
+        const distance = Math.abs(a.index - source.index) - Math.abs(b.index - source.index);
+        if (distance) return distance;
+      }
+      return hand === 'right' ? b.index - a.index : a.index - b.index;
+    })[0];
+  }
 
   const foundationTargets = targets.filter(target => target.type === 'foundation');
   if (foundationTargets.length === 1 && safeFoundationMove(state, source)) return foundationTargets[0];

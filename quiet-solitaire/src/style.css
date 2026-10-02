@@ -46,6 +46,7 @@
 @media(max-height:720px) and (orientation:portrait){.topbar{margin-bottom:5px}.tableau{margin-top:clamp(10px,2.4vw,18px)}.controls{bottom:calc(5px + var(--safe-bottom))}}
 @media(orientation:landscape) and (max-height:600px){.topbar:after{bottom:-3px}.upper-row{margin-top:1px}}
 @media(prefers-reduced-motion:reduce){.card,.control-button,.menu-row{transition-duration:.01ms}}
+.pile.drop-preview,.tableau-column.drop-preview{outline:2px solid rgba(241,226,187,.85);outline-offset:2px}
 
 /* Keep Android's page fixed; only unusually tall tableau stacks may scroll. */
 html,body{height:100%;overflow:hidden;overscroll-behavior:none}

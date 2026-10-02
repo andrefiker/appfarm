@@ -64,6 +64,14 @@ export function pickExpandedDropTarget(point, candidates, padding = 14) {
   return best?.target ?? null;
 }
 
+/** Absolute tableau cards do not increase their parent's measured height. */
+export function pileDropRect(rect, visibleCardRects = []) {
+  return {
+    left: rect.left, right: rect.right, top: rect.top,
+    bottom: Math.max(rect.bottom, ...visibleCardRects.map(card => card.bottom)),
+  };
+}
+
 function sourcePile(state, source) {
   if (source.type === 'tableau') return state.tableau[source.index];
   if (source.type === 'waste') return state.waste;

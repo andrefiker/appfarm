@@ -1,5 +1,22 @@
 # Quiet Solitaire
 
+## Windows installer (v1.4.0)
+
+The Windows edition packages the same offline game in a small desktop window.
+Run `Quiet-Solitaire-Windows-Setup-v1.4.0.exe` on 64-bit Windows to install it
+for the current user. It creates Start Menu and desktop shortcuts and opens
+directly to the board. Saves and settings remain on the PC in the app's local
+profile; they persist across relaunches. The Windows save is separate from the
+Android and browser saves. No local server or network connection is required.
+
+To build it on Windows: run `npm test && npm run build`, run
+`python windows/make-icon.py` (Pillow required), then
+`npm install --prefix windows && npm run dist --prefix windows`. The Windows
+workflow performs browser gameplay QA, launches the packaged application,
+installs the NSIS installer, launches the installed application, and checks
+resume. The installer is unsigned, so Windows may show an unknown publisher
+warning. Source rollback: `c478c853b875fffaf7e5da5c711b7045e0621f8c`.
+
 ## v1.4.0 (2026-10-02)
 
 Hints prefer drawing to pointless foundation returns. Kings tap into equivalent

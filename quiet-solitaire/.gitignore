@@ -1,0 +1,4 @@
+dist/
+windows/node_modules/
+windows/release/
+windows/icon.ico

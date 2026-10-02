@@ -1,0 +1,128 @@
+name: Build Quiet Solitaire Windows installer
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'quiet-solitaire/**'
+      - '.github/workflows/quiet-solitaire-windows.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: quiet-solitaire
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Rules and desktop asset tests
+        run: npm test
+      - name: Build local assets
+        run: npm run build
+      - name: Browser gameplay smoke
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install chromium
+          node scripts/browser-smoke.mjs
+      - name: Build installer
+        run: |
+          python -m pip install Pillow==11.3.0
+          python windows/make-icon.py
+          npm install --prefix windows --no-audit --no-fund
+          npm run dist --prefix windows
+      - name: Play packaged Windows app and verify relaunch
+        run: node windows/smoke.mjs
+      - name: Install and launch the installer build
+        shell: pwsh
+        run: |
+          $installer = Resolve-Path windows/release/Quiet-Solitaire-Windows-Setup-v1.4.0.exe
+          $process = Start-Process $installer -ArgumentList '/S' -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw "Installer failed: $($process.ExitCode)" }
+          $installed = Get-ChildItem "$env:LOCALAPPDATA/Programs" -Filter 'Quiet Solitaire.exe' -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $installed) { throw 'Installed executable was not found' }
+          $env:QUIET_SOLITAIRE_EXE = $installed.FullName
+          node windows/smoke.mjs
+      - name: Verify installer and split for transport
+        shell: pwsh
+        run: |
+          $file = 'windows/release/Quiet-Solitaire-Windows-Setup-v1.4.0.exe'
+          if ((Get-Item $file).Length -lt 1000000) { throw 'Installer is unexpectedly small' }
+          $signature = Get-AuthenticodeSignature $file
+          Write-Host "Authenticode: $($signature.Status)"
+          python windows/split-installer.py
+          Get-Content windows/release/installer.sha256
+          Get-ChildItem windows/release/chunks
+      - name: Upload verification
+        uses: actions/upload-artifact@v4
+        with:
+          name: quiet-solitaire-windows-verification
+          path: |
+            quiet-solitaire/windows/release/installer.sha256
+            quiet-solitaire/windows/release/windows-smoke.png
+          if-no-files-found: error
+      - name: Upload part 00
+        uses: actions/upload-artifact@v4
+        with:
+          name: quiet-solitaire-windows-part-00
+          path: quiet-solitaire/windows/release/chunks/part-00
+          if-no-files-found: error
+          compression-level: 0
+      - name: Upload part 01
+        uses: actions/upload-artifact@v4
+        with:
+          name: quiet-solitaire-windows-part-01
+          path: quiet-solitaire/windows/release/chunks/part-01
+          if-no-files-found: ignore
+          compression-level: 0
+      - name: Upload part 02
+        uses: actions/upload-artifact@v4
+        with:
+          name: quiet-solitaire-windows-part-02
+          path: quiet-solitaire/windows/release/chunks/part-02
+          if-no-files-found: ignore
+          compression-level: 0
+      - name: Upload part 03
+        uses: actions/upload-artifact@v4
+        with:
+          name: quiet-solitaire-windows-part-03
+          path: quiet-solitaire/windows/release/chunks/part-03
+          if-no-files-found: ignore
+          compression-level: 0
+      - name: Upload part 04
+        uses: actions/upload-artifact@v4
+        with:
+          name: quiet-solitaire-windows-part-04
+          path: quiet-solitaire/windows/release/chunks/part-04
+          if-no-files-found: ignore
+          compression-level: 0
+      - name: Upload part 05
+        uses: actions/upload-artifact@v4
+        with:
+          name: quiet-solitaire-windows-part-05
+          path: quiet-solitaire/windows/release/chunks/part-05
+          if-no-files-found: ignore
+          compression-level: 0
+      - name: Upload part 06
+        uses: actions/upload-artifact@v4
+        with:
+          name: quiet-solitaire-windows-part-06
+          path: quiet-solitaire/windows/release/chunks/part-06
+          if-no-files-found: ignore
+          compression-level: 0
+      - name: Upload part 07
+        uses: actions/upload-artifact@v4
+        with:
+          name: quiet-solitaire-windows-part-07
+          path: quiet-solitaire/windows/release/chunks/part-07
+          if-no-files-found: ignore
+          compression-level: 0

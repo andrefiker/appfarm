@@ -1,0 +1,20 @@
+{
+  "name": "quiet-solitaire-windows",
+  "version": "1.4.0",
+  "private": true,
+  "main": "main.cjs",
+  "description": "Offline Windows edition of Quiet Solitaire",
+  "author": "Andre Fiker",
+  "license": "UNLICENSED",
+  "scripts": { "dist": "electron-builder --win nsis --x64" },
+  "devDependencies": { "electron": "44.5.1", "electron-builder": "26.17.0" },
+  "build": {
+    "appId": "com.andrefiker.quietsolitaire.desktop",
+    "productName": "Quiet Solitaire",
+    "directories": { "output": "release" },
+    "files": [ "main.cjs", "asset-path.cjs", "icon.ico", "package.json" ],
+    "extraResources": [ { "from": "../dist", "to": "game" } ],
+    "win": { "target": "nsis", "icon": "icon.ico" },
+    "nsis": { "oneClick": true, "perMachine": false, "createDesktopShortcut": true, "createStartMenuShortcut": true, "artifactName": "Quiet-Solitaire-Windows-Setup-v${version}.exe" }
+  }
+}

@@ -19,8 +19,16 @@ echo no | "$AVDMANAGER" create avd -n quiet_solitaire_qa -k 'system-images;andro
 EMULATOR_PID=$!
 trap 'kill "$EMULATOR_PID" 2>/dev/null || true' EXIT
 
-adb wait-for-device
-timeout 180 bash -c 'until [[ "$(adb shell getprop sys.boot_completed | tr -d "\r")" == "1" ]]; do sleep 3; done'
+if ! timeout 120 adb wait-for-device; then
+  printf '%s\n' 'EMULATOR_STATUS=unavailable: device did not connect within 120 seconds' > "$REPORT"
+  cat "$REPORT"
+  exit 0
+fi
+if ! timeout 180 bash -c 'until [[ "$(adb shell getprop sys.boot_completed | tr -d "\r")" == "1" ]]; do sleep 3; done'; then
+  printf '%s\n' 'EMULATOR_STATUS=unavailable: device did not boot within 180 seconds' > "$REPORT"
+  cat "$REPORT"
+  exit 0
+fi
 adb shell wm size 393x852
 adb shell wm density 160
 adb shell svc wifi disable

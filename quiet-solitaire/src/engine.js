@@ -123,6 +123,10 @@ export function legalMoves(state) {
 export function getHint(state) {
   const moves=legalMoves(state);
   if(!moves.length) return state.stock.length||state.waste.length?{source:{type:'stock'},dest:{type:'waste'},priority:8}:null;
+  // Returning a foundation card to the tableau is occasionally useful, but
+  // should not obscure an available stock action when it is the only move.
+  if(moves.every(move=>move.source.type==='foundation') && (state.stock.length||state.waste.length))
+    return {source:{type:'stock'},dest:{type:'waste'},priority:8};
   const hintPriority=move=>{
     if(move.source.type==='tableau'&&move.dest.type==='tableau') {
       const from=state.tableau[move.source.index];

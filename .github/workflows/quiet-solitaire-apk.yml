@@ -79,9 +79,6 @@ jobs:
           set -o pipefail
           ANDROID_HOME="$ANDROID_HOME" ./build-android.sh | tee android-build.log
 
-      - name: Android emulator install and resume
-        run: bash scripts/emulator-smoke.sh
-
       - name: Upload verified APK and reports
         uses: actions/upload-artifact@v4
         with:
@@ -94,7 +91,4 @@ jobs:
             quiet-solitaire/android-build/apk-signature.txt
             quiet-solitaire/android-build/apk-alignment.txt
             quiet-solitaire/browser-smoke.png
-            quiet-solitaire/android-build/emulator-qa.txt
-            quiet-solitaire/android-build/emulator-launch.png
-            quiet-solitaire/android-build/emulator-resume.png
           if-no-files-found: error

@@ -11,7 +11,9 @@
   byte-for-byte packaged PWA assets and permissions.
 - Test signing uses a new temporary key. In-place updates from an earlier
   temporary-key build are not guaranteed.
-- Final run ID, APK fingerprint and emulator result are recorded after build.
+- Android emulator install was attempted twice. The hosted device did not
+  connect, so installation and on-device resume remain unverified.
+- Final run ID and APK fingerprint are recorded after the final build.
 
 ## v1.3.0 verified release (2026-10-02)
 

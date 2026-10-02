@@ -13,7 +13,14 @@
   temporary-key build are not guaranteed.
 - Android emulator install was attempted twice. The hosted device did not
   connect, so installation and on-device resume remain unverified.
-- Final run ID and APK fingerprint are recorded after the final build.
+- Final GitHub Actions run: `37035979734` (main at
+  `ed264988019aab41f3630cfc5b172b926e1536fe`), passed.
+- APK SHA-256:
+  `816b32cab8f1cf57fbffac621fb3966ba3c014b8d6b255eebb8427c8fd7e9a98`.
+- 36 focused rule, interaction and layout tests passed, plus a rendered
+  phone-sized browser gameplay pass. APK ZIP, signature v2/v3, alignment,
+  packaged assets, version, label, portrait manifest and VIBRATE-only
+  permission checks passed.
 
 ## v1.3.0 verified release (2026-10-02)
 

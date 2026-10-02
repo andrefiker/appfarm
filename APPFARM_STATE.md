@@ -82,6 +82,18 @@ Vercel:
 
 ## Known current source anchors / rollback references
 
+- Quiet Solitaire v1.4.0: merged improvement loop at
+  `ed264988019aab41f3630cfc5b172b926e1536fe`. Android package
+  `com.andrefiker.quietsolitaire`, versionCode 15; APK
+  `Quiet-Solitaire-v1.4.0.apk`, SHA-256
+  `816b32cab8f1cf57fbffac621fb3966ba3c014b8d6b255eebb8427c8fd7e9a98`.
+  Actions run `37035979734` passed 36 tests, phone-sized rendered gameplay,
+  offline asset and APK verification. Six iterations attempted, five retained:
+  hint stock priority, King empty-column tap, forgiving long-column drop,
+  browser gameplay QA, and portrait tableau spacing. Emulator device did not
+  connect; Android install/resume QA remains unverified. Test APK uses temporary
+  signing. Rollback: `b67116fe70298cfe7da80734c1f54339faaa0f92`.
+
 - Quiet Solitaire v1.3.0: source and Android workflow at `10c697349963bc6a2a598050508a2bfb2a099713`; APK `Quiet-Solitaire-v1.3.0.apk` built and structurally verified in Actions run `37031039995`. Package `com.andrefiker.quietsolitaire`, versionCode 14. Offline PWA and rules/interaction tests passed. Android device install/play QA unavailable. Temporary test signing means in-place upgrades from other temporary-key builds may fail. Rollback: `57526788ff6abf1a8cd771111a288aaa5d0a7a7f`.
 
 - Settlement Zero / Android packaging baseline: `4dc5aaa0bfb60f118055370483c8b3471ecbf940`.

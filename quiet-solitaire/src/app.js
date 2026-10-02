@@ -1,6 +1,6 @@
 import {newGame,drawFromStock,moveCards,undo,getHint,legalMove,legalMoves,autoFinishSafe,isWon,SUIT_GLYPHS,color,cardLabel,restore,serialize} from './engine.js';
 import {chooseAceFoundation,chooseSmartDestination,createTapDispatcher,hasExceededDragThreshold,pickExpandedDropTarget,pileDropRect} from './interaction.js';
-import {tableauOverlapLayout} from './layout.js';
+import {portraitPreferredOverlap,tableauOverlapLayout} from './layout.js';
 
 const $=id=>document.getElementById(id), app=$('app');
 const defaults={draw:1,theme:'green',deck:'classic',mode:'relaxed',hand:'left',sound:true,haptics:true,contrast:false,motion:false,smart:true};
@@ -56,7 +56,8 @@ function fitTableau(){
     const clearance=landscape?3:12;
     const availableHeight=contained?viewport.clientHeight-parseFloat(getComputedStyle(board).marginTop)-clearance:controlsTop-boardTop-clearance;
     const fillOverlap=(availableHeight-cardHeight)/Math.max(1,layers-1);
-    const preferred=landscape&&layers>1?Math.min(cardHeight*.42,Math.max(baseOverlap,fillOverlap)):baseOverlap;
+    const preferred=landscape&&layers>1?Math.min(cardHeight*.42,Math.max(baseOverlap,fillOverlap))
+      :contained?portraitPreferredOverlap(cardHeight,layers,baseOverlap,availableHeight):baseOverlap;
     const minimum=landscape?Math.max(19,cardHeight*.18):contained?Math.max(23,cardHeight*.29):Math.max(10,cardHeight*.16);
     const fitted=tableauOverlapLayout({availableHeight,cardHeight,layers,preferred,minimum});
     cardOverlap=fitted.overlap;

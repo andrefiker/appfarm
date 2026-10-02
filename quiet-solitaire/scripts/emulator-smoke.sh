@@ -11,7 +11,8 @@ sudo chmod 666 /dev/kvm
 
 SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -path '*/bin/sdkmanager' -type f | sort -V | tail -n 1)"
 AVDMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -path '*/bin/avdmanager' -type f | sort -V | tail -n 1)"
-yes | "$SDKMANAGER" 'emulator' 'system-images;android-35;google_apis;x86_64' >/dev/null || [[ "${PIPESTATUS[1]}" -eq 0 ]]
+yes | "$SDKMANAGER" 'platform-tools' 'emulator' 'system-images;android-35;google_apis;x86_64' >/dev/null || [[ "${PIPESTATUS[1]}" -eq 0 ]]
+export PATH="$ANDROID_HOME/platform-tools:$PATH"
 echo no | "$AVDMANAGER" create avd -n quiet_solitaire_qa -k 'system-images;android-35;google_apis;x86_64' --force >/dev/null
 "$ANDROID_HOME/emulator/emulator" -avd quiet_solitaire_qa -no-window -no-audio -no-boot-anim \
   -no-snapshot -gpu swiftshader_indirect > android-build/emulator.log 2>&1 &

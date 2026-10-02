@@ -7,13 +7,14 @@ var motion=0.0
 var impact=0.0
 var is_player=false
 var low_detail=false
+var lite_animation=false
 var edit_mode=false
 var selected=-1
 
 func _process(dt):
  clock+=dt
  impact=maxf(0,impact-dt*3)
- if visible: queue_redraw()
+ if visible and (not lite_animation or Engine.get_process_frames()%2==int(get_instance_id()%2)):queue_redraw()
 
 func attachment(p:Dictionary) -> Vector2:
  return Vector2(cos(p.angle)*genome.aspect,sin(p.angle))*genome.size*p.radial

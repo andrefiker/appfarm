@@ -7,10 +7,12 @@ var stats_label:Label
 var notice:Label
 var evolve_button:Button
 var tool_buttons={}
+var hud_time=0.11
 
 func setup(root):
  game=root
  game.get_window().content_scale_size=Vector2i(1440,720)
+ game.get_window().content_scale_mode=Window.CONTENT_SCALE_MODE_VIEWPORT
  game.get_window().min_size=Vector2i(640,320)
  Input.emulate_mouse_from_touch=true
  game.ui.theme.default_font_size=24
@@ -20,6 +22,8 @@ func setup(root):
 func configure_habitat():
  game.habitat.touch_enabled=true
  game.habitat.aim_mouse=false
+ game.habitat.player.lite_animation=true
+ for a in game.habitat.agents:a.node.lite_animation=true
 
 func clear(mode:String,dim:bool=true):
  if is_instance_valid(pad):pad.reset()
@@ -62,7 +66,7 @@ func confirm_new():
  action("NEW ORGANISM",716,438,344,80,game.start_new)
 
 func resume():
- clear("play",false);configure_habitat()
+ clear("play",false);configure_habitat();hud_time=0.11
  text("P R I M O R D I A",58, twenty(),20,game.MINT)
  stats_label=text("",58,55,24)
  game._bar("energy",Vector2(58,97),208,game.MINT)
@@ -80,18 +84,21 @@ func twenty() -> float:return 20.0
 
 func update_play(dt:float):
  var h=game.habitat
+ game.toast_time=maxf(0,game.toast_time-dt)
+ game.save_clock+=dt
+ if game.save_clock>=20:game.save_clock=0;game.save_game()
+ hud_time+=dt
+ if hud_time<0.1:return
+ hud_time=fmod(hud_time,0.1)
  stats_label.text="ENERGY %d          INTEGRITY %d%%       MUTATION %d/18"%[h.energy,h.integrity,h.dna]
  for item in [["energy",h.energy/h.stats.energy],["integrity",h.integrity/100.0],["dna",h.dna/18.0]]:
   game.hud_bars[item[0]].node.size.x=game.hud_bars[item[0]].width*clampf(item[1],0,1)
  game.hud_labels.zone.text=h.zone_name
  game.hud_labels.generation.text="GEN %02d · %s"%[h.generation,Genome.role(h.genome).to_upper()]
- game.toast_time=maxf(0,game.toast_time-dt)
  var ready=Genome.can_reproduce(h.energy,h.dna,h.breed_cd)
  notice.text=game.status_message if game.toast_time>0 else ("A new generation is ready" if ready else "")
  if h.energy<20:notice.text="Low energy · graze golden particles"
  evolve_button.text="EVOLVE •" if ready else "EVOLVE"
- game.save_clock+=dt
- if game.save_clock>=20:game.save_clock=0;game.save_game()
 
 func show_pause():
  game.save_game();clear("pause");game.panel(Rect2(425,38,590,644))

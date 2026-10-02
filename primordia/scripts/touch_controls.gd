@@ -54,10 +54,6 @@ func _input(event):
  if event is InputEventMouseMotion and mouse_drag:move_to(event.position)
  queue_redraw()
 
-func _process(_dt):
- if game.mode!="play":reset()
- queue_redraw()
-
 func _exit_tree():reset()
 
 func _draw():

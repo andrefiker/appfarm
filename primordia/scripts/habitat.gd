@@ -69,7 +69,7 @@ func add_food(pos:Vector2,kind:String="nutrient",value:float=1.0):
 
 func spawn_agent(id:int,pos:Vector2):
  var s=ecology.species[id]
- var body=OrganismBody.new(); body.genome=s.genome.duplicate(true); body.position=pos; body.rotation=rng.randf()*TAU; add_child(body)
+ var body=OrganismBody.new(); body.genome=s.genome.duplicate(true); body.position=pos; body.rotation=rng.randf()*TAU; body.lite_animation=touch_enabled; add_child(body)
  agents.append({"id":id,"node":body,"pos":pos,"vel":Vector2.ZERO,"heading":body.rotation,"hp":65.0+s.genome.size,"energy":70.0,"age":0.0,"decision":rng.randf(),"nibble":rng.randf()*0.25,"direction":Vector2.RIGHT.rotated(rng.randf()*TAU),"cooldown":0.0,"poison":0.0,"stats":Genome.stats(body.genome)})
 
 func _physics_process(dt):
@@ -115,7 +115,7 @@ func simulate(dt:float,input_override:Vector2=Vector2.INF):
  energy=minf(stats.energy,energy)
  if ecology.event=="Toxic bloom" and ecology.event_zone==Ecology.zone(player.position): hurt(dt*0.9,false)
  _eat(dt)
- _agents(dt)
+ if not touch_enabled or sim_steps%2==0:_agents(dt*(2.0 if touch_enabled else 1.0))
  if integrity<=0: active=false; death.emit(); return
  tick_time+=dt; spawn_time+=dt
  if tick_time>=8:
@@ -131,16 +131,19 @@ func simulate(dt:float,input_override:Vector2=Vector2.INF):
  if new_zone!=zone_name: zone_name=new_zone; message.emit(new_zone)
  if Genome.can_reproduce(energy,dna,breed_cd) and not ready_notified:
   ready_notified=true; message.emit("A new generation is possible · press E to evolve")
- queue_redraw()
+ if not touch_enabled or sim_steps%2==0:queue_redraw()
 
 func _eat(dt:float):
  var radius=genome.size*(1.2+stats.filter*0.55)
+ var radius_squared=radius*radius
+ var outer_squared=(radius+45)*(radius+45)
+ var can_filter=stats.filter>0.7
  for i in range(food.size()-1,-1,-1):
   var f=food[i]
-  var distance=player.position.distance_to(f.pos)
-  if distance<radius+45 and stats.filter>0.7:
+  var distance_squared=player.position.distance_squared_to(f.pos)
+  if can_filter and distance_squared<outer_squared:
    f.pos=f.pos.move_toward(player.position,dt*55)
-  if distance<radius:
+  if distance_squared<radius_squared:
    var gain=(7.0 if f.kind=="nutrient" else 13.0)*f.value
    if f.kind=="nutrient": gain*=0.55+stats.filter*0.45
    energy=minf(stats.energy,energy+gain)
@@ -349,14 +352,19 @@ func _draw():
  # Suspended particles are a deterministic infinite-looking field, not entities.
  var cell=160.0
  var base=Vector2(floor(p.x/cell),floor(p.y/cell))
- for xx in range(-7,8):
-  for yy in range(-5,6):
+ var half_view=get_viewport_rect().size*0.5/camera.zoom.x+Vector2(200,200)
+ var columns=int(ceil(half_view.x/cell))
+ var rows=int(ceil(half_view.y/cell))
+ for xx in range(-columns,columns+1):
+  for yy in range(-rows,rows+1):
    var ij=base+Vector2(xx,yy)
    var h=fmod(abs(sin(ij.dot(Vector2(12.9898,78.233)))*43758.5453),1.0)
    var pos=ij*cell+Vector2(h*cell,fmod(h*317,1.0)*cell)
    pos+=Vector2(sin(playtime*0.08+h*9),cos(playtime*0.06+h*5))*18
    draw_circle(pos,1.0+h*1.5,Color(0.5,0.75,0.70,0.08+h*0.17))
    if h>0.8: draw_arc(pos,14+h*20,0.4,5.0,18,Color(0.26,0.62,0.52,0.08),1,true)
+ var has_chemo=Genome.has(genome,"chemo")
+ var sense_squared=stats.senses*stats.senses*0.4225
  for f in food:
   var d=p.distance_squared_to(f.pos)
   if d>1500000: continue
@@ -365,7 +373,7 @@ func _draw():
   draw_circle(f.pos+wobble,f.size*2.4,Color(c.r,c.g,c.b,0.04))
   draw_circle(f.pos+wobble,f.size,Color(c.r,c.g,c.b,0.43),true,-1,true)
   draw_arc(f.pos+wobble,f.size,-2.3,-0.4,8,Color(c.r,c.g,c.b,0.75),0.7,true)
-  if Genome.has(genome,"chemo") and d>pow(stats.senses*0.65,2) and d<700000:
+  if has_chemo and d>sense_squared and d<700000:
    draw_arc(f.pos,12+sin(playtime*2)*3,0,TAU,14,Color(c.r,c.g,c.b,0.25),1,true)
  for e in effects:
   var progress=1-e.life/e.max

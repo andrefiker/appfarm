@@ -1,6 +1,6 @@
 extends Node2D
 
-const VERSION="1.1.0"
+const VERSION="1.1.1"
 const INK=Color("e1efe5")
 const MUTED=Color("81a29e")
 const MINT=Color("a4e4ba")
@@ -114,7 +114,7 @@ func rule(pos:Vector2,width:float):
  var line=ColorRect.new(); line.color=Color("31544f"); line.position=pos; line.size=Vector2(width,1); line.mouse_filter=Control.MOUSE_FILTER_IGNORE; ui.add_child(line)
 
 func _specimen(g:Dictionary,pos:Vector2,zoom:float) -> OrganismBody:
- var b=OrganismBody.new(); b.genome=g.duplicate(true); b.position=pos; b.scale=Vector2.ONE*zoom; ui.add_child(b); return b
+ var b=OrganismBody.new(); b.genome=g.duplicate(true); b.position=pos; b.scale=Vector2.ONE*zoom; b.lite_animation=mobile_ui!=null; ui.add_child(b); return b
 
 func show_title():
  if mobile_ui:mobile_ui.show_title();return
@@ -213,8 +213,7 @@ func _process(dt):
   if toast: toast.text=status_message if toast_time>0 else ""
   save_clock+=dt
   if save_clock>=20: save_clock=0; save_game()
- if mode=="editor" and is_instance_valid(editor_preview): editor_preview.queue_redraw()
- queue_redraw()
+ if mode=="editor" and is_instance_valid(editor_preview) and (not mobile_ui or Engine.get_process_frames()%2==0): editor_preview.queue_redraw()
 
 func show_message(text:String):
  status_message=text; toast_time=5

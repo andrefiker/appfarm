@@ -1,12 +1,12 @@
-# Primordia 1.1.0
+# Primordia 1.1.1
 
 An original, offline Android and Windows evolution sandbox. Godot 4.4.1, GDScript, OpenGL compatibility renderer. No login, backend, telemetry, web service or downloaded assets.
 
 ## Android phone
 
-Install `Primordia-1.1.0-Android.apk`. It is a signed ARM64 + x86_64 build, with Android API 21 minimum and an OpenGL ES 3.0 requirement. It runs in landscape, offline. The default left-handed layout places the swim pad on the right and ability buttons on the left; Settings can mirror them. Two fingers can swim and activate an ability simultaneously. Menus and the evolution editor have dedicated touch layouts. Android Back navigates menus and pauses gameplay; backgrounding saves and clears held touches.
+Install `Primordia-1.1.1-Android.apk`. It is a signed ARM64 + x86_64 build, with Android API 21 minimum and an OpenGL ES 3.0 requirement. It runs in landscape, offline. The default left-handed layout places the swim pad on the right and ability buttons on the left; Settings can mirror them. Two fingers can swim and activate an ability simultaneously. Menus and the evolution editor have dedicated touch layouts. Android Back navigates menus and pauses gameplay; backgrounding saves and clears held touches. This update renders phone graphics at a stable 1440×720 and reduces repeated simulation and drawing work; it installs over 1.1.0 without clearing saves.
 
-Saves are private app data, with the same checksum and backup recovery as the desktop game. Uninstalling or clearing app data deletes progress. Updates must use the same package ID and private release key. See `docs/ANDROID_README.txt` for controls and `docs/ANDROID_RELEASE.md` for package details, evidence and remaining device checks.
+Saves are private app data, with the same checksum and backup recovery as the desktop game. Uninstalling or clearing app data deletes progress. Updates must use the same package ID and private release key. See `docs/ANDROID_README.txt` for controls, `docs/ANDROID_PERFORMANCE_1_1_1.md` for this update's package and performance evidence, and `docs/ANDROID_RELEASE.md` for the original release and device-test limits.
 
 To build, install Godot **4.4.1 stable**, the complete matching Android export templates, OpenJDK 17, Android SDK platform 34, build-tools 34.0.0 and platform-tools. In Godot Editor Settings > Export > Android, set the Java SDK and Android SDK paths. The standard prebuilt-template exporter is used; Gradle, the NDK and a network service are unnecessary. Android texture import is enabled in the project.
 

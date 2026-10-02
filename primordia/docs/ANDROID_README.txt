@@ -1,6 +1,7 @@
-PRIMORDIA 1.1.0 — ANDROID
+PRIMORDIA 1.1.1 — ANDROID
 
-Install Primordia-1.1.0-Android.apk on your Android phone. When prompted,
+Install Primordia-1.1.1-Android.apk on your Android phone. It updates 1.1.0
+in place and keeps your progress. When prompted,
 allow installation from the app you used to open this APK. Launch Primordia.
 The game runs offline in landscape with no account or extra downloads.
 ARM64 phones with Android 5.0+ and OpenGL ES 3.0 are supported by this build.
@@ -29,5 +30,5 @@ The game keeps a last-good save backup. Uninstalling or clearing app data
 removes local progress. Installing a future APK with the same package and
 signing key preserves app data; the source build must reuse that key.
 
-See README.md and docs/ANDROID_RELEASE.md in the source for build and test
-information. Package: com.andrefiker.primordia. Version code: 1.
+See README.md and docs/ANDROID_PERFORMANCE_1_1_1.md in the source for build
+and test information. Package: com.andrefiker.primordia. Version code: 2.

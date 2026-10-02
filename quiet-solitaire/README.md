@@ -1,5 +1,19 @@
 # Quiet Solitaire
 
+## v1.4.0 (2026-10-02)
+
+Hints prefer drawing to pointless foundation returns. Kings tap into equivalent
+empty columns when doing so reveals a card or moves a waste King, respecting
+handedness. Long tableau columns accept drops beside their full visible stack
+and show restrained drag feedback. Short portrait columns use more vertical
+space, tightening gradually as the tableau grows. The Android workflow now
+exercises touch gameplay in a phone-sized browser and installs/launches in an
+emulator where supported.
+
+Android versionCode 15. Rollback source: v1.3.0 at
+`b67116fe70298cfe7da80734c1f54339faaa0f92`. Test APK signing remains
+temporary, so an earlier installation may require uninstalling first.
+
 ## v1.3.0 (2026-10-02)
 
 Smart tap keeps ambiguous destinations visible and moves complete tableau sequences.

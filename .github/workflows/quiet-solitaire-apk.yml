@@ -79,16 +79,22 @@ jobs:
           set -o pipefail
           ANDROID_HOME="$ANDROID_HOME" ./build-android.sh | tee android-build.log
 
+      - name: Android emulator install and resume
+        run: bash scripts/emulator-smoke.sh
+
       - name: Upload verified APK and reports
         uses: actions/upload-artifact@v4
         with:
-          name: quiet-solitaire-v1.3.0
+          name: quiet-solitaire-v1.4.0
           path: |
-            quiet-solitaire/Quiet-Solitaire-v1.3.0.apk
+            quiet-solitaire/Quiet-Solitaire-v1.4.0.apk
             quiet-solitaire/android-build.log
             quiet-solitaire/android-build/apk-badging.txt
             quiet-solitaire/android-build/apk-permissions.txt
             quiet-solitaire/android-build/apk-signature.txt
             quiet-solitaire/android-build/apk-alignment.txt
             quiet-solitaire/browser-smoke.png
+            quiet-solitaire/android-build/emulator-qa.txt
+            quiet-solitaire/android-build/emulator-launch.png
+            quiet-solitaire/android-build/emulator-resume.png
           if-no-files-found: error

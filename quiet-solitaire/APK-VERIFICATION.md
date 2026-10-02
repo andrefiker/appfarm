@@ -1,5 +1,18 @@
 # Quiet Solitaire APK verification
 
+## v1.4.0 release
+
+- Package: `com.andrefiker.quietsolitaire`; versionName `1.4.0`, versionCode `15`.
+- Artifact: `Quiet-Solitaire-v1.4.0.apk`.
+- Rollback: v1.3.0 source `b67116fe70298cfe7da80734c1f54339faaa0f92`.
+- Browser QA covers stock, waste, sequence tap, undo/reload, double tap,
+  ambiguous tap, drag, auto-finish, win/new deal, handedness and viewport.
+- Build verification checks ZIP integrity, package, signature, alignment,
+  byte-for-byte packaged PWA assets and permissions.
+- Test signing uses a new temporary key. In-place updates from an earlier
+  temporary-key build are not guaranteed.
+- Final run ID, APK fingerprint and emulator result are recorded after build.
+
 ## v1.3.0 verified release (2026-10-02)
 
 - Package: `com.andrefiker.quietsolitaire`

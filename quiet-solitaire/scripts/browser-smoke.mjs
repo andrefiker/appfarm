@@ -20,6 +20,13 @@ await new Promise(done => server.listen(0, '127.0.0.1', done));
 const browser = await chromium.launch({ headless:true });
 const context = await browser.newContext({ viewport:{width:393,height:852},
   isMobile:true, hasTouch:true, deviceScaleFactor:1 });
+await context.addInitScript(() => {
+  const pending=sessionStorage.getItem('__qa_fixture');
+  if(pending) {
+    localStorage.setItem('quiet-current',pending);
+    sessionStorage.removeItem('__qa_fixture');
+  }
+});
 const page = await context.newPage();
 const errors = [];
 page.on('pageerror', error => errors.push(error.message));
@@ -31,7 +38,7 @@ async function fixture(changes) {
     const {newGame} = await import('./src/engine.js');
     const g=newGame(34567);
     Object.assign(g,changes,{history:[],moves:0,status:'playing',recorded:false});
-    localStorage.setItem('quiet-current',JSON.stringify(g));
+    sessionStorage.setItem('__qa_fixture',JSON.stringify(g));
   },changes);
   await page.reload();
 }

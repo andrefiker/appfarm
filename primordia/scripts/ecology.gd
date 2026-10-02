@@ -82,6 +82,7 @@ func tick(dt:float):
    rate=0.11*(prey/(prey+95.0))-0.043-competition*0.00040
   if s.diet=="scavenger": rate+=predators*0.00013
   if event=="Toxic bloom" and event_zone==s.zone: rate-=0.065
+  if event=="Cold current" and event_zone==s.zone: rate-=0.025
   if event=="Long shadow" and event_zone==s.zone and s.diet=="photo": rate-=0.09
   var births=maxf(0.0,s.population*maxf(0,rate))
   s.population=clampf(s.population*(1.0+rate*dt/8.0),0.0,500.0)

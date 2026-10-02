@@ -57,6 +57,7 @@ func _ready():
  if settings.fullscreen: DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
  show_title()
  if "--qa" in OS.get_cmdline_user_args(): call_deferred("_qa_run")
+ if "--qa-resume" in OS.get_cmdline_user_args(): call_deferred("_qa_resume")
 
 func _background():
  var bg=CanvasLayer.new(); bg.layer=-10; add_child(bg)
@@ -111,6 +112,7 @@ func _specimen(g:Dictionary,pos:Vector2,zoom:float) -> OrganismBody:
 
 func show_title():
  mode="title"; habitat.active=false; clear_ui(); veil.visible=false
+ habitat.modulate=Color(1,1,1,0.15)
  label_text("A SMALL WORLD. AN UNWRITTEN LINEAGE.",Vector2(88,133),14,MINT)
  label_text("PRIMORDIA",Vector2(78,177),74)
  label_text("Become what survives.",Vector2(88,277),25,MUTED)
@@ -153,6 +155,7 @@ func continue_game():
 
 func resume_game():
  mode="play"; clear_ui(); habitat.active=true; veil.visible=true; _hud()
+ habitat.modulate=Color.WHITE
 
 func _bar(name:String,pos:Vector2,width:float,col:Color):
  var bg=ColorRect.new(); bg.position=pos; bg.size=Vector2(width,4); bg.color=Color("1c353b"); bg.mouse_filter=Control.MOUSE_FILTER_IGNORE; ui.add_child(bg)
@@ -270,7 +273,7 @@ func show_index():
   var s=habitat.ecology.species[id]
   var card=PanelContainer.new(); card.custom_minimum_size=Vector2(414,250); grid.add_child(card)
   var area=Control.new(); area.custom_minimum_size=Vector2(414,250); card.add_child(area)
-  var body=OrganismBody.new(); body.genome=s.genome; body.position=Vector2(76,88); body.scale=Vector2.ONE*1.25; area.add_child(body)
+  var body=OrganismBody.new(); body.genome=s.genome; body.position=Vector2(76,88); body.scale=Vector2.ONE*minf(1.25,65.0/preview_extent(s.genome).x); area.add_child(body)
   label_text(s.name,Vector2(155,32),21,INK,area)
   label_text(s.diet.to_upper(),Vector2(155,65),13,MINT,area)
   label_text(Ecology.ZONES[s.zone],Vector2(155,94),15,MUTED,area)
@@ -286,7 +289,7 @@ func show_lineage():
  for item in habitat.lineage:
   var card=PanelContainer.new(); card.custom_minimum_size=Vector2(1270,146); list.add_child(card)
   var area=Control.new(); area.custom_minimum_size=Vector2(1270,146); card.add_child(area)
-  var body=OrganismBody.new(); body.genome=item.genome; body.position=Vector2(115,70); body.scale=Vector2.ONE*1.2; area.add_child(body)
+  var body=OrganismBody.new(); body.genome=item.genome; body.position=Vector2(115,70); body.scale=Vector2.ONE*minf(1.2,65.0/preview_extent(item.genome).length()); area.add_child(body)
   label_text("%02d"%item.generation,Vector2(230,27),36,MINT,area)
   label_text(item.role+"  ·  %.1f μm"%(item.genome.size*2),Vector2(322,31),23,INK,area)
   label_text(item.mutation,Vector2(322,75),17,MUTED,area)
@@ -317,6 +320,7 @@ func open_editor():
  if not Genome.can_reproduce(habitat.energy,habitat.dna,habitat.breed_cd):
   show_message("Reproduction needs 18 mutation, 60 energy, and a settled membrane"); return
  habitat.active=false; mode="editor"; clear_ui(); veil.visible=false
+ habitat.modulate=Color(1,1,1,0.13)
  draft=habitat.genome.duplicate(true); base_value=Genome.value(draft); budget=int(habitat.dna)
  selected_part=-1; selected_tool=""; dragging=false; discount_kind=""; adaptation="Open variation"
  label_text("THE NEXT GENERATION",Vector2(38,27),13,MINT)
@@ -332,6 +336,7 @@ func open_editor():
   b.pressed.connect(func():selected_tool=kind; selected_part=-1; editor_hint.text="Click beside the membrane to add "+p.name; _editor_refresh())
   box.add_child(b)
  editor_preview=_specimen(draft,editor_origin,editor_scale)
+ editor_preview.edit_mode=true
  editor_info=label_text("Select a structure\nor drag an existing part.",Vector2(1112,157),18,INK); editor_info.size=Vector2(272,114); editor_info.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
  editor_stats=label_text("",Vector2(1112,297),18,MUTED)
  button("ROTATE  ↶",Rect2(1110,528,134,40),func():edit_property("rotation",-0.26))
@@ -372,7 +377,12 @@ func editor_spent() -> int:
 
 func _editor_refresh():
  editor_preview.genome=draft
- var s=Genome.stats(draft); var old=habitat.stats
+ editor_preview.selected=selected_part
+ var extent=preview_extent(draft)
+ editor_scale=minf(4.1,minf(310.0/extent.x,185.0/extent.y))
+ editor_preview.scale=Vector2.ONE*editor_scale
+ var descendant=draft.duplicate(true); descendant.size=minf(66,descendant.size*1.07)
+ var s=Genome.stats(descendant); var old=habitat.stats
  editor_budget.text="%d / %d MUTATION LEFT"%[budget-editor_spent(),budget]
  editor_budget.modulate=Color(1,0.6,0.4) if editor_spent()>budget else Color.WHITE
  editor_commit.disabled=editor_spent()>budget or draft.parts.size()>24 or not Genome.valid(draft)
@@ -380,6 +390,16 @@ func _editor_refresh():
  if selected_part>=0 and selected_part<draft.parts.size():
   var p=draft.parts[selected_part]; editor_info.text=Genome.PARTS[p.kind].name+"\n"+Genome.PARTS[p.kind].hint+"\nScale %.2f · %d mutation"%[p.size,Genome.cost(p)]
  elif selected_tool!="": editor_info.text=Genome.PARTS[selected_tool].name+"\n"+Genome.PARTS[selected_tool].hint
+
+func preview_extent(g:Dictionary) -> Vector2:
+ var extent=Vector2(g.size*g.aspect,g.size)*1.12
+ for p in g.parts:
+  var base=Vector2(cos(p.angle)*g.aspect,sin(p.angle))*g.size*p.radial
+  var length=g.size*p.size*(2.5 if p.kind=="flagellum" else 0.85)
+  var tip=base+Vector2.from_angle(p.angle+p.rotation)*length
+  extent.x=maxf(extent.x,maxf(abs(base.x),abs(tip.x))+g.size*0.25*p.size)
+  extent.y=maxf(extent.y,maxf(abs(base.y),abs(tip.y))+g.size*0.25*p.size)
+ return extent
 
 func edit_property(key:String,delta:float):
  if selected_part<0 or selected_part>=draft.parts.size():return
@@ -445,7 +465,7 @@ func _unhandled_input(event):
 
 func _notification(what):
  if what==NOTIFICATION_WM_CLOSE_REQUEST:quit_game()
- if what==NOTIFICATION_APPLICATION_FOCUS_OUT and mode=="play" and not "--qa" in OS.get_cmdline_user_args():show_pause()
+ if what==NOTIFICATION_APPLICATION_FOCUS_OUT and mode=="play" and not "--qa" in OS.get_cmdline_user_args() and not "--qa-resume" in OS.get_cmdline_user_args():show_pause()
 
 func quit_game():
  save_game();save_settings();get_tree().quit()
@@ -453,3 +473,7 @@ func quit_game():
 func _qa_run():
  var runner=load("res://tests/gameplay_qa.gd").new()
  add_child(runner);runner.run(self)
+
+func _qa_resume():
+ var runner=load("res://tests/gameplay_qa.gd").new()
+ add_child(runner);runner.run_resume(self)

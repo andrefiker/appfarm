@@ -49,7 +49,7 @@ func populate():
  agents.clear(); food.clear(); effects.clear()
  for i in range(700):
   var pos=Vector2(rng.randf_range(40,8360),rng.randf_range(40,6360))
-  if i<210: pos=player.position+Vector2.from_angle(rng.randf()*TAU)*rng.randf_range(40,1150)
+  if i<165: pos=player.position+Vector2.from_angle(rng.randf()*TAU)*sqrt(rng.randf_range(0.006,1.0))*1150.0
   add_food(pos,"nutrient" if Ecology.zone(pos)!=3 else "carrion")
  for i in range(85):
   var pos=Vector2(rng.randf_range(100,8300),rng.randf_range(100,6300))
@@ -65,7 +65,7 @@ func add_food(pos:Vector2,kind:String="nutrient",value:float=1.0):
 func spawn_agent(id:int,pos:Vector2):
  var s=ecology.species[id]
  var body=OrganismBody.new(); body.genome=s.genome.duplicate(true); body.position=pos; body.rotation=rng.randf()*TAU; add_child(body)
- agents.append({"id":id,"node":body,"pos":pos,"vel":Vector2.ZERO,"heading":body.rotation,"hp":65.0+s.genome.size,"energy":70.0,"age":0.0,"decision":rng.randf(),"direction":Vector2.RIGHT.rotated(rng.randf()*TAU),"cooldown":0.0,"poison":0.0,"stats":Genome.stats(body.genome)})
+ agents.append({"id":id,"node":body,"pos":pos,"vel":Vector2.ZERO,"heading":body.rotation,"hp":65.0+s.genome.size,"energy":70.0,"age":0.0,"decision":rng.randf(),"nibble":rng.randf()*0.25,"direction":Vector2.RIGHT.rotated(rng.randf()*TAU),"cooldown":0.0,"poison":0.0,"stats":Genome.stats(body.genome)})
 
 func _physics_process(dt):
  if not active: return
@@ -87,6 +87,8 @@ func simulate(dt:float,input_override:Vector2=Vector2.INF):
  var response=3.4/sqrt(stats.mass)+(0.8 if Genome.has(genome,"cilia") else 0)
  velocity=velocity.lerp(dir*thrust*alignment,minf(1,dt*response))
  var current=Vector2(sin(player.position.y/800+playtime*0.06),cos(player.position.x/1100))*6.0
+ if ecology.event=="Cold current" and ecology.event_zone==Ecology.zone(player.position):
+  current*=4.5; energy-=dt*0.18
  if attached>=0 and attached<agents.size():
   var host=agents[attached]
   player.position=host.pos+Vector2.from_angle(heading+PI)*host.node.genome.size
@@ -194,6 +196,7 @@ func _agents(dt:float):
    if sim_steps%6!=0: continue
    step=dt*6
   a.age+=step; a.energy-=step*0.23; a.decision-=step
+  a.nibble=a.get("nibble",0.0)-step
   if a.poison>0: a.poison-=step; a.hp-=step*5
   if a.decision<=0:
    a.decision=rng.randf_range(0.35,0.9)
@@ -242,7 +245,8 @@ func _agents(dt:float):
     if b==a or b.id==a.id or b.node.genome.size>a.node.genome.size*0.90: continue
     if a.pos.distance_to(b.pos)<a.node.genome.size+b.node.genome.size:
      b.hp-=Genome.damage(a.stats.attack*s.attack*0.55,b.stats.defense); b.node.impact=0.6; a.cooldown=1.2; a.energy+=5; break
-  elif s.diet not in ["predator","parasite"]:
+  elif s.diet not in ["predator","parasite"] and a.nibble<=0:
+   a.nibble=0.25
    for j in range(food.size()-1,-1,-1):
     if a.pos.distance_squared_to(food[j].pos)<pow(a.node.genome.size+7,2):
      a.energy+=7; food.remove_at(j); break

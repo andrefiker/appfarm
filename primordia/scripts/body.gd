@@ -7,6 +7,8 @@ var motion=0.0
 var impact=0.0
 var is_player=false
 var low_detail=false
+var edit_mode=false
+var selected=-1
 
 func _process(dt):
  clock+=dt
@@ -52,6 +54,14 @@ func _draw():
  draw_arc(Vector2(-r*0.1,-r*0.16),r*0.72,3.6,4.9,16,Color(0.84,1,0.96,0.35),1.3,true)
  if impact>0: draw_circle(Vector2.ZERO,r,Color(1,0.35,0.22,impact*0.23))
  draw_set_transform(Vector2.ZERO)
+ if is_player:
+  draw_arc(Vector2.ZERO,r*1.4,0.20,0.7,10,Color(0.72,1,0.87,0.55),0.9,true)
+  draw_arc(Vector2.ZERO,r*1.4,PI+0.20,PI+0.7,10,Color(0.72,1,0.87,0.55),0.9,true)
+ if edit_mode:
+  for i in range(genome.parts.size()):
+   var pos=attachment(genome.parts[i])
+   draw_circle(pos,1.0,Color(0.95,0.95,0.73,0.85),true,-1,true)
+   if i==selected:draw_arc(pos,3.3,0,TAU,24,Color(1,0.86,0.48),0.4,true)
 
 func _part(kind:String,r:float,col:Color):
  match kind:

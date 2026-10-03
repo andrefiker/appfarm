@@ -131,10 +131,10 @@ index 772e289..12c516d 100644
              MoreItem("Fricção", "Planos, períodos de espera e regras pessoais") { page = MorePage.FRICTION }
 diff --git a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/OneMonthScreen.kt b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/OneMonthScreen.kt
 new file mode 100644
-index 0000000..90e4662
+index 0000000..3013aff
 --- /dev/null
 +++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/OneMonthScreen.kt
-@@ -0,0 +1,528 @@
+@@ -0,0 +1,534 @@
 +@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 +
 +package com.andrefiker.lootpayments
@@ -215,6 +215,7 @@ index 0000000..90e4662
 +) {
 +    var overlay by rememberSaveable { mutableStateOf(Overlay.NONE) }
 +    var morePage by rememberSaveable { mutableStateOf("ROOT") }
++    var chosenStatementId by rememberSaveable { mutableStateOf<String?>(null) }
 +    var menuOpen by remember { mutableStateOf(false) }
 +    var addKind by remember { mutableStateOf<AddKind?>(null) }
 +    var selected by remember { mutableStateOf<SelectedRow?>(null) }
@@ -235,7 +236,7 @@ index 0000000..90e4662
 +    when (overlay) {
 +        Overlay.STATEMENTS -> Column(Modifier.fillMaxSize().background(paper)) {
 +            OverlayBack("Extratos") { overlay = Overlay.NONE }
-+            Box(Modifier.weight(1f)) { StatementInboxScreen(statements, inbox) }
++            Box(Modifier.weight(1f)) { StatementInboxScreen(statements, inbox, chosenStatementId) }
 +        }
 +        Overlay.MORE -> Column(Modifier.fillMaxSize().background(paper)) {
 +            OverlayBack("Mais") { overlay = Overlay.NONE }
@@ -245,7 +246,9 @@ index 0000000..90e4662
 +        }
 +        Overlay.SEARCH -> SearchLedger(query, { query = it }, income, expenses, statements,
 +            { overlay = Overlay.NONE }, { selected = SelectedRow.Income(it) },
-+            { selected = SelectedRow.Expense(it) }, { overlay = Overlay.STATEMENTS })
++            { selected = SelectedRow.Expense(it) }, {
++                chosenStatementId = it.id; overlay = Overlay.STATEMENTS
++            })
 +        Overlay.NONE -> MonthLedger(month.format(dateFormatter).replaceFirstChar {
 +                it.titlecase(Locale("pt", "BR"))
 +            }, totals, activeIncome, activeExpenses, pendingIncome, pendingExpenses,
@@ -256,7 +259,7 @@ index 0000000..90e4662
 +            onNext = { patients.shiftMonth(1); spending.shiftMonth(1) },
 +            onAddIncome = { addKind = AddKind.INCOME; incomeExpanded = true },
 +            onAddExpense = { addKind = AddKind.EXPENSE; expenseExpanded = true },
-+            onStatements = { overlay = Overlay.STATEMENTS },
++            onStatements = { chosenStatementId = null; overlay = Overlay.STATEMENTS },
 +            onSearch = { query = ""; overlay = Overlay.SEARCH },
 +            onMenu = { menuOpen = true },
 +            onIncome = { selected = SelectedRow.Income(it) },
@@ -579,7 +582,9 @@ index 0000000..90e4662
 +                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
 +            Box {
 +                OutlinedTextField(category, { category = it }, Modifier.fillMaxWidth(),
-+                    label = { Text("Categoria") }, singleLine = true)
++                    label = { Text("Categoria") }, singleLine = true,
++                    trailingIcon = { Text("⌄", Modifier.clickable { categoryOpen = true }
++                        .padding(9.dp), color = teal) })
 +                DropdownMenu(categoryOpen, { categoryOpen = false }) {
 +                    statementCategories.forEach { option ->
 +                        DropdownMenuItem(text = { Text(option) }, onClick = { category = option; categoryOpen = false })
@@ -615,7 +620,8 @@ index 0000000..90e4662
 +@Composable
 +private fun SearchLedger(query: String, update: (String) -> Unit, income: ScreenState,
 +    expenses: ExpensesState, statements: StatementInboxState, back: () -> Unit,
-+    selectIncome: (PatientRow) -> Unit, selectExpense: (ExpenseRow) -> Unit, openStatements: () -> Unit) {
++    selectIncome: (PatientRow) -> Unit, selectExpense: (ExpenseRow) -> Unit,
++    openStatements: (StatementInboxItem) -> Unit) {
 +    val patients = if (query.isBlank()) emptyList() else income.rows.filter {
 +        it.patient.name.contains(query, ignoreCase = true)
 +    }
@@ -641,7 +647,7 @@ index 0000000..90e4662
 +            }
 +            if (inbox.isNotEmpty()) item { SearchHeading("EXTRATOS") }
 +            items(inbox, key = { "s-i-${it.id}" }) { item ->
-+                SearchResult(item.original, ledgerMoney(item.amountCents), openStatements)
++                SearchResult(item.original, ledgerMoney(item.amountCents)) { openStatements(item) }
 +            }
 +        }
 +    }
@@ -691,10 +697,20 @@ index f01f998..bc58c96 100644
          val owner = owner.value ?: return
          val month = selected.value
 diff --git a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/StatementInboxScreen.kt b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/StatementInboxScreen.kt
-index bc6fad2..c17c9db 100644
+index bc6fad2..693b05b 100644
 --- a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/StatementInboxScreen.kt
 +++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/StatementInboxScreen.kt
-@@ -68,7 +68,7 @@ fun StatementInboxScreen(state: StatementInboxState, vm: StatementInboxViewModel
+@@ -58,7 +58,8 @@ private val statementHeader = Color(0xFF102F28)
+ private val statementDanger = Color(0xFF8C474B)
+ 
+ @Composable
+-fun StatementInboxScreen(state: StatementInboxState, vm: StatementInboxViewModel) {
++fun StatementInboxScreen(state: StatementInboxState, vm: StatementInboxViewModel,
++    preferredId: String? = null) {
+     val undo by vm.undoNotice.collectAsStateWithLifecycle()
+     val snackbar = remember { SnackbarHostState() }
+     LaunchedEffect(undo?.id) {
+@@ -68,7 +69,7 @@ fun StatementInboxScreen(state: StatementInboxState, vm: StatementInboxViewModel
          } else vm.dismissUndo()
      }
      Scaffold(containerColor = paper, snackbarHost = { SnackbarHost(snackbar) }) { padding ->
@@ -703,7 +719,18 @@ index bc6fad2..c17c9db 100644
              StatementInboxHeader(state)
              if (state.items.isEmpty()) {
                  Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
-@@ -102,10 +102,7 @@ private fun StatementInboxHeader(state: StatementInboxState) {
+@@ -81,8 +82,8 @@ fun StatementInboxScreen(state: StatementInboxState, vm: StatementInboxViewModel
+             } else {
+                 LazyColumn(modifier = Modifier.fillMaxSize(),
+                     contentPadding = PaddingValues(horizontal = 10.dp, vertical = 10.dp)) {
+-                    item(key = state.items.first().id) {
+-                        val item = state.items.first()
++                    item(key = state.items.firstOrNull { it.id == preferredId }?.id ?: state.items.first().id) {
++                        val item = state.items.firstOrNull { it.id == preferredId } ?: state.items.first()
+                     StatementInboxCard(
+                         item = item,
+                         categories = state.categories,
+@@ -102,10 +103,7 @@ private fun StatementInboxHeader(state: StatementInboxState) {
      Column(
          Modifier.fillMaxWidth().background(statementHeader).padding(horizontal = 16.dp, vertical = 14.dp)
      ) {

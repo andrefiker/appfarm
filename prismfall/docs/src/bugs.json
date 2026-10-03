@@ -95,9 +95,29 @@
    "what": "Four failures in the first passes came from the test script (navigation from a non-title screen, a run cap that stopped before game over, a Second Wind test that kept dropping after the rescue, and not waiting for the game-over animation).",
    "fix": "Harness fixed (toTitle helper, higher caps, stop at rescue). No game code changed for these.",
    "status": "Not a game bug"
+  },
+  {
+   "id": "B13",
+   "sev": "High",
+   "found": "Mobile playtest (touch bot)",
+   "what": "Flick-down to hard drop needed >0.8 px/ms instantaneous speed. An ordinary swipe (135 px in 230 ms) only soft-dropped, so about half of the drop gestures failed.",
+   "fix": "A downward swipe of 2+ cells under 450 ms counts as a hard drop when either its peak or average speed is moderate. Slow drags remain soft drops.",
+   "status": "Fixed, re-tested"
+  },
+  {
+   "id": "B14",
+   "sev": "Medium",
+   "found": "Mobile screenshots",
+   "what": "On phones the tutorial hint covered the touch buttons (portrait). In landscape the buttons were squeezed into a tiny panel and their labels were cut off.",
+   "fix": "Hints sit inside the well on touch screens. Landscape gets a dedicated button column in the free space beside the game.",
+   "status": "Fixed, re-tested"
   }
  ],
  "known": [
+  {
+   "tag": "Android APK",
+   "text": "Built and verified in CI (GitHub Actions, Android SDK 35), but never installed on a physical phone. It's signed with a throwaway test key that is new for every build, so uninstall the previous build before installing a newer one. Android will ask you to allow installing from unknown sources."
+  },
   {
    "tag": "Not tested on Windows",
    "text": "All testing ran on Linux in headless Chromium. Assumption: Edge/Chrome on Windows behave the same, since the game uses standard canvas, Web Audio and localStorage only. Fonts will differ (Segoe UI on Windows vs DejaVu in these screenshots)."

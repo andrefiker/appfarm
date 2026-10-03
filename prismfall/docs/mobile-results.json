@@ -1,0 +1,148 @@
+{
+  "checks": [
+    {
+      "name": "Portrait phone uses the compact layout",
+      "pass": true,
+      "detail": "cell=27px compact=true"
+    },
+    {
+      "name": "Layout fits the phone screen",
+      "pass": true,
+      "detail": "{\"top\":93,\"bottom\":817,\"bx\":131,\"right\":401}"
+    },
+    {
+      "name": "Left-handed default puts the side panel and buttons on the left",
+      "pass": true,
+      "detail": "side x=11 board x=131"
+    },
+    {
+      "name": "Touch buttons are visible during play",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Drag right by ~3 cells moves the piece 3 columns",
+      "pass": true,
+      "detail": "3 -> 6"
+    },
+    {
+      "name": "Tap on the right half rotates clockwise",
+      "pass": true,
+      "detail": "rot 0 -> 1 (S)"
+    },
+    {
+      "name": "Tap on the left half rotates counter-clockwise",
+      "pass": true,
+      "detail": "rot 1 -> 0"
+    },
+    {
+      "name": "Flick down hard-drops the piece",
+      "pass": true,
+      "detail": "pieces 0 -> 1"
+    },
+    {
+      "name": "Flick up holds the piece",
+      "pass": true,
+      "detail": "hold=T was cur=T"
+    },
+    {
+      "name": "Touch-only run: pieces placed and lines cleared with gestures",
+      "pass": true,
+      "detail": "31 pieces played, 10 lines, state=play"
+    },
+    {
+      "name": "BURST button fires a Prism Burst",
+      "pass": true,
+      "detail": "fever=7.8"
+    },
+    {
+      "name": "HOLD button holds the current piece",
+      "pass": true,
+      "detail": "hold=S"
+    },
+    {
+      "name": "Pause button opens the pause menu",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Android back during play pauses (shell hook)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Android back on the pause menu resumes",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "App sent to background auto-pauses (shell hook)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Android back on the title asks the shell to exit",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "No collision violations during touch play",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Right-handed setting mirrors the layout (panel and buttons on the right)",
+      "pass": true,
+      "detail": "side x=301"
+    },
+    {
+      "name": "Landscape phone layout fits",
+      "pass": true,
+      "detail": "cell=16"
+    },
+    {
+      "name": "No page errors on mobile",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "runs": [
+    {
+      "label": "Phone run — Marathon, touch gestures only (70 pieces)",
+      "pieces": 32,
+      "lines": 10,
+      "score": 1890,
+      "gems": 7,
+      "state": "play",
+      "wallMs": 26001
+    }
+  ],
+  "errors": [],
+  "screenshots": [
+    {
+      "file": "docs/screenshots/m01-title-phone.png",
+      "caption": "Phone (412x915): title screen"
+    },
+    {
+      "file": "docs/screenshots/m02-game-start-phone.png",
+      "caption": "Phone: first seconds, touch hints, HOLD / BURST / pause buttons (left-handed layout)"
+    },
+    {
+      "file": "docs/screenshots/m04-burst-ready-phone.png",
+      "caption": "Phone: BURST button glowing when the Prism meter is full"
+    },
+    {
+      "file": "docs/screenshots/m05-settings-phone.png",
+      "caption": "Phone: settings with left-handed layout and vibration toggles"
+    },
+    {
+      "file": "docs/screenshots/m06-righthanded-phone.png",
+      "caption": "Phone: right-handed layout"
+    },
+    {
+      "file": "docs/screenshots/m07-landscape-phone.png",
+      "caption": "Phone landscape (915x412)"
+    }
+  ],
+  "lastError": null
+}

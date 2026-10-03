@@ -11,6 +11,14 @@ HOW TO PLAY
             isn't code-signed. Choose "More info" > "Run anyway".
   Option C: open index.html directly.
 
+ANDROID
+  dist/Prismfall-v1.0.0.apk   copy it to your phone and open it (allow "install unknown apps"
+                              for your file manager or browser when Android asks).
+  Touch: drag sideways = move, tap = rotate (right half / left half), flick down = drop,
+         slow drag down = soft drop, flick up = hold, BURST / HOLD / pause buttons.
+  Settings > "Left-handed touch layout" (on by default) puts the buttons on the left.
+  Each APK build is signed with a fresh test key: uninstall the old one before updating.
+
   NOTE: the .bat/index.html and the .exe keep SEPARATE save files, because browsers
   store progress per address. Pick one way to play and stick with it.
 

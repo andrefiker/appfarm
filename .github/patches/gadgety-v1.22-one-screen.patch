@@ -122,7 +122,9 @@ new file mode 100644
 index 0000000..1ddf92c
 --- /dev/null
 +++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/OneMonthScreen.kt
-@@ -0,0 +1,524 @@
+@@ -0,0 +1,526 @@
++@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
++
 +package com.andrefiker.lootpayments
 +
 +import androidx.activity.compose.BackHandler

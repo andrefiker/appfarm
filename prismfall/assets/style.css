@@ -109,3 +109,24 @@ table.keys th { color: var(--muted); font-size: 12px; letter-spacing: 0.08em; te
   .screen { padding: 20px 18px; }
   .setting { grid-template-columns: 1fr 110px 44px; }
 }
+
+/* touch controls (shown only on touch screens during play) */
+#touchbar { position: fixed; display: none; gap: 10px; align-items: stretch; z-index: 4; touch-action: none; user-select: none; -webkit-user-select: none; }
+#touchbar .tgap { flex: 1; }
+#touchbar.lefty { flex-direction: row; }
+#touchbar:not(.lefty) { flex-direction: row-reverse; }
+#touchbar.stack { flex-wrap: wrap; gap: 6px; }
+#touchbar.stack .tgap { display: none; }
+#touchbar.stack .tbtn { flex: 1 1 40%; }
+.tbtn { position: relative; overflow: hidden; flex: 0 0 31%; font: 800 15px/1 var(--font); letter-spacing: 0.06em; color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 3px 0 rgba(60, 70, 120, 0.1), 0 6px 16px rgba(60, 70, 120, 0.1); touch-action: none; -webkit-tap-highlight-color: transparent; }
+.tbtn.small { flex: 0 0 18%; font-size: 14px; }
+.tbtn.down { transform: translateY(2px); box-shadow: none; background: var(--accent-soft); }
+.tbtn.burst i { position: absolute; left: 0; bottom: 0; top: 0; width: var(--charge, 0%); background: linear-gradient(90deg, #7fd6f0, #c9a4ff, #ff9aa8, #ffe07a); opacity: 0.55; transition: width 0.2s; }
+.tbtn.burst span { position: relative; }
+.tbtn.burst.full { border-color: #8a63e8; animation: glow 0.9s ease-in-out infinite alternate; }
+.tbtn.burst.full i { opacity: 0.9; }
+@keyframes glow { from { box-shadow: 0 0 0 rgba(138, 99, 232, 0.2); } to { box-shadow: 0 0 18px rgba(138, 99, 232, 0.65); } }
+#touchbar.column { flex-direction: column !important; gap: 12px; }
+#touchbar.column .tgap { display: none; }
+#touchbar.column .tbtn { flex: 1 1 0; }
+#touchbar.stack .tbtn { font-size: 11px; letter-spacing: 0.02em; }

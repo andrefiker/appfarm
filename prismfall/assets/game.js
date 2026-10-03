@@ -112,7 +112,7 @@
     best: { marathon: 0, marathonLines: 0, sprint: 0, daily: { date: '', score: 0 }, dailyAll: 0, zen: 0 },
     ach: {},
     totals: { runs: 0, lines: 0, gems: 0, quads: 0, tspins: 0, pieces: 0, time: 0, shardsEarned: 0 },
-    settings: { music: 0.5, sfx: 0.7, das: 140, arr: 30, sdf: 20, ghost: true, shake: true, mouse: true, startLevel: 1 },
+    settings: { music: 0.5, sfx: 0.7, das: 140, arr: 30, sdf: 20, ghost: true, shake: true, mouse: true, startLevel: 1, lefty: true, haptics: true },
   });
   function merge(base, over) {
     if (!over || typeof over !== 'object') return base;
@@ -153,28 +153,66 @@
   const cv = $('#game');
   const ctx = cv.getContext('2d');
   let W = 0, H = 0, DPR = 1, L = null, tiles = null, bgCache = null, chromeCache = null;
+  let isTouch = !!((window.matchMedia && window.matchMedia('(pointer: coarse)').matches) || /Android|iPhone|iPad/i.test(navigator.userAgent));
   function layout() {
     W = window.innerWidth;
     H = window.innerHeight;
     DPR = Math.min(2, window.devicePixelRatio || 1);
     cv.width = Math.round(W * DPR);
     cv.height = Math.round(H * DPR);
-    const cs = Math.max(12, Math.floor(Math.min((H - 28) / (VIS + 2.6), (W - 28) / (COLS + 13.4))));
-    const bw = COLS * cs, bh = VIS * cs;
-    const bx = Math.round((W - bw) / 2);
-    const by = Math.round((H - bh) / 2 + cs * 0.9);
-    L = {
-      cs, bw, bh, bx, by,
-      lx: bx - cs * 6.1, lw: cs * 5.3,
-      rx: bx + bw + cs * 0.95, rw: cs * 5.3,
-      mx: bx + bw + cs * 0.36, mw: Math.max(5, cs * 0.3),
-    };
-    L.holdBox = { x: L.lx, y: by, w: L.lw, h: cs * 3.6 };
-    L.statBox = { x: L.lx, y: by + cs * 4.2, w: L.lw, h: bh - cs * 4.2 };
-    L.nextBox = { x: L.rx, y: by, w: L.rw, h: cs * 12.4 };
-    L.infoBox = { x: L.rx, y: by + cs * 13, w: L.rw, h: bh - cs * 13 };
-    L.gemTarget = { x: L.lx + L.lw * 0.5, y: by + bh - cs * 1.5 };
+    if (W < H * 0.9) layoutCompact();
+    else {
+      const cs = Math.max(12, Math.floor(Math.min((H - 28) / (VIS + 2.6), (W - 28) / (COLS + 13.4))));
+      const bw = COLS * cs, bh = VIS * cs;
+      const bx = Math.round((W - bw) / 2);
+      const by = Math.round((H - bh) / 2 + cs * 0.9);
+      // on touch screens the left-handed setting mirrors the side panels (buttons end up on the left)
+      const mirror = isTouch && save.settings.lefty;
+      const leftX = bx - cs * 6.1, rightX = bx + bw + cs * 0.95;
+      L = {
+        cs, bw, bh, bx, by, compact: false,
+        lx: mirror ? rightX : leftX, lw: cs * 5.3,
+        rx: mirror ? leftX : rightX, rw: cs * 5.3,
+        mx: mirror ? bx - cs * 0.66 : bx + bw + cs * 0.36, mw: Math.max(5, cs * 0.3),
+      };
+      L.holdBox = { x: L.lx, y: by, w: L.lw, h: cs * 3.6 };
+      L.statBox = { x: L.lx, y: by + cs * 4.2, w: L.lw, h: bh - cs * 4.2 };
+      L.nextBox = { x: L.rx, y: by, w: L.rw, h: cs * 12.4 };
+      L.infoBox = { x: L.rx, y: by + cs * 13, w: L.rw, h: bh - cs * 13 };
+      L.gemTarget = { x: L.lx + L.lw * 0.5, y: by + bh - cs * 1.5 };
+      // touch buttons: a column in the free space beside the game when there is room, else inside the info panel
+      const free = Math.min(L.lx, L.rx) - 16;
+      if (free >= 84) {
+        const tw = Math.min(150, free - 8);
+        L.touchBar = { x: mirror ? 12 : W - 12 - tw, y: by + bh * 0.3, w: tw, h: bh * 0.66, column: true };
+      } else L.touchBar = { x: L.rx + cs * 0.3, y: by + bh - cs * 3.1, w: L.rw - cs * 0.6, h: cs * 2.8, column: false };
+    }
+    placeTouchbar();
     rebuildArt();
+  }
+  // Portrait phones: stats bar on top, well + narrow side column, touch buttons underneath.
+  function layoutCompact() {
+    const lefty = save.settings.lefty;
+    const topH = 2.1, spawn = 1.9, bottom = isTouch ? 3.0 : 0.5, sideW = 3.7, gap = 0.75;
+    const cs = Math.max(10, Math.floor(Math.min((H - 16) / (VIS + topH + spawn + bottom), (W - 16) / (COLS + sideW + gap))));
+    const bw = COLS * cs, bh = VIS * cs;
+    const total = Math.round(bw + (sideW + gap) * cs);
+    const x0 = Math.round((W - total) / 2);
+    const y0 = Math.round((H - (VIS + topH + spawn + bottom) * cs) / 2);
+    const by = y0 + Math.round((topH + spawn) * cs);
+    const bx = lefty ? x0 + Math.round((sideW + gap) * cs) : x0;
+    const sx = lefty ? x0 : bx + bw + Math.round(gap * cs);
+    L = {
+      cs, bw, bh, bx, by, compact: true, lefty,
+      lx: sx, lw: sideW * cs, rx: sx, rw: sideW * cs,
+      mx: lefty ? bx - cs * 0.5 : bx + bw + cs * 0.2, mw: Math.max(4, cs * 0.3),
+    };
+    L.holdBox = { x: sx, y: by, w: sideW * cs, h: cs * 3.1 };
+    L.nextBox = { x: sx, y: by + cs * 3.5, w: sideW * cs, h: cs * 11.6 };
+    L.infoBox = { x: sx, y: by + cs * 15.5, w: sideW * cs, h: bh - cs * 15.5 };
+    L.statBox = { x: x0, y: y0, w: total, h: (topH - 0.25) * cs };
+    L.gemTarget = { x: x0 + total - cs * 1.1, y: y0 + (topH - 0.25) * cs * 0.5 };
+    L.touchBar = { x: x0, y: by + bh + cs * 0.4, w: total, h: (bottom - 0.6) * cs, column: false };
   }
   function theme() { return A.themeById(save.theme); }
   function rebuildArt() {
@@ -402,6 +440,7 @@
     G.score += 2 * d;
     if (save.settings.shake) fx.shake = Math.max(fx.shake, 3 + Math.min(4, d * 0.3));
     AU.play('hard');
+    haptic(10);
     G.hint.dropped = true;
     lock();
   }
@@ -517,6 +556,7 @@
     if (pc) { addText('PERFECT CLEAR', { color: '#f6a700', y: 6, size: 1.2 }); AU.play('pc'); }
     if (n > 0) {
       AU.play('clear', n, Math.max(0, G.combo));
+      haptic(n >= 4 ? 45 : 14 + n * 6);
       if (tspin) AU.play('tspin');
       if (save.settings.shake) fx.shake = Math.max(fx.shake, n >= 4 ? 10 : n * 2);
       fx.flash = Math.max(fx.flash, n >= 4 ? 0.5 : 0.18);
@@ -558,6 +598,7 @@
     if (save.settings.shake) fx.shake = 16;
     fx.flash = 1;
     AU.play('burst');
+    haptic(70);
     // rainbow sparks across the beam
     for (let i = 0; i < 70; i++) {
       fx.parts.push({ x: Math.random() * COLS, y: VIS + HIDDEN - Math.random() * G.burstRows, vx: (Math.random() - 0.5) * 14, vy: -Math.random() * 16, life: 0, max: 0.7 + Math.random() * 0.6, hue: Math.random() * 360, size: 0.18 + Math.random() * 0.2, g: 18 });
@@ -602,6 +643,7 @@
     G.cur = null;
     G.clearing = null;
     AU.play(won ? 'win' : 'gameOver');
+    haptic(won ? 40 : 90);
     AU.setMusic('off');
     G.result = computeResults();
   }
@@ -764,6 +806,7 @@
   // mouse: hover aims, left click drops, right click / wheel rotate, middle holds, side button bursts
   function boardColAt(px) { return Math.floor((px - L.bx) / L.cs); }
   cv.addEventListener('pointermove', (e) => {
+    if (e.pointerType !== 'mouse') return;
     if (!save.settings.mouse || screen !== 'game' || !G || G.state !== 'play') return;
     const col = boardColAt(e.clientX);
     if (e.clientX < L.bx - L.cs * 1.5 || e.clientX > L.bx + L.bw + L.cs * 1.5) return;
@@ -773,6 +816,7 @@
   });
   cv.addEventListener('pointerdown', (e) => {
     AU.ensure();
+    if (e.pointerType !== 'mouse') return;
     if (screen !== 'game' || !G || G.state !== 'play' || !save.settings.mouse) return;
     input.lagStart = e.timeStamp || pnow();
     if (e.button === 0) { mouseAim(); input.press('hard', 'm'); }
@@ -781,6 +825,110 @@
     else if (e.button === 3 || e.button === 4) { e.preventDefault(); input.press('burst', 'm'); }
   });
   cv.addEventListener('contextmenu', (e) => e.preventDefault());
+
+  // touch: drag sideways = move one column per cell travelled, tap = rotate (right half
+  // clockwise, left half counter-clockwise), drag down = soft drop, flick down = hard drop,
+  // flick up = hold. Hold / Burst / Pause also have on-screen buttons.
+  const T = { id: null };
+  function becomeTouch() {
+    if (isTouch) return;
+    isTouch = true;
+    layout();
+    updateTouchbar();
+  }
+  cv.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse') return;
+    becomeTouch();
+    if (screen !== 'game' || !G || G.state === 'over' || T.id !== null) return;
+    e.preventDefault();
+    try { cv.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+    const t = pnow();
+    Object.assign(T, { id: e.pointerId, sx: e.clientX, sy: e.clientY, lx: e.clientX, t0: t, lt: t, ly: e.clientY, vy: 0, moved: false, soft: false });
+    input.lagStart = e.timeStamp || t;
+  });
+  cv.addEventListener('pointermove', (e) => {
+    if (e.pointerId !== T.id || !G) return;
+    const t = pnow();
+    const inst = (e.clientY - T.ly) / Math.max(1, t - T.lt);
+    T.vy = T.vy * 0.4 + inst * 0.6;
+    T.ly = e.clientY; T.lt = t;
+    if (G.state !== 'play') return;
+    const step = L.cs * 0.9;
+    let guard = 0;
+    while (e.clientX - T.lx >= step && guard++ < 12) { T.lx += step; touchShift(1); }
+    while (T.lx - e.clientX >= step && guard++ < 24) { T.lx -= step; touchShift(-1); }
+    const dy = e.clientY - T.sy;
+    if (!T.soft && dy > L.cs * 1.6 && Math.abs(e.clientX - T.sx) < L.cs * 2) { T.soft = true; input.press('soft', 'touch'); }
+  });
+  function touchShift(d) {
+    T.moved = true;
+    input.mouse.active = false;
+    if (G.cur && tryMove(d, 0)) AU.play('move');
+    G.hint.moved = true;
+  }
+  function touchEnd(e, cancelled) {
+    if (e.pointerId !== T.id) return;
+    T.id = null;
+    if (T.soft) input.release('soft', 'touch');
+    if (cancelled || !G || G.state !== 'play') return;
+    const dx = e.clientX - T.sx, dy = e.clientY - T.sy, dt = pnow() - T.t0;
+    input.lagStart = e.timeStamp || pnow();
+    // a downward swipe of 2+ cells is a hard drop unless it was a slow, deliberate drag (soft drop)
+    if (dy > L.cs * 2 && dt < 450 && (T.vy > 0.5 || dy / Math.max(1, dt) > 0.35)) input.press('hard', 'touch');
+    else if (dy < -L.cs * 2 && Math.abs(dy) > Math.abs(dx)) input.press('hold', 'touch');
+    else if (!T.moved && !T.soft && Math.abs(dx) < L.cs * 0.7 && Math.abs(dy) < L.cs * 0.7 && dt < 400) {
+      input.press(e.clientX >= L.bx + L.bw / 2 ? 'cw' : 'ccw', 'touch');
+    }
+  }
+  cv.addEventListener('pointerup', (e) => touchEnd(e, false));
+  cv.addEventListener('pointercancel', (e) => touchEnd(e, true));
+
+  // on-screen buttons for touch screens
+  const tbar = document.createElement('div');
+  tbar.id = 'touchbar';
+  tbar.innerHTML = '<button class="tbtn" data-touch="hold">HOLD</button><button class="tbtn burst" data-touch="burst"><i></i><span>BURST</span></button><span class="tgap"></span><button class="tbtn small" data-touch="pause" aria-label="Pause">❚❚</button>';
+  document.body.appendChild(tbar);
+  tbar.addEventListener('pointerdown', (e) => {
+    const b = e.target.closest('[data-touch]');
+    if (!b) return;
+    e.preventDefault();
+    AU.ensure();
+    becomeTouch();
+    input.lagStart = e.timeStamp || pnow();
+    input.press(b.dataset.touch, 'tb');
+    b.classList.add('down');
+    setTimeout(() => b.classList.remove('down'), 120);
+  });
+  tbar.addEventListener('contextmenu', (e) => e.preventDefault());
+  function placeTouchbar() {
+    if (!L || !L.touchBar) return;
+    const r = L.touchBar;
+    Object.assign(tbar.style, { left: r.x + 'px', top: r.y + 'px', width: r.w + 'px', height: r.h + 'px' });
+    tbar.classList.toggle('lefty', !!save.settings.lefty);
+    tbar.classList.toggle('stack', !L.compact && !r.column);
+    tbar.classList.toggle('column', !!r.column);
+  }
+  function updateTouchbar() {
+    tbar.style.display = isTouch && screen === 'game' ? 'flex' : 'none';
+  }
+  let lastCharge = -1;
+  function updateBurstButton() {
+    if (!isTouch || screen !== 'game' || !G) return;
+    const c = Math.floor(G.prism);
+    if (c === lastCharge) return;
+    lastCharge = c;
+    const b = tbar.querySelector('.burst');
+    b.style.setProperty('--charge', c + '%');
+    b.classList.toggle('full', c >= 100);
+    b.querySelector('span').textContent = c >= 100 ? 'BURST!' : 'BURST ' + c + '%';
+  }
+  function haptic(ms) {
+    if (!save.settings.haptics || !isTouch) return;
+    try {
+      if (window.PrismfallAndroid && window.PrismfallAndroid.vibrate) window.PrismfallAndroid.vibrate(ms);
+      else if (navigator.vibrate) navigator.vibrate(ms);
+    } catch (e) { /* no vibration available */ }
+  }
   let wheelT = 0;
   cv.addEventListener('wheel', (e) => {
     if (screen !== 'game' || !G || G.state !== 'play' || !save.settings.mouse) return;
@@ -1190,7 +1338,7 @@
       ctx.fill();
       ctx.restore();
     }
-    if (G.prism >= 100) {
+    if (G.prism >= 100 && !isTouch) {
       const cs = L.cs;
       ctx.font = '800 ' + Math.round(cs * 0.4) + 'px ' + FONT;
       ctx.textAlign = 'center';
@@ -1215,7 +1363,7 @@
 
   function drawPreviewBox() {
     const cs = L.cs;
-    if (G.hold) drawMini(G.hold.type, G.hold.gem, L.holdBox.x + L.holdBox.w / 2, L.holdBox.y + cs * 2.15, cs * 0.8, G.holdUsed ? 0.35 : 1);
+    if (G.hold) drawMini(G.hold.type, G.hold.gem, L.holdBox.x + L.holdBox.w / 2, L.holdBox.y + cs * (L.compact ? 1.95 : 2.15), cs * 0.8, G.holdUsed ? 0.35 : 1);
     for (let i = 0; i < 5; i++) {
       const q = G.queue[i];
       if (!q) continue;
@@ -1231,9 +1379,40 @@
   }
   function fmtNum(n) { return Math.round(n).toLocaleString('en-US'); }
 
+  function drawStatsBar() {
+    const cs = L.cs, th = theme(), b = L.statBox;
+    const cells = [['SCORE', fmtNum(G.score), 1.6]];
+    cells.push(G.mode === 'sprint' ? ['LEFT', String(Math.max(0, MODES.sprint.goal - G.lines)), 0.8] : ['LEVEL', String(G.level), 0.8]);
+    cells.push(['LINES', String(G.lines), 0.8]);
+    const t = G.mode === 'daily' ? Math.max(0, MODES.daily.time - G.time) : G.time;
+    cells.push([G.mode === 'daily' ? 'LEFT' : 'TIME', Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0'), 0.9]);
+    const usable = b.w - cs * 2.4;
+    const unit = usable / cells.reduce((a, c) => a + c[2], 0);
+    let x = b.x + cs * 0.35;
+    ctx.textBaseline = 'top';
+    for (const [lab, val, wgt] of cells) {
+      ctx.font = '700 ' + Math.round(cs * 0.32) + 'px ' + FONT;
+      ctx.fillStyle = A.rgba(th.ink, 0.5);
+      ctx.fillText(lab, x, b.y + cs * 0.22);
+      ctx.font = '800 ' + Math.round(cs * (lab === 'SCORE' ? 0.68 : 0.58)) + 'px ' + FONT;
+      ctx.fillStyle = th.ink;
+      ctx.fillText(val, x, b.y + cs * 0.68);
+      x += unit * wgt;
+    }
+    const pulse = G.gemPulse ? 1 + G.gemPulse : 1;
+    const gs = cs * 0.8 * pulse;
+    ctx.drawImage(tiles.gem, L.gemTarget.x - cs * 0.75 - gs / 2, L.gemTarget.y - gs / 2, gs, gs);
+    ctx.font = '800 ' + Math.round(cs * 0.58) + 'px ' + FONT;
+    ctx.fillStyle = th.ink;
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(G.gems), L.gemTarget.x - cs * 0.2, L.gemTarget.y);
+    ctx.textBaseline = 'top';
+  }
+
   function drawStats() {
     const cs = L.cs, th = theme();
     const b = L.statBox;
+    if (L.compact) { drawStatsBar(); drawInfo(); return; }
     let y = b.y + cs * 0.45;
     const x = b.x + cs * 0.4;
     const label = (t) => { ctx.font = '700 ' + Math.round(cs * 0.36) + 'px ' + FONT; ctx.fillStyle = A.rgba(th.ink, 0.5); ctx.textBaseline = 'top'; ctx.fillText(t, x, y); y += cs * 0.48; };
@@ -1256,17 +1435,21 @@
     ctx.textBaseline = 'middle';
     ctx.fillText(String(G.gems), L.gemTarget.x - cs * 0.9, gy);
     ctx.textBaseline = 'top';
+    drawInfo();
+  }
+  function drawInfo() {
+    const cs = L.cs, th = theme();
     // info box: mode, fever, combo
     const ib = L.infoBox;
     let iy = ib.y + cs * 0.4;
     ctx.font = '800 ' + Math.round(cs * 0.42) + 'px ' + FONT;
     ctx.fillStyle = A.rgba(th.ink, 0.6);
-    ctx.fillText(MODES[G.mode].name.toUpperCase(), ib.x + cs * 0.4, iy);
+    ctx.fillText((L.compact ? MODES[G.mode].name.replace(' Bloom', '').replace(' Garden', '') : MODES[G.mode].name).toUpperCase(), ib.x + cs * 0.4, iy);
     iy += cs * 0.75;
     ctx.font = '700 ' + Math.round(cs * 0.36) + 'px ' + FONT;
     if (G.fever > 0) {
       ctx.fillStyle = '#e0569a';
-      ctx.fillText('FEVER x2  ' + G.fever.toFixed(1) + 's', ib.x + cs * 0.4, iy);
+      ctx.fillText(L.compact ? 'FEVER ' + G.fever.toFixed(1) + 's' : 'FEVER x2  ' + G.fever.toFixed(1) + 's', ib.x + cs * 0.4, iy);
       iy += cs * 0.5;
       const w = (ib.w - cs * 0.8) * (G.fever / G.feverDur);
       A.roundRect(ctx, ib.x + cs * 0.4, iy, Math.max(4, w), cs * 0.22, cs * 0.11);
@@ -1279,9 +1462,9 @@
       iy += cs * 0.55;
     }
     if (G.combo > 0) { ctx.fillStyle = '#2f9a96'; ctx.fillText('COMBO ' + G.combo, ib.x + cs * 0.4, iy); iy += cs * 0.5; }
-    if (G.b2b) { ctx.fillStyle = '#f08a00'; ctx.fillText('B2B READY', ib.x + cs * 0.4, iy); }
+    if (G.b2b) { ctx.fillStyle = '#f08a00'; ctx.fillText(L.compact ? 'B2B' : 'B2B READY', ib.x + cs * 0.4, iy); }
     // key legend at the bottom of the info panel
-    if (ib.h > cs * 4.2) {
+    if (ib.h > cs * 4.2 && !isTouch && !L.compact) {
       ctx.font = '600 ' + Math.round(cs * 0.33) + 'px ' + FONT;
       ctx.fillStyle = A.rgba(th.ink, 0.42);
       const lines = ['V / O   Prism Burst', 'C / I   Hold', 'Esc     Pause'];
@@ -1292,7 +1475,13 @@
   function drawHints() {
     const h = G.hint, cs = L.cs;
     let msg = null;
-    if (!h.moved && h.t < 14) msg = '← → move   ↑ rotate   Space drop\nor mouse: hover to aim, click to drop';
+    if (isTouch) {
+      if (!h.moved && h.t < 14) msg = 'Drag sideways to move\nTap to rotate';
+      else if (!h.dropped && h.t < 20) msg = 'Flick down to drop\nDrag down slowly = soft drop';
+      else if (!h.held && G.pieces >= 4 && h.t < 40) msg = 'Flick up or tap HOLD\nto keep a piece for later';
+      else if (G.prism >= 100 && !h.burst) msg = 'Prism is full!\nTap BURST for Fever x2';
+      else if (G.gems > 0 && h.t < 70 && !h.gemInfo) { msg = 'Gems become shards\nfor the Workshop'; if (h.t > 60) h.gemInfo = true; }
+    } else if (!h.moved && h.t < 14) msg = '← → move   ↑ rotate   Space drop\nor mouse: hover to aim, click to drop';
     else if (!h.dropped && h.t < 18) msg = 'Space: hard drop\n↓: soft drop';
     else if (!h.held && G.pieces >= 4 && h.t < 40) msg = 'C or Shift: hold a piece\nfor later';
     else if (G.prism >= 100 && !h.burst) msg = 'Prism is full! Press V for\nPRISM BURST + Fever x2';
@@ -1309,7 +1498,7 @@
     const w = Math.min(maxW, Math.max(...lines.map((t) => ctx.measureText(t).width)) + 24);
     const lh = fs * 1.35, ph = lines.length * lh + 12;
     const x = L.bx + L.bw / 2 - w / 2;
-    const y = H - (L.by + L.bh) >= ph + 12 ? L.by + L.bh + 8 : L.by + cs * 3.2;
+    const y = !isTouch && H - (L.by + L.bh) >= ph + 12 ? L.by + L.bh + 8 : L.by + cs * 3.2;
     ctx.shadowColor = 'rgba(60,70,120,0.18)';
     ctx.shadowBlur = 12;
     A.roundRect(ctx, x, y, w, ph, Math.min(16, ph / 2));
@@ -1357,6 +1546,8 @@
     if (id === 'title' || id === 'modes' || id === 'workshop' || id === 'collection' || id === 'results' || (id === 'help' && !(G && G.state === 'paused'))) AU.setMusic('menu');
     ui._armedAt = pnow() + (id === 'results' ? 700 : 120);
     if (id === 'game' && document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    updateTouchbar();
+    lastCharge = -1;
   }
 
   function playerBar() {
@@ -1424,7 +1615,7 @@
         (r.unlockedThemes.length ? '<p class="center"><span class="badge">Theme unlocked: ' + r.unlockedThemes.join(', ') + '</span></p>' : '') +
         (r.ach.length ? '<p class="center sub">Achievements: ' + r.ach.map((a) => '<b>' + a.name + '</b>').join(', ') + '</p>' : '') +
         '<div class="menu" style="margin-top:12px"><button class="btn primary big" data-act="retry" autofocus>Play again</button><div class="row"><button class="btn" data-act="workshop">Workshop (' + save.shards + ')</button><button class="btn" data-act="menu">Menu</button></div></div>' +
-        '<p class="foot">Enter = play again · Esc = menu</p>';
+        (isTouch ? '' : '<p class="foot">Enter = play again · Esc = menu</p>');
     },
     workshop(el) {
       let html = '<h2>Workshop</h2><p class="sub">Spend gem shards on permanent perks. You have <b>' + GEM_SVG + ' ' + save.shards + '</b> shards.</p>';
@@ -1471,6 +1662,8 @@
         chk('ghost', 'Ghost piece', 'Shows where the piece will land') +
         chk('shake', 'Screen shake', 'Impact feedback on drops and clears') +
         chk('mouse', 'Mouse controls', 'Aim with the pointer, click to drop') +
+        chk('lefty', 'Left-handed touch layout', 'Touch buttons and side panel on the left') +
+        chk('haptics', 'Vibration', 'Haptic taps on drops and clears (phones)') +
         '<div class="row" style="margin-top:16px"><button class="btn primary" data-act="back" autofocus>Done</button><button class="btn danger" data-act="reset">Reset all progress</button></div>';
     },
     help(el) {
@@ -1485,6 +1678,7 @@
         '<tr><td>Hold</td><td><kbd>C</kbd> <kbd>Shift</kbd></td><td><kbd>I</kbd></td><td>Middle click · X / LB</td></tr>' +
         '<tr><td>Prism Burst</td><td><kbd>V</kbd></td><td><kbd>O</kbd></td><td>Side button · Y / RB</td></tr>' +
         '<tr><td>Pause</td><td><kbd>Esc</kbd> <kbd>P</kbd></td><td><kbd>P</kbd></td><td>Start</td></tr></table>' +
+        '<h3>Touch screen</h3><table class="keys"><tr><td>Move</td><td>Drag sideways (one column per cell)</td></tr><tr><td>Rotate</td><td>Tap: right half ↻, left half ↺</td></tr><tr><td>Soft / hard drop</td><td>Drag down slowly / flick down</td></tr><tr><td>Hold</td><td>Flick up or the HOLD button</td></tr><tr><td>Prism Burst</td><td>BURST button (fills as the meter charges)</td></tr><tr><td>Pause</td><td>❚❚ button or the Android back button</td></tr></table>' +
         '<h3>What makes Prismfall different</h3><p><b>Gems.</b> Some pieces carry a sparkling gem. Clear its row and it flies into your pocket. Gems become <b>shards</b> for the Workshop.</p>' +
         '<p><b>Prism meter.</b> Every clear charges the rainbow bar beside the well. Quads, T-spins and combos charge it fastest. When it glows, press <kbd>V</kbd> for a <b>Prism Burst</b>. It blasts away the bottom 4 rows and starts <b>Fever</b>, which doubles your score for 8 seconds.</p>' +
         '<p><b>Big moves.</b> A quad clears 4 lines at once. A T-spin twists a T into a tight slot. Repeat quads or T-spins for a back-to-back bonus. Clear on consecutive pieces to build a combo, and listen to the music grow with it.</p>' +
@@ -1562,6 +1756,7 @@
     if (out) out.textContent = k === 'music' || k === 'sfx' ? Math.round(s[k] * 100) + '%' : k === 'sdf' ? (s[k] >= 41 ? '∞' : s[k] + 'x') : s[k] + 'ms';
     AU.setVolumes(s.music, s.sfx);
     persist();
+    if (k === 'lefty') layout();
   });
   ui.addEventListener('mouseover', (e) => {
     const b = e.target.closest('.btn, .card[data-act]');
@@ -1605,6 +1800,7 @@
       DEBUG.lastError = String(err && err.stack || err);
       console.error(err);
     }
+    updateBurstButton();
     if (input.lagStart) { input.lagSamples.push(pnow() - input.lagStart); if (input.lagSamples.length > 500) input.lagSamples.shift(); input.lagStart = 0; }
     requestAnimationFrame(frame);
   }
@@ -1618,6 +1814,14 @@
 
   // test / debug hooks (read-only views + a few helpers used by the playtest harness)
   window.PF = {
+    // called by the Android shell (back button / app sent to background)
+    androidBack() {
+      if (screen === 'game') { if (G && G.state !== 'over') pause(); return 'handled'; }
+      if (screen === 'title') return 'exit';
+      goBack();
+      return 'handled';
+    },
+    androidPause() { releaseAll(); autoPause(); },
     get screen() { return screen; },
     get G() { return G; },
     get save() { return save; },

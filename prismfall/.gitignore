@@ -1,3 +1,4 @@
 launcher-src/prismfall-launcher-linux
 launcher-src/*.syso
 launcher-src/game/
+android-build/

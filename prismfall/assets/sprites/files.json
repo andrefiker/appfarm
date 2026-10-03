@@ -48,6 +48,26 @@
     "bytes": 41329
   },
   {
+    "file": "android/res/mipmap-mdpi/ic_launcher.png",
+    "bytes": 4363
+  },
+  {
+    "file": "android/res/mipmap-hdpi/ic_launcher.png",
+    "bytes": 7542
+  },
+  {
+    "file": "android/res/mipmap-xhdpi/ic_launcher.png",
+    "bytes": 10935
+  },
+  {
+    "file": "android/res/mipmap-xxhdpi/ic_launcher.png",
+    "bytes": 18966
+  },
+  {
+    "file": "android/res/mipmap-xxxhdpi/ic_launcher.png",
+    "bytes": 27695
+  },
+  {
     "file": "assets/sprites/gem.png",
     "bytes": 4219
   }

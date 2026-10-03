@@ -1,0 +1,56 @@
+name: Gadgety v1.22 visual QA
+
+on:
+  push:
+    branches: [ quanto-resta-patient-payments-v2 ]
+    paths:
+      - '.github/workflows/gadgety-v1.22-visual.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  screenshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply current Gadgety source
+        run: |
+          git apply .github/patches/gadgety-v1.19-income-verification.patch
+          git apply .github/patches/gadgety-v1.20-home-summary.patch
+          git apply .github/patches/gadgety-v1.21-live-totals.patch
+          git apply .github/patches/gadgety-v1.22-one-screen.patch
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Build debug app for a clean synthetic device
+        working-directory: quanto-resta-patient-payments-v2
+        run: gradle --no-daemon :app:assembleDebug
+      - name: Enable KVM
+        run: |
+          sudo chown $USER /dev/kvm
+      - name: Capture fresh one-screen app
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          target: google_apis
+          script: |
+            adb install quanto-resta-patient-payments-v2/app/build/outputs/apk/debug/app-debug.apk
+            adb shell wm size 1080x2400
+            adb shell wm density 420
+            adb shell am start -n com.andrefiker.gadgety/com.andrefiker.lootpayments.MainActivity
+            sleep 8
+            mkdir -p visual
+            adb shell screencap -p /sdcard/home.png
+            adb pull /sdcard/home.png visual/Gadgety-v1.22-home.png
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Gadgety-v1.22-visual
+          path: visual/Gadgety-v1.22-home.png
+          if-no-files-found: error

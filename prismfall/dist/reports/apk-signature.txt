@@ -1,0 +1,17 @@
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): true
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+Signer #1 certificate DN: CN=Prismfall Local Test, O=Andre Fiker, C=BR
+Signer #1 certificate SHA-256 digest: 423f1fd32a89ae335eeea41a7550fc1a7a1f43c52ba01ce5067fd96c5df07a7a
+Signer #1 certificate SHA-1 digest: de0ed067a3e741993d3166435f7dbb73340808a5
+Signer #1 certificate MD5 digest: 4d83ad0f0b976b62c7d824603ed4a910
+Signer #1 key algorithm: RSA
+Signer #1 key size (bits): 3072
+Signer #1 public key SHA-256 digest: fc06fe13e966ed31a5cc4c39129f6a634f5a726f47aa362487ef2a0b42072c0b
+Signer #1 public key SHA-1 digest: 3737d4c47c9d2fabde499e161f5d7e2f031a9c80
+Signer #1 public key MD5 digest: 4fd76c2521326173c11cff4913d5bfe7

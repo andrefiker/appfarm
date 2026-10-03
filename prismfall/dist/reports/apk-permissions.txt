@@ -1,0 +1,2 @@
+package: com.andrefiker.prismfall
+uses-permission: name='android.permission.VIBRATE'

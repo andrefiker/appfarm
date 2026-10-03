@@ -46,10 +46,21 @@ index 6e10334..92a82c7 100644
          val oldExpense = dao.expense(row.expense.id) ?: return@launch
          val oldMonths = dao.allMonths().filter { it.expenseId == row.expense.id }
 diff --git a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/MainActivity.kt b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/MainActivity.kt
-index 55738c0..7549e02 100644
+index 55738c0..e480ffa 100644
 --- a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/MainActivity.kt
 +++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/MainActivity.kt
-@@ -99,48 +99,14 @@ class MainActivity : ComponentActivity() {
+@@ -89,6 +89,10 @@ internal fun ledgerMoney(cents: Long): String = Money.format(cents).replace(Rege
+ class MainActivity : ComponentActivity() {
+     override fun onCreate(savedInstanceState: Bundle?) {
+         super.onCreate(savedInstanceState)
++        @Suppress("DEPRECATION")
++        window.decorView.systemUiVisibility =
++            android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or
++                android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+         setContent {
+             MaterialTheme(colorScheme = lightColorScheme(primary = teal, onPrimary = Color.White,
+                 background = paper, surface = Color.White, onSurface = navy)) {
+@@ -99,48 +103,14 @@ class MainActivity : ComponentActivity() {
                  val expenseState by expenses.state.collectAsStateWithLifecycle()
                  val statementInbox: StatementInboxViewModel = viewModel()
                  val statementState by statementInbox.state.collectAsStateWithLifecycle()

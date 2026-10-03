@@ -1,0 +1,795 @@
+diff --git a/quanto-resta-patient-payments-v2/app/build.gradle.kts b/quanto-resta-patient-payments-v2/app/build.gradle.kts
+index 987d879..a065c29 100644
+--- a/quanto-resta-patient-payments-v2/app/build.gradle.kts
++++ b/quanto-resta-patient-payments-v2/app/build.gradle.kts
+@@ -25,8 +25,8 @@ android {
+         applicationId = "com.andrefiker.gadgety"
+         minSdk = 26
+         targetSdk = 35
+-        versionCode = 20
+-        versionName = "1.19"
++        versionCode = 23
++        versionName = "1.22"
+         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+     }
+     signingConfigs {
+@@ -78,4 +78,3 @@ dependencies {
+     androidTestImplementation("androidx.test.ext:junit:1.2.1")
+     androidTestImplementation("androidx.test:core:1.6.1")
+ }
+-
+diff --git a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/ExpensesViewModel.kt b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/ExpensesViewModel.kt
+index 70d965a..92a82c7 100644
+--- a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/ExpensesViewModel.kt
++++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/ExpensesViewModel.kt
+@@ -103,6 +103,7 @@ class ExpensesViewModel(application: Application) : AndroidViewModel(application
+         ExpensesState(selected.value, emptyList(), Totals(0, 0, 0)))
+ 
+     fun shiftMonth(delta: Long) { selected.value = selected.value.plusMonths(delta) }
++    fun selectMonth(month: YearMonth) { selected.value = month }
+     fun spendingLimit(month: YearMonth, suggestedCents: Long): Long =
+         preferences.getLong("limit_${month.key()}", suggestedCents)
+     fun setSpendingLimit(month: YearMonth, cents: Long) {
+@@ -126,12 +127,11 @@ class ExpensesViewModel(application: Application) : AndroidViewModel(application
+             val rule = dao.allRules().firstOrNull { it.enabled &&
+                 name.contains(it.pattern, ignoreCase = true) }
+             val id = UUID.randomUUID().toString()
+-            dao.put(Expense(id, name.trim(), amount, active,
++            dao.createExpenseForMonth(Expense(id, name.trim(), amount, active,
+                 if (active) null else month.key(), month.key(), now, now,
+                 category = rule?.category ?: name.trim(),
+                 spendingType = rule?.spendingType ?: SpendingType.FLEXIBLE.stored,
+-                baselineCents = amount, manualCategory = false))
+-            dao.ensureMonth(month)
++                baselineCents = amount, manualCategory = false), month)
+             offerUndo("Despesa adicionada: ${ledgerMoney(amount)}") { dao.delete(id) }
+         }
+     }
+@@ -158,6 +158,19 @@ class ExpensesViewModel(application: Application) : AndroidViewModel(application
+         val expense = dao.expense(id) ?: return@launch
+         dao.put(expense.copy(name = name.trim(), updatedAt = System.currentTimeMillis()))
+     }
++    fun updateFromSheet(row: ExpenseRow, name: String, expected: Long, paid: Long,
++        category: String, type: SpendingType) = viewModelScope.launch {
++        val current = dao.expense(row.expense.id) ?: return@launch
++        if (name.trim() != current.name) dao.put(current.copy(name = name.trim(),
++            updatedAt = System.currentTimeMillis()))
++        if (expected != row.payment.expectedCents) dao.changeDefault(row.expense.id, selected.value, expected)
++        if (category.trim() != current.category || type.stored != current.spendingType)
++            dao.updateDetails(row.expense.id, category, type.stored, current.rolloverEnabled,
++                current.tags, current.note)
++        val currentMonth = dao.month(row.expense.id, row.payment.monthKey) ?: return@launch
++        if (paid != currentMonth.paidCents) dao.putMonth(currentMonth.copy(paidCents = paid,
++            forceIncomplete = false, updatedAt = System.currentTimeMillis()))
++    }
+     fun changeAmount(row: ExpenseRow, cents: Long) = viewModelScope.launch {
+         val oldExpense = dao.expense(row.expense.id) ?: return@launch
+         val oldMonths = dao.allMonths().filter { it.expenseId == row.expense.id }
+@@ -383,4 +396,3 @@ internal object FixedMonthlyCategories {
+         ) }
+     }
+ }
+-
+diff --git a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/MainActivity.kt b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/MainActivity.kt
+index 55738c0..7549e02 100644
+--- a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/MainActivity.kt
++++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/MainActivity.kt
+@@ -99,48 +99,14 @@ class MainActivity : ComponentActivity() {
+                 val expenseState by expenses.state.collectAsStateWithLifecycle()
+                 val statementInbox: StatementInboxViewModel = viewModel()
+                 val statementState by statementInbox.state.collectAsStateWithLifecycle()
+-                var destination by rememberSaveable { mutableStateOf(0) }
+                 var dataTransferOpen by rememberSaveable { mutableStateOf(false) }
+                 var privateIncomeOpen by rememberSaveable { mutableStateOf(false) }
+-                Column(Modifier.fillMaxSize().background(paper)) {
+-                    androidx.compose.foundation.layout.Box(Modifier.weight(1f)) {
+-                        when (destination) {
+-                            0 -> ExpensesScreen(expenseState, expenses, state.totals) { dataTransferOpen = true }
+-                            1 -> StatementInboxScreen(statementState, statementInbox)
+-                            2 -> if (ready) PatientPaymentsScreen(state, vm) { privateIncomeOpen = true }
+-                                else Text("Carregando Gadgety…", modifier = Modifier.statusBarsPadding().padding(28.dp), color = muted)
+-                            else -> MoreScreen(expenseState, expenses, state.totals, statementState, statementInbox) {
+-                                dataTransferOpen = true
+-                            }
+-                        }
+-                    }
+-                    HorizontalDivider(color = divider)
+-                    Row(Modifier.fillMaxWidth().background(paper).navigationBarsPadding()
+-                        .padding(horizontal = 14.dp, vertical = 5.dp)) {
+-                        listOf("◷" to "Mês", "☷" to "Extratos", "↓" to "Receitas",
+-                            "•••" to "Mais").forEachIndexed { index, item ->
+-                            val (glyph, label) = item
+-                            Box(Modifier.weight(1f).height(44.dp).padding(horizontal = 4.dp)
+-                                .clip(RoundedCornerShape(11.dp))
+-                                .background(if (destination == index) accent else Color.Transparent)
+-                                .clickable(role = Role.Tab) { destination = index }
+-                                .semantics { selected = destination == index },
+-                                contentAlignment = Alignment.Center) {
+-                                Row(verticalAlignment = Alignment.CenterVertically,
+-                                    horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+-                                    Text(glyph, color = if (destination == index) teal else muted,
+-                                        fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+-                                    Text(label, color = if (destination == index) teal else muted,
+-                                        fontSize = 10.sp, fontWeight = if (destination == index) FontWeight.Bold else FontWeight.Medium)
+-                                }
+-                            }
+-                        }
+-                    }
+-                }
++                OneMonthScreen(state, vm, ready, expenseState, expenses, statementState, statementInbox,
++                    onBackup = { dataTransferOpen = true }, onPrivateIncome = { privateIncomeOpen = true })
+                 if (dataTransferOpen) LootDataTransferDialog(onDismiss = { dataTransferOpen = false })
+                 if (privateIncomeOpen) LootDataTransferDialog(
+                     onDismiss = { privateIncomeOpen = false }, rosterOnly = true,
+-                    onIncomeImported = vm::selectMonth
++                    onIncomeImported = { month -> vm.selectMonth(month); expenses.selectMonth(month) }
+                 )
+             }
+         }
+@@ -400,4 +366,3 @@ private fun PatientForm(onDismiss: () -> Unit, onSave: (String, Long, Boolean) -
+         confirmButton = { TextButton(enabled = name.trim().isNotEmpty() && cents != null, onClick = { onSave(name.trim(), cents!!, active) }) { Text("Adicionar") } },
+         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } })
+ }
+-
+diff --git a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/MoreScreen.kt b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/MoreScreen.kt
+index 772e289..77ecdac 100644
+--- a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/MoreScreen.kt
++++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/MoreScreen.kt
+@@ -49,10 +49,8 @@ fun MoreScreen(state: ExpensesState, expenses: ExpensesViewModel, incomeTotals:
+         MorePage.RULES -> MoreSubpage("Regras de comerciantes", { page = MorePage.ROOT }) {
+             MerchantRulesScreen(state.rules, statementState.ignoreRules, expenses, statements)
+         }
+-        MorePage.ROOT -> Column(Modifier.fillMaxSize().statusBarsPadding().background(paper)
++        MorePage.ROOT -> Column(Modifier.fillMaxSize().background(paper)
+             .padding(horizontal = 14.dp)) {
+-            Text("GADGETY  |  MAIS", color = teal, fontSize = 11.sp, fontWeight = FontWeight.Bold,
+-                letterSpacing = 1.5.sp, modifier = Modifier.padding(top = 16.dp, bottom = 12.dp))
+             MoreItem("Resumo, histórico e fechamento", "Projeção, meses recentes e fechamento") { page = MorePage.SUMMARY }
+             MoreItem("Regras de comerciantes", "Nomes, categorias e regras para ignorar") { page = MorePage.RULES }
+             MoreItem("Fricção", "Planos, períodos de espera e regras pessoais") { page = MorePage.FRICTION }
+@@ -146,4 +144,3 @@ private fun MerchantRulesScreen(rules: List<CategoryRule>, ignores: List<Stateme
+             dismissButton = { TextButton(onClick = { editing = null }) { Text("Cancelar") } })
+     }
+ }
+-
+diff --git a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/OneMonthScreen.kt b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/OneMonthScreen.kt
+new file mode 100644
+index 0000000..1ddf92c
+--- /dev/null
++++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/OneMonthScreen.kt
+@@ -0,0 +1,524 @@
++package com.andrefiker.lootpayments
++
++import androidx.activity.compose.BackHandler
++import androidx.compose.foundation.background
++import androidx.compose.foundation.clickable
++import androidx.compose.foundation.layout.Arrangement
++import androidx.compose.foundation.layout.Box
++import androidx.compose.foundation.layout.Column
++import androidx.compose.foundation.layout.Row
++import androidx.compose.foundation.layout.Spacer
++import androidx.compose.foundation.layout.fillMaxSize
++import androidx.compose.foundation.layout.fillMaxWidth
++import androidx.compose.foundation.layout.height
++import androidx.compose.foundation.layout.imePadding
++import androidx.compose.foundation.layout.navigationBarsPadding
++import androidx.compose.foundation.layout.padding
++import androidx.compose.foundation.layout.size
++import androidx.compose.foundation.layout.statusBarsPadding
++import androidx.compose.foundation.layout.width
++import androidx.compose.foundation.lazy.LazyColumn
++import androidx.compose.foundation.lazy.LazyListState
++import androidx.compose.foundation.lazy.items
++import androidx.compose.foundation.lazy.rememberLazyListState
++import androidx.compose.foundation.shape.RoundedCornerShape
++import androidx.compose.foundation.text.KeyboardOptions
++import androidx.compose.material3.Button
++import androidx.compose.material3.ButtonDefaults
++import androidx.compose.material3.DropdownMenu
++import androidx.compose.material3.DropdownMenuItem
++import androidx.compose.material3.HorizontalDivider
++import androidx.compose.material3.ModalBottomSheet
++import androidx.compose.material3.OutlinedTextField
++import androidx.compose.material3.Text
++import androidx.compose.material3.TextButton
++import androidx.compose.runtime.Composable
++import androidx.compose.runtime.getValue
++import androidx.compose.runtime.mutableStateOf
++import androidx.compose.runtime.remember
++import androidx.compose.runtime.saveable.rememberSaveable
++import androidx.compose.runtime.setValue
++import androidx.compose.ui.Alignment
++import androidx.compose.ui.Modifier
++import androidx.compose.ui.graphics.Color
++import androidx.compose.ui.semantics.contentDescription
++import androidx.compose.ui.semantics.semantics
++import androidx.compose.ui.text.font.FontWeight
++import androidx.compose.ui.text.style.TextOverflow
++import androidx.compose.ui.text.style.TextAlign
++import androidx.compose.ui.text.input.KeyboardType
++import androidx.compose.ui.unit.dp
++import androidx.compose.ui.unit.sp
++import java.time.LocalDate
++import java.util.Locale
++
++internal data class LedgerOverview(
++    val expectedIncome: Long, val expectedExpense: Long,
++    val received: Long, val paid: Long
++) {
++    val plannedBalance get() = expectedIncome - expectedExpense
++    val available get() = received - paid
++}
++
++private enum class Overlay { NONE, STATEMENTS, SEARCH, MORE }
++private enum class AddKind { INCOME, EXPENSE }
++private sealed interface SelectedRow {
++    data class Income(val row: PatientRow) : SelectedRow
++    data class Expense(val row: ExpenseRow) : SelectedRow
++}
++
++@Composable
++internal fun OneMonthScreen(
++    income: ScreenState, patients: PatientPaymentsViewModel, ready: Boolean,
++    expenses: ExpensesState, spending: ExpensesViewModel,
++    statements: StatementInboxState, inbox: StatementInboxViewModel,
++    onBackup: () -> Unit, onPrivateIncome: () -> Unit
++) {
++    var overlay by rememberSaveable { mutableStateOf(Overlay.NONE) }
++    var menuOpen by remember { mutableStateOf(false) }
++    var addKind by remember { mutableStateOf<AddKind?>(null) }
++    var selected by remember { mutableStateOf<SelectedRow?>(null) }
++    var incomeExpanded by rememberSaveable { mutableStateOf(false) }
++    var expenseExpanded by rememberSaveable { mutableStateOf(false) }
++    var query by rememberSaveable { mutableStateOf("") }
++    val scroll = rememberLazyListState()
++    val month = expenses.month
++    val activeIncome = income.rows.filter { it.payment.included }
++    val activeExpenses = expenses.rows.filter { it.payment.included }
++    val totals = LedgerOverview(income.totals.expected, expenses.totals.expected,
++        income.totals.paid, expenses.totals.paid)
++    val pendingIncome = activeIncome.filterNot { it.line.full }
++    val pendingExpenses = activeExpenses.filterNot { it.line.full }
++    val monthlyInbox = statements.items.filter { it.monthKey == month.key() }
++    BackHandler(overlay != Overlay.NONE) { overlay = Overlay.NONE }
++
++    when (overlay) {
++        Overlay.STATEMENTS -> Column(Modifier.fillMaxSize().background(paper)) {
++            OverlayBack("Extratos") { overlay = Overlay.NONE }
++            Box(Modifier.weight(1f)) { StatementInboxScreen(statements, inbox) }
++        }
++        Overlay.MORE -> Column(Modifier.fillMaxSize().background(paper)) {
++            OverlayBack("Mais") { overlay = Overlay.NONE }
++            Box(Modifier.weight(1f)) {
++                MoreScreen(expenses, spending, income.totals, statements, inbox, onBackup)
++            }
++        }
++        Overlay.SEARCH -> SearchLedger(query, { query = it }, income, expenses, statements,
++            { overlay = Overlay.NONE }, { selected = SelectedRow.Income(it) },
++            { selected = SelectedRow.Expense(it) }, { overlay = Overlay.STATEMENTS })
++        Overlay.NONE -> MonthLedger(month.format(dateFormatter).replaceFirstChar {
++                it.titlecase(Locale("pt", "BR"))
++            }, totals, activeIncome, activeExpenses, pendingIncome, pendingExpenses,
++            monthlyInbox.size, ready, spending, expenses, scroll,
++            incomeExpanded, { incomeExpanded = !incomeExpanded },
++            expenseExpanded, { expenseExpanded = !expenseExpanded },
++            onPrevious = { patients.shiftMonth(-1); spending.shiftMonth(-1) },
++            onNext = { patients.shiftMonth(1); spending.shiftMonth(1) },
++            onAddIncome = { addKind = AddKind.INCOME; incomeExpanded = true },
++            onAddExpense = { addKind = AddKind.EXPENSE; expenseExpanded = true },
++            onStatements = { overlay = Overlay.STATEMENTS },
++            onSearch = { query = ""; overlay = Overlay.SEARCH },
++            onMenu = { menuOpen = true },
++            onIncome = { selected = SelectedRow.Income(it) },
++            onExpense = { selected = SelectedRow.Expense(it) },
++            onIncomeStatus = { row -> patients.setFull(row, !row.line.full) },
++            onExpenseStatus = { row -> spending.setFull(row, !row.line.full) },
++            onIncomePaid = { row -> selected = SelectedRow.Income(row) },
++            onExpensePaid = { row -> selected = SelectedRow.Expense(row) })
++    }
++    if (menuOpen) ModalBottomSheet(onDismissRequest = { menuOpen = false }) {
++        Column(Modifier.navigationBarsPadding().padding(horizontal = 20.dp)) {
++            MenuLine("Histórico, regras, fricção e configurações") {
++                menuOpen = false; overlay = Overlay.MORE
++            }
++            MenuLine("Backup, importar e exportar") { menuOpen = false; onBackup() }
++            MenuLine("Importar lista privada de receitas") { menuOpen = false; onPrivateIncome() }
++            Spacer(Modifier.height(12.dp))
++        }
++    }
++    when (val kind = addKind) {
++        AddKind.INCOME -> AddLedgerSheet("Nova receita", "Nome ou apelido", { addKind = null }) { name, amount ->
++            patients.add(name, amount, true); addKind = null
++        }
++        AddKind.EXPENSE -> AddLedgerSheet("Novo gasto", "Nome do gasto", { addKind = null }) { name, amount ->
++            spending.add(name, amount, true); addKind = null
++        }
++        null -> Unit
++    }
++    when (val row = selected) {
++        is SelectedRow.Income -> IncomeEditorSheet(row.row, patients, { selected = null })
++        is SelectedRow.Expense -> ExpenseEditorSheet(row.row, spending, { selected = null })
++        null -> Unit
++    }
++}
++
++@Composable
++private fun MonthLedger(
++    month: String, totals: LedgerOverview, incomes: List<PatientRow>, expenses: List<ExpenseRow>,
++    pendingIncome: List<PatientRow>, pendingExpenses: List<ExpenseRow>, pendingStatements: Int,
++    ready: Boolean, spending: ExpensesViewModel, expenseState: ExpensesState, scroll: LazyListState,
++    incomeExpanded: Boolean, toggleIncome: () -> Unit, expenseExpanded: Boolean, toggleExpense: () -> Unit,
++    onPrevious: () -> Unit, onNext: () -> Unit, onAddIncome: () -> Unit, onAddExpense: () -> Unit,
++    onStatements: () -> Unit, onSearch: () -> Unit, onMenu: () -> Unit,
++    onIncome: (PatientRow) -> Unit, onExpense: (ExpenseRow) -> Unit,
++    onIncomeStatus: (PatientRow) -> Unit, onExpenseStatus: (ExpenseRow) -> Unit,
++    onIncomePaid: (PatientRow) -> Unit, onExpensePaid: (ExpenseRow) -> Unit
++) {
++    LazyColumn(Modifier.fillMaxSize().background(paper).statusBarsPadding(),
++        state = scroll) {
++        item("month") {
++            Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp), verticalAlignment = Alignment.CenterVertically) {
++                Text("‹", Modifier.size(46.dp).clickable(onClick = onPrevious)
++                    .semantics { contentDescription = "Mês anterior" }, color = teal, fontSize = 28.sp,
++                    textAlign = TextAlign.Center)
++                Text(month.uppercase(Locale("pt", "BR")), Modifier.weight(1f), color = navy,
++                    fontSize = 17.sp, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
++                Text("›", Modifier.size(46.dp).clickable(onClick = onNext)
++                    .semantics { contentDescription = "Próximo mês" }, color = teal, fontSize = 28.sp,
++                    textAlign = TextAlign.Center)
++                Box {
++                    Text("⋯", Modifier.size(44.dp).clickable(onClick = onMenu)
++                        .semantics { contentDescription = "Mais opções" }, color = muted,
++                        fontSize = 23.sp, textAlign = TextAlign.Center)
++                }
++            }
++            Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 3.dp),
++                horizontalArrangement = Arrangement.spacedBy(3.dp)) {
++                listOf("+ Receita" to onAddIncome, "+ Gasto" to onAddExpense,
++                    "Extratos" to onStatements, "Buscar" to onSearch).forEach { (label, action) ->
++                    Text(label, Modifier.weight(1f).height(44.dp).clickable(onClick = action)
++                        .background(accent, RoundedCornerShape(7.dp)).padding(top = 12.dp),
++                        color = teal, fontSize = 11.sp, fontWeight = FontWeight.SemiBold,
++                        textAlign = TextAlign.Center, maxLines = 1)
++                }
++            }
++            LedgerSummary(totals)
++            val forecast = BudgetMath.metrics(expenseState.month, LocalDate.now(),
++                expenseState.rows.map { it.toBudgetItem() },
++                spending.spendingLimit(expenseState.month, expenseState.totals.expected),
++                expenseState.plannedExpenses.sumOf { it.amountCents }).forecastCents
++            Text("Projeção de gastos: ${ledgerMoney(forecast)}", Modifier.padding(start = 17.dp, top = 1.dp),
++                color = muted, fontSize = 10.sp)
++            if (!ready) Text("Carregando receitas…", Modifier.padding(horizontal = 17.dp), color = muted, fontSize = 11.sp)
++            if (pendingIncome.isEmpty() && pendingExpenses.isEmpty() && pendingStatements == 0) {
++                Text("✓ Tudo em dia neste mês", Modifier.padding(horizontal = 17.dp, vertical = 9.dp),
++                    color = teal, fontSize = 12.sp)
++            } else {
++                Text("PENDÊNCIAS", Modifier.padding(start = 17.dp, top = 10.dp), color = muted,
++                    fontSize = 10.sp, fontWeight = FontWeight.Bold)
++                Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
++                    PendingChip("${pendingIncome.size} receitas · ${ledgerMoney(pendingIncome.sumOf { (it.payment.expectedCents - it.payment.paidCents).coerceAtLeast(0) })}",
++                        Modifier.weight(1f), toggleIncome)
++                    PendingChip("${pendingExpenses.size} gastos · ${ledgerMoney(pendingExpenses.sumOf { (it.payment.expectedCents - it.payment.paidCents).coerceAtLeast(0) })}",
++                        Modifier.weight(1f), toggleExpense)
++                    PendingChip("$pendingStatements extratos", Modifier.weight(1f), onStatements)
++                }
++            }
++        }
++        item("income-heading") {
++            SectionHeading("RECEITAS", incomes.size, totals.expectedIncome, incomeExpanded, toggleIncome)
++        }
++        if (incomes.isEmpty()) item("income-empty") {
++            Text("Nenhuma receita neste mês. Use + Receita.", Modifier.padding(horizontal = 17.dp, vertical = 10.dp),
++                color = muted, fontSize = 12.sp)
++        }
++        items(if (incomeExpanded) incomes else incomes.take(4), key = { "income-${it.patient.id}" }) { row ->
++            LedgerLine(row.patient.name, row.payment.expectedCents, row.payment.paidCents,
++                row.line.full, "Recebido", onClick = { onIncome(row) },
++                onPaid = { onIncomePaid(row) }, onStatus = { onIncomeStatus(row) })
++        }
++        if (!incomeExpanded && incomes.size > 4) item("income-more") {
++            ExpandLine("Ver todas as ${incomes.size} receitas", toggleIncome)
++        }
++        item("expense-heading") {
++            SectionHeading("GASTOS", expenses.size, totals.expectedExpense, expenseExpanded, toggleExpense)
++        }
++        if (expenses.isEmpty()) item("expense-empty") {
++            Text("Nenhum gasto neste mês. Use + Gasto.", Modifier.padding(horizontal = 17.dp, vertical = 10.dp),
++                color = muted, fontSize = 12.sp)
++        }
++        items(if (expenseExpanded) expenses else expenses.take(5), key = { "expense-${it.expense.id}" }) { row ->
++            LedgerLine(row.expense.name, row.payment.expectedCents, row.payment.paidCents,
++                row.line.full, "Pago", onClick = { onExpense(row) },
++                onPaid = { onExpensePaid(row) }, onStatus = { onExpenseStatus(row) })
++        }
++        if (!expenseExpanded && expenses.size > 5) item("expense-more") {
++            ExpandLine("Ver todos os ${expenses.size} gastos", toggleExpense)
++        }
++        item("statements") {
++            HorizontalDivider(color = divider)
++            Row(Modifier.fillMaxWidth().clickable(onClick = onStatements)
++                .padding(horizontal = 17.dp, vertical = 15.dp), verticalAlignment = Alignment.CenterVertically) {
++                Text("EXTRATOS", Modifier.weight(1f), color = navy, fontSize = 12.sp,
++                    fontWeight = FontWeight.Bold)
++                Text(if (pendingStatements == 0) "Tudo processado ✓" else "$pendingStatements para revisar  ›",
++                    color = teal, fontSize = 12.sp)
++            }
++            Spacer(Modifier.height(50.dp))
++        }
++    }
++}
++
++@Composable
++private fun LedgerSummary(t: LedgerOverview) {
++    Column(Modifier.fillMaxWidth().padding(horizontal = 15.dp, vertical = 7.dp)) {
++        Row(Modifier.fillMaxWidth().background(accent, RoundedCornerShape(8.dp))
++            .padding(horizontal = 12.dp, vertical = 7.dp)) {
++            SummaryColumn("PREVISTO", "Receitas", t.expectedIncome, "Gastos", t.expectedExpense,
++                "Sobra", t.plannedBalance, Modifier.weight(1f))
++            Spacer(Modifier.width(10.dp))
++            SummaryColumn("REAL", "Recebido", t.received, "Pago", t.paid,
++                "Disponível", t.available, Modifier.weight(1f))
++        }
++    }
++}
++
++@Composable
++private fun SummaryColumn(title: String, a: String, av: Long, b: String, bv: Long,
++    c: String, cv: Long, modifier: Modifier) {
++    Column(modifier) {
++        Text(title, color = teal, fontSize = 10.sp, fontWeight = FontWeight.Bold)
++        SummaryPair(a, av)
++        SummaryPair(b, bv)
++        HorizontalDivider(color = divider)
++        SummaryPair(c, cv, true)
++    }
++}
++
++@Composable
++private fun SummaryPair(label: String, cents: Long, prominent: Boolean = false) {
++    Row(Modifier.fillMaxWidth().height(22.dp), verticalAlignment = Alignment.CenterVertically) {
++        Text(label, Modifier.weight(1f), color = if (prominent) navy else muted,
++            fontSize = 10.sp, maxLines = 1)
++        Text(ledgerMoney(cents), color = if (cents < 0) Color(0xFF914B47) else navy,
++            fontSize = 11.sp, fontWeight = if (prominent) FontWeight.Bold else FontWeight.Medium,
++            maxLines = 1)
++    }
++}
++
++@Composable
++private fun PendingChip(label: String, modifier: Modifier, action: () -> Unit) {
++    Text(label, modifier.height(39.dp).clickable(onClick = action).padding(top = 10.dp),
++        color = teal, fontSize = 11.sp, textAlign = TextAlign.Center, maxLines = 1)
++}
++
++@Composable
++private fun SectionHeading(title: String, count: Int, sum: Long, expanded: Boolean, action: () -> Unit) {
++    Row(Modifier.fillMaxWidth().clickable(onClick = action).padding(start = 17.dp, end = 17.dp, top = 15.dp, bottom = 8.dp),
++        verticalAlignment = Alignment.CenterVertically) {
++        Text(title, Modifier.weight(1f), color = navy, fontSize = 12.sp, fontWeight = FontWeight.Bold)
++        Text("$count · ${ledgerMoney(sum)}  ${if (expanded) "⌃" else "⌄"}",
++            color = teal, fontSize = 12.sp, fontWeight = FontWeight.Medium)
++    }
++    HorizontalDivider(Modifier.padding(horizontal = 16.dp), color = divider)
++}
++
++@Composable
++private fun LedgerLine(name: String, expected: Long, paid: Long, full: Boolean, actualLabel: String,
++    onClick: () -> Unit, onPaid: () -> Unit, onStatus: () -> Unit) {
++    Column(Modifier.fillMaxWidth().background(paper).clickable(onClick = onClick)
++        .padding(start = 17.dp, end = 17.dp, top = 5.dp)) {
++        Row(Modifier.fillMaxWidth().height(25.dp), verticalAlignment = Alignment.CenterVertically) {
++            Text(name, Modifier.weight(1f), color = navy, fontSize = 14.sp, fontWeight = FontWeight.SemiBold,
++                maxLines = 1, overflow = TextOverflow.Ellipsis)
++            Text(ledgerMoney(expected), color = navy, fontSize = 13.sp, fontWeight = FontWeight.SemiBold,
++                maxLines = 1)
++        }
++        Row(Modifier.fillMaxWidth().height(37.dp), verticalAlignment = Alignment.CenterVertically) {
++            Text("$actualLabel ${ledgerMoney(paid)}${if (paid > 0 && paid < expected) " · Faltam ${ledgerMoney(expected - paid)}" else ""}",
++                Modifier.weight(1f).clickable(onClick = onPaid).padding(vertical = 8.dp),
++                color = muted, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
++            Text(if (full) "✓ ${if (actualLabel == "Pago") "Pago" else "Recebido"}"
++                else if (paid > 0) "Parcial" else "Pendente",
++                Modifier.clickable(onClick = onStatus).padding(horizontal = 3.dp, vertical = 8.dp),
++                color = if (full) teal else muted, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
++        }
++        HorizontalDivider(color = divider)
++    }
++}
++
++@Composable
++private fun ExpandLine(label: String, action: () -> Unit) {
++    Text(label, Modifier.fillMaxWidth().clickable(onClick = action)
++        .padding(horizontal = 17.dp, vertical = 11.dp), color = teal, fontSize = 12.sp,
++        fontWeight = FontWeight.SemiBold)
++}
++
++@Composable
++private fun OverlayBack(title: String, back: () -> Unit) {
++    Row(Modifier.fillMaxWidth().statusBarsPadding().height(47.dp).background(paper)
++        .clickable(onClick = back).padding(horizontal = 15.dp), verticalAlignment = Alignment.CenterVertically) {
++        Text("‹  $title", color = navy, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
++    }
++}
++
++@Composable
++private fun MenuLine(title: String, action: () -> Unit) {
++    Text(title, Modifier.fillMaxWidth().clickable(onClick = action)
++        .padding(vertical = 17.dp), color = navy, fontSize = 15.sp)
++    HorizontalDivider(color = divider)
++}
++
++@Composable
++private fun AddLedgerSheet(title: String, nameLabel: String, dismiss: () -> Unit,
++    save: (String, Long) -> Unit) {
++    var name by remember { mutableStateOf("") }
++    var amount by remember { mutableStateOf("") }
++    ModalBottomSheet(onDismissRequest = dismiss) {
++        Column(Modifier.fillMaxWidth().imePadding().padding(horizontal = 20.dp)) {
++            Text(title, color = navy, fontSize = 19.sp, fontWeight = FontWeight.Bold)
++            OutlinedTextField(name, { name = it }, Modifier.fillMaxWidth(), label = { Text(nameLabel) },
++                singleLine = true)
++            OutlinedTextField(amount, { amount = it }, Modifier.fillMaxWidth(),
++                label = { Text("Valor mensal") }, singleLine = true,
++                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
++            Button(onClick = { save(name.trim(), Money.parse(amount)!!) },
++                enabled = name.isNotBlank() && Money.parse(amount) != null,
++                modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
++                colors = ButtonDefaults.buttonColors(containerColor = teal)) { Text("Adicionar") }
++            Spacer(Modifier.height(20.dp))
++        }
++    }
++}
++
++@Composable
++private fun IncomeEditorSheet(row: PatientRow, vm: PatientPaymentsViewModel, dismiss: () -> Unit) {
++    var name by remember(row.patient.id) { mutableStateOf(row.patient.name) }
++    var expected by remember(row.patient.id) { mutableStateOf(Money.format(row.payment.expectedCents)) }
++    var received by remember(row.patient.id) { mutableStateOf(Money.format(row.payment.paidCents)) }
++    var confirmDelete by remember { mutableStateOf(false) }
++    ModalBottomSheet(onDismissRequest = dismiss) {
++        Column(Modifier.fillMaxWidth().imePadding().padding(horizontal = 20.dp)) {
++            Text("Receita", color = navy, fontSize = 18.sp, fontWeight = FontWeight.Bold)
++            OutlinedTextField(name, { name = it }, Modifier.fillMaxWidth(),
++                label = { Text("Nome") }, singleLine = true)
++            OutlinedTextField(expected, { expected = it }, Modifier.fillMaxWidth(),
++                label = { Text("Valor mensal previsto") }, singleLine = true,
++                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
++            OutlinedTextField(received, { received = it }, Modifier.fillMaxWidth(),
++                label = { Text("Valor recebido") }, singleLine = true,
++                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
++            Button(onClick = {
++                val monthly = Money.parse(expected)!!
++                val actual = Money.parse(received)!!
++                vm.updateFromSheet(row, name, monthly, actual)
++                dismiss()
++            }, enabled = name.isNotBlank() && Money.parse(expected) != null && Money.parse(received) != null,
++                modifier = Modifier.fillMaxWidth().padding(top = 9.dp)) { Text("Salvar") }
++            TextButton(onClick = { vm.setArchived(row, row.payment.included); dismiss() }) {
++                Text(if (row.payment.included) "Arquivar" else "Reativar")
++            }
++            TextButton(onClick = { if (confirmDelete) { vm.delete(row.patient.id); dismiss() } else confirmDelete = true }) {
++                Text(if (confirmDelete) "Confirmar exclusão permanente" else "Excluir…", color = Color(0xFF914B47))
++            }
++            Spacer(Modifier.height(15.dp))
++        }
++    }
++}
++
++@Composable
++private fun ExpenseEditorSheet(row: ExpenseRow, vm: ExpensesViewModel, dismiss: () -> Unit) {
++    var name by remember(row.expense.id) { mutableStateOf(row.expense.name) }
++    var expected by remember(row.expense.id) { mutableStateOf(Money.format(row.payment.expectedCents)) }
++    var paid by remember(row.expense.id) { mutableStateOf(Money.format(row.payment.paidCents)) }
++    var category by remember(row.expense.id) { mutableStateOf(row.expense.category) }
++    var categoryOpen by remember { mutableStateOf(false) }
++    var type by remember(row.expense.id) { mutableStateOf(SpendingType.from(row.payment.spendingType)) }
++    var typeOpen by remember { mutableStateOf(false) }
++    var confirmDelete by remember { mutableStateOf(false) }
++    ModalBottomSheet(onDismissRequest = dismiss) {
++        Column(Modifier.fillMaxWidth().imePadding().padding(horizontal = 20.dp)) {
++            Text("Gasto", color = navy, fontSize = 18.sp, fontWeight = FontWeight.Bold)
++            OutlinedTextField(name, { name = it }, Modifier.fillMaxWidth(), label = { Text("Nome") }, singleLine = true)
++            OutlinedTextField(expected, { expected = it }, Modifier.fillMaxWidth(),
++                label = { Text("Valor mensal previsto") }, singleLine = true,
++                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
++            OutlinedTextField(paid, { paid = it }, Modifier.fillMaxWidth(),
++                label = { Text("Valor pago") }, singleLine = true,
++                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
++            Box {
++                OutlinedTextField(category, { category = it }, Modifier.fillMaxWidth(),
++                    label = { Text("Categoria") }, singleLine = true)
++                DropdownMenu(categoryOpen, { categoryOpen = false }) {
++                    statementCategories.forEach { option ->
++                        DropdownMenuItem(text = { Text(option) }, onClick = { category = option; categoryOpen = false })
++                    }
++                }
++            }
++            Box {
++                TextButton(onClick = { typeOpen = true }) { Text("Tipo: ${type.label}  ⌄") }
++                DropdownMenu(typeOpen, { typeOpen = false }) {
++                    SpendingType.entries.forEach { option ->
++                        DropdownMenuItem(text = { Text(option.label) }, onClick = { type = option; typeOpen = false })
++                    }
++                }
++            }
++            Button(onClick = {
++                val monthly = Money.parse(expected)!!
++                val actual = Money.parse(paid)!!
++                vm.updateFromSheet(row, name, monthly, actual, category, type)
++                dismiss()
++            }, enabled = name.isNotBlank() && Money.parse(expected) != null && Money.parse(paid) != null &&
++                category.isNotBlank(), modifier = Modifier.fillMaxWidth().padding(top = 7.dp)) { Text("Salvar") }
++            TextButton(onClick = { vm.setArchived(row, row.payment.included); dismiss() }) {
++                Text(if (row.payment.included) "Arquivar" else "Reativar")
++            }
++            TextButton(onClick = { if (confirmDelete) { vm.delete(row.expense.id); dismiss() } else confirmDelete = true }) {
++                Text(if (confirmDelete) "Confirmar exclusão permanente" else "Excluir…", color = Color(0xFF914B47))
++            }
++            Spacer(Modifier.height(15.dp))
++        }
++    }
++}
++
++@Composable
++private fun SearchLedger(query: String, update: (String) -> Unit, income: ScreenState,
++    expenses: ExpensesState, statements: StatementInboxState, back: () -> Unit,
++    selectIncome: (PatientRow) -> Unit, selectExpense: (ExpenseRow) -> Unit, openStatements: () -> Unit) {
++    val patients = if (query.isBlank()) emptyList() else income.rows.filter {
++        it.patient.name.contains(query, ignoreCase = true)
++    }
++    val spending = if (query.isBlank()) emptyList() else expenses.rows.filter {
++        it.expense.name.contains(query, ignoreCase = true) ||
++            it.expense.category.contains(query, ignoreCase = true)
++    }
++    val inbox = if (query.isBlank()) emptyList() else statements.items.filter {
++        it.original.contains(query, ignoreCase = true) || it.correctedName.contains(query, ignoreCase = true)
++    }
++    Column(Modifier.fillMaxSize().background(paper)) {
++        OverlayBack("Buscar") { back() }
++        OutlinedTextField(query, update, Modifier.fillMaxWidth().padding(horizontal = 15.dp),
++            label = { Text("Pessoa, gasto ou extrato") }, singleLine = true)
++        LazyColumn(Modifier.fillMaxSize()) {
++            if (patients.isNotEmpty()) item { SearchHeading("RECEITAS") }
++            items(patients, key = { "s-p-${it.patient.id}" }) { row ->
++                SearchResult(row.patient.name, ledgerMoney(row.payment.expectedCents)) { selectIncome(row) }
++            }
++            if (spending.isNotEmpty()) item { SearchHeading("GASTOS") }
++            items(spending, key = { "s-e-${it.expense.id}" }) { row ->
++                SearchResult(row.expense.name, ledgerMoney(row.payment.expectedCents)) { selectExpense(row) }
++            }
++            if (inbox.isNotEmpty()) item { SearchHeading("EXTRATOS") }
++            items(inbox, key = { "s-i-${it.id}" }) { item ->
++                SearchResult(item.original, ledgerMoney(item.amountCents), openStatements)
++            }
++        }
++    }
++}
++
++@Composable
++private fun SearchHeading(label: String) {
++    Text(label, Modifier.padding(start = 17.dp, top = 15.dp), color = teal, fontSize = 11.sp,
++        fontWeight = FontWeight.Bold)
++}
++
++@Composable
++private fun SearchResult(label: String, amount: String, action: () -> Unit) {
++    Row(Modifier.fillMaxWidth().height(48.dp).clickable(onClick = action)
++        .padding(horizontal = 17.dp), verticalAlignment = Alignment.CenterVertically) {
++        Text(label, Modifier.weight(1f), color = navy, fontSize = 14.sp,
++            maxLines = 1, overflow = TextOverflow.Ellipsis)
++        Text(amount, color = muted, fontSize = 12.sp)
++    }
++    HorizontalDivider(color = divider)
++}
+diff --git a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/PatientPaymentsViewModel.kt b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/PatientPaymentsViewModel.kt
+index 759afeb..bc58c96 100644
+--- a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/PatientPaymentsViewModel.kt
++++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/PatientPaymentsViewModel.kt
+@@ -60,9 +60,8 @@ class PatientPaymentsViewModel(application: Application) : AndroidViewModel(appl
+         viewModelScope.launch {
+             val id = UUID.randomUUID().toString()
+             val now = System.currentTimeMillis()
+-            dao.putPatient(Patient(id, idOwner, name.trim(), amount, active,
+-                if (active) null else month.key(), month.key(), now, now))
+-            dao.ensureMonth(idOwner, month)
++            dao.createPatientForMonth(Patient(id, idOwner, name.trim(), amount, active,
++                if (active) null else month.key(), month.key(), now, now), month)
+         }
+     }
+     fun rename(id: String, name: String) {
+@@ -73,6 +72,22 @@ class PatientPaymentsViewModel(application: Application) : AndroidViewModel(appl
+                 revision = patient.revision + 1, dirty = true))
+         }
+     }
++    fun updateFromSheet(row: PatientRow, name: String, expected: Long, paid: Long) {
++        val idOwner = owner.value ?: return
++        val month = selected.value
++        viewModelScope.launch {
++            if (name.trim() != row.patient.name) {
++                val current = dao.patient(idOwner, row.patient.id) ?: return@launch
++                dao.putPatient(current.copy(name = name.trim(), updatedAt = System.currentTimeMillis(),
++                    revision = current.revision + 1, dirty = true))
++            }
++            if (expected != row.payment.expectedCents) dao.changeDefault(idOwner, row.patient.id, month, expected)
++            val currentMonth = dao.month(idOwner, row.patient.id, row.payment.monthKey) ?: return@launch
++            if (paid != currentMonth.paidCents) dao.putMonth(currentMonth.copy(paidCents = paid,
++                forceIncomplete = false, updatedAt = System.currentTimeMillis(),
++                revision = currentMonth.revision + 1, dirty = true))
++        }
++    }
+     fun changeAmount(row: PatientRow, cents: Long) {
+         val owner = owner.value ?: return
+         val month = selected.value
+@@ -105,4 +120,3 @@ class PatientPaymentsViewModel(application: Application) : AndroidViewModel(appl
+         viewModelScope.launch { dao.erasePatient(owner, id) }
+     }
+ }
+-
+diff --git a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/StatementInboxScreen.kt b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/StatementInboxScreen.kt
+index bc6fad2..c17c9db 100644
+--- a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/StatementInboxScreen.kt
++++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/StatementInboxScreen.kt
+@@ -68,7 +68,7 @@ fun StatementInboxScreen(state: StatementInboxState, vm: StatementInboxViewModel
+         } else vm.dismissUndo()
+     }
+     Scaffold(containerColor = paper, snackbarHost = { SnackbarHost(snackbar) }) { padding ->
+-        Column(Modifier.fillMaxSize().padding(padding).background(paper).statusBarsPadding()) {
++        Column(Modifier.fillMaxSize().padding(padding).background(paper)) {
+             StatementInboxHeader(state)
+             if (state.items.isEmpty()) {
+                 Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
+@@ -102,10 +102,7 @@ private fun StatementInboxHeader(state: StatementInboxState) {
+     Column(
+         Modifier.fillMaxWidth().background(statementHeader).padding(horizontal = 16.dp, vertical = 14.dp)
+     ) {
+-        Text("GADGETY  |  EXTRATOS", color = Color(0xFFBBD8D0), fontSize = 10.sp,
+-            fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp)
+-        Spacer(Modifier.height(8.dp))
+-        Text("Saídas para processar", color = Color.White, fontSize = 21.sp, fontWeight = FontWeight.Bold)
++        Text("Saídas para processar", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
+             Text(ledgerMoney(state.totalCents), color = Color.White, fontSize = 30.sp,
+                 fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+@@ -260,4 +257,3 @@ private fun StatementInboxCard(
+         } }
+     )
+ }
+-
+diff --git a/quanto-resta-patient-payments-v2/app/src/test/java/com/andrefiker/lootpayments/OneMonthScreenTest.kt b/quanto-resta-patient-payments-v2/app/src/test/java/com/andrefiker/lootpayments/OneMonthScreenTest.kt
+new file mode 100644
+index 0000000..47d5058
+--- /dev/null
++++ b/quanto-resta-patient-payments-v2/app/src/test/java/com/andrefiker/lootpayments/OneMonthScreenTest.kt
+@@ -0,0 +1,31 @@
++package com.andrefiker.lootpayments
++
++import org.junit.Assert.assertEquals
++import org.junit.Test
++
++class OneMonthScreenTest {
++    @Test fun expectedAndActualRemainSeparate() {
++        val overview = LedgerOverview(
++            expectedIncome = 1_870_000, expectedExpense = 1_380_000,
++            received = 900_000, paid = 100_000
++        )
++        assertEquals(490_000, overview.plannedBalance)
++        assertEquals(800_000, overview.available)
++        assertEquals(1_380_000, overview.expectedExpense)
++        assertEquals(100_000, overview.paid)
++    }
++
++    @Test fun addingAnUnpaidIncomeChangesOnlyPlannedBalance() {
++        val before = LedgerOverview(1_780_000, 1_380_000, 1_780_000, 0)
++        val after = before.copy(expectedIncome = before.expectedIncome + 50_000)
++        assertEquals(450_000, after.plannedBalance)
++        assertEquals(before.available, after.available)
++    }
++
++    @Test fun recordingPaidExpenseChangesOnlyAvailable() {
++        val before = LedgerOverview(1_780_000, 1_380_000, 1_780_000, 0)
++        val after = before.copy(paid = 41_230)
++        assertEquals(before.plannedBalance, after.plannedBalance)
++        assertEquals(1_738_770, after.available)
++    }
++}

@@ -1,5 +1,5 @@
 name: Gadgety v1.22 visual QA
-# Capture the final light status-bar appearance on a clean emulator.
+# Capture system-bar contrast using the Compose window controller.
 
 on:
   push:

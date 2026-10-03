@@ -46,10 +46,26 @@ index 6e10334..92a82c7 100644
          val oldExpense = dao.expense(row.expense.id) ?: return@launch
          val oldMonths = dao.allMonths().filter { it.expenseId == row.expense.id }
 diff --git a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/MainActivity.kt b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/MainActivity.kt
-index 55738c0..e480ffa 100644
+index 55738c0..fcd7596 100644
 --- a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/MainActivity.kt
 +++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/MainActivity.kt
-@@ -89,6 +89,10 @@ internal fun ledgerMoney(cents: Long): String = Money.format(cents).replace(Rege
+@@ -45,6 +45,7 @@ import androidx.compose.material3.TextButton
+ import androidx.compose.material3.lightColorScheme
+ import androidx.compose.runtime.Composable
+ import androidx.compose.runtime.LaunchedEffect
++import androidx.compose.runtime.SideEffect
+ import androidx.compose.runtime.getValue
+ import androidx.compose.runtime.mutableStateOf
+ import androidx.compose.runtime.remember
+@@ -73,6 +74,7 @@ import androidx.compose.ui.unit.dp
+ import androidx.compose.ui.unit.sp
+ import androidx.lifecycle.compose.collectAsStateWithLifecycle
+ import androidx.lifecycle.viewmodel.compose.viewModel
++import androidx.core.view.WindowCompat
+ import java.time.YearMonth
+ import java.time.format.DateTimeFormatter
+ import java.util.Locale
+@@ -89,9 +91,19 @@ internal fun ledgerMoney(cents: Long): String = Money.format(cents).replace(Rege
  class MainActivity : ComponentActivity() {
      override fun onCreate(savedInstanceState: Bundle?) {
          super.onCreate(savedInstanceState)
@@ -60,7 +76,16 @@ index 55738c0..e480ffa 100644
          setContent {
              MaterialTheme(colorScheme = lightColorScheme(primary = teal, onPrimary = Color.White,
                  background = paper, surface = Color.White, onSurface = navy)) {
-@@ -99,48 +103,14 @@ class MainActivity : ComponentActivity() {
++                SideEffect {
++                    WindowCompat.getInsetsController(window, window.decorView).apply {
++                        isAppearanceLightStatusBars = true
++                        isAppearanceLightNavigationBars = true
++                    }
++                }
+                 val vm: PatientPaymentsViewModel = viewModel()
+                 val state by vm.state.collectAsStateWithLifecycle()
+                 val ready by vm.ready.collectAsStateWithLifecycle()
+@@ -99,48 +111,14 @@ class MainActivity : ComponentActivity() {
                  val expenseState by expenses.state.collectAsStateWithLifecycle()
                  val statementInbox: StatementInboxViewModel = viewModel()
                  val statementState by statementInbox.state.collectAsStateWithLifecycle()

@@ -102,10 +102,22 @@ index 55738c0..7549e02 100644
              }
          }
 diff --git a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/MoreScreen.kt b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/MoreScreen.kt
-index 772e289..77ecdac 100644
+index 772e289..12c516d 100644
 --- a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/MoreScreen.kt
 +++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/MoreScreen.kt
-@@ -49,10 +49,8 @@ fun MoreScreen(state: ExpensesState, expenses: ExpensesViewModel, incomeTotals:
+@@ -37,8 +37,9 @@ private enum class MorePage { ROOT, SUMMARY, FRICTION, RULES }
+ 
+ @Composable
+ fun MoreScreen(state: ExpensesState, expenses: ExpensesViewModel, incomeTotals: Totals,
+-    statementState: StatementInboxState, statements: StatementInboxViewModel, onData: () -> Unit) {
+-    var page by remember { mutableStateOf(MorePage.ROOT) }
++    statementState: StatementInboxState, statements: StatementInboxViewModel, onData: () -> Unit,
++    initialPage: String = "ROOT") {
++    var page by remember(initialPage) { mutableStateOf(MorePage.valueOf(initialPage)) }
+     when (page) {
+         MorePage.SUMMARY -> MoreSubpage("Resumo e histórico", { page = MorePage.ROOT }) {
+             SpendingSummaryScreen(state, expenses, incomeTotals, onData)
+@@ -49,10 +50,8 @@ fun MoreScreen(state: ExpensesState, expenses: ExpensesViewModel, incomeTotals:
          MorePage.RULES -> MoreSubpage("Regras de comerciantes", { page = MorePage.ROOT }) {
              MerchantRulesScreen(state.rules, statementState.ignoreRules, expenses, statements)
          }
@@ -119,10 +131,10 @@ index 772e289..77ecdac 100644
              MoreItem("Fricção", "Planos, períodos de espera e regras pessoais") { page = MorePage.FRICTION }
 diff --git a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/OneMonthScreen.kt b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/OneMonthScreen.kt
 new file mode 100644
-index 0000000..1ddf92c
+index 0000000..90e4662
 --- /dev/null
 +++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/OneMonthScreen.kt
-@@ -0,0 +1,526 @@
+@@ -0,0 +1,528 @@
 +@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 +
 +package com.andrefiker.lootpayments
@@ -202,6 +214,7 @@ index 0000000..1ddf92c
 +    onBackup: () -> Unit, onPrivateIncome: () -> Unit
 +) {
 +    var overlay by rememberSaveable { mutableStateOf(Overlay.NONE) }
++    var morePage by rememberSaveable { mutableStateOf("ROOT") }
 +    var menuOpen by remember { mutableStateOf(false) }
 +    var addKind by remember { mutableStateOf<AddKind?>(null) }
 +    var selected by remember { mutableStateOf<SelectedRow?>(null) }
@@ -216,7 +229,7 @@ index 0000000..1ddf92c
 +        income.totals.paid, expenses.totals.paid)
 +    val pendingIncome = activeIncome.filterNot { it.line.full }
 +    val pendingExpenses = activeExpenses.filterNot { it.line.full }
-+    val monthlyInbox = statements.items.filter { it.monthKey == month.key() }
++    val pendingStatements = statements.items.size
 +    BackHandler(overlay != Overlay.NONE) { overlay = Overlay.NONE }
 +
 +    when (overlay) {
@@ -227,7 +240,7 @@ index 0000000..1ddf92c
 +        Overlay.MORE -> Column(Modifier.fillMaxSize().background(paper)) {
 +            OverlayBack("Mais") { overlay = Overlay.NONE }
 +            Box(Modifier.weight(1f)) {
-+                MoreScreen(expenses, spending, income.totals, statements, inbox, onBackup)
++                MoreScreen(expenses, spending, income.totals, statements, inbox, onBackup, morePage)
 +            }
 +        }
 +        Overlay.SEARCH -> SearchLedger(query, { query = it }, income, expenses, statements,
@@ -236,7 +249,7 @@ index 0000000..1ddf92c
 +        Overlay.NONE -> MonthLedger(month.format(dateFormatter).replaceFirstChar {
 +                it.titlecase(Locale("pt", "BR"))
 +            }, totals, activeIncome, activeExpenses, pendingIncome, pendingExpenses,
-+            monthlyInbox.size, ready, spending, expenses, scroll,
++            pendingStatements, ready, spending, expenses, scroll,
 +            incomeExpanded, { incomeExpanded = !incomeExpanded },
 +            expenseExpanded, { expenseExpanded = !expenseExpanded },
 +            onPrevious = { patients.shiftMonth(-1); spending.shiftMonth(-1) },
@@ -255,11 +268,12 @@ index 0000000..1ddf92c
 +    }
 +    if (menuOpen) ModalBottomSheet(onDismissRequest = { menuOpen = false }) {
 +        Column(Modifier.navigationBarsPadding().padding(horizontal = 20.dp)) {
-+            MenuLine("Histórico, regras, fricção e configurações") {
-+                menuOpen = false; overlay = Overlay.MORE
-+            }
++            MenuLine("Histórico e fechamento") { menuOpen = false; morePage = "SUMMARY"; overlay = Overlay.MORE }
++            MenuLine("Regras de comerciantes e categorias") { menuOpen = false; morePage = "RULES"; overlay = Overlay.MORE }
++            MenuLine("Fricção") { menuOpen = false; morePage = "FRICTION"; overlay = Overlay.MORE }
 +            MenuLine("Backup, importar e exportar") { menuOpen = false; onBackup() }
 +            MenuLine("Importar lista privada de receitas") { menuOpen = false; onPrivateIncome() }
++            MenuLine("Configurações e sobre") { menuOpen = false; morePage = "ROOT"; overlay = Overlay.MORE }
 +            Spacer(Modifier.height(12.dp))
 +        }
 +    }
@@ -334,11 +348,11 @@ index 0000000..1ddf92c
 +                Text("PENDÊNCIAS", Modifier.padding(start = 17.dp, top = 10.dp), color = muted,
 +                    fontSize = 10.sp, fontWeight = FontWeight.Bold)
 +                Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)) {
-+                    PendingChip("${pendingIncome.size} receitas · ${ledgerMoney(pendingIncome.sumOf { (it.payment.expectedCents - it.payment.paidCents).coerceAtLeast(0) })}",
++                    PendingChip("${pendingIncome.size} receitas\n${ledgerMoney(pendingIncome.sumOf { (it.payment.expectedCents - it.payment.paidCents).coerceAtLeast(0) })}",
 +                        Modifier.weight(1f), toggleIncome)
-+                    PendingChip("${pendingExpenses.size} gastos · ${ledgerMoney(pendingExpenses.sumOf { (it.payment.expectedCents - it.payment.paidCents).coerceAtLeast(0) })}",
++                    PendingChip("${pendingExpenses.size} gastos\n${ledgerMoney(pendingExpenses.sumOf { (it.payment.expectedCents - it.payment.paidCents).coerceAtLeast(0) })}",
 +                        Modifier.weight(1f), toggleExpense)
-+                    PendingChip("$pendingStatements extratos", Modifier.weight(1f), onStatements)
++                    PendingChip("$pendingStatements extratos\npara revisar", Modifier.weight(1f), onStatements)
 +                }
 +            }
 +        }
@@ -349,12 +363,12 @@ index 0000000..1ddf92c
 +            Text("Nenhuma receita neste mês. Use + Receita.", Modifier.padding(horizontal = 17.dp, vertical = 10.dp),
 +                color = muted, fontSize = 12.sp)
 +        }
-+        items(if (incomeExpanded) incomes else incomes.take(4), key = { "income-${it.patient.id}" }) { row ->
++        items(if (incomeExpanded) incomes else incomes.take(2), key = { "income-${it.patient.id}" }) { row ->
 +            LedgerLine(row.patient.name, row.payment.expectedCents, row.payment.paidCents,
 +                row.line.full, "Recebido", onClick = { onIncome(row) },
 +                onPaid = { onIncomePaid(row) }, onStatus = { onIncomeStatus(row) })
 +        }
-+        if (!incomeExpanded && incomes.size > 4) item("income-more") {
++        if (!incomeExpanded && incomes.size > 2) item("income-more") {
 +            ExpandLine("Ver todas as ${incomes.size} receitas", toggleIncome)
 +        }
 +        item("expense-heading") {
@@ -364,12 +378,12 @@ index 0000000..1ddf92c
 +            Text("Nenhum gasto neste mês. Use + Gasto.", Modifier.padding(horizontal = 17.dp, vertical = 10.dp),
 +                color = muted, fontSize = 12.sp)
 +        }
-+        items(if (expenseExpanded) expenses else expenses.take(5), key = { "expense-${it.expense.id}" }) { row ->
++        items(if (expenseExpanded) expenses else expenses.take(3), key = { "expense-${it.expense.id}" }) { row ->
 +            LedgerLine(row.expense.name, row.payment.expectedCents, row.payment.paidCents,
 +                row.line.full, "Pago", onClick = { onExpense(row) },
 +                onPaid = { onExpensePaid(row) }, onStatus = { onExpenseStatus(row) })
 +        }
-+        if (!expenseExpanded && expenses.size > 5) item("expense-more") {
++        if (!expenseExpanded && expenses.size > 3) item("expense-more") {
 +            ExpandLine("Ver todos os ${expenses.size} gastos", toggleExpense)
 +        }
 +        item("statements") {
@@ -425,8 +439,8 @@ index 0000000..1ddf92c
 +
 +@Composable
 +private fun PendingChip(label: String, modifier: Modifier, action: () -> Unit) {
-+    Text(label, modifier.height(39.dp).clickable(onClick = action).padding(top = 10.dp),
-+        color = teal, fontSize = 11.sp, textAlign = TextAlign.Center, maxLines = 1)
++    Text(label, modifier.height(46.dp).clickable(onClick = action).padding(top = 5.dp),
++        color = teal, fontSize = 10.sp, textAlign = TextAlign.Center, maxLines = 2, lineHeight = 15.sp)
 +}
 +
 +@Composable

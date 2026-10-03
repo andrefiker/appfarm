@@ -6,6 +6,7 @@ on:
     paths:
       - 'quanto-resta-patient-payments-v2/**'
       - '.github/workflows/quanto-resta-patient-payments-v2.yml'
+      - '.github/patches/gadgety-v1.22-one-screen.patch'
   workflow_dispatch:
 
 permissions:

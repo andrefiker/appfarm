@@ -1,4 +1,4 @@
-name: Gadgety v1.22 visual QA
+name: Gadgety v1.23 visual QA
 # Capture system-bar contrast using the Compose window controller.
 
 on:
@@ -22,6 +22,7 @@ jobs:
           git apply .github/patches/gadgety-v1.20-home-summary.patch
           git apply .github/patches/gadgety-v1.21-live-totals.patch
           git apply .github/patches/gadgety-v1.22-one-screen.patch
+          git apply .github/patches/gadgety-v1.23-dashboard.patch
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -35,7 +36,7 @@ jobs:
       - name: Enable KVM
         run: |
           sudo chown $USER /dev/kvm
-      - name: Capture fresh one-screen app
+      - name: Capture fresh dashboard and ledger tabs
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
@@ -49,9 +50,17 @@ jobs:
             sleep 8
             mkdir -p visual
             adb shell screencap -p /sdcard/home.png
-            adb pull /sdcard/home.png visual/Gadgety-v1.22-home.png
+            adb pull /sdcard/home.png visual/Gadgety-v1.23-dashboard.png
+            adb shell input tap 405 2280
+            sleep 2
+            adb shell screencap -p /sdcard/income.png
+            adb pull /sdcard/income.png visual/Gadgety-v1.23-income.png
+            adb shell input tap 680 2280
+            sleep 2
+            adb shell screencap -p /sdcard/expenses.png
+            adb pull /sdcard/expenses.png visual/Gadgety-v1.23-expenses.png
       - uses: actions/upload-artifact@v4
         with:
-          name: Gadgety-v1.22-visual
-          path: visual/Gadgety-v1.22-home.png
+          name: Gadgety-v1.23-visual
+          path: visual/Gadgety-v1.23-*.png
           if-no-files-found: error

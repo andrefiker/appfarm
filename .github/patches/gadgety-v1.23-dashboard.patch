@@ -15,10 +15,10 @@ index a065c29..46333a4 100644
      signingConfigs {
 diff --git a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/DashboardApp.kt b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/DashboardApp.kt
 new file mode 100644
-index 0000000..39296b0
+index 0000000..7f99dbe
 --- /dev/null
 +++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/DashboardApp.kt
-@@ -0,0 +1,490 @@
+@@ -0,0 +1,497 @@
 +package com.andrefiker.lootpayments
 +
 +import androidx.activity.compose.BackHandler
@@ -41,11 +41,12 @@ index 0000000..39296b0
 +import androidx.compose.foundation.lazy.LazyListState
 +import androidx.compose.foundation.lazy.items
 +import androidx.compose.foundation.lazy.rememberLazyListState
++import androidx.compose.foundation.shape.RoundedCornerShape
 +import androidx.compose.material3.HorizontalDivider
-+import androidx.compose.material3.LinearProgressIndicator
 +import androidx.compose.material3.OutlinedTextField
 +import androidx.compose.material3.Text
 +import androidx.compose.runtime.Composable
++import androidx.compose.runtime.LaunchedEffect
 +import androidx.compose.runtime.getValue
 +import androidx.compose.runtime.mutableStateOf
 +import androidx.compose.runtime.remember
@@ -86,7 +87,7 @@ index 0000000..39296b0
 +    income: ScreenState, patients: PatientPaymentsViewModel, ready: Boolean,
 +    expenses: ExpensesState, spending: ExpensesViewModel,
 +    statements: StatementInboxState, inbox: StatementInboxViewModel,
-+    onBackup: () -> Unit, onPrivateIncome: () -> Unit
++    onBackup: () -> Unit, onPrivateIncome: () -> Unit, incomeImportSequence: Int
 +) {
 +    var tab by rememberSaveable { mutableStateOf(DashboardTab.DASHBOARD) }
 +    var overlay by rememberSaveable { mutableStateOf("") }
@@ -99,6 +100,9 @@ index 0000000..39296b0
 +    var expenseSearch by rememberSaveable { mutableStateOf(false) }
 +    var incomeQuery by rememberSaveable { mutableStateOf("") }
 +    var expenseQuery by rememberSaveable { mutableStateOf("") }
++    LaunchedEffect(incomeImportSequence) {
++        if (incomeImportSequence > 0) { overlay = ""; incomePending = false; tab = DashboardTab.INCOME }
++    }
 +    val dashboardScroll = rememberLazyListState()
 +    val incomeScroll = rememberLazyListState()
 +    val expenseScroll = rememberLazyListState()
@@ -297,8 +301,11 @@ index 0000000..39296b0
 +                maxLines = 1)
 +        }
 +        Spacer(Modifier.height(8.dp))
-+        LinearProgressIndicator(progress = { ratio?.coerceIn(0f, 1f) ?: 0f },
-+            modifier = Modifier.fillMaxWidth().height(4.dp), color = bar, trackColor = accent)
++        Box(Modifier.fillMaxWidth().height(4.dp).background(accent, RoundedCornerShape(2.dp))) {
++            val progress = ratio?.coerceIn(0f, 1f) ?: 0f
++            if (progress > 0f) Box(Modifier.fillMaxWidth(progress).height(4.dp)
++                .background(bar, RoundedCornerShape(2.dp)))
++        }
 +    }
 +    HorizontalDivider(Modifier.padding(horizontal = 20.dp), color = divider)
 +}
@@ -510,20 +517,31 @@ index 0000000..39296b0
 +    }
 +}
 diff --git a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/MainActivity.kt b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/MainActivity.kt
-index fcd7596..5761d74 100644
+index fcd7596..8eff449 100644
 --- a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/MainActivity.kt
 +++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/MainActivity.kt
-@@ -113,7 +113,7 @@ class MainActivity : ComponentActivity() {
+@@ -113,12 +113,16 @@ class MainActivity : ComponentActivity() {
                  val statementState by statementInbox.state.collectAsStateWithLifecycle()
                  var dataTransferOpen by rememberSaveable { mutableStateOf(false) }
                  var privateIncomeOpen by rememberSaveable { mutableStateOf(false) }
 -                OneMonthScreen(state, vm, ready, expenseState, expenses, statementState, statementInbox,
+-                    onBackup = { dataTransferOpen = true }, onPrivateIncome = { privateIncomeOpen = true })
++                var incomeImportSequence by rememberSaveable { mutableStateOf(0) }
 +                DashboardApp(state, vm, ready, expenseState, expenses, statementState, statementInbox,
-                     onBackup = { dataTransferOpen = true }, onPrivateIncome = { privateIncomeOpen = true })
++                    onBackup = { dataTransferOpen = true }, onPrivateIncome = { privateIncomeOpen = true },
++                    incomeImportSequence = incomeImportSequence)
                  if (dataTransferOpen) LootDataTransferDialog(onDismiss = { dataTransferOpen = false })
                  if (privateIncomeOpen) LootDataTransferDialog(
+                     onDismiss = { privateIncomeOpen = false }, rosterOnly = true,
+-                    onIncomeImported = { month -> vm.selectMonth(month); expenses.selectMonth(month) }
++                    onIncomeImported = { month ->
++                        vm.selectMonth(month); expenses.selectMonth(month); incomeImportSequence++
++                    }
+                 )
+             }
+         }
 diff --git a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/OneMonthScreen.kt b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/OneMonthScreen.kt
-index 3013aff..10f5576 100644
+index 3013aff..cb7a02d 100644
 --- a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/OneMonthScreen.kt
 +++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/OneMonthScreen.kt
 @@ -321,7 +321,7 @@ private fun SectionHeading(title: String, count: Int, sum: Long, expanded: Boole
@@ -535,6 +553,23 @@ index 3013aff..10f5576 100644
      onClick: () -> Unit, onPaid: () -> Unit, onStatus: () -> Unit) {
      Column(Modifier.fillMaxWidth().background(paper).clickable(onClick = onClick)
          .padding(start = 17.dp, end = 17.dp, top = 5.dp)) {
+@@ -331,13 +331,13 @@ private fun LedgerLine(name: String, expected: Long, paid: Long, full: Boolean,
+             Text(ledgerMoney(expected), color = navy, fontSize = 13.sp, fontWeight = FontWeight.SemiBold,
+                 maxLines = 1)
+         }
+-        Row(Modifier.fillMaxWidth().height(37.dp), verticalAlignment = Alignment.CenterVertically) {
++        Row(Modifier.fillMaxWidth().height(44.dp), verticalAlignment = Alignment.CenterVertically) {
+             Text("$actualLabel ${ledgerMoney(paid)}${if (paid > 0 && paid < expected) " · Faltam ${ledgerMoney(expected - paid)}" else ""}",
+-                Modifier.weight(1f).clickable(onClick = onPaid).padding(vertical = 8.dp),
++                Modifier.weight(1f).height(44.dp).clickable(onClick = onPaid).padding(vertical = 12.dp),
+                 color = muted, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+             Text(if (full) "✓ ${if (actualLabel == "Pago") "Pago" else "Recebido"}"
+                 else if (paid > 0) "Parcial" else "Pendente",
+-                Modifier.clickable(onClick = onStatus).padding(horizontal = 3.dp, vertical = 8.dp),
++                Modifier.height(44.dp).clickable(onClick = onStatus).padding(horizontal = 7.dp, vertical = 12.dp),
+                 color = if (full) teal else muted, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+         }
+         HorizontalDivider(color = divider)
 @@ -367,7 +367,7 @@ private fun MenuLine(title: String, action: () -> Unit) {
  }
  

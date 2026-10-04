@@ -52,14 +52,18 @@ jobs:
             mkdir -p visual
             adb shell screencap -p /sdcard/home.png
             adb pull /sdcard/home.png visual/Gadgety-v1.23-dashboard.png
-            adb shell input tap 405 2280
+            adb shell input tap 405 1770
             sleep 2
             adb shell screencap -p /sdcard/income.png
             adb pull /sdcard/income.png visual/Gadgety-v1.23-income.png
-            adb shell input tap 680 2280
+            adb shell input tap 680 1770
             sleep 2
             adb shell screencap -p /sdcard/expenses.png
             adb pull /sdcard/expenses.png visual/Gadgety-v1.23-expenses.png
+            adb shell input tap 945 1770
+            sleep 2
+            adb shell screencap -p /sdcard/more.png
+            adb pull /sdcard/more.png visual/Gadgety-v1.23-more.png
       - uses: actions/upload-artifact@v4
         with:
           name: Gadgety-v1.23-visual

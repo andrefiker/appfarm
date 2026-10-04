@@ -128,6 +128,29 @@ jobs:
           grep -Rho '<testsuite[^>]*tests="[0-9]*"[^>]*failures="[0-9]*"[^>]*errors="[0-9]*"[^>]*skipped="[0-9]*"' \
             app/build/test-results/testDebugUnitTest 2>/dev/null > build/verification/unit-test-suites.txt || true
           cat build/verification/update-compatibility.txt
+      - name: Retrieve signed v1.22 update baseline
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p build/upgrade
+          gh api /repos/${{ github.repository }}/actions/artifacts/11288050667/zip > build/upgrade/v1.22.zip
+          unzip -p build/upgrade/v1.22.zip app/build/outputs/apk/release/app-release.apk > build/upgrade/v1.22.apk
+          test -s build/upgrade/v1.22.apk
+      - name: Enable KVM
+        run: sudo chown $USER /dev/kvm
+      - name: Verify in-place installation on clean emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          target: google_apis
+          script: |
+            adb install quanto-resta-patient-payments-v2/build/upgrade/v1.22.apk
+            adb shell am start -n com.andrefiker.gadgety/com.andrefiker.lootpayments.MainActivity
+            adb install -r quanto-resta-patient-payments-v2/app/build/outputs/apk/release/app-release.apk
+            adb shell am force-stop com.andrefiker.gadgety
+            adb shell am start -n com.andrefiker.gadgety/com.andrefiker.lootpayments.MainActivity
+            adb shell dumpsys package com.andrefiker.gadgety | grep -q 'versionCode=24'
       - uses: actions/upload-artifact@v4
         with:
           name: Gadgety-v1.23-APK-and-verification

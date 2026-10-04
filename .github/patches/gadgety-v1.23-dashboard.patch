@@ -15,10 +15,10 @@ index a065c29..46333a4 100644
      signingConfigs {
 diff --git a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/DashboardApp.kt b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/DashboardApp.kt
 new file mode 100644
-index 0000000..76a6704
+index 0000000..c4a43ac
 --- /dev/null
 +++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/DashboardApp.kt
-@@ -0,0 +1,500 @@
+@@ -0,0 +1,502 @@
 +package com.andrefiker.lootpayments
 +
 +import androidx.activity.compose.BackHandler
@@ -79,6 +79,8 @@ index 0000000..76a6704
 +
 +internal fun pendingCents(lines: List<MonthLine>): Long = lines.filter { it.active }
 +    .sumOf { (it.expected - it.paid).coerceAtLeast(0) }
++
++internal fun toggledPaidCents(expected: Long, full: Boolean): Long = if (full) 0 else expected
 +
 +private enum class DashboardTab(val label: String, val icon: String) {
 +    DASHBOARD("Dashboard", "◉"), INCOME("Receitas", "↓"),
@@ -151,12 +153,12 @@ index 0000000..76a6704
 +                        { incomePending = !incomePending }, incomeSearch, { incomeSearch = !incomeSearch; incomeQuery = "" },
 +                        incomeQuery, { incomeQuery = it }, { shift(-1) }, { shift(1) },
 +                        { addKind = "INCOME" }, { selectedIncome = it },
-+                        { patients.setFull(it, !it.line.full) })
++                        { patients.setPaid(it, toggledPaidCents(it.payment.expectedCents, it.line.full)) })
 +                    DashboardTab.EXPENSE -> ExpenseLedger(expenses, outgoings, expenseScroll, expensePending,
 +                        { expensePending = !expensePending }, expenseSearch, { expenseSearch = !expenseSearch; expenseQuery = "" },
 +                        expenseQuery, { expenseQuery = it }, { shift(-1) }, { shift(1) },
 +                        { addKind = "EXPENSE" }, { selectedExpense = it },
-+                        { spending.setFull(it, !it.line.full) })
++                        { spending.setPaid(it, toggledPaidCents(it.payment.expectedCents, it.line.full)) })
 +                    DashboardTab.MORE -> DashboardMore(onBackup, onPrivateIncome, { overlay = it })
 +                }
 +            }
@@ -602,10 +604,10 @@ index 3013aff..cb7a02d 100644
      var paid by remember(row.expense.id) { mutableStateOf(Money.format(row.payment.paidCents)) }
 diff --git a/quanto-resta-patient-payments-v2/app/src/test/java/com/andrefiker/lootpayments/DashboardSnapshotTest.kt b/quanto-resta-patient-payments-v2/app/src/test/java/com/andrefiker/lootpayments/DashboardSnapshotTest.kt
 new file mode 100644
-index 0000000..5f74959
+index 0000000..6aa8e8a
 --- /dev/null
 +++ b/quanto-resta-patient-payments-v2/app/src/test/java/com/andrefiker/lootpayments/DashboardSnapshotTest.kt
-@@ -0,0 +1,39 @@
+@@ -0,0 +1,44 @@
 +package com.andrefiker.lootpayments
 +
 +import org.junit.Assert.assertEquals
@@ -643,5 +645,10 @@ index 0000000..5f74959
 +        assertEquals(50_000, pendingCents(listOf(
 +            MonthLine(100_000, 120_000, true), MonthLine(80_000, 30_000, true),
 +            MonthLine(50_000, 0, false))))
++    }
++
++    @Test fun oneTapStatusMovesActualBetweenPendingAndFull() {
++        assertEquals(50_000, toggledPaidCents(50_000, false))
++        assertEquals(0, toggledPaidCents(50_000, true))
 +    }
 +}

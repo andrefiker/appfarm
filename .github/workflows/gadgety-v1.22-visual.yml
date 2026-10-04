@@ -6,6 +6,7 @@ on:
     branches: [ quanto-resta-patient-payments-v2 ]
     paths:
       - '.github/workflows/gadgety-v1.22-visual.yml'
+      - '.github/patches/gadgety-v1.23-dashboard.patch'
 
 permissions:
   contents: read

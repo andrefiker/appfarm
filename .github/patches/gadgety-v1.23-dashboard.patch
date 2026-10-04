@@ -15,10 +15,10 @@ index a065c29..46333a4 100644
      signingConfigs {
 diff --git a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/DashboardApp.kt b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/DashboardApp.kt
 new file mode 100644
-index 0000000..7f99dbe
+index 0000000..76a6704
 --- /dev/null
 +++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/DashboardApp.kt
-@@ -0,0 +1,497 @@
+@@ -0,0 +1,500 @@
 +package com.andrefiker.lootpayments
 +
 +import androidx.activity.compose.BackHandler
@@ -76,6 +76,9 @@ index 0000000..7f99dbe
 +    // A zero denominator is an empty state, never a percentage.
 +    val usage: Float? get() = if (received > 0) (paid.toDouble() / received).toFloat() else null
 +}
++
++internal fun pendingCents(lines: List<MonthLine>): Long = lines.filter { it.active }
++    .sumOf { (it.expected - it.paid).coerceAtLeast(0) }
 +
 +private enum class DashboardTab(val label: String, val icon: String) {
 +    DASHBOARD("Dashboard", "◉"), INCOME("Receitas", "↓"),
@@ -201,9 +204,9 @@ index 0000000..7f99dbe
 +                    Modifier.padding(horizontal = 20.dp, vertical = 10.dp), color = teal, fontSize = 14.sp)
 +            } else {
 +                if (pendingIncome.isNotEmpty()) PendingLine("Receitas", pendingIncome.size,
-+                    pendingIncome.sumOf { (it.payment.expectedCents - it.payment.paidCents).coerceAtLeast(0) }, onIncomePending)
++                    pendingCents(pendingIncome.map { it.line }), onIncomePending)
 +                if (pendingExpense.isNotEmpty()) PendingLine("Gastos", pendingExpense.size,
-+                    pendingExpense.sumOf { (it.payment.expectedCents - it.payment.paidCents).coerceAtLeast(0) }, onExpensePending)
++                    pendingCents(pendingExpense.map { it.line }), onExpensePending)
 +            }
 +        }
 +        item("expenses-heading") {
@@ -341,7 +344,7 @@ index 0000000..7f99dbe
 +            LedgerHeader("RECEITAS", add, searching, toggleSearch)
 +            MonthSelector(state.month, previous, next)
 +            LedgerTotals("Previsto", state.totals.expected, "Recebido", state.totals.paid,
-+                "Pendente", state.totals.remaining)
++                "Pendente", pendingCents(active.map { it.line }))
 +            FilterAndSearch(pending, togglePending, searching, query, updateQuery)
 +        }
 +        if (rows.isEmpty()) item("empty") {
@@ -375,7 +378,7 @@ index 0000000..7f99dbe
 +            LedgerHeader("GASTOS", add, searching, toggleSearch)
 +            MonthSelector(state.month, previous, next)
 +            LedgerTotals("Previsto", state.totals.expected, "Pago", state.totals.paid,
-+                "Pendente", state.totals.remaining)
++                "Pendente", pendingCents(active.map { it.line }))
 +            FilterAndSearch(pending, togglePending, searching, query, updateQuery)
 +        }
 +        if (rows.isEmpty()) item("empty") {
@@ -599,10 +602,10 @@ index 3013aff..cb7a02d 100644
      var paid by remember(row.expense.id) { mutableStateOf(Money.format(row.payment.paidCents)) }
 diff --git a/quanto-resta-patient-payments-v2/app/src/test/java/com/andrefiker/lootpayments/DashboardSnapshotTest.kt b/quanto-resta-patient-payments-v2/app/src/test/java/com/andrefiker/lootpayments/DashboardSnapshotTest.kt
 new file mode 100644
-index 0000000..5799a22
+index 0000000..5f74959
 --- /dev/null
 +++ b/quanto-resta-patient-payments-v2/app/src/test/java/com/andrefiker/lootpayments/DashboardSnapshotTest.kt
-@@ -0,0 +1,33 @@
+@@ -0,0 +1,39 @@
 +package com.andrefiker.lootpayments
 +
 +import org.junit.Assert.assertEquals
@@ -634,5 +637,11 @@ index 0000000..5799a22
 +
 +    @Test fun noReceivedIncomeHasNeutralProgress() {
 +        assertNull(DashboardSnapshot(1_000_000, 0, 500_000, 20_000).usage)
++    }
++
++    @Test fun overpaymentDoesNotEraseAnotherRowsPendingAmount() {
++        assertEquals(50_000, pendingCents(listOf(
++            MonthLine(100_000, 120_000, true), MonthLine(80_000, 30_000, true),
++            MonthLine(50_000, 0, false))))
 +    }
 +}

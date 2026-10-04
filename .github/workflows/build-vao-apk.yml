@@ -19,7 +19,9 @@ jobs:
         with:
           node-version: '24'
       - name: Test game rules and migration
-        run: node vao/tests/progression.test.js
+        run: |
+          node vao/tests/progression.test.js
+          node vao/tests/editor.test.js
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -59,6 +61,8 @@ jobs:
             adb shell input keyevent KEYCODE_HOME
             adb shell am start -n appfarm.vao.preview12/appfarm.vao.MainActivity
             sleep 2
+            adb shell input keyevent KEYCODE_BACK
+            sleep 1
             adb shell dumpsys activity activities | grep -q 'appfarm.vao.preview12/appfarm.vao.MainActivity'
             adb exec-out screencap -p > vao/dist/vao-v1.2-emulator.png
             if adb logcat -d -s AndroidRuntime:E | grep -q 'FATAL EXCEPTION'; then exit 1; fi

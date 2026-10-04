@@ -24,6 +24,8 @@ assert(P.materialState(P.normalize(null), 'steel') === 'locked');
 assert.equal(P.materialState(p, 'steel'), 'discovered');
 assert.equal(P.materialState(p, 'cable'), 'locked');
 assert.equal(P.nextUnlock(p).material.id, 'cable');
+assert.equal(P.available(P.normalize(null), LV.SANDBOX_TERRAINS[0]).join(','), 'road,wood');
+assert.equal(P.materialState(P.normalize(null), 'wood', LV.SANDBOX_TERRAINS[0]), 'available');
 const v11 = P.normalize({ v: 2, xp: 910, unlocked: 8, best: { 1: 500 }, grades: { 1: 'A' }, stress: { 1: 65 },
   milestones: { first: true }, designs: legacy.designs, sandbox: legacy.sandbox, mute: true, sandboxAll: false });
 assert.equal(v11.xp, 910);
@@ -34,6 +36,9 @@ assert.equal(v11.discovered.cable, true);
 assert.equal(v11.challenges.steady, undefined);
 assert.deepEqual(v11.designs, legacy.designs);
 assert.equal(P.normalize(JSON.parse(JSON.stringify(v11))).xp, 910);
+const oldSandbox = P.normalize({v:2, sandbox:{...legacy.sandbox, design:{nodes:[[1,1],[2,2]], beams:[[0,1,'cable']]}}, unlocked:1});
+assert.equal(oldSandbox.discovered.cable, true, 'migration preserves used sandbox materials');
+assert(P.available(oldSandbox, LV.SANDBOX_TERRAINS[0]).includes('cable'));
 const first = P.award(p, LV.LEVELS[2], 2000, 75);
 assert(first.gained >= 150);
 assert.equal(p.unlocked, 4);

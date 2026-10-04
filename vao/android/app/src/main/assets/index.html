@@ -1157,6 +1157,7 @@ function setMode(m) {
   show('slowtag', m === 'replay');
   show('budget', m === 'build' || m === 'test');
   show('tStress', m === 'build' && !!lastStress);
+  $('tStress').classList.toggle('on', stressVisible);
   show('failureTag', m === 'replay' && !!sim && !!sim.firstFailure);
   renderBeamEdit();
   if (m !== 'build') hideToast();
@@ -1451,6 +1452,12 @@ function drawBeam(a, b, m, color, alpha) {
   }
   ctx.globalAlpha = 1;
 }
+function drawSlackCable(a, b) {
+  ctx.globalAlpha = .55; ctx.strokeStyle = MCOL.cable; ctx.lineWidth = mw('cable');
+  ctx.beginPath(); ctx.moveTo(a[0], a[1]);
+  ctx.quadraticCurveTo((a[0] + b[0]) / 2, (a[1] + b[1]) / 2 + Math.min(12, Math.hypot(a[0] - b[0], a[1] - b[1]) * .13), b[0], b[1]);
+  ctx.stroke(); ctx.globalAlpha = 1;
+}
 function drawNode(p, anchor, fill) {
   var r = Math.max(3, cam.s * 0.11);
   if (anchor) {
@@ -1523,7 +1530,8 @@ function drawFrame(F, t) {
       if (base.br[k] && !bm.debris) continue;
       var st = F.mix ? lerp(F.A.st[k] || 0, F.B.st[k] || 0, F.f) : base.st[k];
       var col = bm.debris ? MCOL[bm.mat] : heat(Math.abs(st));
-      drawBeam(P(bm.a), P(bm.b), bm.mat, col, bm.debris ? 0.85 : 1);
+      if (bm.mat === 'cable' && !bm.debris && st <= .01) drawSlackCable(P(bm.a), P(bm.b));
+      else drawBeam(P(bm.a), P(bm.b), bm.mat, col, bm.debris ? 0.85 : 1);
       if (sim.firstFailure && sim.firstFailure.index === k && (mode !== 'replay' || replay.f >= sim.firstFailure.frame - 3)) {
         var mid = P(bm.a), end = P(bm.b), pulse = 0.45 + 0.35 * Math.sin(t / 150);
         ctx.globalAlpha = pulse; ctx.strokeStyle = '#c8452c'; ctx.lineWidth = Math.max(3, mw(bm.mat) + 4);
@@ -1535,6 +1543,10 @@ function drawFrame(F, t) {
     var fp = w2s(sim.firstFailure.x, sim.firstFailure.y);
     ctx.strokeStyle = '#c8452c'; ctx.lineWidth = 2; ctx.globalAlpha = 0.7 + 0.2 * Math.sin(t / 140);
     ctx.beginPath(); ctx.arc(fp[0], fp[1], 10 + 3 * Math.sin(t / 180), 0, 6.283); ctx.stroke(); ctx.globalAlpha = 1;
+    if (sim.firstFailure.mat === 'concrete') {
+      ctx.beginPath(); ctx.moveTo(fp[0] - 5, fp[1] - 5); ctx.lineTo(fp[0], fp[1] - 1);
+      ctx.lineTo(fp[0] - 2, fp[1] + 3); ctx.lineTo(fp[0] + 5, fp[1] + 6); ctx.stroke();
+    }
   }
   for (var n = 0; n < base.N; n++) {
     var nd = info.nodes[n]; if (nd.debris || nd.fixed || nd.plat) continue;
@@ -1815,16 +1827,17 @@ function renderSandbox() {
   Array.prototype.forEach.call($('sbV').children, function (b) { b.onclick = function () { sb.veh = b.dataset.v; save(); renderSandbox(); }; });
   $('sbW').onclick = function () { sb.wind = sb.wind ? 0 : 1; save(); renderSandbox(); };
   $('sbA').onclick = function () { sb.water = sb.water ? 0 : 1; save(); renderSandbox(); };
-  if ($('sbAll')) $('sbAll').onclick = function () { prog.sandboxAll = !prog.sandboxAll; save(); renderSandbox(); };
+  if ($('sbAll')) $('sbAll').onclick = function () { prog.sandboxAll = true; P.discover(prog, P.MATERIALS); save(); renderSandbox(); };
   $('sbX').onclick = function () { show('sandbox', false); };
   $('sbGo').onclick = function () { show('sandbox', false); openLevel('sb' + sb.t); };
 }
 function renderProgress() {
   var found = P.MATERIALS.filter(function (k) { return P.materialState(prog, k) === 'discovered'; });
   var nextMaterial = P.nextUnlock(prog), completedChallenges = Object.keys(prog.challenges).filter(function (k) { return prog.challenges[k]; }).length;
+  var currentStage = LV.LEVELS[Math.min(LV.LEVELS.length - 1, prog.unlocked - 1)];
   $('pcard').innerHTML = '<h2>Progresso</h2><div class="xp-line">' + xpLine() + '</div>' +
     '<div class="stats"><span>Campanha</span><b>' + P.count(prog) + ' / ' + LV.LEVELS.length + '</b><span>Materiais</span><b>' + found.length + ' / 7</b><span>Marcos</span><b>' + Object.keys(prog.milestones).filter(function (k) { return prog.milestones[k]; }).length + ' / ' + P.MILESTONES.length + '</b><span>Desafios</span><b>' + completedChallenges + ' / ' + P.CHALLENGES.length + '</b></div>' +
-    '<p class="material-note">' + P.MATERIALS.map(function (k) { return prog.discovered[k] ? MATS[k].name + ' ✓' : '???'; }).join(' · ') + '</p>' +
+    '<p class="material-note">' + P.MATERIALS.map(function (k) { var state = P.materialState(prog, k, currentStage); return state === 'discovered' ? MATS[k].name + ' ✓' : state === 'available' ? MATS[k].name + ' ○' : '???'; }).join(' · ') + '</p>' +
     (nextMaterial ? '<p class="material-note"><b>PRÓXIMO DESBLOQUEIO</b><br>' + nextMaterial.material.name + (nextMaterial.xpRemaining ? ' · ' + nextMaterial.xpRemaining + ' XP restantes' : '') + (nextMaterial.levelRemaining ? ' · avance na campanha' : '') + '</p>' : '') +
     '<div class="material-note">' + P.MILESTONES.map(function (m) { return '<p>' + (prog.milestones[m.id] ? '✓ ' : '○ ') + '<b>' + m.name + '</b> · ' + m.note + '</p>'; }).join('') + '</div>' +
     '<details class="material-note"><summary>Desafios de engenharia</summary>' + P.CHALLENGES.map(function (c) { return '<p>' + (prog.challenges[c.id] ? '✓ ' : '○ ') + '<b>' + c.name + '</b> · ' + c.note + '</p>'; }).join('') + '</details>' +
@@ -1848,7 +1861,7 @@ window.vaoBack = function () {
 };
 // test hooks (headless verification)
 window.__vao = { prog: prog, openLevel: openLevel, startTest: startTest, stopTest: stopTest, selectBeam: selectBeam, changeSelectedMaterial: changeSelectedMaterial,
-  get sim() { return sim; }, get mode() { return mode; }, get lastFailure() { return lastFailure; }, get selectedBeam() { return selectedBeam; },
+  get sim() { return sim; }, get mode() { return mode; }, get currentLevel() { return cur; }, get lastFailure() { return lastFailure; }, get selectedBeam() { return selectedBeam; },
   setDesign: function (d) { design = cloneD(d); selectedBeam = -1; lastStress = null; refreshBudget(); storeDesign(); renderBeamEdit(); },
   get design() { return design; }, frames: function () { return frames.length; }, cam: cam };
 

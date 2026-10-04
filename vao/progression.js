@@ -76,6 +76,8 @@ function normalize(v1) {
         var d = p.designs[id];
         if (d && Array.isArray(d.beams)) d.beams.forEach(function (b) { if (MATERIALS.indexOf(b[2]) >= 0) p.discovered[b[2]] = true; });
       });
+      if (p.sandbox && p.sandbox.design && Array.isArray(p.sandbox.design.beams))
+        p.sandbox.design.beams.forEach(function (b) { if (MATERIALS.indexOf(b[2]) >= 0) p.discovered[b[2]] = true; });
       if (p.sandboxAll) MATERIALS.forEach(function (m) { p.discovered[m] = true; });
       Object.keys(p.best || {}).forEach(function (id) { p.pbRewardBaseline[id] = +p.best[id]; });
       Object.keys(p.grades || {}).forEach(function (id) {
@@ -93,9 +95,11 @@ function normalize(v1) {
 }
 var BUDGETS = [2000,3000,7750,10000,8500,18000,9250,17750,16500,6500,14750,12000,10250,17000,12250,11500,12750,13500,6000,18250];
 function available(p, lv) {
-  var old = lv.mats.slice(); // never remove a material required by the original campaign
+  var old = lv.sandbox ? ['road', 'wood'].concat(['steel', 'cable'].filter(function (k) {
+    return p.sandboxAll || p.discovered[k] || p.unlocked >= (k === 'steel' ? 4 : 7);
+  })) : lv.mats.slice(); // never remove a material required by the original campaign
   EXTRA.forEach(function (m) {
-    if ((lv.sandbox ? (p.sandboxAll || level(p.xp) >= m.level) : (lv.id >= m.stage && level(p.xp) >= m.level))) old.push(m.id);
+    if ((lv.sandbox ? (p.sandboxAll || p.discovered[m.id] || level(p.xp) >= m.level) : (lv.id >= m.stage && level(p.xp) >= m.level))) old.push(m.id);
   });
   return old;
 }
@@ -104,7 +108,7 @@ function discover(p, mats) {
   mats.forEach(function (m) { if (MATERIALS.indexOf(m) >= 0 && !p.discovered[m]) { p.discovered[m] = true; fresh.push(m); } });
   return fresh;
 }
-function materialState(p, id) { return p.discovered[id] ? 'discovered' : 'locked'; }
+function materialState(p, id, lv) { return p.discovered[id] ? 'discovered' : lv && available(p, lv).indexOf(id) >= 0 ? 'available' : 'locked'; }
 function nextUnlock(p) {
   var early = [
     { id: 'steel', name: 'Aço', stage: 4, level: 1 },

@@ -143,7 +143,7 @@ function challengeWins(p, lv, design, defs, beams, left, stress) {
     compact: lv.id >= 3 && design.beams.length <= 12,
     noSteel: lv.id >= 4 && lv.mats.indexOf('steel') >= 0 && !used('steel'),
     aluminum: lv.id >= 7 && used('aluminum') >= 3 && avgDensity <= 0.006,
-    concrete: lv.id >= 10 && used('concrete') > 0 && beams.some(function (b) { return b.mat === 'concrete' && b.peakCompression >= 0.3 && b.peakTension < 0.9 && !b.broken; }),
+    concrete: lv.id >= 10 && used('concrete') > 0 && beams.some(function (b) { return b.mat === 'concrete' && b.peakCompression >= 0.08 && b.peakTension < 0.9 && !b.broken; }),
     composite: lv.id >= 15 && used('composite') > 0 && left >= lv.budget * 0.15,
     truck: lv.vehicle === 'caminhao' && !used('cable'),
     late: lv.id >= 16 && stress <= 70

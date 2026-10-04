@@ -125,6 +125,13 @@ assert(outcomes.cable.failure && outcomes.cable.failure.index >= 0);
 assert(outcomes.cable.failure.frame >= 0);
 assert.equal(m.cable.comp, 0);
 assert(outcomes.concrete.failure.percent > 0);
+const compressionDesign = { nodes: [[10,8],[12,8],[14,8],[11,9],[13,9]],
+  beams: [[0,1,'road'],[1,2,'road'],[0,3,'wood'],[3,1,'concrete'],[1,4,'concrete'],[4,2,'wood'],[3,4,'wood']] };
+const compressionSim = new S.Sim(context.Matter, {...crossing, mats:Object.keys(m)}, compressionDesign, {});
+for (let i = 0; i < 3000 && compressionSim.state === 'running'; i++) compressionSim.step();
+assert.equal(compressionSim.result, 'success', 'concrete works when placed in compression members');
+assert(compressionSim.beams[3].peakCompression >= .08 && compressionSim.beams[3].peakTension < .9);
+assert(compressionSim.beams[4].peakCompression >= .08 && compressionSim.beams[4].peakTension < .9);
 function forceOne(material, force) {
   const d = { nodes:[[2,2],[2,4]], beams:[[0,1,material]] };
   const s = new S.Sim(context.Matter, small, d, {noVehicle:true});
@@ -162,4 +169,10 @@ const challengeAgain = P.award(challengeState, challengeLv, 1000, 65, {design:ch
 assert.equal(challengeAgain.gained, 0);
 assert.deepEqual(challengeAgain.challenges, []);
 assert.equal(P.normalize(JSON.parse(JSON.stringify(challengeState))).challenges.noSteel, true);
+const concreteChallenge = P.normalize(null);
+const challengeOnConcrete = P.award(concreteChallenge, LV.LEVELS[9], 1400, 65,
+  {design:compressionDesign,defs:m,beams:compressionSim.beams});
+assert(challengeOnConcrete.challenges.includes('concrete'));
+assert(!P.award(concreteChallenge, LV.LEVELS[9], 1400, 65,
+  {design:compressionDesign,defs:m,beams:compressionSim.beams}).challenges.includes('concrete'));
 console.log('VÃO progression, migration, original campaign and material simulation checks passed');

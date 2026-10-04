@@ -6,8 +6,8 @@ android {
         applicationId 'appfarm.vao'
         minSdk 26
         targetSdk 34
-        versionCode 2
-        versionName '1.1.0'
+        versionCode 3
+        versionName '1.2.0'
         manifestPlaceholders = [appLabel: 'VÃO']
     }
     flavorDimensions 'channel'
@@ -15,9 +15,9 @@ android {
         upgrade { dimension 'channel' }
         preview {
             dimension 'channel'
-            applicationIdSuffix '.preview'
+            applicationIdSuffix '.preview12'
             versionNameSuffix '-preview'
-            manifestPlaceholders = [appLabel: 'VÃO 1.1 teste']
+            manifestPlaceholders = [appLabel: 'VÃO 1.2 teste']
         }
     }
 }

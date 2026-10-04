@@ -201,7 +201,7 @@ button{font:inherit;color:inherit;cursor:pointer}
   <h2>Como jogar</h2>
   <p><b>Construir:</b> arraste a partir de uma <b style="color:#c8452c">âncora</b> (quadrado vermelho) ou de um nó para criar uma barra. Cada material tem alcance e custo próprios.</p>
   <p><b>Pista</b> é onde o veículo roda. <b>Madeira</b> é barata e fraca. <b>Aço</b> é forte e caro. <b>Cabo</b> só aguenta tração.</p>
-  <p><b>Apagar:</b> segure o dedo sobre uma barra ou nó, ou use o botão Apagar. <b>Zoom:</b> pinça com dois dedos; arraste o fundo para mover.</p>
+  <p><b>Editar:</b> toque ou segure uma barra para trocar material ou apagar. Segure um nó para removê-lo. <b>Zoom:</b> pinça com dois dedos; arraste o fundo para mover.</p>
   <p><b>Testar:</b> o veículo atravessa. As barras mudam de cor conforme o esforço — de azul (folga) a vermelho (ruptura). Se algo quebrar, veja o colapso em câmera lenta.</p>
   <p><b>Pontuação:</b> o que sobra do orçamento. Articulações giram livremente: só triângulos são rígidos.</p>
   <div class="row"><button class="btn pri" id="hClose">Entendi</button></div>
@@ -1794,7 +1794,7 @@ on('bMute', function () { prog.mute = !prog.mute; save(); $('bMute').textContent
 on('lBack', function () { setMode('menu'); });
 on('hClose', function () { show('help', false); prog.seenHelp = true; save(); });
 on('tBack', function () { if (mode === 'build') { storeDesign(); if (cur.sandbox) setMode('menu'); else { renderLevels(); setMode('levels'); } } else stopTest(); });
-on('tHint', function () { toast(cur.sandbox ? 'Sandbox: tudo liberado e sem orçamento.' : '<b>Dica:</b> ' + cur.hint + '<br><span style="color:#2f5b86">Arraste de um ponto para criar barras · segure para apagar · pinça para zoom.</span>', 9000); });
+on('tHint', function () { toast(cur.sandbox ? 'Sandbox: sem orçamento; materiais surgem com sua experiência.' : '<b>Dica:</b> ' + cur.hint + '<br><span style="color:#2f5b86">Arraste de um ponto para criar barras · toque uma barra para editar · pinça para zoom.</span>', 9000); });
 on('tUndo', function () { if (undo.length) { design = JSON.parse(undo.pop()); selectedBeam = -1; lastStress = null; lastFailure = null; renderBeamEdit(); refreshBudget(); storeDesign(); } });
 on('tStress', function () { stressVisible = !stressVisible; $('tStress').classList.toggle('on', stressVisible); });
 on('tErase', function () { eraseMode = !eraseMode; anchorMode = false; syncTools(); });

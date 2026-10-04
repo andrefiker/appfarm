@@ -1,0 +1,53 @@
+name: Build VÃO APK
+on:
+  push:
+    branches: [vao-v1.1-overhaul]
+    paths:
+      - 'vao/**'
+      - '.github/workflows/build-vao-apk.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Test game rules and migration
+        run: node vao/tests/progression.test.js
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Android SDK
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-35' 'build-tools;35.0.0' >/dev/null
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Bundle offline game and build
+        run: |
+          mkdir -p vao/android/app/src/main/assets
+          cp vao/index.html vao/progression.js vao/android/app/src/main/assets/
+          cd vao/android
+          gradle --no-daemon :app:assembleDebug
+          mkdir -p ../dist
+          cp app/build/outputs/apk/debug/app-debug.apk ../dist/Vao-v1.1.0.apk
+      - name: Verify APK
+        run: |
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging vao/dist/Vao-v1.1.0.apk | head -n 5
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose vao/dist/Vao-v1.1.0.apk
+          unzip -l vao/dist/Vao-v1.1.0.apk | grep -E 'assets/(index.html|progression.js)'
+          if "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions vao/dist/Vao-v1.1.0.apk | grep -q 'android.permission.INTERNET'; then exit 1; fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Vao-v1.1.0
+          path: vao/dist/Vao-v1.1.0.apk
+          retention-days: 7
+          if-no-files-found: error

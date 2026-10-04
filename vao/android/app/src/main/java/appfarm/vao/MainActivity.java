@@ -1,8 +1,10 @@
 package appfarm.vao;
 
 import android.app.Activity;
+import android.content.pm.ApplicationInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
@@ -37,6 +39,11 @@ public class MainActivity extends Activity {
         settings.setBuiltInZoomControls(false);
         webView.setWebChromeClient(new WebChromeClient());
         webView.setWebViewClient(new WebViewClient() {
+            @Override public void onPageFinished(WebView view, String url) {
+                if ((getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0)
+                    view.evaluateJavascript("(window.__vao && window.__vao.mode === 'menu' && document.getElementById('bPlay').textContent === 'Jogar') ? 'ready' : 'missing'",
+                        result -> Log.i("VaoSmoke", result));
+            }
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
                 return !"file".equalsIgnoreCase(uri.getScheme());

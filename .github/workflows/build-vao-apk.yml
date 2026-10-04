@@ -61,18 +61,19 @@ jobs:
           profile: pixel_4
           script: |
             adb install -r vao/dist/Vao-v1.2.0-preview.apk
+            adb logcat -c
             adb shell am start -n appfarm.vao.preview12/appfarm.vao.MainActivity
-            sleep 25
-            adb shell uiautomator dump /sdcard/window.xml >/dev/null
-            adb shell cat /sdcard/window.xml | grep -Eq 'Como jogar|Jogar'
+            for i in $(seq 1 20); do
+              if adb logcat -d -s VaoSmoke:I | grep -q '"ready"'; then break; fi
+              sleep 2
+            done
+            adb logcat -d -s VaoSmoke:I | grep -q '"ready"'
             adb shell dumpsys activity activities | grep -q 'appfarm.vao.preview12/appfarm.vao.MainActivity'
             adb shell input keyevent KEYCODE_HOME
             adb shell am start -n appfarm.vao.preview12/appfarm.vao.MainActivity
             sleep 5
             adb shell input keyevent KEYCODE_BACK
             sleep 3
-            adb shell uiautomator dump /sdcard/window.xml >/dev/null
-            adb shell cat /sdcard/window.xml | grep -q 'Jogar'
             adb shell dumpsys activity activities | grep -q 'appfarm.vao.preview12/appfarm.vao.MainActivity'
             adb exec-out screencap -p > vao/dist/vao-v1.2-emulator.png
             if adb logcat -d -s AndroidRuntime:E | grep -q 'FATAL EXCEPTION'; then exit 1; fi

@@ -15,10 +15,10 @@ index a065c29..46333a4 100644
      signingConfigs {
 diff --git a/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/DashboardApp.kt b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/DashboardApp.kt
 new file mode 100644
-index 0000000..65a66e5
+index 0000000..39296b0
 --- /dev/null
 +++ b/quanto-resta-patient-payments-v2/app/src/main/java/com/andrefiker/lootpayments/DashboardApp.kt
-@@ -0,0 +1,444 @@
+@@ -0,0 +1,490 @@
 +package com.andrefiker.lootpayments
 +
 +import androidx.activity.compose.BackHandler
@@ -121,6 +121,12 @@ index 0000000..65a66e5
 +                    "STATEMENTS" -> StatementInboxScreen(statements, inbox)
 +                    "SUMMARY", "RULES", "FRICTION" ->
 +                        MoreScreen(expenses, spending, income.totals, statements, inbox, onBackup, overlay)
++                    "SETTINGS" -> SettingsContent(onBackup, { overlay = "SUMMARY" }, { overlay = "ABOUT" })
++                    "ABOUT" -> Column(Modifier.fillMaxWidth().padding(20.dp)) {
++                        Text("Gadgety", color = navy, fontSize = 22.sp, fontWeight = FontWeight.Bold)
++                        Text("Versão 1.23 · dados locais com backup criptografado",
++                            color = muted, fontSize = 13.sp)
++                    }
 +                }
 +            }
 +        }
@@ -321,6 +327,8 @@ index 0000000..65a66e5
 +) {
 +    val rows = active.filter { (!pending || !it.line.full) &&
 +        (query.isBlank() || it.patient.name.contains(query, true)) }
++    val archived = if (pending) emptyList() else state.rows.filter { !it.payment.included &&
++        (query.isBlank() || it.patient.name.contains(query, true)) }
 +    LazyColumn(Modifier.fillMaxSize().statusBarsPadding(), state = scroll) {
 +        item("header") {
 +            LedgerHeader("RECEITAS", add, searching, toggleSearch)
@@ -337,6 +345,10 @@ index 0000000..65a66e5
 +            LedgerLine(row.patient.name, row.payment.expectedCents, row.payment.paidCents,
 +                row.line.full, "Recebido", { edit(row) }, { edit(row) }, { status(row) })
 +        }
++        if (archived.isNotEmpty()) item("archived-heading") { ArchivedHeading() }
++        items(archived, key = { "archived-${it.patient.id}" }) { row ->
++            ArchivedLine(row.patient.name) { edit(row) }
++        }
 +        item("end") { Spacer(Modifier.height(20.dp)) }
 +    }
 +}
@@ -348,6 +360,8 @@ index 0000000..65a66e5
 +    add: () -> Unit, edit: (ExpenseRow) -> Unit, status: (ExpenseRow) -> Unit
 +) {
 +    val rows = active.filter { (!pending || !it.line.full) &&
++        (query.isBlank() || it.expense.name.contains(query, true) || it.expense.category.contains(query, true)) }
++    val archived = if (pending) emptyList() else state.rows.filter { !it.payment.included &&
 +        (query.isBlank() || it.expense.name.contains(query, true) || it.expense.category.contains(query, true)) }
 +    LazyColumn(Modifier.fillMaxSize().statusBarsPadding(), state = scroll) {
 +        item("header") {
@@ -364,6 +378,10 @@ index 0000000..65a66e5
 +        items(rows, key = { it.expense.id }) { row ->
 +            LedgerLine(row.expense.name, row.payment.expectedCents, row.payment.paidCents,
 +                row.line.full, "Pago", { edit(row) }, { edit(row) }, { status(row) })
++        }
++        if (archived.isNotEmpty()) item("archived-heading") { ArchivedHeading() }
++        items(archived, key = { "archived-${it.expense.id}" }) { row ->
++            ArchivedLine(row.expense.name) { edit(row) }
 +        }
 +        item("end") { Spacer(Modifier.height(20.dp)) }
 +    }
@@ -409,6 +427,23 @@ index 0000000..65a66e5
 +}
 +
 +@Composable
++private fun ArchivedHeading() {
++    Text("ARQUIVADOS", Modifier.padding(start = 18.dp, top = 20.dp, bottom = 6.dp),
++        color = muted, fontSize = 11.sp, fontWeight = FontWeight.Bold)
++}
++
++@Composable
++private fun ArchivedLine(name: String, edit: () -> Unit) {
++    Row(Modifier.fillMaxWidth().height(49.dp).clickable(onClick = edit)
++        .padding(horizontal = 18.dp), verticalAlignment = Alignment.CenterVertically) {
++        Text(name, Modifier.weight(1f), color = muted, fontSize = 13.sp,
++            maxLines = 1, overflow = TextOverflow.Ellipsis)
++        Text("Editar ›", color = teal, fontSize = 12.sp)
++    }
++    HorizontalDivider(color = divider)
++}
++
++@Composable
 +private fun DashboardMore(onBackup: () -> Unit, onPrivateIncome: () -> Unit,
 +    open: (String) -> Unit) {
 +    LazyColumn(Modifier.fillMaxSize().statusBarsPadding().padding(horizontal = 20.dp)) {
@@ -425,8 +460,19 @@ index 0000000..65a66e5
 +        item { MoreGroup("FERRAMENTAS") }
 +        item { MoreAction("Extratos", { open("STATEMENTS") }) }
 +        item { MoreGroup("APP") }
-+        item { Text("Gadgety · dados locais e backup criptografado", Modifier.padding(vertical = 15.dp),
-+            color = muted, fontSize = 12.sp) }
++        item { MoreAction("Configurações", { open("SETTINGS") }) }
++        item { MoreAction("Sobre", { open("ABOUT") }) }
++    }
++}
++
++@Composable
++private fun SettingsContent(onBackup: () -> Unit, onBudget: () -> Unit, onAbout: () -> Unit) {
++    Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
++        Text("CONFIGURAÇÕES", Modifier.padding(vertical = 18.dp), color = navy,
++            fontSize = 17.sp, fontWeight = FontWeight.Bold)
++        MoreAction("Orçamento e fechamento", onBudget)
++        MoreAction("Backup e dados locais", onBackup)
++        MoreAction("Sobre Gadgety", onAbout)
 +    }
 +}
 +

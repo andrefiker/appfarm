@@ -67,4 +67,23 @@ for (const k of ['wood', 'steel', 'cable', 'aluminum', 'concrete', 'composite'])
   assert.equal(S.designCost(d), Math.round(m[k].cost * 2 / 10) * 10);
   for (let i = 0; i < 10; i++) sim.step();
 }
+// A reference truss from the original first level actually crosses within budget.
+// Swap its braces to compare material behavior under the same vehicle and terrain.
+const crossing = LV.LEVELS[0];
+const outcomes = {};
+for (const k of ['wood', 'steel', 'cable', 'aluminum', 'concrete', 'composite']) {
+  const d = { nodes: [[10,8],[12,8],[14,8],[11,9],[13,9]],
+    beams: [[0,1,'road'],[1,2,'road'],[0,3,k],[3,1,k],[1,4,k],[4,2,k],[3,4,k]] };
+  const trial = { ...crossing, mats: Object.keys(m) };
+  assert.equal(S.validateDesign(trial, d).length, 0);
+  const sim = new S.Sim(context.Matter, trial, d, {});
+  for (let i = 0; i < 3000 && sim.state === 'running'; i++) sim.step();
+  outcomes[k] = { result: sim.result, cost: S.designCost(d) };
+}
+assert.equal(outcomes.wood.result, 'success');
+assert(outcomes.wood.cost <= crossing.budget);
+assert.equal(outcomes.cable.result, 'fail', 'cables cannot replace compression braces');
+assert.equal(outcomes.concrete.result, 'fail', 'concrete fails in tension');
+for (const k of ['steel', 'aluminum', 'composite']) assert.equal(outcomes[k].result, 'success');
+assert(outcomes.composite.cost > outcomes.steel.cost && outcomes.steel.cost > outcomes.aluminum.cost);
 console.log('VÃO progression, migration, original campaign and material simulation checks passed');

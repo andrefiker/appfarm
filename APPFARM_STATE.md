@@ -139,3 +139,25 @@ Vercel:
 2. Confirm whether their APK artifacts/workflow branches still exist before resuming them.
 3. Complete or explicitly cancel the pending Railway/Lovable cleanup in its own execution task.
 4. Update this file only when meaningful state changes.
+
+## Clinical Cockpit — Android alpha 0.1.0 (2026-10-07)
+
+- New directory clinical-cockpit/; branch clinical-cockpit-android-v0-1; draft PR #18.
+- Release source/binary: 2f492aa8c832b20926fa7cfa027ba23298178f99.
+- Clínica • Cockpit; com.andrefiker.clinicalcockpit; version 0.1.0/code 1; Android 11+.
+- APK: dl/Clinical-Cockpit-v0.1.0.apk, 78,527 bytes; SHA-256
+  f94fe14ed8bf7644742cc50778c823594ef1b49c312c873d10bf9594d588e05c.
+- Local password-encrypted vault, patient codes, session history, manually edited
+  four-layer dossier/roadmap, encrypted drafts/backups, physical PDF/DOCX exports,
+  local study texts. No permissions/backend/network/analytics. No real clinical data.
+- Manual alpha: AI, audio transcription, Google and NotebookLM integrations pending.
+- 20 core checks; build/release lint; 24 synthetic API35 Android checks; native
+  visual QA; seven UI checks installing the exact signed production APK offline:
+  all passed. Physical handset/Android 11 runtime QA not performed.
+- Build CI 37665547610; production-signature/install CI 37666473207;
+  release-source repeat CI 37666473090. Detailed state: clinical-cockpit/APP_STATE.md.
+- Persistent dedicated signing key retained privately; certificate SHA-256
+  60c09e631510afb847ccf08eb57c6ce3976082760140a9fb9b4f9c0014819fcf.
+- Baseline before new app: 0db2815c14b727031d63e7c14ef0a75255690e90.
+- Start phone acceptance with fictitious data. Before clinical production, address
+  locked-screen recovery, storage scale and independent security/privacy review.

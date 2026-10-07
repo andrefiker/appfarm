@@ -276,7 +276,7 @@ public class MainActivity extends Activity {
         pendingMode=mode;picker=true;saveDraft();Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(mode.equals("backup")?"*/*":"text/*");i.putExtra(Intent.EXTRA_LOCAL_ONLY,true);startActivityForResult(i,10);
     }
     void createFile(String mode,String mime,String name) {pendingMode=mode;picker=true;Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(mime);i.putExtra(Intent.EXTRA_TITLE,name);i.putExtra(Intent.EXTRA_LOCAL_ONLY,true);startActivityForResult(i,11);}
-    static byte[] readLimited(InputStream in,int max) throws Exception {try(InputStream stream=in;ByteArrayOutputStream out=new ByteArrayOutputStream()){if(stream==null)throw new IOException();byte[] buffer=new byte[8192];int n;while((n=stream.read(buffer))!=-1){if(out.size()+n>max)throw new IOException("Arquivo muito grande");out.write(buffer,0,n);}finally{doc.close();}return out.toByteArray();}}
+    static byte[] readLimited(InputStream in,int max) throws Exception {try(InputStream stream=in;ByteArrayOutputStream out=new ByteArrayOutputStream()){if(stream==null)throw new IOException();byte[] buffer=new byte[8192];int n;while((n=stream.read(buffer))!=-1){if(out.size()+n>max)throw new IOException("Arquivo muito grande");out.write(buffer,0,n);}return out.toByteArray();}}
     @Override protected void onActivityResult(int req,int result,Intent i) {
         super.onActivityResult(req,result,i);picker=false;
         if(data==null||result!=RESULT_OK||i==null){pendingBytes=null;return;}

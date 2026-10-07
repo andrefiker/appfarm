@@ -13,9 +13,9 @@
     halfWidth:0.045,
     leftGate:{x:0.18,y:0.62},
     rightGate:{x:0.84,y:0.62},
-    captureRadius:0.105
+    captureRadius:0.145
   };
-  const HELIPAD={x:0.77,y:0.82,r:0.050,captureRadius:0.11};
+  const HELIPAD={x:0.77,y:0.82,r:0.050,captureRadius:0.145};
 
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const normHeading=d=>((d%360)+360)%360;
@@ -36,7 +36,7 @@
     return normHeading(current+clamp(d,-maxTurn,maxTurn));
   }
 
-  function simplifyPoints(points,minGap=0.018){
+  function simplifyPoints(points,minGap=0.022){
     const out=[];
     for(const p of points||[]){
       if(!p||!Number.isFinite(p.x)||!Number.isFinite(p.y)) continue;
@@ -110,12 +110,19 @@
     };
   }
 
+  function trimRouteStart(route,a,minDistance=0.095){
+    const out=(route||[]).map(p=>({x:p.x,y:p.y}));
+    while(out.length>1&&distance(a,out[0])<minDistance) out.shift();
+    return out;
+  }
+
   function assignPath(game,id,points){
     const a=game.aircraft.find(x=>x.id===id);
     if(!a) return false;
     const resolved=resolveRoute(a.type,points);
     if(!resolved.route.length) return false;
-    a.route=resolved.route;
+    const trimmed=trimRouteStart(resolved.route,a);
+    a.route=trimmed.length?trimmed:resolved.route.slice(-1);
     a.routeIndex=0;
     a.landing=resolved.landing;
     a.destination=resolved.destination;
@@ -130,13 +137,13 @@
 
     if(target){
       const desired=headingTo(a,target);
-      const turnRate=a.type==='heli'?145:92;
+      const turnRate=a.type==='heli'?230:170;
       a.heading=stepHeading(a.heading,desired,turnRate*dt);
       const step=a.speed*dt*(a.landing?0.92:1);
       const r=a.heading*DEG;
       a.x+=Math.sin(r)*step;
       a.y-=Math.cos(r)*step;
-      const capture=Math.max(0.014,a.speed*dt*2.1);
+      const capture=Math.max(0.020,a.speed*dt*2.6);
       if(distance(a,target)<=capture){
         a.x=target.x;a.y=target.y;a.routeIndex++;
         if(a.routeIndex>=a.route.length&&a.landing) a.completed=true;
@@ -268,7 +275,7 @@
 
   return {
     RUNWAY,HELIPAD,clamp,normHeading,signedHeadingDelta,distance,seeded,headingTo,stepHeading,
-    simplifyPoints,resolveRoute,classifyConflict,createAircraft,assignPath,moveAircraft,
+    simplifyPoints,resolveRoute,trimRouteStart,classifyConflict,createAircraft,assignPath,moveAircraft,
     trafficLevel,spawnInterval,spawnCandidate,safeSpawn,makeGame,trySpawn,updateGame
   };
 });

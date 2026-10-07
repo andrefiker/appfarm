@@ -26,11 +26,11 @@ public class SmokeRunner extends Instrumentation {
     AccessibilityNodeInfo node(AccessibilityNodeInfo root,String label,boolean description) {
         if(root==null)return null;
         CharSequence v=description?root.getContentDescription():root.getText();
-        if(v!=null&&v.toString().equals(label))return root;
+        if(v!=null&&v.toString().equalsIgnoreCase(label))return root;
         for(int i=0;i<root.getChildCount();i++){AccessibilityNodeInfo found=node(root.getChild(i),label,description);if(found!=null)return found;}return null;
     }
     AccessibilityNodeInfo dialogNode(String label,boolean description)throws Exception{
-        for(int i=0;i<30;i++){AccessibilityNodeInfo n=node(getUiAutomation().getRootInActiveWindow(),label,description);if(n!=null)return n;Thread.sleep(100);}throw new AssertionError("Dialog node absent: "+label);
+        for(int i=0;i<30;i++){AccessibilityNodeInfo n=node(getUiAutomation().getRootInActiveWindow(),label,description);if(n!=null)return n;for(android.view.accessibility.AccessibilityWindowInfo w:getUiAutomation().getWindows()){n=node(w.getRoot(),label,description);if(n!=null)return n;}Thread.sleep(100);}throw new AssertionError("Dialog node absent: "+label);
     }
     void apply(MainActivity.RecoveryCandidate candidate)throws Exception {
         final Exception[] fail={null};ui(()->{try{a.commitRecovery(candidate);}catch(Exception e){fail[0]=e;}});if(fail[0]!=null)throw fail[0];

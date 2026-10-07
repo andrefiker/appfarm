@@ -136,3 +136,10 @@ Vercel:
 2. Confirm whether their APK artifacts/workflow branches still exist before resuming them.
 3. Complete or explicitly cancel the pending Railway/Lovable cleanup in its own execution task.
 4. Update this file only when meaningful state changes.
+
+## Ponte Mestra (2026-10-07)
+
+- `ponte-mestra/index.html`: single-file HTML5 physics bridge builder (pt-BR, landscape, touch-first, offline, no deps). Source in `ponte-mestra/src/`, assembled by `ponte-mestra/build.mjs`.
+- 40 levels / 4 worlds plus Sandbox and a hidden level editor (long-press the title). All 40 levels have simulated reference solutions within budget (`ponte-mestra/tests/solutions.json`).
+- Verification: `npm test` (11 Node physics tests) and `npm run smoke` (Playwright).
+- No Android wrapper yet; follow the `settlement-zero-android/` pattern (needs DOM storage enabled).

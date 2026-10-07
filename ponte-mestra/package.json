@@ -1,0 +1,12 @@
+{
+  "name": "ponte-mestra",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Ponte Mestra — jogo de construção de pontes com física (HTML5 arquivo único)",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test tests/physics.test.js",
+    "calibrate": "node tests/calibrate.js",
+    "smoke": "node scripts/browser-smoke.mjs && node scripts/browser-levels.mjs && node scripts/browser-interactions.mjs"
+  }
+}

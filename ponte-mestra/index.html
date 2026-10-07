@@ -1,0 +1,2493 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#f3efe4">
+<meta name="color-scheme" content="light only">
+<title>Ponte Mestra</title>
+<style>
+:root{
+  --paper:#f3efe4; --paper2:#ebe5d4; --grid:#c9dcec; --ink:#1f3a5f; --ink2:#47617f; --ink3:#8496ab;
+  --anchor:#e2552d; --ok:#2f9e44; --ok2:#23803a; --warn:#e8a33a; --bad:#d63b2a; --blue:#2c6fd1;
+  --bar:#fbf8f0; --line:rgba(31,58,95,.18);
+  --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px); --sal:env(safe-area-inset-left,0px); --sar:env(safe-area-inset-right,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);
+  font-family:"Avenir Next","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  touch-action:none;overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;color-scheme:light}
+body{position:fixed;inset:0}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+.hidden{display:none!important}
+#cv{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+
+/* ---------- barras ---------- */
+.bar{position:absolute;left:0;right:0;display:flex;align-items:center;gap:6px;background:var(--bar);
+  border-color:var(--ink);border-style:solid;border-width:0;z-index:5}
+#topbar{top:0;height:calc(52px + var(--sat));padding:var(--sat) calc(8px + var(--sar)) 0 calc(8px + var(--sal));border-bottom-width:2px}
+#bottombar{bottom:0;height:calc(68px + var(--sab));padding:0 calc(8px + var(--sar)) var(--sab) calc(8px + var(--sal));border-top-width:2px}
+.ib{min-width:44px;height:44px;border:1.5px solid var(--ink);border-radius:10px;background:#fff;display:inline-flex;align-items:center;justify-content:center;padding:0 8px;flex:none}
+.ib svg{width:22px;height:22px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ib:active{transform:translateY(1px);background:var(--paper2)}
+.ib.on{background:var(--ink);color:#fff}
+.ib.on svg{stroke:#fff}
+.ib:disabled{opacity:.35}
+#topbar .ib#tUndo,#topbar .ib#tRedo{min-width:44px}
+#lvTitle{flex:1 1 auto;min-width:0;font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.2px}
+#lvTitle small{font-weight:500;color:var(--ink2)}
+#budget{flex:0 1 280px;min-width:130px;display:flex;flex-direction:column;gap:3px}
+#budget .track{height:12px;border:1.5px solid var(--ink);border-radius:7px;background:#fff;overflow:hidden;position:relative}
+#budget .fill{position:absolute;left:0;top:0;bottom:0;background:var(--ink);transition:width .15s,background .15s}
+#budget .txt{font-size:12px;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+#budget.over .fill{background:var(--bad)} #budget.over .txt{color:var(--bad)}
+#budget.near .fill{background:var(--warn)}
+
+#tools{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
+#mats{display:flex;gap:4px;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 18px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 18px),transparent);padding-right:14px!important;overflow-x:auto;overflow-y:hidden;flex:1 1 auto;min-width:0;padding:2px 0;touch-action:pan-x;scrollbar-width:none}
+#mats::-webkit-scrollbar{display:none}
+.mat{flex:none;width:52px;height:56px;border:1.5px solid var(--ink);border-radius:10px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:10.5px;font-weight:700;padding:0}
+.mat .sw{width:30px;height:8px;border-radius:4px;border:1px solid rgba(0,0,0,.25)}
+.mat.on{background:var(--ink);color:#fff;box-shadow:0 0 0 2px var(--paper),0 0 0 4px var(--ink)}
+.mat .cost{font-weight:500;font-size:9.5px;opacity:.8}
+.sep{width:1.5px;align-self:stretch;margin:8px 2px;background:var(--line);flex:none}
+.tbtn{flex:none;width:48px;height:56px;border:1.5px solid var(--ink);border-radius:10px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10px;font-weight:700;padding:0}
+.tbtn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tbtn.on{background:var(--ink);color:#fff}
+.tbtn:disabled{opacity:.35}
+.tbtn:active,.mat:active{transform:translateY(1px)}
+#btnTest,#btnEdit{flex:none;height:56px;min-width:104px;border:2px solid var(--ok2);border-radius:12px;background:var(--ok);color:#fff;font-weight:900;font-size:19px;letter-spacing:1px;box-shadow:0 3px 0 var(--ok2)}
+#btnTest:active,#btnEdit:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ok2)}
+#btnEdit{background:#fff;color:var(--ink);border-color:var(--ink);box-shadow:0 3px 0 var(--ink);font-size:15px}
+#bottombar.lefty{flex-direction:row-reverse}
+#bottombar.lefty #tools{flex-direction:row-reverse}
+#testTools{display:flex;gap:6px;align-items:center;flex:1;min-width:0}
+#clock{font-weight:800;font-variant-numeric:tabular-nums;font-size:15px;min-width:70px;text-align:center}
+
+/* ---------- chips/overlays ---------- */
+#chips{position:absolute;left:calc(10px + var(--sal));top:calc(60px + var(--sat));display:flex;flex-wrap:wrap;gap:6px;max-width:70%;z-index:4;pointer-events:none}
+.chip{background:rgba(251,248,240,.92);border:1.5px solid var(--ink);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700;white-space:nowrap}
+.chip.red{border-color:var(--bad);color:var(--bad)} .chip.ok{border-color:var(--ok2);color:var(--ok2)} .chip.amber{border-color:#b97a12;color:#8a5a08}
+#selbar{position:absolute;right:calc(10px + var(--sar));top:calc(60px + var(--sat));display:flex;gap:6px;z-index:6;background:rgba(251,248,240,.95);border:1.5px solid var(--ink);border-radius:12px;padding:5px}
+#toast{position:absolute;left:50%;top:calc(64px + var(--sat));transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 14px;border-radius:10px;font-weight:700;font-size:14px;z-index:20;pointer-events:none;opacity:0;transition:opacity .2s;max-width:80%;text-align:center}
+#toast.show{opacity:1}
+#hint{position:absolute;right:calc(10px + var(--sar));top:calc(60px + var(--sat));max-width:min(440px,52%);background:#fffdf7;border:2px solid var(--ink);border-radius:14px;padding:12px 16px 12px 16px;z-index:7;box-shadow:4px 4px 0 rgba(31,58,95,.18);font-size:14.5px;line-height:1.35}
+#hint b{display:block;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--anchor);margin-bottom:3px}
+#hint .x{position:absolute;right:4px;top:4px;width:44px;height:44px;border:0;background:none;font-size:20px;color:var(--ink2)}
+#rotate{position:fixed;inset:0;background:var(--paper);z-index:100;display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;text-align:center;padding:24px}
+#rotate svg{width:90px;height:90px;stroke:var(--ink);fill:none;stroke-width:2}
+@media (orientation:portrait) and (max-width:700px){ body.playing #rotate{display:flex} }
+
+/* ---------- menu ---------- */
+#menu{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;padding:calc(10px + var(--sat)) calc(14px + var(--sar)) calc(10px + var(--sab)) calc(14px + var(--sal));
+  background:linear-gradient(var(--paper),var(--paper)) padding-box;}
+#menu .head{display:flex;align-items:flex-end;gap:16px;flex:none}
+#title{margin:0;font-size:42px;font-weight:900;letter-spacing:1px;line-height:1;color:var(--ink);padding:6px 10px;border:3px solid var(--ink);border-radius:6px;background:#fffdf7;box-shadow:5px 5px 0 var(--anchor);touch-action:manipulation}
+#menu .sub{font-size:14px;color:var(--ink2);font-weight:600;margin-bottom:4px}
+#menu .head .grow{flex:1}
+#worldTabs{display:flex;gap:8px;margin:12px 0 8px;flex:none;overflow-x:auto;touch-action:pan-x}
+.wtab{flex:none;min-height:48px;border:2px solid var(--ink);border-radius:12px;background:#fff;padding:4px 14px;text-align:left;line-height:1.15}
+.wtab b{display:block;font-size:15px} .wtab span{font-size:11.5px;color:var(--ink2)}
+.wtab.on{background:var(--ink);color:#fff} .wtab.on span{color:#cfe0f3}
+.wtab.locked{opacity:.45}
+#levelGrid{flex:1;min-height:0;overflow-y:auto;touch-action:pan-y;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;align-content:start;padding:4px 2px 10px}
+.lvl{min-height:76px;border:2px solid var(--ink);border-radius:12px;background:#fffdf7;text-align:left;padding:8px 10px;position:relative;display:flex;flex-direction:column;gap:3px}
+.lvl .n{font-size:12px;font-weight:800;color:var(--anchor)}
+.lvl .nm{font-size:14.5px;font-weight:800;line-height:1.1}
+.lvl .st{font-size:15px;letter-spacing:2px;color:#c9a227}
+.lvl .st i{font-style:normal;color:#cfc6ad}
+.lvl .bc{position:absolute;right:8px;bottom:7px;font-size:11px;color:var(--ink2);font-weight:700}
+.lvl.locked{opacity:.4}
+.lvl:active{transform:translateY(1px)}
+#menu .foot{display:flex;gap:8px;flex:none;align-items:center}
+.btn{min-height:46px;border:2px solid var(--ink);border-radius:12px;background:#fff;padding:0 16px;font-weight:800;font-size:15px}
+.btn.primary{background:var(--ok);border-color:var(--ok2);color:#fff}
+.btn.dark{background:var(--ink);color:#fff}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.4}
+#menu .foot .grow{flex:1}
+#totalStars{font-weight:800;color:var(--ink2)}
+
+/* ---------- modal ---------- */
+#modal{position:fixed;inset:0;z-index:30;background:rgba(31,58,95,.32);display:flex;align-items:center;justify-content:center;padding:calc(10px + var(--sat)) 12px calc(10px + var(--sab))}
+.card{background:#fffdf7;border:2.5px solid var(--ink);border-radius:16px;box-shadow:6px 6px 0 rgba(31,58,95,.25);max-width:min(760px,96vw);max-height:100%;width:100%;display:flex;flex-direction:column;overflow:hidden}
+.card h2{margin:0;font-size:22px}
+.card .hd{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1.5px solid var(--line)}
+.card .hd .grow{flex:1}
+.card .bd{padding:12px 16px;overflow:auto;touch-action:pan-y;font-size:14px;line-height:1.4}
+.card .ft{display:flex;gap:8px;justify-content:flex-end;padding:10px 16px;border-top:1.5px solid var(--line);flex-wrap:wrap}
+.res{display:flex;gap:16px;align-items:stretch}
+.res canvas{flex:1 1 58%;min-width:0;width:58%;height:200px;border:1.5px solid var(--line);border-radius:10px;background:var(--paper)}
+.res .stats{flex:1 1 42%;display:flex;flex-direction:column;gap:6px}
+.stars{font-size:40px;letter-spacing:6px;line-height:1;color:#d4a72c;text-shadow:2px 2px 0 rgba(31,58,95,.25)}
+.stars i{font-style:normal;color:#d8d0bb;text-shadow:none}
+.stat{display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding:3px 0;font-weight:600}
+.stat b{font-variant-numeric:tabular-nums}
+.stat.bad b{color:var(--bad)} .stat.good b{color:var(--ok2)}
+.legend{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink2)}
+.legend .grad{flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,#9bb4cf,#e8a33a,#d63b2a)}
+table.mt{border-collapse:collapse;width:100%;font-size:13px}
+table.mt td,table.mt th{border-bottom:1px solid var(--line);padding:5px 6px;text-align:left}
+table.mt th{font-size:11.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--ink2)}
+.sw2{display:inline-block;width:22px;height:8px;border-radius:4px;vertical-align:middle;margin-right:6px;border:1px solid rgba(0,0,0,.25)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:6px 0}
+.tog{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:48px;border-bottom:1px dashed var(--line);font-weight:700}
+.tog input{width:26px;height:26px;accent-color:var(--ink)}
+textarea{width:100%;min-height:150px;font:12px/1.35 ui-monospace,Menlo,Consolas,monospace;border:1.5px solid var(--ink);border-radius:8px;padding:8px;background:#fff;color:var(--ink);touch-action:pan-y;-webkit-user-select:text;user-select:text}
+input[type=number],input[type=text],select{min-height:40px;border:1.5px solid var(--ink);border-radius:8px;padding:0 8px;font:inherit;background:#fff;color:var(--ink);-webkit-user-select:text;user-select:text}
+input[type=number]{width:84px}
+label.f{display:flex;flex-direction:column;font-size:11.5px;font-weight:700;gap:2px;color:var(--ink2)}
+#editorPanel{position:absolute;right:calc(8px + var(--sar));top:calc(60px + var(--sat));bottom:calc(76px + var(--sab));width:min(330px,45vw);z-index:8;background:#fffdf7;border:2px solid var(--ink);border-radius:12px;display:flex;flex-direction:column;overflow:hidden}
+#editorPanel .bd{flex:1;overflow:auto;padding:10px;touch-action:pan-y;font-size:13px}
+#editorPanel h3{margin:0;padding:8px 10px;border-bottom:1.5px solid var(--line);font-size:15px}
+@media (max-height:420px){
+  #title{font-size:32px}
+  .res canvas{height:160px}
+  .stars{font-size:32px}
+}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+
+<div id="topbar" class="bar hidden">
+  <button class="ib" id="btnBack" aria-label="Voltar"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <div id="lvTitle"></div>
+  <div id="budget"><div class="track"><div class="fill"></div></div><div class="txt"></div></div>
+  <button class="ib" id="tUndo" aria-label="Desfazer"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/></svg></button>
+  <button class="ib" id="tRedo" aria-label="Refazer"><svg viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9H10a6 6 0 000 12h3"/></svg></button>
+  <button class="ib" id="btnFit" aria-label="Enquadrar"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+  <button class="ib" id="btnHelp" aria-label="Ajuda"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.6 2.6 0 015 1c0 1.8-2.5 2-2.5 3.6"/><circle cx="12" cy="17.3" r=".6"/></svg></button>
+</div>
+
+<div id="bottombar" class="bar hidden">
+  <div id="tools">
+    <div id="mats"></div>
+    <div class="sep"></div>
+    <button class="tbtn" id="tSel" title="Selecionar / mover"><svg viewBox="0 0 24 24"><path d="M5 3l12 8-5 1.5L9.5 18z"/><rect x="13" y="14" width="7" height="7" stroke-dasharray="2 2"/></svg>Selec.</button>
+    <button class="tbtn" id="tErase" title="Apagar"><svg viewBox="0 0 24 24"><path d="M4 16l8-8 6 6-5 5H7z"/><path d="M13 19h7"/></svg>Apagar</button>
+    <button class="tbtn" id="tMirror" title="Espelho"><svg viewBox="0 0 24 24"><path d="M12 3v18" stroke-dasharray="2 2.5"/><path d="M9 7L4 17h5zM15 7l5 10h-5z"/></svg>Espelho</button>
+    <button class="tbtn" id="tStress" title="Preview de tensão"><svg viewBox="0 0 24 24"><path d="M3 17l5-9 4 6 3-4 6 7"/></svg>Tensão</button>
+    <button class="tbtn" id="tClear" title="Limpar"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>Limpar</button>
+  </div>
+  <div id="testTools" class="hidden">
+    <button class="tbtn" id="tPlay" title="Pausar / continuar"><svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg>Pausa</button>
+    <button class="tbtn" id="tSlow" title="Câmera lenta 0,25x"><svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 13V9M9 2h6"/></svg>0,25x</button>
+    <button class="tbtn" id="tRestart" title="Reiniciar teste"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 108-8H8"/><path d="M11 1L8 4l3 3"/></svg>Reinic.</button>
+    <button class="tbtn" id="tCam" title="Câmera de tensão"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="12" cy="13.5" r="3.5"/><path d="M8 7l2-3h4l2 3"/></svg>Câmera</button>
+    <button class="tbtn" id="tStress2" title="Cores de tensão"><svg viewBox="0 0 24 24"><path d="M3 17l5-9 4 6 3-4 6 7"/></svg>Tensão</button>
+    <div id="clock">0,0 s</div>
+  </div>
+  <button id="btnTest">TESTAR</button>
+  <button id="btnEdit" class="hidden">EDITAR</button>
+</div>
+
+<div id="chips" class="hidden"></div>
+<div id="selbar" class="hidden">
+  <span id="selCount" class="chip" style="align-self:center">0</span>
+  <button class="ib" id="sCopy">Copiar</button>
+  <button class="ib" id="sPaste">Colar</button>
+  <button class="ib" id="sMirror">Espelhar</button>
+  <button class="ib" id="sDel">Apagar</button>
+</div>
+<div id="hint" class="hidden"><b>Dica</b><span id="hintTxt"></span><button class="x" id="hintX" aria-label="Fechar">×</button></div>
+<div id="toast"></div>
+<div id="editorPanel" class="hidden"></div>
+
+<section id="menu">
+  <div class="head">
+    <h1 id="title">PONTE MESTRA</h1>
+    <div class="sub">Construa, teste, aprove.<br><span id="totalStars"></span></div>
+    <div class="grow"></div>
+  </div>
+  <div id="worldTabs"></div>
+  <div id="levelGrid"></div>
+  <div class="foot">
+    <button class="btn dark" id="btnSandbox">Sandbox</button>
+    <button class="btn" id="btnSettings">Configurações</button>
+    <button class="btn" id="btnHelp2">Como jogar</button>
+    <div class="grow"></div>
+  </div>
+</section>
+
+<div id="modal" class="hidden"></div>
+<div id="rotate"><svg viewBox="0 0 64 64"><rect x="20" y="6" width="24" height="44" rx="4"/><path d="M8 40a24 24 0 0024 18M52 24A24 24 0 0032 6"/><path d="M26 58l6 0-2-4"/></svg><b>Gire o aparelho</b><span>Ponte Mestra foi feito para jogar na horizontal.</span></div>
+
+<script type="application/json" id="levels-data">
+[{"id":1,"w":1,"name":"Riacho","hint":"Bem-vindo, engenheiro! Ligue as âncoras vermelhas com Pista e reforce com triângulos de Madeira.","W":10,"floor":-6,"anchors":[[0,0],[10,0],[0,-2],[10,-2]],"water":{"y":-5},"veh":[{"t":"carro","at":0}],"mat":["pista","madeira"],"budget":3000},
+{"id":2,"w":1,"name":"Vala Seca","hint":"Triângulos não se deformam; quadrados sim. Use diagonais.","W":12,"floor":-8,"anchors":[[0,0],[12,0],[0,-3],[12,-3]],"veh":[{"t":"carro","at":0}],"mat":["pista","madeira"],"budget":3500},
+{"id":3,"w":1,"name":"Dois Carros","hint":"Dois carros juntos pesam o dobro. Ligue o preview de Tensão para ver o pior caso.","W":12,"floor":-7,"anchors":[[0,0],[12,0],[0,-2],[12,-2]],"water":{"y":-6},"veh":[{"t":"carro","at":0},{"t":"carro","at":1.6}],"mat":["pista","madeira"],"budget":3500},
+{"id":4,"w":1,"name":"Sem Apoio Embaixo","hint":"Sem âncoras abaixo: a treliça precisa ficar por cima da pista.","W":14,"floor":-9,"anchors":[[0,0],[14,0]],"veh":[{"t":"carro","at":0}],"mat":["pista","madeira"],"budget":5000},
+{"id":5,"w":1,"name":"Pedra do Meio","hint":"Uma pedra no meio do vão. Apoie a ponte nela e economize.","W":20,"floor":-8,"rocks":[{"x":10,"w":4,"top":-3}],"anchors":[[0,0],[20,0],[10,-3]],"water":{"y":-6},"veh":[{"t":"carro","at":0}],"mat":["pista","madeira"],"budget":5500},
+{"id":6,"w":1,"name":"Van da Feira","hint":"A van é mais pesada. Treliças por baixo da pista também funcionam.","W":14,"floor":-8,"anchors":[[0,0],[14,0],[0,-3],[14,-3]],"veh":[{"t":"van","at":0}],"mat":["pista","madeira"],"budget":5000},
+{"id":7,"w":1,"name":"Aço Novo","hint":"O Aço é forte e alcança 6 m, mas é caro. Use-o só onde a tensão é alta.","W":18,"floor":-9,"anchors":[[0,0],[18,0],[0,-3],[18,-3]],"veh":[{"t":"van","at":0}],"mat":["pista","madeira","aco"],"budget":9500},
+{"id":8,"w":1,"name":"Ladeira","hint":"Margens em alturas diferentes: a pista sobe. Evite rampas muito íngremes.","W":16,"hr":2,"floor":-8,"anchors":[[0,0],[16,2],[0,-3],[16,-1]],"veh":[{"t":"carro","at":0},{"t":"van","at":2}],"mat":["pista","madeira","aco"],"budget":10500},
+{"id":9,"w":1,"name":"Salto da Moto","hint":"A moto é leve e rápida: uma rampa pode fazê-la saltar parte do vão!","W":18,"floor":-8,"anchors":[[0,0],[18,0],[0,-2],[18,-2]],"water":{"y":-6},"veh":[{"t":"moto","at":0}],"mat":["pista","madeira","aco"],"budget":8500},
+{"id":10,"w":1,"name":"Caminhão do Interior","hint":"O caminhão pesa quase dez carros. Reforce com Aço e use o apoio central.","W":18,"floor":-9,"rocks":[{"x":9,"w":3,"top":-5}],"anchors":[[0,0],[18,0],[0,-4],[18,-4],[9,-5]],"veh":[{"t":"caminhao","at":0}],"mat":["pista","madeira","aco"],"budget":9500},
+{"id":11,"w":2,"name":"Primeiro Cabo","hint":"Cabos só trabalham tracionados e são baratos. Pendure a pista nas torres.","W":20,"floor":-8,"anchors":[[0,0],[20,0],[-1,7],[21,7]],"water":{"y":-6},"veh":[{"t":"carro","at":0}],"mat":["pista","madeira","aco","cabo"],"budget":8000},
+{"id":12,"w":2,"name":"Estaiada","hint":"Ponte estaiada: cabos em leque das torres até vários pontos da pista.","W":24,"floor":-9,"anchors":[[0,0],[24,0],[0,-3],[24,-3],[-1,9],[25,9]],"water":{"y":-6},"veh":[{"t":"van","at":0}],"mat":["pista","madeira","aco","cabo"],"budget":9000},
+{"id":13,"w":2,"name":"Alumínio Leve","hint":"Alumínio é leve: menos peso próprio, mais carga útil.","W":22,"floor":-8,"anchors":[[0,0],[22,0],[0,-3],[22,-3]],"veh":[{"t":"van","at":0}],"mat":["pista","madeira","aco","cabo","aluminio"],"budget":12000},
+{"id":14,"w":2,"name":"A Ilha","hint":"Use a ilha como apoio e os cabos para aliviar os vãos.","W":30,"floor":-9,"rocks":[{"x":15,"w":4,"top":-2}],"anchors":[[0,0],[30,0],[15,-2],[-1,8],[31,8]],"water":{"y":-5},"veh":[{"t":"carro","at":0},{"t":"carro","at":2}],"mat":["pista","madeira","aco","cabo","aluminio"],"budget":10500},
+{"id":15,"w":2,"name":"Primeira Báscula","hint":"Um barco precisa passar! Pistões erguem a pista e depois baixam. Deixe 1 m de folga no meio.","W":15,"floor":-7,"anchors":[[0,0],[15,0],[0,-3],[15,-3]],"water":{"y":-4},"veh":[{"t":"carro","at":12.5}],"mat":["pista","madeira","aco","cabo","aluminio","pistao"],"ev":{"boat":{"x0":4.5,"x1":10.5,"h":8,"tIn":4.5,"tOut":8.5},"pist":[[0.3,1],[3.8,1.36],[9,1.36],[11.5,1]]},"budget":10000},
+{"id":16,"w":2,"name":"Ponte Pênsil","hint":"Um cabo principal entre as torres, tirantes até a pista e cabos de ancoragem atrás das torres.","W":34,"floor":-10,"anchors":[[0,0],[34,0],[-1,11],[35,11],[-6,0],[40,0]],"water":{"y":-7},"veh":[{"t":"carro","at":0}],"mat":["pista","madeira","aco","cabo","aluminio","pistao"],"budget":15000},
+{"id":17,"w":2,"name":"Ônibus Escolar","hint":"O ônibus é longo e pesado. Procure o pior ponto no preview de Tensão.","W":24,"floor":-9,"anchors":[[0,0],[24,0],[0,-4],[24,-4],[0,8],[24,8]],"veh":[{"t":"onibus","at":0}],"mat":["pista","madeira","aco","cabo","aluminio","pistao"],"budget":9000},
+{"id":18,"w":2,"name":"Mão Dupla","hint":"Tráfego nos dois sentidos: a carga aparece dos dois lados ao mesmo tempo.","W":22,"floor":-8,"anchors":[[0,0],[22,0],[0,-3],[22,-3]],"water":{"y":-6},"veh":[{"t":"carro","at":0},{"t":"carro","d":-1,"at":0.5},{"t":"van","at":2.5}],"mat":["pista","madeira","aco","cabo","aluminio","pistao"],"budget":12000},
+{"id":19,"w":2,"name":"Vento no Cânion","hint":"Rajadas de vento empurram as barras. Triangule bem e evite peças altas e soltas.","W":26,"floor":-12,"anchors":[[0,0],[26,0],[0,-4],[26,-4],[-1,9],[27,9]],"veh":[{"t":"van","at":0}],"mat":["pista","madeira","aco","cabo","aluminio","pistao"],"ev":{"wind":{"amp":0.5,"per":3.5}},"budget":9500},
+{"id":20,"w":2,"name":"Grande Rio","hint":"O maior vão do Rio. Combine apoio central, cabos e aço.","W":36,"floor":-10,"rocks":[{"x":18,"w":4,"top":-3}],"anchors":[[0,0],[36,0],[18,-3],[0,10],[36,10]],"water":{"y":-6},"veh":[{"t":"caminhao","at":0}],"mat":["pista","madeira","aco","cabo","aluminio","pistao"],"budget":21000},
+{"id":21,"w":3,"name":"Pilares","hint":"Concreto: pesado e ótimo à compressão. Só nasce de âncoras ou de outro concreto.","W":24,"floor":-8,"anchors":[[0,0],[24,0],[8,-8],[16,-8]],"water":{"y":-4},"veh":[{"t":"carro","at":0},{"t":"van","at":2}],"mat":["pista","madeira","aco","cabo","aluminio","concreto","pistao"],"budget":9500},
+{"id":22,"w":3,"name":"Represa Aberta","hint":"Represa Aberta. A água chega quase à pista. Pense em treliças por cima do tabuleiro.","W":20,"floor":-8,"anchors":[[0,0],[20,0],[0,-3],[20,-3]],"water":{"y":-5,"rise":[2,10,-0.8]},"veh":[{"t":"van","at":0}],"mat":["pista","madeira","aco","cabo","aluminio","concreto","pistao"],"budget":10500},
+{"id":23,"w":3,"name":"Terremoto","hint":"Terremoto! As âncoras vão tremer. Treliças bem trianguladas absorvem melhor.","W":22,"floor":-9,"anchors":[[0,0],[22,0],[0,-4],[22,-4]],"veh":[{"t":"van","at":0}],"mat":["pista","madeira","aco","cabo","aluminio","concreto","pistao"],"ev":{"quake":{"amp":0.1,"f":1.1,"t0":1,"t1":14}},"budget":13500},
+{"id":24,"w":3,"name":"Comboio","hint":"Comboio: quatro carros em fila. A ponte inteira fica carregada.","W":24,"floor":-8,"anchors":[[0,0],[24,0],[0,-3],[24,-3],[12,-8]],"water":{"y":-5},"veh":[{"t":"carro","at":0},{"t":"carro","at":1.4},{"t":"carro","at":2.8},{"t":"carro","at":4.2}],"mat":["pista","madeira","aco","cabo","aluminio","concreto","pistao"],"budget":8500},
+{"id":25,"w":3,"name":"Enchente","hint":"A água vai subir. Pilares de concreto aguentam; barras submersas sofrem empuxo e arrasto.","W":26,"floor":-9,"anchors":[[0,0],[26,0],[9,-9],[17,-9]],"water":{"y":-6,"rise":[1,9,-1.6]},"veh":[{"t":"caminhao","at":0}],"mat":["pista","madeira","aco","cabo","aluminio","concreto","pistao"],"budget":15500},
+{"id":26,"w":3,"name":"Ventania","hint":"Ventania forte! Estruturas leves e altas balançam mais.","W":28,"floor":-11,"anchors":[[0,0],[28,0],[0,-4],[28,-4],[0,9],[28,9]],"veh":[{"t":"onibus","at":0}],"mat":["pista","madeira","aco","cabo","aluminio","concreto","pistao"],"ev":{"wind":{"amp":0.9,"per":3}},"budget":16000},
+{"id":27,"w":3,"name":"Barragem","hint":"Vão fundo e água subindo. Um pilar alto no centro pode ajudar.","W":30,"floor":-14,"anchors":[[0,0],[30,0],[0,-5],[30,-5],[15,-14]],"water":{"y":-10,"rise":[2,12,-4]},"veh":[{"t":"van","at":0},{"t":"van","at":2}],"mat":["pista","madeira","aco","cabo","aluminio","concreto","pistao"],"budget":16500},
+{"id":28,"w":3,"name":"Ponto de Parada","hint":"O caminhão vai parar no meio da ponte por 3 segundos. Carga parada, sem pressa.","W":24,"floor":-9,"anchors":[[0,0],[24,0],[0,-4],[24,-4]],"water":{"y":-5},"veh":[{"t":"caminhao","at":0,"stop":[12,3]}],"mat":["pista","madeira","aco","cabo","aluminio","concreto","pistao"],"budget":17000},
+{"id":29,"w":3,"name":"Tremor e Cheia","hint":"Terremoto e cheia ao mesmo tempo, com tráfego nos dois sentidos.","W":26,"floor":-9,"anchors":[[0,0],[26,0],[0,-4],[26,-4],[13,-9]],"water":{"y":-6,"rise":[2,10,-2]},"veh":[{"t":"van","at":0},{"t":"carro","d":-1,"at":1}],"mat":["pista","madeira","aco","cabo","aluminio","concreto","pistao"],"ev":{"quake":{"amp":0.08,"f":1,"t0":3,"t1":15}},"budget":14000},
+{"id":30,"w":3,"name":"Represa Mestra","hint":"O desafio final da Represa: vão largo, água subindo e um ônibus.","W":34,"floor":-12,"anchors":[[0,0],[34,0],[11,-12],[23,-12],[0,10],[34,10]],"water":{"y":-8,"rise":[2,12,-2.5]},"veh":[{"t":"onibus","at":0},{"t":"carro","at":3}],"mat":["pista","madeira","aco","cabo","aluminio","concreto","pistao"],"budget":21000},
+{"id":31,"w":4,"name":"Compósito","hint":"Compósito: o mais forte por peso. Caro, mas vale nos pontos críticos.","W":32,"floor":-10,"anchors":[[0,0],[32,0],[0,-4],[32,-4],[0,10],[32,10]],"water":{"y":-6},"veh":[{"t":"caminhao","at":0}],"mat":["pista","madeira","aco","cabo","aluminio","concreto","composito","pistao"],"budget":18000},
+{"id":32,"w":4,"name":"Báscula Dupla","hint":"Duas folhas erguidas por pistões. O barco precisa de todo o canal livre.","W":17,"floor":-7,"anchors":[[0,0],[17,0],[0,-3],[17,-3]],"water":{"y":-4},"veh":[{"t":"van","at":12.5}],"mat":["pista","madeira","aco","cabo","aluminio","concreto","composito","pistao"],"ev":{"boat":{"x0":5,"x1":12,"h":9,"tIn":4.5,"tOut":8.5},"pist":[[0.3,1],[3.8,1.36],[9,1.36],[11.5,1]]},"budget":15500},
+{"id":33,"w":4,"name":"Cais de Carga","hint":"Depois do barco passam duas vans de carga. A báscula fechada trabalha em balanço: reforce perto da articulação.","W":19,"floor":-8,"anchors":[[0,0],[19,0],[0,-3],[19,-3]],"water":{"y":-4},"veh":[{"t":"van","at":12.5},{"t":"van","at":13.8}],"mat":["pista","madeira","aco","cabo","aluminio","concreto","composito","pistao"],"ev":{"boat":{"x0":7,"x1":12,"h":9,"tIn":4.5,"tOut":8.5},"pist":[[0.3,1],[3.8,1.3],[9,1.3],[11.5,1]]},"budget":15500},
+{"id":34,"w":4,"name":"Ponte Levadiça","hint":"O barco chega cedo. Dois carros esperam a ponte baixar.","W":15,"floor":-7,"anchors":[[0,0],[15,0],[0,-3],[15,-3]],"water":{"y":-4},"veh":[{"t":"carro","at":12.5},{"t":"carro","d":-1,"at":13}],"mat":["pista","madeira","aco","cabo","aluminio","concreto","composito","pistao"],"ev":{"boat":{"x0":4.5,"x1":10.5,"h":10,"tIn":3.5,"tOut":8.5},"pist":[[0.3,1],[2.6,1.36],[9,1.36],[11.5,1]]},"budget":10500},
+{"id":35,"w":4,"name":"Contêineres","hint":"Dois caminhões de contêiner em sequência. Robustez acima de tudo.","W":26,"floor":-9,"anchors":[[0,0],[26,0],[0,-4],[26,-4],[13,-9]],"water":{"y":-5},"veh":[{"t":"caminhao","at":0},{"t":"caminhao","at":4}],"mat":["pista","madeira","aco","cabo","aluminio","concreto","composito","pistao"],"budget":15500},
+{"id":36,"w":4,"name":"Maré Alta","hint":"A maré sobe enquanto o barco passa. Menos espaço sob a ponte!","W":17,"floor":-7,"anchors":[[0,0],[17,0],[0,-3],[17,-3]],"water":{"y":-5,"rise":[0,6,-3]},"veh":[{"t":"van","at":12.5}],"mat":["pista","madeira","aco","cabo","aluminio","concreto","composito","pistao"],"ev":{"boat":{"x0":5,"x1":12,"h":8,"tIn":4.5,"tOut":8.5},"pist":[[0.3,1],[3.8,1.36],[9,1.36],[11.5,1]]},"budget":15500},
+{"id":37,"w":4,"name":"Tráfego do Porto","hint":"A van para na fiscalização enquanto carros e uma moto passam nos dois sentidos.","W":24,"floor":-8,"anchors":[[0,0],[24,0],[0,-3],[24,-3],[12,-8]],"water":{"y":-5},"veh":[{"t":"van","at":0,"stop":[10,2]},{"t":"carro","d":-1,"at":1},{"t":"carro","at":3.5},{"t":"moto","d":-1,"at":4}],"mat":["pista","madeira","aco","cabo","aluminio","concreto","composito","pistao"],"budget":12500},
+{"id":38,"w":4,"name":"Vento do Mar","hint":"Báscula aberta com vento forte. Folhas leves são empurradas.","W":17,"floor":-7,"anchors":[[0,0],[17,0],[0,-3],[17,-3]],"water":{"y":-4},"veh":[{"t":"carro","at":12.5},{"t":"carro","at":14}],"mat":["pista","madeira","aco","cabo","aluminio","concreto","composito","pistao"],"ev":{"boat":{"x0":5,"x1":12,"h":9,"tIn":4.5,"tOut":8.5},"pist":[[0.3,1],[3.8,1.36],[9,1.36],[11.5,1]],"wind":{"amp":0.35,"per":3}},"budget":12000},
+{"id":39,"w":4,"name":"Navio Alto","hint":"Um navio de mastro altíssimo. As folhas precisam subir bastante.","W":19,"floor":-8,"anchors":[[0,0],[19,0],[0,-3],[19,-3]],"water":{"y":-4},"veh":[{"t":"van","at":12.5},{"t":"carro","d":-1,"at":13}],"mat":["pista","madeira","aco","cabo","aluminio","concreto","composito","pistao"],"ev":{"boat":{"x0":7,"x1":12,"h":14,"tIn":4.5,"tOut":8.5},"pist":[[0.3,1],[3.8,1.3],[9,1.3],[11.5,1]]},"budget":15500},
+{"id":40,"w":4,"name":"Ponte Mestra","hint":"Tudo junto: navio, tráfego nos dois sentidos e um tremor no fim. Mostre que você é mestre!","W":19,"floor":-8,"anchors":[[0,0],[19,0],[0,-3],[19,-3]],"water":{"y":-4},"veh":[{"t":"van","at":12.5},{"t":"carro","at":14},{"t":"van","d":-1,"at":15.5}],"mat":["pista","madeira","aco","cabo","aluminio","concreto","composito","pistao"],"ev":{"boat":{"x0":7,"x1":12,"h":10,"tIn":4.5,"tOut":8.5},"pist":[[0.3,1],[3.8,1.3],[9,1.3],[11.5,1]],"quake":{"amp":0.05,"f":0.9,"t0":14,"t1":24}},"budget":14500}]
+</script>
+<script id="core">
+'use strict';
+/* =====================================================================
+   CONFIG
+   Unidades: metros, toneladas (t), quilonewtons (kN), segundos.
+   ===================================================================== */
+const CFG = {
+  G: 9.81,
+  DT: 1 / 60,          // passo fixo de simulação (um "tick")
+  SUB: 24,             // subpassos por tick (XPBD small-steps)
+  GRID: 1,             // grade de encaixe (m)
+  WELD_COST: 50,       // R$ por junta soldada
+  WELD_K: 900,         // rigidez angular da solda (kN·m/rad)
+  WELD_MMAX: 28,       // momento máximo da solda (kN·m) antes de virar pino
+  LIP: 0.3,            // extensão de contato nas pontas livres da pista (m)
+  START_OFF: 11,       // distância do início do veículo até a margem
+  FLAG_OFF: 9,         // distância da bandeira após a margem
+  TIME_LIMIT: 90,
+  STUCK_T: 9,
+  BUILD_MARGIN: 4,
+  BUILD_TOP: 15,
+  FILTER: 0.08,        // filtro passa-baixa da tensão (por subpasso)
+  DAMP_MEMBER: 0.06,
+  DAMP_VEH: 0.05,
+  WATER_DRAG: 2.5,
+  BUOY: 0.09,          // empuxo por metro de barra submersa (t/m)
+  MU: 0.95,
+  JOINT_MASS: 0.02,
+  MIN_LEN: 0.9,
+  SETTLE: 0.6          // s de carga gradual da gravidade na estrutura
+};
+CFG.H = CFG.DT / CFG.SUB;
+
+/* =====================================================================
+   MATERIALS
+   rho: t/m · EA: kN · maxT/maxC: kN · maxL: m · cost: R$/m
+   ===================================================================== */
+const MATS = {
+  pista:     { name: 'Pista',     color: '#39434e', width: 0.34, rho: 0.12,  EA: 1.2e5, maxT: 110, maxC: 110, maxL: 4,  cost: 120, deck: true },
+  madeira:   { name: 'Madeira',   color: '#b07a3a', width: 0.2,  rho: 0.03,  EA: 5e4,   maxT: 55,  maxC: 45,  maxL: 3.2, cost: 55 },
+  aco:       { name: 'Aço',       color: '#556f8c', width: 0.2,  rho: 0.06,  EA: 2e5,   maxT: 220, maxC: 190, maxL: 6,  cost: 170 },
+  cabo:      { name: 'Cabo',      color: '#2b2b2b', width: 0.07, rho: 0.008, EA: 8e4,   maxT: 160, maxC: 0,   maxL: 16, cost: 30, cable: true },
+  aluminio:  { name: 'Alumínio',  color: '#9aa8b5', width: 0.2,  rho: 0.022, EA: 9e4,   maxT: 140, maxC: 120, maxL: 5,  cost: 230 },
+  concreto:  { name: 'Concreto',  color: '#8f8b80', width: 0.42, rho: 0.25,  EA: 4e5,   maxT: 30,  maxC: 650, maxL: 5,  cost: 120, concrete: true },
+  composito: { name: 'Compósito', color: '#2e6f62', width: 0.2,  rho: 0.028, EA: 2.6e5, maxT: 320, maxC: 280, maxL: 7,  cost: 380 },
+  pistao:    { name: 'Pistão',    color: '#d39324', width: 0.26, rho: 0.08,  EA: 2e5,   maxT: 300, maxC: 300, maxL: 5,  cost: 420, piston: true }
+};
+const MAT_ORDER = ['pista', 'madeira', 'aco', 'cabo', 'aluminio', 'concreto', 'composito', 'pistao'];
+
+/* VEÍCULOS: m (t), L/H (m), r raio da roda, ax eixos (m, relativo ao centro),
+   v velocidade (m/s), F força motora total (kN) */
+const VEH = {
+  carro:    { name: 'Carro',    m: 1.2, L: 3.6, H: 1.35, r: 0.36, ax: [-1.2, 1.25],      v: 9,   F: 6,   col: '#e9b44c' },
+  van:      { name: 'Van',      m: 2.4, L: 4.8, H: 2.1,  r: 0.4,  ax: [-1.6, 1.7],       v: 8,   F: 10,  col: '#7fb3d5' },
+  onibus:   { name: 'Ônibus',   m: 7,   L: 9,   H: 2.9,  r: 0.5,  ax: [-3.0, 3.0],       v: 7,   F: 22,  col: '#e07b39' },
+  caminhao: { name: 'Caminhão', m: 10,  L: 8,   H: 3.0,  r: 0.5,  ax: [-3.0, -1.8, 2.8], v: 5.5, F: 26,  col: '#7d8f4e' },
+  moto:     { name: 'Moto',     m: 0.25, L: 1.9, H: 1.15, r: 0.32, ax: [-0.7, 0.72],     v: 13,  F: 4,   col: '#c0392b' }
+};
+
+/* =====================================================================
+   LEVELS (helpers; os dados JSON ficam em <script id="levels-data">)
+   ===================================================================== */
+const LEVELS = ((typeof document !== 'undefined')
+  ? JSON.parse(document.getElementById('levels-data').textContent)
+  : globalThis.__LEVELS).map(l => normLevel(l));
+const WORLDS = [
+  { id: 1, name: 'Interior', sub: 'Madeira e o básico' },
+  { id: 2, name: 'Rio', sub: 'Cabos e pontes suspensas' },
+  { id: 3, name: 'Represa', sub: 'Água, cheias e tremores' },
+  { id: 4, name: 'Porto', sub: 'Básculas, pistões e barcos' }
+];
+const SANDBOX = normLevel({
+  id: 0, w: 0, name: 'Sandbox', hint: 'Modo livre: orçamento ilimitado e todos os materiais.',
+  W: 30, hl: 0, hr: 0, floor: -10,
+  anchors: [[0, 0], [30, 0], [0, -4], [30, -4], [0, 9], [30, 9], [10, -10], [20, -10]],
+  rocks: [], water: { y: -6 }, veh: [{ t: 'carro', at: 0 }, { t: 'caminhao', at: 2.5 }],
+  mat: MAT_ORDER.slice(), budget: 0, ev: {}, sandbox: true
+});
+
+function levelById(id) {
+  if (id === 0) return SANDBOX;
+  return LEVELS.find(l => l.id === id) || null;
+}
+function normLevel(lv) {
+  // garante campos padrão (usado também pelo editor)
+  const d = Object.assign({ hl: 0, hr: 0, floor: -8, rocks: [], water: null, ev: {}, mat: ['pista', 'madeira'], budget: 5000, veh: [{ t: 'carro', at: 0 }], hint: '' }, lv);
+  d.ev = Object.assign({}, d.ev);
+  d.veh = d.veh.slice().sort((a, b) => (a.at || 0) - (b.at || 0));
+  return d;
+}
+function levelAnchors(lv) {
+  return lv.anchors.map((p, i) => ({ id: 'a' + i, x: p[0], y: p[1], anchor: true }));
+}
+function heaviestVehicle(lv) {
+  let best = null;
+  for (const v of lv.veh) { const T = VEH[v.t]; if (T && (!best || T.m > best.m)) best = T; }
+  return best || VEH.carro;
+}
+function vehicleLabel(lv) {
+  const names = [];
+  for (const v of lv.veh) { const n = VEH[v.t].name; if (!names.includes(n)) names.push(n); }
+  return names.join(' + ');
+}
+function inSolid(lv, x, y) {
+  const e = 1e-6;
+  if (x < -e && y < lv.hl - e) return true;
+  if (x > lv.W + e && y < lv.hr - e) return true;
+  if (y < lv.floor - e) return true;
+  for (const r of lv.rocks || []) {
+    if (x > r.x - r.w / 2 + e && x < r.x + r.w / 2 - e && y < r.top - e) return true;
+  }
+  return false;
+}
+function buildBounds(lv) {
+  return { x0: -CFG.BUILD_MARGIN, x1: lv.W + CFG.BUILD_MARGIN, y0: lv.floor, y1: Math.max(lv.hl, lv.hr) + CFG.BUILD_TOP };
+}
+
+/* ---------- Modelo da ponte (compartilhado por UI, física e testes) ---------- */
+function newBridge() { return { joints: [], members: [], weld: {}, next: 1 }; }
+function cloneBridge(b) { return JSON.parse(JSON.stringify(b)); }
+function nodeMap(lv, br) {
+  const m = new Map();
+  for (const a of levelAnchors(lv)) m.set(a.id, a);
+  for (const j of br.joints) m.set(j.id, j);
+  return m;
+}
+function memberLen(nm, mb) {
+  const a = nm.get(mb.a), b = nm.get(mb.b);
+  return Math.hypot(b.x - a.x, b.y - a.y);
+}
+function bridgeCost(lv, br) {
+  const nm = nodeMap(lv, br);
+  let c = 0;
+  for (const mb of br.members) c += memberLen(nm, mb) * MATS[mb.m].cost;
+  for (const id in br.weld) if (br.weld[id] && nm.has(id)) c += CFG.WELD_COST;
+  return Math.round(c);
+}
+function findNodeAt(lv, br, x, y, tol) {
+  let best = null, bd = tol;
+  for (const n of nodeMap(lv, br).values()) {
+    const d = Math.hypot(n.x - x, n.y - y);
+    if (d <= bd) { bd = d; best = n; }
+  }
+  return best;
+}
+function membersAt(br, id) { return br.members.filter(m => m.a === id || m.b === id); }
+function isConcreteRoot(br, id) {
+  if (id[0] === 'a') return true;
+  return br.members.some(m => m.m === 'concreto' && (m.a === id || m.b === id));
+}
+/* Valida um novo membro entre dois pontos (nós existentes ou pontos da grade). */
+function validateMember(lv, br, A, B, mat) {
+  const M = MATS[mat];
+  const L = Math.hypot(B.x - A.x, B.y - A.y);
+  if (L < CFG.MIN_LEN) return { ok: false, why: 'Muito curto' };
+  if (L > M.maxL + 1e-6) return { ok: false, why: 'Comprimento máximo: ' + M.maxL + ' m' };
+  const bb = buildBounds(lv);
+  for (const P of [A, B]) {
+    if (!P.id) {
+      if (P.x < bb.x0 || P.x > bb.x1 || P.y < bb.y0 || P.y > bb.y1) return { ok: false, why: 'Fora da área de construção' };
+      if (inSolid(lv, P.x, P.y)) return { ok: false, why: 'Dentro do terreno' };
+    }
+  }
+  if (A.id && B.id) {
+    if (A.id === B.id) return { ok: false, why: '' };
+    if (br.members.some(m => (m.a === A.id && m.b === B.id) || (m.a === B.id && m.b === A.id))) return { ok: false, why: 'Já existe' };
+  }
+  if (A.anchor && B.anchor && !M.piston) return { ok: false, why: 'Âncora a âncora não faz nada' };
+  if (M.concrete) {
+    const ra = A.id && isConcreteRoot(br, A.id), rb = B.id && isConcreteRoot(br, B.id);
+    if (!ra && !rb) return { ok: false, why: 'Concreto só nasce de âncoras ou de outro concreto' };
+  }
+  return { ok: true, L };
+}
+/* Adiciona membro; cria juntas se necessário. Retorna o membro ou null. */
+function addMember(lv, br, A, B, mat, opts) {
+  const v = validateMember(lv, br, A, B, mat);
+  if (!v.ok) return null;
+  const ida = A.id || addJoint(br, A.x, A.y);
+  const idb = B.id || addJoint(br, B.x, B.y);
+  if (br.members.some(m => (m.a === ida && m.b === idb) || (m.a === idb && m.b === ida))) return null;
+  const mb = { id: 'm' + (br.next++), a: ida, b: idb, m: mat };
+  if (opts && opts.inv) mb.inv = true;
+  br.members.push(mb);
+  return mb;
+}
+function addJoint(br, x, y) {
+  const j = { id: 'j' + (br.next++), x: Math.round(x * 1000) / 1000, y: Math.round(y * 1000) / 1000 };
+  br.joints.push(j);
+  return j.id;
+}
+function removeMember(br, mid) {
+  br.members = br.members.filter(m => m.id !== mid);
+  pruneJoints(br);
+}
+function removeJoint(br, jid) {
+  if (jid[0] === 'a') {
+    br.members = br.members.filter(m => m.a !== jid && m.b !== jid);
+    delete br.weld[jid];
+  } else {
+    br.members = br.members.filter(m => m.a !== jid && m.b !== jid);
+    br.joints = br.joints.filter(j => j.id !== jid);
+    delete br.weld[jid];
+  }
+  pruneJoints(br);
+}
+function pruneJoints(br) {
+  const used = new Set();
+  for (const m of br.members) { used.add(m.a); used.add(m.b); }
+  br.joints = br.joints.filter(j => used.has(j.id));
+  for (const id in br.weld) if (!used.has(id)) delete br.weld[id];
+}
+function deckContinuous(lv, br) {
+  // BFS pelos membros de pista entre âncoras das margens superiores
+  const nm = nodeMap(lv, br);
+  const starts = [], ends = new Set();
+  for (const n of nm.values()) {
+    if (!n.anchor) continue;
+    if (Math.abs(n.x) < 1e-6 && Math.abs(n.y - lv.hl) < 1e-6) starts.push(n.id);
+    if (Math.abs(n.x - lv.W) < 1e-6 && Math.abs(n.y - lv.hr) < 1e-6) ends.add(n.id);
+  }
+  const adj = new Map();
+  for (const m of br.members) if (m.m === 'pista') {
+    if (!adj.has(m.a)) adj.set(m.a, []); if (!adj.has(m.b)) adj.set(m.b, []);
+    adj.get(m.a).push(m.b); adj.get(m.b).push(m.a);
+  }
+  const seen = new Set(starts), q = starts.slice();
+  while (q.length) { const c = q.pop(); if (ends.has(c)) return true; for (const n of adj.get(c) || []) if (!seen.has(n)) { seen.add(n); q.push(n); } }
+  return false;
+}
+
+/* =====================================================================
+   EVENTS (funções de linha do tempo, determinísticas)
+   ===================================================================== */
+function smooth01(x) { x = x < 0 ? 0 : x > 1 ? 1 : x; return x * x * (3 - 2 * x); }
+function waterAt(lv, t) {
+  if (!lv.water) return null;
+  const w = lv.water;
+  if (!w.rise) return w.y;
+  const [t0, t1, y1] = w.rise;
+  return w.y + (y1 - w.y) * smooth01((t - t0) / (t1 - t0));
+}
+function windAt(lv, t) {
+  const w = lv.ev && lv.ev.wind;
+  if (!w) return 0;
+  const per = w.per || 4;
+  const ramp = smooth01((t - (w.t0 || 1)) / 2);
+  const g = 0.55 + 0.45 * Math.sin(2 * Math.PI * t / per) * (0.75 + 0.25 * Math.sin(2 * Math.PI * t * 0.31 + 1.3));
+  return w.amp * ramp * g;
+}
+function quakeAt(lv, t) {
+  const q = lv.ev && lv.ev.quake;
+  if (!q) return [0, 0, 0, 0];
+  const env = smooth01((t - q.t0) / 1.5) * (1 - smooth01((t - q.t1) / 1.5));
+  const w = 2 * Math.PI * q.f;
+  const x = q.amp * env * Math.sin(w * t);
+  const y = 0.35 * q.amp * env * Math.sin(w * 1.7 * t + 0.5);
+  const vx = q.amp * env * w * Math.cos(w * t);
+  const vy = 0.35 * q.amp * env * w * 1.7 * Math.cos(w * 1.7 * t + 0.5);
+  return [x, y, vx, vy];
+}
+function pistonAt(lv, t) {
+  const p = lv.ev && lv.ev.pist;
+  if (!p || !p.length) return 1;
+  if (t <= p[0][0]) return p[0][1];
+  for (let i = 1; i < p.length; i++) {
+    if (t <= p[i][0]) {
+      const [ta, fa] = p[i - 1], [tb, fb] = p[i];
+      return fa + (fb - fa) * smooth01((t - ta) / (tb - ta));
+    }
+  }
+  return p[p.length - 1][1];
+}
+function boatState(lv, t) {
+  const b = lv.ev && lv.ev.boat;
+  if (!b) return null;
+  return { active: t >= b.tIn && t <= b.tOut, k: (t - b.tIn) / (b.tOut - b.tIn), b };
+}
+function segRect(ax, ay, bx, by, x0, y0, x1, y1) {
+  // Liang–Barsky
+  let t0 = 0, t1 = 1; const dx = bx - ax, dy = by - ay;
+  const p = [-dx, dx, -dy, dy], q = [ax - x0, x1 - ax, ay - y0, y1 - ay];
+  for (let i = 0; i < 4; i++) {
+    if (p[i] === 0) { if (q[i] < 0) return false; }
+    else { const r = q[i] / p[i]; if (p[i] < 0) { if (r > t1) return false; if (r > t0) t0 = r; } else { if (r < t0) return false; if (r < t1) t1 = r; } }
+  }
+  return true;
+}
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+/* =====================================================================
+   PHYSICS  (XPBD "small steps": passo fixo, subpassos, 1 iteração)
+   ===================================================================== */
+function mkPart(x, y, m, fixed) {
+  return { x, y, px: x, py: y, vx: 0, vy: 0, m, w: fixed ? 0 : (m > 0 ? 1 / m : 0), fixed: !!fixed, bx: x, by: y, area: 0, buoy: 0, wet: false, deckDeg: 0, edge: false };
+}
+function setMass(p, m) { p.m = m; p.w = p.fixed ? 0 : 1 / Math.max(m, 1e-3); }
+
+function createWorld(lvIn, br) {
+  const lv = normLevel(lvIn);
+  const S = {
+    lv, t: 0, tick: 0, parts: [], byId: new Map(), mems: [], angs: [], deck: [], vehicles: [],
+    ground: [], waterY: waterAt(lv, 0), wind: 0, qx: 0, qy: 0, qvx: 0, qvy: 0, pf: 1,
+    state: 'run', failReason: '', endT: 0, events: [], rng: mulberry32(1234567),
+    maxEver: 0, maxNow: 0, hot: null, boatHit: false, spawned: 0,
+    fallY: Math.min(lv.hl, lv.hr) - 5, deckMin: Math.min(lv.hl, lv.hr)
+  };
+  for (const a of levelAnchors(lv)) {
+    const p = mkPart(a.x, a.y, 0, true); p.anchor = true; p.id = a.id;
+    p.edge = (Math.abs(a.x) < 1e-6 && Math.abs(a.y - lv.hl) < 1e-6) || (Math.abs(a.x - lv.W) < 1e-6 && Math.abs(a.y - lv.hr) < 1e-6);
+    S.parts.push(p); S.byId.set(a.id, p);
+  }
+  for (const j of br.joints) {
+    const p = mkPart(j.x, j.y, CFG.JOINT_MASS, false); p.id = j.id;
+    S.parts.push(p); S.byId.set(j.id, p);
+  }
+  for (const mb of br.members) {
+    const pa = S.byId.get(mb.a), pb = S.byId.get(mb.b);
+    if (!pa || !pb) continue;
+    const M = MATS[mb.m];
+    const L = Math.hypot(pb.x - pa.x, pb.y - pa.y);
+    if (L < 1e-3) continue;
+    const mass = M.rho * L;
+    if (!pa.fixed) setMass(pa, pa.m + mass / 2);
+    if (!pb.fixed) setMass(pb, pb.m + mass / 2);
+    pa.area += L / 2; pb.area += L / 2;
+    pa.buoy += CFG.BUOY * L / 2; pb.buoy += CFG.BUOY * L / 2;
+    const c = {
+      id: mb.id, mat: mb.m, M, pa, pb, rest: L, rest0: L, alpha: L / M.EA, mass,
+      lam: 0, force: 0, ratio: 0, filt: 0, sgn: 1, peak: 0, broken: false, stub: false,
+      cable: !!M.cable, piston: !!M.piston, inv: !!mb.inv, deck: !!M.deck, lipA: 0, lipB: 0, len: L
+    };
+    S.mems.push(c);
+    if (c.deck) S.deck.push(c);
+  }
+  // soldas: restrições angulares
+  for (const id in br.weld) {
+    if (!br.weld[id]) continue;
+    const pj = S.byId.get(id); if (!pj) continue;
+    const ms = S.mems.filter(c => c.pa === pj || c.pb === pj);
+    if (!ms.length) continue;
+    const other = c => (c.pa === pj ? c.pb : c.pa);
+    if (pj.fixed) {
+      for (const c of ms) {
+        const o = other(c);
+        S.angs.push({ jid: id, pj, pa: o, pb: null, ma: c, mb: null, ref: 0, rest: Math.atan2(o.y - pj.y, o.x - pj.x), alpha: 1 / CFG.WELD_K, ratio: 0, filt: 0, broken: false });
+      }
+    } else {
+      ms.sort((c1, c2) => { const o1 = other(c1), o2 = other(c2); return Math.atan2(o1.y - pj.y, o1.x - pj.x) - Math.atan2(o2.y - pj.y, o2.x - pj.x); });
+      for (let i = 0; i + 1 < ms.length; i++) {
+        const A = other(ms[i]), B = other(ms[i + 1]);
+        const ax = A.x - pj.x, ay = A.y - pj.y, bx = B.x - pj.x, by = B.y - pj.y;
+        S.angs.push({ jid: id, pj, pa: A, pb: B, ma: ms[i], mb: ms[i + 1], rest: Math.atan2(ax * by - ay * bx, ax * bx + ay * by), alpha: 1 / CFG.WELD_K, ratio: 0, filt: 0, broken: false });
+      }
+    }
+  }
+  // chão estático (topo das margens e das pedras)
+  S.ground.push({ ax: -90, ay: lv.hl, bx: 0, by: lv.hl });
+  S.ground.push({ ax: lv.W, ay: lv.hr, bx: lv.W + 90, by: lv.hr });
+  updateDeckLips(S);
+  return S;
+}
+function updateDeckLips(S) {
+  for (const p of S.parts) p.deckDeg = 0;
+  for (const c of S.deck) if (!c.broken) { c.pa.deckDeg++; c.pb.deckDeg++; }
+  for (const c of S.deck) {
+    c.lipA = (c.pa.deckDeg <= 1 && !c.pa.edge) ? CFG.LIP : 0;
+    c.lipB = (c.pb.deckDeg <= 1 && !c.pb.edge) ? CFG.LIP : 0;
+  }
+}
+
+function solveDist(c, h2) {
+  const a = c.pa, b = c.pb, wa = a.w, wb = b.w, ws = wa + wb;
+  let dx = b.x - a.x, dy = b.y - a.y;
+  const len = Math.sqrt(dx * dx + dy * dy) || 1e-9;
+  c.len = len;
+  if (ws === 0) { c.lam = 0; return; }
+  const C = len - c.rest;
+  if (c.cable && C < 0) { c.lam = 0; return; }
+  const dl = -C / (ws + c.alpha / h2);
+  c.lam = dl; dx /= len; dy /= len;
+  a.x -= wa * dl * dx; a.y -= wa * dl * dy;
+  b.x += wb * dl * dx; b.y += wb * dl * dy;
+}
+function wrapPi(a) { while (a > Math.PI) a -= 2 * Math.PI; while (a < -Math.PI) a += 2 * Math.PI; return a; }
+function solveAng(c, h2) {
+  const J = c.pj, A = c.pa, B = c.pb;
+  const ax = A.x - J.x, ay = A.y - J.y, la2 = ax * ax + ay * ay;
+  if (la2 < 1e-8) return;
+  let th, gAx, gAy, gBx = 0, gBy = 0, wsum;
+  if (B) {
+    const bx = B.x - J.x, by = B.y - J.y, lb2 = bx * bx + by * by;
+    if (lb2 < 1e-8) return;
+    th = Math.atan2(ax * by - ay * bx, ax * bx + ay * by);
+    gAx = ay / la2; gAy = -ax / la2; gBx = -by / lb2; gBy = bx / lb2;
+  } else {
+    th = Math.atan2(ay, ax);
+    gAx = -ay / la2; gAy = ax / la2;
+  }
+  const gJx = -(gAx + gBx), gJy = -(gAy + gBy);
+  const C = wrapPi(th - c.rest);
+  wsum = A.w * (gAx * gAx + gAy * gAy) + J.w * (gJx * gJx + gJy * gJy) + (B ? B.w * (gBx * gBx + gBy * gBy) : 0);
+  if (wsum === 0) { c.lam = 0; return; }
+  const dl = -C / (wsum + c.alpha / h2);
+  c.lam = dl;
+  A.x += A.w * gAx * dl; A.y += A.w * gAy * dl;
+  J.x += J.w * gJx * dl; J.y += J.w * gJy * dl;
+  if (B) { B.x += B.w * gBx * dl; B.y += B.w * gBy * dl; }
+}
+function dampPair(a, b, k) {
+  const ws = a.w + b.w; if (ws === 0) return;
+  let dx = b.x - a.x, dy = b.y - a.y; const l = Math.sqrt(dx * dx + dy * dy) || 1e-9; dx /= l; dy /= l;
+  const rv = (b.vx - a.vx) * dx + (b.vy - a.vy) * dy;
+  const imp = rv * k / ws;
+  a.vx += dx * imp * a.w; a.vy += dy * imp * a.w;
+  b.vx -= dx * imp * b.w; b.vy -= dy * imp * b.w;
+}
+
+function breakMember(S, c) {
+  if (c.broken) return;
+  c.broken = true;
+  const a = c.pa, b = c.pb;
+  const u = 0.35 + 0.3 * S.rng();
+  const mx = a.x + (b.x - a.x) * u, my = a.y + (b.y - a.y) * u;
+  const sm = Math.max(c.mass * 0.25, 0.01);
+  if (!a.fixed) setMass(a, Math.max(a.m - sm, CFG.JOINT_MASS));
+  if (!b.fixed) setMass(b, Math.max(b.m - sm, CFG.JOINT_MASS));
+  const s1 = mkPart(mx, my, sm, false), s2 = mkPart(mx, my, sm, false);
+  s1.vx = a.vx * 0.5 + (S.rng() - 0.5); s1.vy = a.vy * 0.5 + S.rng();
+  s2.vx = b.vx * 0.5 + (S.rng() - 0.5); s2.vy = b.vy * 0.5 + S.rng();
+  s1.area = s2.area = c.rest / 2 * 0.5; s1.buoy = s2.buoy = CFG.BUOY * c.rest / 2; s1.debris = s2.debris = true;
+  S.parts.push(s1, s2);
+  const mk = (p, q, L) => ({ id: c.id + '_s', mat: c.mat, M: c.M, pa: p, pb: q, rest: L, rest0: L, alpha: L / c.M.EA, mass: sm, lam: 0, force: 0, ratio: 0, filt: 0, sgn: 1, peak: 0, broken: false, stub: true, cable: c.cable, piston: false, deck: false, len: L, lipA: 0, lipB: 0 });
+  S.mems.push(mk(a, s1, c.rest * u), mk(b, s2, c.rest * (1 - u)));
+  for (const g of S.angs) if (g.ma === c || g.mb === c) g.broken = true;
+  if (c.deck) updateDeckLips(S);
+  S.events.push({ type: 'break', x: mx, y: my, mat: c.mat });
+}
+
+/* =====================================================================
+   VEHICLES
+   ===================================================================== */
+function spawnVehicle(S, spec, idx) {
+  const lv = S.lv, T = VEH[spec.t] || VEH.carro, d = spec.d === -1 ? -1 : 1;
+  const x0 = d > 0 ? -CFG.START_OFF : lv.W + CFG.START_OFF;
+  const gy = (d > 0 ? lv.hl : lv.hr) + S.qy;
+  const yc = gy + T.r;
+  const V = { spec, T, d, idx, parts: [], wheels: [], cons: [], target: T.v, arrived: false, active: true,
+    stopDone: !spec.stop, stopT: 0, flipT: 0, best: 0, bestT: S.t, spin: 0, cx: x0, cy: yc, ang: 0, failed: false };
+  const mC = T.m * 0.78 / 4, mW = T.m * 0.22 / T.ax.length;
+  const top = T.H - T.r;
+  const corners = [[-T.L / 2, 0.05], [T.L / 2, 0.05], [T.L / 2, top], [-T.L / 2, top]];
+  const cs = corners.map(([lx, ly]) => { const p = mkPart(x0 + lx * d, yc + ly, mC, false); p.veh = true; p.area = T.L * T.H * 0.04; return p; });
+  V.chassis = cs;
+  const rigid = (p, q) => ({ pa: p, pb: q, rest: Math.hypot(q.x - p.x, q.y - p.y), alpha: 0, lam: 0, damp: 0 });
+  V.cons.push(rigid(cs[0], cs[1]), rigid(cs[1], cs[2]), rigid(cs[2], cs[3]), rigid(cs[3], cs[0]), rigid(cs[0], cs[2]), rigid(cs[1], cs[3]));
+  const Fw = T.m * CFG.G / T.ax.length;
+  const ks = Fw / 0.035;
+  for (const ax of T.ax) {
+    const w = mkPart(x0 + ax * d, yc, mW, false); w.veh = true; w.wheel = true; w.r = T.r; w.cF = 0; w.area = 0.1;
+    V.wheels.push(w);
+    const near = (ax * d < 0) === (d > 0) ? cs[0] : cs[1];
+    for (const q of [cs[2], cs[3], near]) {
+      const L = Math.hypot(q.x - w.x, q.y - w.y);
+      V.cons.push({ pa: w, pb: q, rest: L, alpha: 1 / ks, lam: 0, damp: CFG.DAMP_VEH });
+    }
+  }
+  V.parts = cs.concat(V.wheels);
+  S.vehicles.push(V);
+  S.spawned++;
+  return V;
+}
+
+function collideWheel(S, wh, h2) {
+  wh.cF = 0; wh.cpa = null; wh.cpb = null;
+  const r = wh.r;
+  for (const g of S.ground) testSeg(wh, r, g.ax + S.qx, g.ay + S.qy, g.bx + S.qx, g.by + S.qy, null, null, 0, 0, h2);
+  for (const c of S.deck) {
+    if (c.broken) continue;
+    testSeg(wh, r, c.pa.x, c.pa.y, c.pb.x, c.pb.y, c.pa, c.pb, c.lipA, c.lipB, h2);
+  }
+}
+function testSeg(wh, r, ax, ay, bx, by, pa, pb, lipA, lipB, h2) {
+  const m = r + 0.35;
+  if (wh.x < (ax < bx ? ax : bx) - m || wh.x > (ax > bx ? ax : bx) + m || wh.y < (ay < by ? ay : by) - m || wh.y > (ay > by ? ay : by) + m) return;
+  const ex = bx - ax, ey = by - ay, L2 = ex * ex + ey * ey;
+  if (L2 < 1e-8) return;
+  const L = Math.sqrt(L2);
+  let t = ((wh.x - ax) * ex + (wh.y - ay) * ey) / L2;
+  const tmin = -lipA / L, tmax = 1 + lipB / L;
+  if (t < tmin) t = tmin; else if (t > tmax) t = tmax;
+  const qx = ax + ex * t, qy = ay + ey * t;
+  const dx = wh.x - qx, dy = wh.y - qy, d2 = dx * dx + dy * dy;
+  if (d2 >= r * r || d2 < 1e-12) return;
+  const d = Math.sqrt(d2), nx = dx / d, ny = dy / d, C = d - r;
+  const tc = t < 0 ? 0 : t > 1 ? 1 : t;
+  const fa = 1 - tc, fb = tc;
+  const W = wh.w + (pa ? pa.w * fa * fa + pb.w * fb * fb : 0);
+  if (W === 0) return;
+  const dl = -C / W;
+  wh.x += wh.w * nx * dl; wh.y += wh.w * ny * dl;
+  if (pa) {
+    pa.x -= pa.w * fa * nx * dl; pa.y -= pa.w * fa * ny * dl;
+    pb.x -= pb.w * fb * nx * dl; pb.y -= pb.w * fb * ny * dl;
+  }
+  const F = dl / h2;
+  if (F > wh.cF) { wh.cF = F; wh.cpa = pa; wh.cpb = pb; wh.ct = tc; wh.ctx = ex / L; wh.cty = ey / L; }
+}
+function tractionWheel(S, V, wh, h) {
+  if (wh.cF <= 0) return;
+  let tx = wh.ctx, ty = wh.cty;
+  if (tx * V.d < 0) { tx = -tx; ty = -ty; }
+  let svx, svy;
+  if (wh.cpa) { const t = wh.ct; svx = wh.cpa.vx * (1 - t) + wh.cpb.vx * t; svy = wh.cpa.vy * (1 - t) + wh.cpb.vy * t; }
+  else { svx = S.qvx; svy = S.qvy; }
+  const vt = (wh.vx - svx) * tx + (wh.vy - svy) * ty;
+  const n = V.wheels.length, share = V.T.m / n;
+  let F = share * 4 * (V.target - vt);
+  const cap = Math.min(CFG.MU * wh.cF, V.T.F / n * (V.target === 0 ? 2.5 : 1));
+  if (F > cap) F = cap; else if (F < -cap) F = -cap;
+  const I = F * h;
+  wh.vx += tx * I * wh.w; wh.vy += ty * I * wh.w;
+  if (wh.cpa) {
+    const t = wh.ct, pa = wh.cpa, pb = wh.cpb;
+    pa.vx -= tx * I * pa.w * (1 - t); pa.vy -= ty * I * pa.w * (1 - t);
+    pb.vx -= tx * I * pb.w * t; pb.vy -= ty * I * pb.w * t;
+  }
+}
+function updateVehicleLogic(S, V) {
+  const lv = S.lv, cs = V.chassis;
+  V.cx = (cs[0].x + cs[1].x + cs[2].x + cs[3].x) / 4;
+  V.cy = (cs[0].y + cs[1].y + cs[2].y + cs[3].y) / 4;
+  const fx = cs[1].x - cs[0].x, fy = cs[1].y - cs[0].y;
+  V.ang = Math.atan2(fy * V.d, fx * V.d);
+  const vx = (cs[0].vx + cs[1].vx) / 2;
+  V.spin += vx * CFG.DT / V.T.r;
+  const flagX = V.d > 0 ? lv.W + CFG.FLAG_OFF : -CFG.FLAG_OFF;
+  if (!V.arrived && V.d * (V.cx - flagX) > 0) { V.arrived = true; S.events.push({ type: 'arrive', idx: V.idx }); }
+  if (V.arrived && V.d * (V.cx - flagX) > 30) { V.active = false; return; }
+  // checkpoint
+  V.target = V.T.v;
+  if (!V.stopDone) {
+    const sx = V.spec.stop[0], dist = V.d * (sx - V.cx);
+    const vabs = Math.abs(vx);
+    if (dist < Math.max(0.4, vabs * vabs / 5 + 0.3) && dist > -2) {
+      V.target = 0;
+      if (vabs < 0.4) V.stopT += CFG.DT;
+      if (V.stopT >= V.spec.stop[1]) V.stopDone = true;
+    }
+  }
+  // progresso (detecção de travamento)
+  const prog = V.d * (V.cx - (V.d > 0 ? -CFG.START_OFF : lv.W + CFG.START_OFF));
+  if (prog > V.best + 0.5) { V.best = prog; V.bestT = S.t; }
+  if (V.target === 0) V.bestT = S.t;
+  // capotamento
+  const up = (cs[3].y + cs[2].y) - (cs[0].y + cs[1].y);
+  V.flipT = up < 0 ? V.flipT + CFG.DT : 0;
+}
+
+/* ---------- Simulação: subpasso e tick ---------- */
+function substep(S) {
+  const h = CFG.H, h2 = h * h, G = CFG.G, lv = S.lv;
+  S.t += h;
+  const t = S.t;
+  S.waterY = waterAt(lv, t);
+  S.wind = windAt(lv, t);
+  const q = quakeAt(lv, t); S.qx = q[0]; S.qy = q[1]; S.qvx = q[2]; S.qvy = q[3];
+  S.pf = pistonAt(lv, t);
+  const wy = S.waterY, wind = S.wind, floorY = lv.floor + 0.1 + S.qy;
+  // carga gradual: a estrutura "assenta" sem choque de carga súbita
+  const gs = t < CFG.SETTLE ? smooth01(t / CFG.SETTLE) : 1, Gb = G * gs;
+  const P = S.parts;
+  for (let i = 0; i < P.length; i++) {
+    const p = P[i];
+    p.px = p.x; p.py = p.y;
+    if (p.fixed) { p.x = p.bx + S.qx; p.y = p.by + S.qy; continue; }
+    let fx = wind * p.area, fy = 0;
+    if (wy !== null && p.y < wy) { const dd = (wy - p.y) / 0.4; fy += p.buoy * Gb * (dd > 1 ? 1 : dd); p.wet = true; } else p.wet = false;
+    p.vx += fx * p.w * h; p.vy += (fy * p.w - Gb) * h;
+    p.x += p.vx * h; p.y += p.vy * h;
+    if (p.y < floorY) { p.y = floorY; p.x = p.px + (p.x - p.px) * 0.5; }
+  }
+  const VS = S.vehicles;
+  for (const V of VS) {
+    if (!V.active) continue;
+    for (const p of V.parts) {
+      p.px = p.x; p.py = p.y;
+      p.vx += wind * p.area * p.w * 0.5 * h; p.vy -= G * h;
+      p.x += p.vx * h; p.y += p.vy * h;
+    }
+  }
+  // restrições
+  const pf = S.pf;
+  const M = S.mems;
+  for (let i = 0; i < M.length; i++) {
+    const c = M[i];
+    if (c.broken) continue;
+    if (c.piston) c.rest = c.rest0 * (c.inv ? 2 - pf : pf);
+    solveDist(c, h2);
+  }
+  for (let i = 0; i < S.angs.length; i++) { const g = S.angs[i]; if (!g.broken) solveAng(g, h2); }
+  for (const V of VS) {
+    if (!V.active) continue;
+    for (const c of V.cons) solveDist(c, h2);
+    for (const w of V.wheels) collideWheel(S, w, h2);
+  }
+  // velocidades
+  for (let i = 0; i < P.length; i++) {
+    const p = P[i];
+    p.vx = (p.x - p.px) / h; p.vy = (p.y - p.py) / h;
+    if (p.wet) { const k = 1 - CFG.WATER_DRAG * h; p.vx *= k; p.vy *= k; }
+  }
+  for (const V of VS) {
+    if (!V.active) continue;
+    for (const p of V.parts) { p.vx = (p.x - p.px) / h; p.vy = (p.y - p.py) / h; }
+    for (const c of V.cons) if (c.damp) dampPair(c.pa, c.pb, c.damp);
+    for (const w of V.wheels) tractionWheel(S, V, w, h);
+  }
+  // amortecimento axial e tensões
+  const F = CFG.FILTER;
+  for (let i = 0; i < M.length; i++) {
+    const c = M[i];
+    if (c.broken) continue;
+    if (!(c.cable && c.len < c.rest)) dampPair(c.pa, c.pb, CFG.DAMP_MEMBER);
+    if (c.stub) continue;
+    const T = -c.lam / h2;
+    c.force = T;
+    let r;
+    if (T >= 0) r = T / c.M.maxT; else r = c.M.maxC > 0 ? -T / c.M.maxC : 0;
+    c.sgn = T >= 0 ? 1 : -1;
+    c.filt += (r - c.filt) * F;
+    if (c.filt > c.peak) c.peak = c.filt;
+    if (c.filt > 1) breakMember(S, c);
+  }
+  for (let i = 0; i < S.angs.length; i++) {
+    const g = S.angs[i];
+    if (g.broken) continue;
+    const Mo = Math.abs(g.lam || 0) / h2;
+    g.filt += (Mo / CFG.WELD_MMAX - g.filt) * F;
+    if (g.filt > 1) { g.broken = true; S.events.push({ type: 'weld', x: g.pj.x, y: g.pj.y }); }
+  }
+}
+
+/* Avança um tick de 1/60 s (ou fração de subpassos para câmera lenta). */
+function stepWorld(S, nsub) {
+  const lv = S.lv;
+  for (let k = 0; k < nsub; k++) {
+    while (S.spawned < lv.veh.length && S.t >= (lv.veh[S.spawned].at || 0)) spawnVehicle(S, lv.veh[S.spawned], S.spawned);
+    substep(S);
+  }
+  S.tick += nsub / CFG.SUB;
+  postTick(S);
+}
+function postTick(S) {
+  const lv = S.lv;
+  let mx = 0, hot = null;
+  for (const c of S.mems) {
+    if (c.broken || c.stub) continue;
+    if (c.filt > mx) { mx = c.filt; hot = c; }
+  }
+  S.maxNow = mx; S.hot = hot;
+  if (mx > S.maxEver) S.maxEver = mx;
+  for (const c of S.mems) if (c.broken && !c.stub && c.peak > S.maxEver) S.maxEver = c.peak;
+  for (const V of S.vehicles) if (V.active) updateVehicleLogic(S, V);
+  if (S.state !== 'run') { S.endT += CFG.DT; return; }
+  // barco
+  const bs = boatState(lv, S.t);
+  if (bs && bs.active && S.waterY !== null) {
+    const b = bs.b, y0 = S.waterY, y1 = S.waterY + b.h;
+    for (const c of S.mems) {
+      if (c.broken || c.stub) continue;
+      if (segRect(c.pa.x, c.pa.y, c.pb.x, c.pb.y, b.x0, y0, b.x1, y1)) { S.boatHit = true; return fail(S, 'boat'); }
+    }
+  }
+  for (const V of S.vehicles) {
+    if (!V.active || V.arrived) continue;
+    for (const p of V.parts) {
+      const bottom = p.wheel ? p.y - p.r : p.y;
+      if (S.waterY !== null && bottom < S.waterY) { S.events.push({ type: 'splash', x: p.x, y: S.waterY }); V.failed = true; return fail(S, 'water'); }
+      if (p.y < S.fallY || p.y < lv.floor + 0.3) { V.failed = true; return fail(S, 'fell'); }
+    }
+    if (V.flipT > 1.5) { V.failed = true; return fail(S, 'flip'); }
+    if (S.t - V.bestT > CFG.STUCK_T) { V.failed = true; return fail(S, 'stuck'); }
+  }
+  if (S.spawned === lv.veh.length && S.vehicles.every(V => V.arrived)) { S.state = 'win'; S.endT = 0; return; }
+  if (S.t > CFG.TIME_LIMIT) return fail(S, 'timeout');
+}
+function fail(S, why) { S.state = 'fail'; S.failReason = why; S.endT = 0; S.events.push({ type: 'fail', why }); }
+const FAIL_TEXT = {
+  water: 'Um veículo caiu na água!',
+  fell: 'Um veículo caiu no vão!',
+  flip: 'Um veículo capotou!',
+  stuck: 'Um veículo ficou travado.',
+  boat: 'O barco bateu na ponte!',
+  timeout: 'Tempo esgotado.'
+};
+function memberPeaks(S) {
+  const out = {};
+  for (const c of S.mems) if (!c.stub) out[c.id] = { peak: c.peak, broken: c.broken, sgn: c.sgn };
+  return out;
+}
+/* Executa um teste completo sem renderizar (usado pelos testes automáticos). */
+function runHeadless(lv, br, maxT) {
+  const S = createWorld(lv, br);
+  const lim = maxT || CFG.TIME_LIMIT + 1;
+  while (S.state === 'run' && S.t < lim) stepWorld(S, CFG.SUB);
+  return S;
+}
+function starsFor(lv, passed, cost, maxStress) {
+  if (!passed) return 0;
+  if (lv.sandbox) return 1;
+  let s = 1;
+  if (cost <= lv.budget) { s = 2; if (maxStress < 0.8) s = 3; }
+  return s;
+}
+
+/* =====================================================================
+   STRESS_PREVIEW  (solução estática linear: K u = f, Cholesky denso)
+   ===================================================================== */
+function stressPreview(lvIn, br) {
+  const lv = normLevel(lvIn);
+  const nm = nodeMap(lv, br);
+  const res = { mem: {}, weld: {}, unstable: new Set(), max: 0, ok: true };
+  if (!br.members.length) return res;
+  const free = new Map(); let n = 0;
+  for (const j of br.joints) free.set(j.id, n++);
+  const N = n * 2;
+  if (N === 0) { for (const m of br.members) res.mem[m.id] = 0; return res; }
+  const mems = br.members.map(mb => {
+    const a = nm.get(mb.a), b = nm.get(mb.b), M = MATS[mb.m];
+    const L = Math.hypot(b.x - a.x, b.y - a.y) || 1e-6;
+    return { mb, M, a, b, L, ux: (b.x - a.x) / L, uy: (b.y - a.y) / L, k: M.EA / L, ia: free.has(mb.a) ? free.get(mb.a) : -1, ib: free.has(mb.b) ? free.get(mb.b) : -1, on: true };
+  });
+  // soldas (linearizadas)
+  const welds = [];
+  for (const id in br.weld) {
+    if (!br.weld[id] || !nm.has(id)) continue;
+    const J = nm.get(id);
+    const ms = mems.filter(m => m.mb.a === id || m.mb.b === id);
+    const other = m => (m.mb.a === id ? m.b : m.a);
+    const fi = id => (free.has(id) ? free.get(id) : -1);
+    if (J.anchor) {
+      for (const m of ms) { const o = other(m); const vx = o.x - J.x, vy = o.y - J.y, l2 = vx * vx + vy * vy; welds.push({ id, g: [[fi(o.id), -vy / l2, vx / l2]] }); }
+    } else {
+      ms.sort((m1, m2) => { const o1 = other(m1), o2 = other(m2); return Math.atan2(o1.y - J.y, o1.x - J.x) - Math.atan2(o2.y - J.y, o2.x - J.x); });
+      for (let i = 0; i + 1 < ms.length; i++) {
+        const A = other(ms[i]), B = other(ms[i + 1]);
+        const ax = A.x - J.x, ay = A.y - J.y, la = ax * ax + ay * ay, bx = B.x - J.x, by = B.y - J.y, lb = bx * bx + by * by;
+        const gA = [ay / la, -ax / la], gB = [-by / lb, bx / lb], gJ = [-(gA[0] + gB[0]), -(gA[1] + gB[1])];
+        welds.push({ id, g: [[fi(A.id), gA[0], gA[1]], [fi(B.id), gB[0], gB[1]], [fi(id), gJ[0], gJ[1]]] });
+      }
+    }
+  }
+  let kavg = 0; for (const m of mems) kavg += m.k; kavg /= mems.length;
+  const kreg = 1e-4 * kavg;
+  const mechNodes = new Set();
+  function assemble() {
+    const K = new Float64Array(N * N);
+    const add = (i, j, v) => { K[i * N + j] += v; };
+    for (const m of mems) {
+      if (!m.on) continue;
+      const e = [m.ux * m.ux * m.k, m.ux * m.uy * m.k, m.uy * m.uy * m.k];
+      const blk = (p, q, s) => { if (p < 0 || q < 0) return; add(2 * p, 2 * q, s * e[0]); add(2 * p, 2 * q + 1, s * e[1]); add(2 * p + 1, 2 * q, s * e[1]); add(2 * p + 1, 2 * q + 1, s * e[2]); };
+      blk(m.ia, m.ia, 1); blk(m.ib, m.ib, 1); blk(m.ia, m.ib, -1); blk(m.ib, m.ia, -1);
+    }
+    for (const w of welds) {
+      const dofs = [];
+      for (const [fi, gx, gy] of w.g) if (fi >= 0) { dofs.push([2 * fi, gx], [2 * fi + 1, gy]); }
+      for (const [i, gi] of dofs) for (const [j, gj] of dofs) add(i, j, CFG.WELD_K * gi * gj);
+    }
+    const diag0 = new Float64Array(N);
+    for (let i = 0; i < N; i++) { diag0[i] = K[i * N + i]; K[i * N + i] += kreg; }
+    mechNodes.clear();
+    // Cholesky (in-place, triângulo inferior); pivô ~ kreg => mecanismo
+    for (let j = 0; j < N; j++) {
+      let s = K[j * N + j];
+      for (let k = 0; k < j; k++) s -= K[j * N + k] * K[j * N + k];
+      if (s < kreg * 4 && diag0[j] > 0) mechNodes.add(j >> 1);
+      if (diag0[j] === 0) mechNodes.add(j >> 1);
+      if (s <= 1e-12) s = 1e-12;
+      const d = Math.sqrt(s); K[j * N + j] = d;
+      for (let i = j + 1; i < N; i++) {
+        let v = K[i * N + j];
+        for (let k = 0; k < j; k++) v -= K[i * N + k] * K[j * N + k];
+        K[i * N + j] = v / d;
+      }
+    }
+    return K;
+  }
+  function solve(K, f) {
+    const y = new Float64Array(N);
+    for (let i = 0; i < N; i++) { let s = f[i]; for (let k = 0; k < i; k++) s -= K[i * N + k] * y[k]; y[i] = s / K[i * N + i]; }
+    for (let i = N - 1; i >= 0; i--) { let s = y[i]; for (let k = i + 1; k < N; k++) s -= K[k * N + i] * y[k]; y[i] = s / K[i * N + i]; }
+    return y;
+  }
+  const dead = new Float64Array(N);
+  for (const m of mems) {
+    const w = m.M.rho * m.L * CFG.G / 2;
+    if (m.ia >= 0) dead[2 * m.ia + 1] -= w;
+    if (m.ib >= 0) dead[2 * m.ib + 1] -= w;
+  }
+  const decks = mems.filter(m => m.M.deck);
+  const T = heaviestVehicle(lv);
+  const axW = T.m * CFG.G / T.ax.length;
+  function loadCase(xc) {
+    const f = Float64Array.from(dead);
+    let any = false;
+    for (const ax of T.ax) {
+      const x = xc + ax;
+      let best = null, by = -1e9, bt = 0;
+      for (const m of decks) {
+        const x0 = Math.min(m.a.x, m.b.x), x1 = Math.max(m.a.x, m.b.x);
+        if (x < x0 - 1e-6 || x > x1 + 1e-6 || x1 - x0 < 1e-6) continue;
+        const t = (x - m.a.x) / (m.b.x - m.a.x), y = m.a.y + (m.b.y - m.a.y) * t;
+        if (y > by) { by = y; best = m; bt = t; }
+      }
+      if (!best) continue;
+      any = true;
+      if (best.ia >= 0) f[2 * best.ia + 1] -= axW * (1 - bt);
+      if (best.ib >= 0) f[2 * best.ib + 1] -= axW * bt;
+    }
+    return any ? f : null;
+  }
+  function forces(u) {
+    const out = [];
+    for (const m of mems) {
+      if (!m.on) { out.push(0); continue; }
+      const ua = m.ia >= 0 ? [u[2 * m.ia], u[2 * m.ia + 1]] : [0, 0];
+      const ub = m.ib >= 0 ? [u[2 * m.ib], u[2 * m.ib + 1]] : [0, 0];
+      out.push(m.k * ((ub[0] - ua[0]) * m.ux + (ub[1] - ua[1]) * m.uy));
+    }
+    return out;
+  }
+  let K = assemble();
+  // pré-passo: cabos comprimidos ficam frouxos
+  const mid = loadCase(lv.W / 2) || dead;
+  const f0 = forces(solve(K, mid));
+  let changed = false;
+  mems.forEach((m, i) => { if (m.M.cable && f0[i] < 0) { m.on = false; changed = true; } });
+  if (changed) K = assemble();
+  const cases = [dead];
+  for (let xc = -T.L / 2; xc <= lv.W + T.L / 2 + 1e-6; xc += 1) { const f = loadCase(xc); if (f) cases.push(f); }
+  const env = new Float64Array(mems.length);
+  const sg = new Int8Array(mems.length).fill(1);
+  const wenv = new Float64Array(welds.length);
+  const unstableNodes = new Set(mechNodes);
+  for (const f of cases) {
+    const u = solve(K, f);
+    for (let i = 0; i < n; i++) if (Math.hypot(u[2 * i], u[2 * i + 1]) > 0.3) unstableNodes.add(i);
+    const fs = forces(u);
+    mems.forEach((m, i) => {
+      const Tf = fs[i];
+      let r = Tf >= 0 ? Tf / m.M.maxT : (m.M.maxC > 0 ? -Tf / m.M.maxC : 0);
+      if (m.M.cable && Tf < 0) r = 0;
+      if (r > env[i]) { env[i] = r; sg[i] = Tf >= 0 ? 1 : -1; }
+    });
+    welds.forEach((w, i) => {
+      let th = 0;
+      for (const [fi, gx, gy] of w.g) if (fi >= 0) th += gx * u[2 * fi] + gy * u[2 * fi + 1];
+      const r = Math.abs(CFG.WELD_K * th) / CFG.WELD_MMAX;
+      if (r > wenv[i]) wenv[i] = r;
+    });
+  }
+  mems.forEach((m, i) => {
+    res.mem[m.mb.id] = env[i] * sg[i];
+    if (env[i] > res.max) res.max = env[i];
+    if (unstableNodes.has(m.ia) || unstableNodes.has(m.ib)) res.unstable.add(m.mb.id);
+  });
+  welds.forEach((w, i) => { res.weld[w.id] = Math.max(res.weld[w.id] || 0, wenv[i]); if (wenv[i] > res.max) res.max = wenv[i]; });
+  if (res.unstable.size) res.ok = false;
+  return res;
+}
+
+if (typeof module !== 'undefined') {
+  module.exports = { CFG, MATS, MAT_ORDER, VEH, LEVELS, WORLDS, SANDBOX, levelById, normLevel, levelAnchors, newBridge, cloneBridge, nodeMap, bridgeCost,
+    validateMember, addMember, addJoint, removeMember, removeJoint, createWorld, stepWorld, runHeadless, stressPreview, starsFor, deckContinuous, findNodeAt, FAIL_TEXT, inSolid, memberPeaks };
+}
+
+</script>
+<script id="app">
+'use strict';
+(function () {
+/* =====================================================================
+   STORAGE
+   ===================================================================== */
+const STORE_KEY = 'ponteMestra.v1';
+const Store = {
+  data: { stars: {}, best: {}, bridges: {}, settings: { sound: true, haptics: true, lefty: false, stress: true }, custom: null, hintSeen: {} },
+  load() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (raw) {
+        const d = JSON.parse(raw);
+        this.data = Object.assign(this.data, d);
+        this.data.settings = Object.assign({ sound: true, haptics: true, lefty: false, stress: true }, d.settings || {});
+      }
+    } catch (e) { /* armazenamento indisponível: segue em memória */ }
+  },
+  save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(this.data)); } catch (e) { /* cota/privado */ } },
+  reset() { this.data = { stars: {}, best: {}, bridges: {}, settings: this.data.settings, custom: null, hintSeen: {} }; this.save(); }
+};
+Store.load();
+const S_ = () => Store.data.settings;
+
+/* =====================================================================
+   AUDIO (WebAudio sintetizado)
+   ===================================================================== */
+const Audio = {
+  ctx: null, noise: null, master: null, lastCreak: 0,
+  unlock() {
+    if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {}); return; }
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      this.ctx = new AC();
+      this.master = this.ctx.createGain(); this.master.gain.value = 0.55; this.master.connect(this.ctx.destination);
+      const n = this.ctx.sampleRate;
+      this.noise = this.ctx.createBuffer(1, n, n);
+      const d = this.noise.getChannelData(0); let s = 1;
+      for (let i = 0; i < n; i++) { s = (s * 16807) % 2147483647; d[i] = (s / 2147483647) * 2 - 1; }
+    } catch (e) { this.ctx = null; }
+  },
+  ok() { return this.ctx && S_().sound; },
+  env(g, t, a, peak, dec) { g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + a + dec); },
+  tone(freq, dur, type, vol, slide) {
+    if (!this.ok()) return;
+    const c = this.ctx, t = c.currentTime, o = c.createOscillator(), g = c.createGain();
+    o.type = type || 'sine'; o.frequency.setValueAtTime(freq, t);
+    if (slide) o.frequency.exponentialRampToValueAtTime(slide, t + dur);
+    this.env(g, t, 0.005, vol || 0.2, dur); o.connect(g); g.connect(this.master); o.start(t); o.stop(t + dur + 0.05);
+  },
+  burst(dur, f0, f1, vol, q, type) {
+    if (!this.ok()) return;
+    const c = this.ctx, t = c.currentTime, src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+    src.buffer = this.noise; f.type = type || 'bandpass'; f.Q.value = q || 1;
+    f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(Math.max(30, f1), t + dur);
+    this.env(g, t, 0.003, vol || 0.3, dur);
+    src.connect(f); f.connect(g); g.connect(this.master); src.start(t, Math.random() * 0.5); src.stop(t + dur + 0.05);
+  },
+  snap() { this.burst(0.05, 3800, 2000, 0.25, 2); this.tone(1250, 0.06, 'triangle', 0.12, 900); },
+  click() { this.tone(900, 0.04, 'square', 0.05); },
+  erase() { this.burst(0.08, 1200, 400, 0.18, 1); },
+  weld() { this.tone(600, 0.08, 'square', 0.08, 1200); this.burst(0.12, 6000, 3000, 0.08, 3); },
+  bad() { this.tone(220, 0.12, 'sawtooth', 0.06, 180); },
+  brk(mat) {
+    const heavy = mat === 'concreto' || mat === 'aco' || mat === 'composito';
+    this.burst(heavy ? 0.35 : 0.25, heavy ? 2500 : 1800, 120, 0.55, 0.8, 'lowpass');
+    this.tone(heavy ? 70 : 110, 0.3, 'sine', 0.35, 35);
+    if (mat === 'madeira') this.burst(0.18, 3000, 900, 0.3, 4);
+    if (mat === 'cabo') this.tone(1800, 0.25, 'triangle', 0.12, 300);
+  },
+  creak(intensity) {
+    if (!this.ok()) return;
+    const now = this.ctx.currentTime;
+    if (now - this.lastCreak < 0.35 - intensity * 0.15) return;
+    this.lastCreak = now;
+    const c = this.ctx, t = now, o = c.createOscillator(), f = c.createBiquadFilter(), g = c.createGain(), lfo = c.createOscillator(), lg = c.createGain();
+    o.type = 'sawtooth'; o.frequency.value = 70 + Math.random() * 60;
+    lfo.frequency.value = 18 + Math.random() * 20; lg.gain.value = 25; lfo.connect(lg); lg.connect(o.frequency);
+    f.type = 'bandpass'; f.frequency.value = 700 + Math.random() * 500; f.Q.value = 6;
+    this.env(g, t, 0.04, 0.05 + intensity * 0.12, 0.35);
+    o.connect(f); f.connect(g); g.connect(this.master); o.start(t); lfo.start(t); o.stop(t + 0.45); lfo.stop(t + 0.45);
+  },
+  splash() { this.burst(0.6, 2500, 200, 0.4, 0.6, 'lowpass'); this.burst(0.3, 5000, 1500, 0.15, 1); },
+  win() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => this.tone(f, 0.22, 'triangle', 0.16), i * 110)); },
+  lose() { [392, 330, 262].forEach((f, i) => setTimeout(() => this.tone(f, 0.28, 'triangle', 0.14), i * 160)); }
+};
+function vibe(p) { if (!S_().haptics) return; try { if (navigator.vibrate) navigator.vibrate(p); } catch (e) { /* ignora */ } }
+
+/* =====================================================================
+   UI: estado global
+   ===================================================================== */
+const $ = id => document.getElementById(id);
+const cv = $('cv'), ctx = cv.getContext('2d');
+let VW = 0, VH = 0, DPR = 1;
+const G = {
+  screen: 'menu', world: 1, lv: null, br: null, mode: 'build', tool: 'pista', mirror: false,
+  undo: [], redo: [], sel: new Set(), clip: null, preview: null, previewTimer: 0,
+  cam: { x: 0, y: 0, s: 30 }, S: null, paused: false, slow: false, stressCam: false, stressView: true,
+  resultShown: false, particles: [], shake: 0, pending: null, editor: false, dirty: true, testLog: null,
+  ghost: null, box: null, moving: null, hover: null
+};
+G.stressView = S_().stress !== false;
+
+function fmtMoney(n) {
+  const s = Math.round(Math.abs(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return (n < 0 ? '-R$ ' : 'R$ ') + s;
+}
+function fmtNum(n, d) { return n.toFixed(d === undefined ? 1 : d).replace('.', ','); }
+let toastT = 0;
+function toast(msg, ms) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), ms || 1600);
+}
+
+/* =====================================================================
+   RENDER
+   ===================================================================== */
+const COL = { paper: '#f3efe4', grid: '#cfe0ee', grid2: '#a9c6df', ink: '#1f3a5f', anchor: '#e2552d', water: 'rgba(110,170,220,.28)', waterLine: '#3d7fb8', tension: [214, 59, 42], comp: [44, 111, 209] };
+let hatch = null;
+function makeHatch() {
+  const c = document.createElement('canvas'); const n = Math.round(12 * DPR);
+  c.width = c.height = n; const g = c.getContext('2d');
+  g.fillStyle = '#e6dfcb'; g.fillRect(0, 0, n, n);
+  g.strokeStyle = 'rgba(31,58,95,.38)'; g.lineWidth = Math.max(1, DPR);
+  g.beginPath(); g.moveTo(-1, n + 1); g.lineTo(n + 1, -1); g.moveTo(-1, 1); g.lineTo(1, -1); g.moveTo(n - 1, n + 1); g.lineTo(n + 1, n - 1); g.stroke();
+  hatch = ctx.createPattern(c, 'repeat');
+}
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  VW = window.innerWidth; VH = window.innerHeight;
+  cv.width = Math.round(VW * DPR); cv.height = Math.round(VH * DPR);
+  makeHatch();
+  if (G.screen === 'game' && G.lv && !G.userCam) fitView();
+  G.dirty = true;
+}
+const wx2sx = x => (x - G.cam.x) * G.cam.s + VW / 2;
+const wy2sy = y => VH / 2 - (y - G.cam.y) * G.cam.s;
+const sx2wx = x => (x - VW / 2) / G.cam.s + G.cam.x;
+const sy2wy = y => G.cam.y - (y - VH / 2) / G.cam.s;
+function viewBand() {
+  const top = $('topbar').offsetHeight || 54, bot = $('bottombar').offsetHeight || 70;
+  return { top, bot: VH - bot };
+}
+function levelBox(lv) {
+  let y0 = Math.min(lv.floor, lv.water ? lv.water.y : 0) - 0.5, y1 = Math.max(lv.hl, lv.hr) + 4;
+  for (const a of lv.anchors) y1 = Math.max(y1, a[1] + 2.5);
+  if (lv.ev && lv.ev.boat && lv.water) y1 = Math.max(y1, lv.water.y + lv.ev.boat.h + 1);
+  let back = 0; for (const v of lv.veh) back = Math.max(back, VEH[v.t].L / 2);
+  const dirs = new Set(lv.veh.map(v => (v.d === -1 ? -1 : 1)));
+  const x0 = dirs.has(1) ? -(CFG.START_OFF + back + 0.5) : -(CFG.FLAG_OFF + 2);
+  const x1 = dirs.has(-1) ? lv.W + CFG.START_OFF + back + 0.5 : lv.W + CFG.FLAG_OFF + 2;
+  return { x0, x1, y0, y1 };
+}
+function fitView() {
+  const lv = G.lv; if (!lv) return;
+  const b = levelBox(lv), band = viewBand();
+  const avH = band.bot - band.top - 16, avW = VW - 20;
+  const s = Math.min(avW / (b.x1 - b.x0), avH / (b.y1 - b.y0));
+  G.cam.s = Math.max(4, Math.min(140, s));
+  G.cam.x = (b.x0 + b.x1) / 2;
+  const mid = (band.top + band.bot) / 2;
+  G.cam.y = (b.y0 + b.y1) / 2 - (VH / 2 - mid) / G.cam.s;
+  G.userCam = false; G.dirty = true;
+}
+function lerpColor(a, b, t) { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; }
+function hexRgb(h) { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+const rgb = c => `rgb(${c[0] | 0},${c[1] | 0},${c[2] | 0})`;
+const MATRGB = {}; for (const k in MATS) MATRGB[k] = hexRgb(MATS[k].color);
+function stressColor(mat, r) {
+  const a = Math.min(1, Math.abs(r));
+  if (a < 0.02) return MATS[mat].color;
+  const base = [200, 205, 212];
+  return rgb(lerpColor(base, r >= 0 ? COL.tension : COL.comp, Math.min(1, 0.25 + a * 0.85)));
+}
+function heatColor(p) {
+  // azul-acinzentado → âmbar → vermelho
+  const a = Math.max(0, Math.min(1, p));
+  const c = a < 0.6 ? lerpColor([155, 180, 207], [232, 163, 58], a / 0.6) : lerpColor([232, 163, 58], [214, 59, 42], (a - 0.6) / 0.4);
+  return rgb(c);
+}
+
+function drawBackground() {
+  ctx.fillStyle = COL.paper; ctx.fillRect(0, 0, VW, VH);
+  const s = G.cam.s;
+  const x0 = Math.floor(sx2wx(0)), x1 = Math.ceil(sx2wx(VW)), y0 = Math.floor(sy2wy(VH)), y1 = Math.ceil(sy2wy(0));
+  if (s >= 9) {
+    ctx.strokeStyle = COL.grid; ctx.lineWidth = 1; ctx.beginPath();
+    for (let x = x0; x <= x1; x++) { if (x % 5 === 0) continue; const X = Math.round(wx2sx(x)) + 0.5; ctx.moveTo(X, 0); ctx.lineTo(X, VH); }
+    for (let y = y0; y <= y1; y++) { if (y % 5 === 0) continue; const Y = Math.round(wy2sy(y)) + 0.5; ctx.moveTo(0, Y); ctx.lineTo(VW, Y); }
+    ctx.stroke();
+  }
+  ctx.strokeStyle = COL.grid2; ctx.lineWidth = 1; ctx.beginPath();
+  for (let x = Math.floor(x0 / 5) * 5; x <= x1; x += 5) { const X = Math.round(wx2sx(x)) + 0.5; ctx.moveTo(X, 0); ctx.lineTo(X, VH); }
+  for (let y = Math.floor(y0 / 5) * 5; y <= y1; y += 5) { const Y = Math.round(wy2sy(y)) + 0.5; ctx.moveTo(0, Y); ctx.lineTo(VW, Y); }
+  ctx.stroke();
+}
+function terrainPath(lv, ox, oy) {
+  const p = new Path2D();
+  const F = lv.floor - 80;
+  const pts = [[-300, lv.hl], [0, lv.hl], [0, lv.floor], [lv.W, lv.floor], [lv.W, lv.hr], [lv.W + 300, lv.hr], [lv.W + 300, F], [-300, F]];
+  pts.forEach(([x, y], i) => { const X = wx2sx(x + ox), Y = wy2sy(y + oy); if (i) p.lineTo(X, Y); else p.moveTo(X, Y); });
+  p.closePath();
+  for (const r of lv.rocks || []) {
+    const X0 = wx2sx(r.x - r.w / 2 + ox), X1 = wx2sx(r.x + r.w / 2 + ox), Yt = wy2sy(r.top + oy), Yb = wy2sy(lv.floor + oy) + 1;
+    p.moveTo(X0, Yb); p.lineTo(X0 + (X1 - X0) * 0.08, Yt); p.lineTo(X1 - (X1 - X0) * 0.08, Yt); p.lineTo(X1, Yb); p.closePath();
+  }
+  return p;
+}
+function drawTerrain(lv, t) {
+  const ox = G.S ? G.S.qx : 0, oy = G.S ? G.S.qy : 0;
+  const path = terrainPath(lv, ox, oy);
+  ctx.save(); ctx.fillStyle = hatch; ctx.fill(path); ctx.restore();
+  ctx.lineWidth = 2; ctx.strokeStyle = COL.ink; ctx.stroke(path);
+  // estrada nas margens
+  const road = (xa, xb, y) => {
+    const Y = wy2sy(y + oy);
+    ctx.lineWidth = Math.max(3, 0.3 * G.cam.s); ctx.strokeStyle = '#39434e';
+    ctx.beginPath(); ctx.moveTo(wx2sx(xa + ox), Y); ctx.lineTo(wx2sx(xb + ox), Y); ctx.stroke();
+    ctx.setLineDash([Math.max(4, 0.6 * G.cam.s), Math.max(4, 0.6 * G.cam.s)]); ctx.lineWidth = 1.2; ctx.strokeStyle = '#f3efe4';
+    ctx.beginPath(); ctx.moveTo(wx2sx(xa + ox), Y - 0.5); ctx.lineTo(wx2sx(xb + ox), Y - 0.5); ctx.stroke(); ctx.setLineDash([]);
+  };
+  road(-300, 0, lv.hl); road(lv.W, lv.W + 300, lv.hr);
+  // torres (âncoras acima da margem)
+  for (const a of lv.anchors) {
+    const [x, y] = a;
+    const gy = x <= 0 ? lv.hl : x >= lv.W ? lv.hr : null;
+    if (gy !== null && y > gy + 0.5) {
+      const w = Math.max(6, 0.7 * G.cam.s), X = wx2sx(x + ox);
+      const Y0 = wy2sy(gy + oy), Y1 = wy2sy(y + oy);
+      ctx.fillStyle = hatch; ctx.fillRect(X - w / 2, Y1, w, Y0 - Y1);
+      ctx.strokeStyle = COL.ink; ctx.lineWidth = 1.5; ctx.strokeRect(X - w / 2, Y1, w, Y0 - Y1);
+    }
+  }
+}
+function drawWater(lv, t, y) {
+  if (y === null || y === undefined) return;
+  const ox = G.S ? G.S.qx : 0;
+  const Y = wy2sy(y), Yb = wy2sy(lv.floor);
+  const X0 = wx2sx(0 + ox), X1 = wx2sx(lv.W + ox);
+  ctx.fillStyle = COL.water; ctx.fillRect(X0, Y, X1 - X0, Yb - Y);
+  ctx.strokeStyle = COL.waterLine; ctx.lineWidth = 2; ctx.setLineDash([10, 7]); ctx.lineDashOffset = -t * 18;
+  ctx.beginPath();
+  for (let x = X0; x <= X1; x += 8) { const yy = Y + Math.sin(x * 0.05 + t * 2) * 1.5; if (x === X0) ctx.moveTo(x, yy); else ctx.lineTo(x, yy); }
+  ctx.stroke(); ctx.setLineDash([]); ctx.lineDashOffset = 0;
+}
+function drawAnchor(x, y) {
+  const X = wx2sx(x), Y = wy2sy(y), r = Math.max(6, Math.min(12, 0.28 * G.cam.s));
+  ctx.fillStyle = COL.anchor; ctx.strokeStyle = '#8f2a10'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(X, Y); ctx.lineTo(X - r * 1.1, Y + r * 1.5); ctx.lineTo(X + r * 1.1, Y + r * 1.5); ctx.closePath(); ctx.globalAlpha = 0.35; ctx.fill(); ctx.globalAlpha = 1;
+  ctx.beginPath(); ctx.arc(X, Y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(X, Y, r * 0.35, 0, Math.PI * 2); ctx.fill();
+}
+function drawMember(ax, ay, bx, by, mat, opt) {
+  const M = MATS[mat], s = G.cam.s;
+  const X0 = wx2sx(ax), Y0 = wy2sy(ay), X1 = wx2sx(bx), Y1 = wy2sy(by);
+  let w = Math.max(M.cable ? 2 : 3, M.width * s);
+  if (M.deck) w = Math.max(5, M.width * s);
+  let col = opt && opt.color ? opt.color : M.color;
+  ctx.lineCap = 'round';
+  if (opt && opt.glow) { ctx.strokeStyle = 'rgba(214,59,42,.25)'; ctx.lineWidth = w + 8; ctx.beginPath(); ctx.moveTo(X0, Y0); ctx.lineTo(X1, Y1); ctx.stroke(); }
+  if (opt && opt.sel) { ctx.strokeStyle = 'rgba(226,85,45,.45)'; ctx.lineWidth = w + 7; ctx.beginPath(); ctx.moveTo(X0, Y0); ctx.lineTo(X1, Y1); ctx.stroke(); }
+  if (opt && opt.dash) ctx.setLineDash(opt.dash);
+  if (M.cable) {
+    ctx.strokeStyle = col; ctx.lineWidth = w;
+    ctx.beginPath(); ctx.moveTo(X0, Y0);
+    if (opt && opt.slack > 0.02) { const sag = Math.min(opt.slack, 3) * s * 0.5; ctx.quadraticCurveTo((X0 + X1) / 2, (Y0 + Y1) / 2 + sag, X1, Y1); }
+    else ctx.lineTo(X1, Y1);
+    ctx.stroke(); ctx.setLineDash([]); return;
+  }
+  if (M.piston) {
+    const k = opt && opt.ext ? 0.5 / opt.ext : 0.55;
+    const XM = X0 + (X1 - X0) * k, YM = Y0 + (Y1 - Y0) * k;
+    ctx.strokeStyle = COL.ink; ctx.lineWidth = w + 3; ctx.beginPath(); ctx.moveTo(X0, Y0); ctx.lineTo(XM, YM); ctx.stroke();
+    ctx.strokeStyle = col; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(X0, Y0); ctx.lineTo(XM, YM); ctx.stroke();
+    ctx.strokeStyle = '#7d8793'; ctx.lineWidth = Math.max(2, w * 0.45); ctx.beginPath(); ctx.moveTo(XM, YM); ctx.lineTo(X1, Y1); ctx.stroke();
+    ctx.setLineDash([]); return;
+  }
+  ctx.strokeStyle = M.deck ? '#1d242c' : COL.ink; ctx.lineWidth = w + 2.2;
+  ctx.beginPath(); ctx.moveTo(X0, Y0); ctx.lineTo(X1, Y1); ctx.stroke();
+  ctx.strokeStyle = col; ctx.lineWidth = w;
+  ctx.beginPath(); ctx.moveTo(X0, Y0); ctx.lineTo(X1, Y1); ctx.stroke();
+  if (M.deck && w > 6) {
+    ctx.setLineDash([w * 0.9, w * 0.9]); ctx.strokeStyle = 'rgba(243,239,228,.75)'; ctx.lineWidth = Math.max(1, w * 0.12);
+    ctx.beginPath(); ctx.moveTo(X0, Y0); ctx.lineTo(X1, Y1); ctx.stroke();
+  } else if (mat === 'madeira' && w > 4) {
+    ctx.strokeStyle = 'rgba(255,230,180,.45)'; ctx.lineWidth = Math.max(1, w * 0.18);
+    ctx.beginPath(); ctx.moveTo(X0, Y0); ctx.lineTo(X1, Y1); ctx.stroke();
+  } else if (mat === 'concreto' && w > 6) {
+    ctx.setLineDash([2, w * 0.5]); ctx.strokeStyle = 'rgba(60,60,55,.5)'; ctx.lineWidth = w * 0.6;
+    ctx.beginPath(); ctx.moveTo(X0, Y0); ctx.lineTo(X1, Y1); ctx.stroke();
+  } else if (mat === 'composito' && w > 4) {
+    ctx.setLineDash([w * 0.6, w * 0.4]); ctx.strokeStyle = 'rgba(180,230,215,.6)'; ctx.lineWidth = Math.max(1, w * 0.2);
+    ctx.beginPath(); ctx.moveTo(X0, Y0); ctx.lineTo(X1, Y1); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+}
+function drawStub(ax, ay, bx, by, mat) {
+  // pedaço quebrado: linha com ponta serrilhada
+  drawMember(ax, ay, bx, by, mat, { color: MATS[mat].color });
+  const X = wx2sx(bx), Y = wy2sy(by), ang = Math.atan2(Y - wy2sy(ay), X - wx2sx(ax)), r = Math.max(3, MATS[mat].width * G.cam.s * 0.7);
+  ctx.strokeStyle = COL.ink; ctx.lineWidth = 1.5; ctx.beginPath();
+  for (let i = -2; i <= 2; i++) { const a = ang + Math.PI / 2; const px = X + Math.cos(a) * i * r * 0.5, py = Y + Math.sin(a) * i * r * 0.5; const k = (i % 2 ? 1 : -1) * r * 0.5; ctx.lineTo(px + Math.cos(ang) * k, py + Math.sin(ang) * k); }
+  ctx.stroke();
+}
+function drawJoint(x, y, weld, opt) {
+  const X = wx2sx(x), Y = wy2sy(y), r = Math.max(4, Math.min(9, 0.16 * G.cam.s));
+  if (opt && opt.sel) { ctx.strokeStyle = COL.anchor; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(X, Y, r + 5, 0, Math.PI * 2); ctx.stroke(); }
+  if (opt && opt.ring !== undefined) { ctx.strokeStyle = heatColor(opt.ring); ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(X, Y, r + 3, 0, Math.PI * 2); ctx.stroke(); }
+  ctx.lineWidth = 2; ctx.strokeStyle = COL.ink;
+  if (weld) { ctx.fillStyle = COL.ink; ctx.fillRect(X - r, Y - r, 2 * r, 2 * r); ctx.strokeRect(X - r, Y - r, 2 * r, 2 * r); ctx.fillStyle = '#f3efe4'; ctx.fillRect(X - r * 0.35, Y - r * 0.35, r * 0.7, r * 0.7); }
+  else { ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(X, Y, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
+}
+function drawFlag(x, y) {
+  const X = wx2sx(x), Y = wy2sy(y), h = Math.max(30, 2.6 * G.cam.s), fw = h * 0.55, fh = h * 0.36;
+  ctx.strokeStyle = COL.ink; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(X, Y); ctx.lineTo(X, Y - h); ctx.stroke();
+  const n = 4, cw = fw / n, ch = fh / 3;
+  for (let i = 0; i < n; i++) for (let j = 0; j < 3; j++) { ctx.fillStyle = (i + j) % 2 ? '#fff' : COL.anchor; ctx.fillRect(X + i * cw, Y - h + j * ch, cw, ch); }
+  ctx.strokeRect(X, Y - h, fw, fh);
+}
+function drawStopSign(x, y) {
+  const X = wx2sx(x), Y = wy2sy(y), h = Math.max(24, 2.2 * G.cam.s), r = Math.max(8, 0.45 * G.cam.s);
+  ctx.strokeStyle = COL.ink; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(X, Y); ctx.lineTo(X, Y - h); ctx.stroke();
+  ctx.fillStyle = COL.anchor; ctx.beginPath();
+  for (let i = 0; i < 8; i++) { const a = Math.PI / 8 + i * Math.PI / 4; ctx.lineTo(X + Math.cos(a) * r, Y - h + Math.sin(a) * r); }
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#fff'; ctx.font = `800 ${Math.max(7, r * 0.55)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('PARE', X, Y - h + 0.5);
+}
+function vehicleShape(type, T) {
+  // retorna lista de [tipo, pontos/params] em coords locais (m), y para cima, origem no centro inferior do chassi
+  const L = T.L, H = T.H - T.r;
+  switch (type) {
+    case 'carro': return [['poly', [[-L / 2, 0], [L / 2, 0], [L / 2, 0.55], [L * 0.28, 0.62], [L * 0.12, H], [-L * 0.28, H], [-L * 0.44, 0.62], [-L / 2, 0.58]]],
+      ['win', [[-L * 0.25, 0.68], [-0.05, 0.68], [-0.05, H - 0.1], [-L * 0.23, H - 0.1]]], ['win', [[0.05, 0.68], [L * 0.24, 0.68], [L * 0.1, H - 0.1], [0.05, H - 0.1]]]];
+    case 'van': return [['poly', [[-L / 2, 0], [L / 2, 0], [L / 2, H * 0.5], [L * 0.32, H], [-L / 2, H]]],
+      ['win', [[L * 0.12, H * 0.55], [L * 0.33, H * 0.55], [L * 0.27, H * 0.9], [L * 0.12, H * 0.9]]], ['win', [[-L * 0.4, H * 0.55], [-L * 0.1, H * 0.55], [-L * 0.1, H * 0.9], [-L * 0.4, H * 0.9]]]];
+    case 'onibus': {
+      const o = [['poly', [[-L / 2, 0], [L / 2, 0], [L / 2, H], [-L / 2, H]]]];
+      for (let i = 0; i < 6; i++) { const x = -L / 2 + 0.5 + i * (L - 1.4) / 6; o.push(['win', [[x, H * 0.5], [x + 0.95, H * 0.5], [x + 0.95, H * 0.88], [x, H * 0.88]]]); }
+      o.push(['win', [[L / 2 - 0.6, H * 0.4], [L / 2 - 0.1, H * 0.4], [L / 2 - 0.1, H * 0.9], [L / 2 - 0.6, H * 0.9]]]);
+      return o;
+    }
+    case 'caminhao': return [['poly', [[-L / 2, 0.1], [L * 0.2, 0.1], [L * 0.2, H], [-L / 2, H]]], ['box', [[L * 0.24, 0], [L / 2, 0], [L / 2, H * 0.62], [L * 0.42, H * 0.82], [L * 0.24, H * 0.82]]],
+      ['win', [[L * 0.36, H * 0.5], [L * 0.47, H * 0.5], [L * 0.41, H * 0.75], [L * 0.36, H * 0.75]]]];
+    case 'moto': return [['poly', [[-0.75, 0.15], [0.7, 0.15], [0.55, 0.55], [-0.4, 0.55]]], ['rider', [[0, 0.55]]]];
+  }
+  return [];
+}
+function drawVehicle(V) {
+  const s = G.cam.s, cs = V.chassis, T = V.T;
+  const ox = (cs[0].x + cs[1].x) / 2, oy = (cs[0].y + cs[1].y) / 2;
+  ctx.save();
+  ctx.translate(wx2sx(ox), wy2sy(oy)); ctx.rotate(-V.ang); ctx.scale(V.d * s, -s);
+  const lw = 1.6 / s;
+  for (const [k, pts] of vehicleShape(V.spec.t, T)) {
+    if (k === 'rider') {
+      const [x, y] = pts[0];
+      ctx.fillStyle = COL.ink; ctx.beginPath(); ctx.moveTo(x - 0.15, y); ctx.lineTo(x + 0.25, y + 0.55); ctx.lineTo(x + 0.05, y + 0.6); ctx.lineTo(x - 0.3, y); ctx.fill();
+      ctx.beginPath(); ctx.arc(x + 0.18, y + 0.78, 0.17, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill(); ctx.lineWidth = lw; ctx.strokeStyle = COL.ink; ctx.stroke();
+      continue;
+    }
+    ctx.beginPath(); pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.closePath();
+    ctx.fillStyle = k === 'win' ? '#d9ecf8' : k === 'box' ? '#c6d2a4' : T.col;
+    ctx.fill(); ctx.lineWidth = lw; ctx.strokeStyle = COL.ink; ctx.stroke();
+  }
+  if (V.spec.t === 'caminhao') { ctx.fillStyle = 'rgba(31,58,95,.75)'; ctx.font = `800 ${0.6}px sans-serif`; ctx.save(); ctx.scale(1, -1); ctx.textAlign = 'center'; ctx.fillText('CARGA', -T.L * 0.15 * 1, -(T.H - T.r) * 0.45); ctx.restore(); }
+  ctx.restore();
+  for (const w of V.wheels) {
+    const X = wx2sx(w.x), Y = wy2sy(w.y), r = T.r * s;
+    ctx.fillStyle = '#2b2f36'; ctx.beginPath(); ctx.arc(X, Y, r, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#c9ced6'; ctx.beginPath(); ctx.arc(X, Y, r * 0.5, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#2b2f36'; ctx.lineWidth = Math.max(1, r * 0.12); ctx.beginPath();
+    for (let i = 0; i < 3; i++) { const a = -V.spin * V.d + i * Math.PI * 2 / 3; ctx.moveTo(X, Y); ctx.lineTo(X + Math.cos(a) * r * 0.5, Y + Math.sin(a) * r * 0.5); }
+    ctx.stroke();
+  }
+}
+function drawGhostVehicle(lv) {
+  // veículo parado no início (modo construção)
+  const sp = lv.veh[0]; if (!sp) return;
+  const T = VEH[sp.t], d = sp.d === -1 ? -1 : 1;
+  const x = d > 0 ? -CFG.START_OFF : lv.W + CFG.START_OFF, gy = (d > 0 ? lv.hl : lv.hr) + T.r;
+  const fake = { T, d, spec: sp, ang: 0, spin: 0, chassis: [{ x: x - d * T.L / 2, y: gy + 0.05 }, { x: x + d * T.L / 2, y: gy + 0.05 }], wheels: T.ax.map(a => ({ x: x + a * d, y: gy })) };
+  ctx.globalAlpha = 0.85; drawVehicle(fake); ctx.globalAlpha = 1;
+}
+function drawBoat(lv, t, wy) {
+  const b = lv.ev.boat; if (!b || wy === null) return;
+  const cx = (b.x0 + b.x1) / 2, w = (b.x1 - b.x0) * 0.85;
+  let a = 1, k = 0;
+  if (G.mode === 'test') {
+    if (t < b.tIn - 1.5 || t > b.tOut + 1.5) return;
+    k = (t - (b.tIn - 1.5)) / (b.tOut - b.tIn + 3);
+    a = Math.min(1, (t - (b.tIn - 1.5)) / 1.5, (b.tOut + 1.5 - t) / 1.5);
+  } else a = 0.25;
+  const bob = Math.sin(t * 2.2) * 0.08;
+  const sc = G.mode === 'test' ? 0.7 + 0.3 * Math.sin(Math.PI * Math.min(1, Math.max(0, k))) : 1;
+  ctx.save(); ctx.globalAlpha = Math.max(0, a);
+  const X = wx2sx(cx), Y = wy2sy(wy + bob), s = G.cam.s * sc;
+  ctx.translate(X, Y); ctx.scale(s, s);
+  ctx.lineWidth = 1.8 / s; ctx.strokeStyle = COL.ink;
+  ctx.fillStyle = '#fffdf7';
+  ctx.beginPath(); ctx.moveTo(-w / 2, -0.9); ctx.lineTo(w / 2, -0.9); ctx.lineTo(w / 2 - 0.8, 0.5); ctx.lineTo(-w / 2 + 0.6, 0.5); ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = COL.anchor; ctx.fillRect(-w / 2 + 0.3, -0.9, w - 0.6, 0.35);
+  ctx.fillStyle = '#d9ecf8'; ctx.fillRect(-w * 0.18, -1.9, w * 0.36, 1.0); ctx.strokeRect(-w * 0.18, -1.9, w * 0.36, 1.0);
+  ctx.beginPath(); ctx.moveTo(0, -1.9); ctx.lineTo(0, -b.h); ctx.stroke();
+  ctx.fillStyle = COL.anchor; ctx.beginPath(); ctx.moveTo(0, -b.h); ctx.lineTo(1.2, -b.h + 0.4); ctx.lineTo(0, -b.h + 0.8); ctx.fill();
+  ctx.restore();
+}
+function drawBoatZone(lv, wy) {
+  const b = lv.ev.boat; if (!b || wy === null) return;
+  const X0 = wx2sx(b.x0), X1 = wx2sx(b.x1), Y0 = wy2sy(wy), Y1 = wy2sy(wy + b.h);
+  const S = G.S, active = S && boatState(lv, S.t) && boatState(lv, S.t).active;
+  ctx.save();
+  ctx.fillStyle = active ? 'rgba(226,85,45,.10)' : 'rgba(226,85,45,.05)'; ctx.fillRect(X0, Y1, X1 - X0, Y0 - Y1);
+  ctx.setLineDash([8, 6]); ctx.strokeStyle = COL.anchor; ctx.lineWidth = 2; ctx.strokeRect(X0, Y1, X1 - X0, Y0 - Y1); ctx.setLineDash([]);
+  ctx.fillStyle = COL.anchor; ctx.font = '700 12px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText(`canal do barco · ${fmtNum(b.tIn)}–${fmtNum(b.tOut)} s`, (X0 + X1) / 2, Y0 - 8);
+  ctx.restore();
+}
+function drawWindArrows(lv, t, wind) {
+  if (!wind) return;
+  ctx.save(); ctx.strokeStyle = 'rgba(31,58,95,.35)'; ctx.lineWidth = 2;
+  const n = 7;
+  for (let i = 0; i < n; i++) {
+    const y = 60 + ((i * 53) % (VH - 160)), len = 30 + wind * 60, x = ((t * (120 + wind * 200) + i * 230) % (VW + 200)) - 100;
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + len, y); ctx.moveTo(x + len - 7, y - 5); ctx.lineTo(x + len, y); ctx.lineTo(x + len - 7, y + 5); ctx.stroke();
+  }
+  ctx.restore();
+}
+function drawParticles(dt) {
+  const ps = G.particles;
+  for (let i = ps.length - 1; i >= 0; i--) {
+    const p = ps[i];
+    p.t += dt; if (p.t > p.life) { ps.splice(i, 1); continue; }
+    p.vy -= (p.g === undefined ? 9.8 : p.g) * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+    const a = 1 - p.t / p.life;
+    ctx.globalAlpha = a; ctx.fillStyle = p.c;
+    const X = wx2sx(p.x), Y = wy2sy(p.y), r = p.r * G.cam.s * (p.grow ? 1 + p.t * 2 : 1);
+    if (p.shape === 'sq') { ctx.save(); ctx.translate(X, Y); ctx.rotate(p.t * p.spin); ctx.fillRect(-r, -r * 0.35, 2 * r, r * 0.7); ctx.restore(); }
+    else { ctx.beginPath(); ctx.arc(X, Y, Math.max(1, r), 0, Math.PI * 2); ctx.fill(); }
+  }
+  ctx.globalAlpha = 1;
+}
+function spawnParticles(kind, x, y, mat) {
+  const rnd = Math.random;
+  if (kind === 'break') {
+    const c = mat === 'madeira' ? '#b07a3a' : mat === 'concreto' ? '#8f8b80' : mat === 'pista' ? '#39434e' : MATS[mat] ? MATS[mat].color : '#888';
+    for (let i = 0; i < 14; i++) G.particles.push({ x, y, vx: (rnd() - 0.5) * 8, vy: rnd() * 6, r: 0.06 + rnd() * 0.09, c, life: 0.9 + rnd() * 0.6, t: 0, shape: 'sq', spin: (rnd() - 0.5) * 20 });
+    for (let i = 0; i < 10; i++) G.particles.push({ x, y, vx: (rnd() - 0.5) * 3, vy: rnd() * 1.5, r: 0.12 + rnd() * 0.18, c: 'rgba(170,150,120,.55)', life: 1 + rnd(), t: 0, g: -0.5, grow: true });
+  } else if (kind === 'splash') {
+    for (let i = 0; i < 26; i++) G.particles.push({ x: x + (rnd() - 0.5), y, vx: (rnd() - 0.5) * 5, vy: 3 + rnd() * 7, r: 0.07 + rnd() * 0.1, c: 'rgba(61,127,184,.8)', life: 1.2, t: 0 });
+  } else if (kind === 'dust') {
+    for (let i = 0; i < 6; i++) G.particles.push({ x, y, vx: (rnd() - 0.5) * 2, vy: rnd(), r: 0.1 + rnd() * 0.12, c: 'rgba(170,150,120,.5)', life: 0.8, t: 0, g: -0.3, grow: true });
+  } else if (kind === 'spark') {
+    for (let i = 0; i < 8; i++) G.particles.push({ x, y, vx: (rnd() - 0.5) * 6, vy: rnd() * 5, r: 0.04, c: '#e8a33a', life: 0.4, t: 0 });
+  }
+}
+
+function render(dt) {
+  const lv = G.lv;
+  const t = performance.now() / 1000;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  let shx = 0, shy = 0;
+  if (G.shake > 0) { shx = (Math.random() - 0.5) * G.shake; shy = (Math.random() - 0.5) * G.shake; G.shake = Math.max(0, G.shake - dt * 40); }
+  ctx.translate(shx, shy);
+  drawBackground();
+  if (!lv) return;
+  const S = G.mode === 'test' ? G.S : null;
+  const simT = S ? S.t : 0;
+  const wy = S ? S.waterY : (lv.water ? lv.water.y : null);
+  // linha de cheia (prevista)
+  if (!S && lv.water && lv.water.rise) {
+    const Y = wy2sy(lv.water.rise[2]);
+    ctx.save(); ctx.setLineDash([3, 5]); ctx.strokeStyle = COL.waterLine; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(wx2sx(0), Y); ctx.lineTo(wx2sx(lv.W), Y); ctx.stroke();
+    ctx.fillStyle = COL.waterLine; ctx.font = '700 11px sans-serif'; ctx.fillText('nível da cheia', wx2sx(0) + 6, Y - 5); ctx.restore();
+  }
+  drawTerrain(lv, t);
+  if (lv.ev.boat) { drawBoatZone(lv, wy); drawBoat(lv, S ? simT : t, wy); }
+  // bandeiras e placas
+  const dirs = new Set(lv.veh.map(v => (v.d === -1 ? -1 : 1)));
+  const oyq = S ? S.qy : 0, oxq = S ? S.qx : 0;
+  if (dirs.has(1)) drawFlag(lv.W + CFG.FLAG_OFF + oxq, lv.hr + oyq);
+  if (dirs.has(-1)) drawFlag(-CFG.FLAG_OFF + oxq, lv.hl + oyq);
+  for (const v of lv.veh) if (v.stop) drawStopSign(v.stop[0], Math.max(lv.hl, lv.hr) + 0.2);
+  if (S) drawSim(S); else drawBuild();
+  drawWater(lv, t, wy);
+  if (S) { for (const V of S.vehicles) if (V.active) drawVehicle(V); drawWindArrows(lv, t, S.wind); }
+  else drawGhostVehicle(lv);
+  drawParticles(dt);
+}
+function drawBuild() {
+  const lv = G.lv, br = G.br, nm = nodeMap(lv, br);
+  const pv = G.stressView ? G.preview : null;
+  const mv = G.moving;
+  const pos = id => { const n = nm.get(id); if (mv && mv.off && G.sel.has(id)) return { x: n.x + mv.off.x, y: n.y + mv.off.y }; return n; };
+  // membros (pista por último)
+  const order = br.members.slice().sort((a, b) => (MATS[a.m].deck ? 1 : 0) - (MATS[b.m].deck ? 1 : 0));
+  for (const m of order) {
+    const a = pos(m.a), b = pos(m.b);
+    const opt = {};
+    if (pv && pv.mem[m.id] !== undefined) {
+      const r = pv.mem[m.id];
+      if (pv.unstable.has(m.id)) { opt.color = '#8e44ad'; opt.dash = [6, 4]; }
+      else { opt.color = stressColor(m.m, r); if (Math.abs(r) >= 1) opt.glow = true; }
+    }
+    if (G.sel.has(m.a) && G.sel.has(m.b)) opt.sel = true;
+    if (G.hover && G.hover.member === m.id) opt.sel = true;
+    drawMember(a.x, a.y, b.x, b.y, m.m, opt);
+    if (MATS[m.m].piston) {
+      const X = wx2sx((a.x + b.x) / 2), Y = wy2sy((a.y + b.y) / 2);
+      ctx.fillStyle = COL.ink; ctx.font = '800 12px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(m.inv ? '⇣' : '⇡', X + 10, Y - 10);
+    }
+  }
+  for (const a of levelAnchors(lv)) drawAnchor(a.x, a.y);
+  for (const j of br.joints) { const p = pos(j.id); drawJoint(p.x, p.y, !!br.weld[j.id], { sel: G.sel.has(j.id), ring: pv && pv.weld[j.id] !== undefined ? pv.weld[j.id] : undefined }); }
+  for (const a of levelAnchors(lv)) if (br.weld[a.id]) drawJoint(a.x, a.y, true, {});
+  // início pendente (toque-toque)
+  if (G.pending) { const p = nm.get(G.pending); if (p) { ctx.strokeStyle = COL.anchor; ctx.lineWidth = 3; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.arc(wx2sx(p.x), wy2sy(p.y), 16, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); } }
+  // fantasma de construção
+  const gh = G.ghost;
+  if (gh) {
+    const M = MATS[gh.mat];
+    ctx.save(); ctx.setLineDash([6, 6]); ctx.strokeStyle = 'rgba(31,58,95,.45)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(wx2sx(gh.a.x), wy2sy(gh.a.y), M.maxL * G.cam.s, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+    const ok = gh.ok;
+    drawMember(gh.a.x, gh.a.y, gh.b.x, gh.b.y, gh.mat, { color: ok ? M.color : '#d63b2a', dash: ok ? null : [6, 4] });
+    if (gh.mirror) drawMember(gh.mirror.a.x, gh.mirror.a.y, gh.mirror.b.x, gh.mirror.b.y, gh.mat, { color: 'rgba(31,58,95,.35)', dash: [5, 5] });
+    drawJoint(gh.b.x, gh.b.y, false, {});
+    const X = wx2sx((gh.a.x + gh.b.x) / 2), Y = wy2sy((gh.a.y + gh.b.y) / 2) - 18;
+    const L = Math.hypot(gh.b.x - gh.a.x, gh.b.y - gh.a.y);
+    const label = ok ? `${fmtNum(L)} m · ${fmtMoney(L * M.cost)}` : (gh.why || 'inválido');
+    ctx.font = '800 13px sans-serif'; const tw = ctx.measureText(label).width;
+    ctx.fillStyle = ok ? 'rgba(31,58,95,.92)' : 'rgba(214,59,42,.95)'; roundRect(X - tw / 2 - 8, Y - 12, tw + 16, 24, 8); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(label, X, Y);
+  }
+  if (G.box) {
+    const b = G.box; ctx.save(); ctx.setLineDash([6, 4]); ctx.strokeStyle = COL.anchor; ctx.lineWidth = 1.5; ctx.fillStyle = 'rgba(226,85,45,.08)';
+    ctx.fillRect(Math.min(b.x0, b.x1), Math.min(b.y0, b.y1), Math.abs(b.x1 - b.x0), Math.abs(b.y1 - b.y0));
+    ctx.strokeRect(Math.min(b.x0, b.x1), Math.min(b.y0, b.y1), Math.abs(b.x1 - b.x0), Math.abs(b.y1 - b.y0)); ctx.restore();
+  }
+  if (G.editor) {
+    const bb = buildBounds(lv);
+    ctx.save(); ctx.setLineDash([4, 6]); ctx.strokeStyle = 'rgba(31,58,95,.5)'; ctx.strokeRect(wx2sx(bb.x0), wy2sy(bb.y1), (bb.x1 - bb.x0) * G.cam.s, (bb.y1 - bb.y0) * G.cam.s); ctx.restore();
+  }
+}
+function roundRect(x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+function drawSim(S) {
+  const sv = G.stressView;
+  const ms = S.mems.slice().sort((a, b) => (a.deck ? 1 : 0) - (b.deck ? 1 : 0));
+  for (const c of ms) {
+    if (c.broken) continue;
+    if (c.stub) { drawStub(c.pa.x, c.pa.y, c.pb.x, c.pb.y, c.mat); continue; }
+    const opt = {};
+    if (sv) { opt.color = stressColor(c.mat, c.filt * c.sgn); if (c.filt > 0.85) opt.glow = true; }
+    if (c.cable) opt.slack = c.rest - c.len;
+    if (c.piston) opt.ext = c.rest / c.rest0;
+    if (G.stressCam && S.hot === c) opt.sel = true;
+    drawMember(c.pa.x, c.pa.y, c.pb.x, c.pb.y, c.mat, opt);
+  }
+  for (const p of S.parts) { if (p.anchor) drawAnchor(p.x, p.y); }
+  const welded = new Set(); for (const g of S.angs) if (!g.broken) welded.add(g.pj);
+  for (const p of S.parts) if (!p.fixed && !p.debris && !p.veh) drawJoint(p.x, p.y, welded.has(p), {});
+}
+
+/* =====================================================================
+   UI: telas, barras, botões
+   ===================================================================== */
+const MAT_UNLOCK_HINT = { aco: 7, cabo: 11, aluminio: 13, pistao: 15, concreto: 21, composito: 31 };
+function buildMatButtons() {
+  const box = $('mats'); box.innerHTML = '';
+  for (const k of MAT_ORDER) {
+    if (!G.lv.mat.includes(k)) continue;
+    const M = MATS[k];
+    const b = document.createElement('button');
+    b.className = 'mat'; b.dataset.mat = k;
+    b.innerHTML = `<span class="sw" style="background:${M.color}"></span>${M.name}<span class="cost">R$${M.cost}/m</span>`;
+    b.addEventListener('click', () => { setTool(k); Audio.click(); });
+    box.appendChild(b);
+  }
+  // material novo neste nível: destaca e rola até ele
+  for (const k in MAT_UNLOCK_HINT) {
+    if (MAT_UNLOCK_HINT[k] === G.lv.id) {
+      const b = box.querySelector(`[data-mat="${k}"]`);
+      if (b) { setTimeout(() => { try { b.scrollIntoView({ inline: 'center', block: 'nearest' }); } catch (e) { /* ok */ } }, 50); setTimeout(() => toast('Novo material: ' + MATS[k].name + '!', 2200), 400); }
+    }
+  }
+}
+function setTool(t) {
+  G.tool = t; G.pending = null;
+  if (t !== 'select') { G.sel.clear(); }
+  for (const b of document.querySelectorAll('.mat')) b.classList.toggle('on', b.dataset.mat === t);
+  $('tSel').classList.toggle('on', t === 'select');
+  $('tErase').classList.toggle('on', t === 'erase');
+  updateSelBar(); G.dirty = true;
+}
+function updateBudget() {
+  const lv = G.lv, cost = bridgeCost(lv, G.br);
+  const el = $('budget');
+  if (lv.sandbox) { el.querySelector('.fill').style.width = '0%'; el.querySelector('.txt').textContent = fmtMoney(cost) + ' · ilimitado'; el.classList.remove('over', 'near'); return; }
+  const f = cost / lv.budget;
+  el.querySelector('.fill').style.width = Math.min(100, f * 100) + '%';
+  el.querySelector('.txt').textContent = `${fmtMoney(cost)} / ${fmtMoney(lv.budget)}`;
+  el.classList.toggle('over', f > 1); el.classList.toggle('near', f > 0.9 && f <= 1);
+}
+function updateUndoButtons() { $('tUndo').disabled = !G.undo.length; $('tRedo').disabled = !G.redo.length; }
+function updateChips() {
+  const lv = G.lv, box = $('chips'); const chips = [];
+  if (G.mode === 'build') {
+    if (G.stressView && G.preview && G.br.members.length) {
+      const p = G.preview;
+      if (!p.ok) chips.push(['red', 'Estrutura instável (mecanismo)']);
+      else chips.push([p.max >= 1 ? 'red' : p.max >= 0.8 ? 'amber' : 'ok', `Pico estimado ${Math.round(p.max * 100)}%`]);
+    }
+    if (G.mirror) chips.push(['', 'Espelho ligado']);
+    if (lv.water && lv.water.rise) chips.push(['', `Represa: a água sobe até ${fmtNum(lv.water.rise[2])} m`]);
+    if (lv.ev.wind) chips.push(['', 'Vento em rajadas']);
+    if (lv.ev.quake) chips.push(['amber', `Terremoto em ${fmtNum(lv.ev.quake.t0)} s`]);
+    if (lv.ev.boat) chips.push(['', `Barco: ${fmtNum(lv.ev.boat.tIn)}–${fmtNum(lv.ev.boat.tOut)} s`]);
+    if (lv.ev.pist) { const p = lv.ev.pist; chips.push(['', `Pistões ×${fmtNum(p[1][1], 2)}: abrem ${fmtNum(p[0][0])}–${fmtNum(p[1][0])} s, fecham ${fmtNum(p[2][0])}–${fmtNum(p[3][0])} s`]); }
+  } else if (G.S) {
+    const S = G.S;
+    chips.push([S.maxNow >= 0.8 ? 'red' : S.maxNow >= 0.6 ? 'amber' : 'ok', `Tensão ${Math.round(S.maxNow * 100)}% · pico ${Math.round(S.maxEver * 100)}%`]);
+    if (G.slow) chips.push(['amber', 'Câmera lenta 0,25x']);
+    if (G.paused) chips.push(['', 'Pausado']);
+    if (G.stressCam) chips.push(['', 'Câmera de tensão']);
+  }
+  const html = chips.map(([c, t]) => `<span class="chip ${c}">${t}</span>`).join('');
+  if (box.innerHTML !== html) box.innerHTML = html;
+}
+function updateSelBar() {
+  const show = G.mode === 'build' && G.tool === 'select' && (G.sel.size > 0 || G.clip);
+  $('selbar').classList.toggle('hidden', !show);
+  $('selCount').textContent = G.sel.size + ' sel.';
+  $('sCopy').disabled = $('sMirror').disabled = $('sDel').disabled = !G.sel.size;
+  $('sPaste').disabled = !G.clip;
+}
+function showScreen(name) {
+  G.screen = name;
+  $('menu').classList.toggle('hidden', name !== 'menu');
+  for (const id of ['topbar', 'bottombar', 'chips']) $(id).classList.toggle('hidden', name !== 'game');
+  document.body.classList.toggle('playing', name === 'game');
+  if (name !== 'game') { $('selbar').classList.add('hidden'); $('hint').classList.add('hidden'); $('editorPanel').classList.add('hidden'); }
+  G.dirty = true;
+}
+
+/* ---------- menu ---------- */
+function isUnlocked(id) { return id <= 1 || (Store.data.stars[id - 1] || 0) > 0 || (Store.data.stars[id] || 0) > 0; }
+function renderMenu() {
+  const tabs = $('worldTabs'); tabs.innerHTML = '';
+  let total = 0; for (const k in Store.data.stars) total += Store.data.stars[k] || 0;
+  $('totalStars').textContent = `★ ${total} / ${LEVELS.length * 3}`;
+  for (const w of WORLDS) {
+    const first = LEVELS.find(l => l.w === w.id);
+    const locked = first && !isUnlocked(first.id);
+    const st = LEVELS.filter(l => l.w === w.id).reduce((s, l) => s + (Store.data.stars[l.id] || 0), 0);
+    const b = document.createElement('button');
+    b.className = 'wtab' + (G.world === w.id ? ' on' : '') + (locked ? ' locked' : '');
+    b.innerHTML = `<b>${w.id}. ${w.name}</b><span>${w.sub} · ★${st}/30</span>`;
+    b.addEventListener('click', () => { G.world = w.id; Audio.click(); renderMenu(); });
+    tabs.appendChild(b);
+  }
+  const grid = $('levelGrid'); grid.innerHTML = '';
+  for (const lv of LEVELS.filter(l => l.w === G.world)) {
+    const un = isUnlocked(lv.id), st = Store.data.stars[lv.id] || 0, best = Store.data.best[lv.id];
+    const b = document.createElement('button');
+    b.className = 'lvl' + (un ? '' : ' locked');
+    b.innerHTML = `<span class="n">NÍVEL ${lv.id}</span><span class="nm">${lv.name}</span><span class="st">${'★'.repeat(st)}<i>${'★'.repeat(3 - st)}</i></span>${best ? `<span class="bc">${fmtMoney(best)}</span>` : `<span class="bc">${un ? vehicleLabel(lv) : '🔒'}</span>`}`;
+    b.addEventListener('click', () => { if (!un) { toast('Complete o nível anterior para liberar.'); Audio.bad(); return; } Audio.click(); startLevel(lv.id); });
+    grid.appendChild(b);
+  }
+}
+
+/* ---------- jogo ---------- */
+function startLevel(id, custom) {
+  const lv = custom ? normLevel(custom) : levelById(id);
+  if (!lv) return;
+  G.lv = lv; G.editor = false;
+  const saved = Store.data.bridges[lv.id];
+  G.br = saved ? cloneBridge(saved) : newBridge();
+  sanitizeBridge();
+  G.undo = []; G.redo = []; G.sel.clear(); G.clip = null; G.mode = 'build'; G.S = null; G.pending = null; G.ghost = null;
+  G.tool = 'pista'; G.mirror = false; G.particles = [];
+  $('tMirror').classList.remove('on');
+  $('lvTitle').innerHTML = lv.sandbox ? `Sandbox <small>· ${vehicleLabel(lv)}</small>` : `${lv.id === 999 ? 'Editor' : lv.id} · ${lv.name} <small>· ${vehicleLabel(lv)}</small>`;
+  buildMatButtons(); setTool('pista'); enterBuildUI();
+  showScreen('game'); resize(); fitView();
+  onBridgeChanged(true);
+  if (lv.hint) { $('hintTxt').textContent = lv.hint; $('hint').classList.remove('hidden'); }
+}
+function sanitizeBridge() {
+  // remove membros que referenciam nós inexistentes (ex.: nível editado)
+  const nm = nodeMap(G.lv, G.br);
+  G.br.members = G.br.members.filter(m => nm.has(m.a) && nm.has(m.b) && MATS[m.m] && G.lv.mat.includes(m.m));
+  pruneJoints(G.br);
+  G.br.weld = G.br.weld || {};
+}
+function snapshot() { return JSON.stringify(G.br); }
+function commit() { G.undo.push(snapshot()); G.redo = []; updateUndoButtons(); }
+function onBridgeChanged(skipSave) {
+  updateBudget(); updateUndoButtons(); G.dirty = true;
+  if (!skipSave && G.lv && G.lv.id !== 999) { Store.data.bridges[G.lv.id] = G.br; Store.save(); }
+  schedulePreview();
+}
+function schedulePreview() {
+  clearTimeout(G.previewTimer);
+  G.previewTimer = setTimeout(() => {
+    try { G.preview = stressPreview(G.lv, G.br); } catch (e) { G.preview = null; }
+    updateChips(); G.dirty = true;
+  }, 70);
+}
+function doUndo() { if (!G.undo.length) return; G.redo.push(snapshot()); G.br = JSON.parse(G.undo.pop()); G.sel.clear(); Audio.click(); onBridgeChanged(); }
+function doRedo() { if (!G.redo.length) return; G.undo.push(snapshot()); G.br = JSON.parse(G.redo.pop()); G.sel.clear(); Audio.click(); onBridgeChanged(); }
+function doClear() {
+  if (!G.br.members.length) return;
+  confirmBox('Limpar a ponte?', 'Todas as peças serão removidas (dá para desfazer).', () => { commit(); G.br = newBridge(); G.sel.clear(); onBridgeChanged(); Audio.erase(); vibe(20); });
+}
+function enterBuildUI() {
+  G.mode = 'build';
+  $('tools').classList.remove('hidden'); $('testTools').classList.add('hidden');
+  $('btnTest').classList.remove('hidden'); $('btnEdit').classList.add('hidden');
+  $('tUndo').classList.remove('hidden'); $('tRedo').classList.remove('hidden');
+  $('bottombar').classList.toggle('lefty', !!S_().lefty);
+  $('tStress').classList.toggle('on', G.stressView);
+  updateSelBar(); updateChips();
+}
+function enterTestUI() {
+  $('tools').classList.add('hidden'); $('testTools').classList.remove('hidden');
+  $('btnTest').classList.add('hidden'); $('btnEdit').classList.remove('hidden');
+  $('tUndo').classList.add('hidden'); $('tRedo').classList.add('hidden');
+  $('selbar').classList.add('hidden'); $('hint').classList.add('hidden');
+  $('tStress2').classList.toggle('on', G.stressView);
+  updateTestButtons();
+}
+function updateTestButtons() {
+  $('tPlay').innerHTML = G.paused ? '<svg viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></svg>Play' : '<svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg>Pausa';
+  $('tSlow').classList.toggle('on', G.slow);
+  $('tCam').classList.toggle('on', G.stressCam);
+  $('tStress2').classList.toggle('on', G.stressView);
+}
+function startTest() {
+  if (!G.br.members.length) { toast('Construa algo primeiro!'); Audio.bad(); return; }
+  if (!deckContinuous(G.lv, G.br)) toast('Atenção: a pista não liga as duas margens.', 2200);
+  G.S = createWorld(G.lv, G.br);
+  G.mode = 'test'; G.paused = false; G.slow = false; G.resultShown = false; G.acc = 0; G.particles = [];
+  G.ghost = null; G.box = null; G.moving = null; G.pending = null;
+  enterTestUI(); updateChips();
+  Audio.click(); vibe(15);
+}
+function stopTest() {
+  G.S = null; G.mode = 'build'; closeModal(); enterBuildUI(); G.dirty = true;
+}
+function restartTest() { closeModal(); startTest(); }
+function processSimEvents() {
+  const S = G.S;
+  for (const e of S.events) {
+    if (e.type === 'break') { spawnParticles('break', e.x, e.y, e.mat); Audio.brk(e.mat); G.shake = Math.min(18, G.shake + (e.mat === 'concreto' || e.mat === 'aco' ? 12 : 8)); vibe([30, 20, 40]); }
+    else if (e.type === 'weld') { spawnParticles('spark', e.x, e.y); Audio.weld(); vibe(15); }
+    else if (e.type === 'splash') { spawnParticles('splash', e.x, e.y); Audio.splash(); vibe(60); }
+    else if (e.type === 'arrive') { Audio.tone(880, 0.12, 'triangle', 0.12); }
+  }
+  S.events.length = 0;
+}
+function finishTest() {
+  const S = G.S, lv = G.lv;
+  G.resultShown = true;
+  const passed = S.state === 'win';
+  const cost = bridgeCost(lv, G.br);
+  const stars = starsFor(lv, passed, cost, S.maxEver);
+  if (passed) {
+    Audio.win(); vibe([20, 40, 20]);
+    if (!lv.sandbox && lv.id !== 999) {
+      if (stars > (Store.data.stars[lv.id] || 0)) Store.data.stars[lv.id] = stars;
+      if (!Store.data.best[lv.id] || cost < Store.data.best[lv.id]) Store.data.best[lv.id] = cost;
+      Store.data.bridges[lv.id] = G.br; Store.save();
+    }
+  } else { Audio.lose(); vibe(120); }
+  showResult(passed, stars, cost, S);
+}
+
+/* ---------- modais ---------- */
+function openModal(html) { const m = $('modal'); m.innerHTML = html; m.classList.remove('hidden'); return m; }
+function closeModal() { const m = $('modal'); m.classList.add('hidden'); m.innerHTML = ''; }
+function confirmBox(title, text, ok) {
+  const m = openModal(`<div class="card" style="max-width:420px"><div class="hd"><h2>${title}</h2></div><div class="bd">${text}</div><div class="ft"><button class="btn" id="cNo">Cancelar</button><button class="btn dark" id="cYes">Confirmar</button></div></div>`);
+  m.querySelector('#cNo').onclick = () => { closeModal(); };
+  m.querySelector('#cYes').onclick = () => { closeModal(); ok(); };
+}
+function showResult(passed, stars, cost, S) {
+  const lv = G.lv;
+  const next = LEVELS.find(l => l.id === lv.id + 1);
+  const peak = Math.round(S.maxEver * 100);
+  const starsHtml = `${'★'.repeat(stars)}<i>${'★'.repeat(3 - stars)}</i>`;
+  const best = Store.data.best[lv.id];
+  const m = openModal(`<div class="card">
+    <div class="hd"><h2>${passed ? 'Ponte aprovada!' : 'Reprovada'}</h2><div class="grow"></div>${lv.sandbox ? '' : `<div class="stars">${starsHtml}</div>`}</div>
+    <div class="bd"><div class="res">
+      <canvas id="heat" width="600" height="300"></canvas>
+      <div class="stats">
+        ${passed ? '' : `<div class="stat bad"><span>Motivo</span><b>${FAIL_TEXT[S.failReason] || 'Falhou'}</b></div>`}
+        <div class="stat ${!lv.sandbox && cost > lv.budget ? 'bad' : 'good'}"><span>Custo</span><b>${fmtMoney(cost)}</b></div>
+        ${lv.sandbox ? '' : `<div class="stat"><span>Orçamento</span><b>${fmtMoney(lv.budget)}</b></div>`}
+        <div class="stat ${peak >= 80 ? 'bad' : 'good'}"><span>Tensão máxima</span><b>${peak}%</b></div>
+        ${best ? `<div class="stat"><span>Melhor custo</span><b>${fmtMoney(best)}</b></div>` : ''}
+        <div style="font-size:12px;color:var(--ink2);margin-top:4px">★ passou · ★★ dentro do orçamento · ★★★ e tensão máx. abaixo de 80%</div>
+        <div class="legend">0%<span class="grad"></span>100%+</div>
+      </div></div></div>
+    <div class="ft"><button class="btn" id="rEdit">Editar</button><button class="btn" id="rRetry">Repetir</button>${passed && next && !lv.sandbox ? '<button class="btn primary" id="rNext">Próximo nível</button>' : ''}${passed && (!next || lv.sandbox) ? '<button class="btn primary" id="rMenu">Menu</button>' : ''}</div></div>`);
+  m.querySelector('#rEdit').onclick = () => { Audio.click(); stopTest(); };
+  m.querySelector('#rRetry').onclick = () => { Audio.click(); restartTest(); };
+  const n = m.querySelector('#rNext'); if (n) n.onclick = () => { Audio.click(); closeModal(); startLevel(next.id); };
+  const mm = m.querySelector('#rMenu'); if (mm) mm.onclick = () => { Audio.click(); closeModal(); goMenu(); };
+  drawHeatmap(m.querySelector('#heat'), S);
+}
+function drawHeatmap(c, S) {
+  const g = c.getContext('2d'), lv = G.lv, br = G.br, nm = nodeMap(lv, br);
+  const peaks = memberPeaks(S);
+  let x0 = 0, x1 = lv.W, y0 = Math.min(lv.hl, lv.hr), y1 = Math.max(lv.hl, lv.hr);
+  for (const n of nm.values()) { x0 = Math.min(x0, n.x); x1 = Math.max(x1, n.x); y0 = Math.min(y0, n.y); y1 = Math.max(y1, n.y); }
+  x0 -= 2; x1 += 2; y0 -= 1.5; y1 += 1.5;
+  const W = c.width, H = c.height, s = Math.min(W / (x1 - x0), H / (y1 - y0));
+  const ox = (W - (x1 - x0) * s) / 2, oy = (H - (y1 - y0) * s) / 2;
+  const X = x => ox + (x - x0) * s, Y = y => H - oy - (y - y0) * s;
+  g.fillStyle = '#f3efe4'; g.fillRect(0, 0, W, H);
+  g.strokeStyle = '#d9e6f1'; g.lineWidth = 1;
+  for (let x = Math.ceil(x0); x <= x1; x++) { g.beginPath(); g.moveTo(X(x), 0); g.lineTo(X(x), H); g.stroke(); }
+  for (let y = Math.ceil(y0); y <= y1; y++) { g.beginPath(); g.moveTo(0, Y(y)); g.lineTo(W, Y(y)); g.stroke(); }
+  g.fillStyle = 'rgba(31,58,95,.18)';
+  g.fillRect(0, Y(lv.hl), X(0), H); g.fillRect(X(lv.W), Y(lv.hr), W, H);
+  g.lineCap = 'round';
+  for (const m of br.members) {
+    const a = nm.get(m.a), b = nm.get(m.b), p = peaks[m.id] || { peak: 0 };
+    const w = Math.max(3, MATS[m.m].width * s * 0.9);
+    g.strokeStyle = '#1f3a5f'; g.lineWidth = w + 2; g.setLineDash(p.broken ? [5, 4] : []);
+    g.beginPath(); g.moveTo(X(a.x), Y(a.y)); g.lineTo(X(b.x), Y(b.y)); g.stroke();
+    g.strokeStyle = heatColor(p.peak); g.lineWidth = w;
+    g.beginPath(); g.moveTo(X(a.x), Y(a.y)); g.lineTo(X(b.x), Y(b.y)); g.stroke();
+  }
+  g.setLineDash([]);
+  for (const a of levelAnchors(lv)) { g.fillStyle = '#e2552d'; g.beginPath(); g.arc(X(a.x), Y(a.y), 5, 0, Math.PI * 2); g.fill(); }
+}
+function showHelp() {
+  const rows = MAT_ORDER.map(k => { const M = MATS[k]; return `<tr><td><span class="sw2" style="background:${M.color}"></span><b>${M.name}</b></td><td>R$${M.cost}/m</td><td>${M.maxL} m</td><td>${M.maxT} kN</td><td>${M.cable ? '—' : M.maxC + ' kN'}</td><td>${Math.round(M.rho * 1000)} kg/m</td></tr>`; }).join('');
+  const m = openModal(`<div class="card"><div class="hd"><h2>Como jogar</h2><div class="grow"></div><button class="ib" id="hClose">×</button></div><div class="bd">
+  <p><b>Objetivo:</b> ligue as âncoras vermelhas e crie uma pista contínua. Toque <b>TESTAR</b>: todos os veículos precisam chegar à bandeira.</p>
+  <p><b>Construir:</b> escolha um material e arraste a partir de uma junta ou âncora. O círculo tracejado mostra o comprimento máximo. Também dá para tocar uma junta e depois tocar o destino.</p>
+  <p><b>Juntas:</b> segure uma junta para alternar <b>pino</b> (gira, círculo) e <b>solda</b> (rígida, quadrado, R$${CFG.WELD_COST}). Soldas muito exigidas viram pino.</p>
+  <p><b>Selecionar:</b> arraste uma junta para movê-la, arraste no vazio para selecionar em caixa; copie, cole e espelhe. Toque um pistão para inverter (estender ⇡ / recolher ⇣).</p>
+  <p><b>Tensão:</b> o preview calcula o veículo mais pesado na pior posição. <span style="color:#d63b2a;font-weight:800">Vermelho = tração</span>, <span style="color:#2c6fd1;font-weight:800">azul = compressão</span>; roxo tracejado = mecanismo instável.</p>
+  <p><b>Câmera:</b> pinça para zoom, dois dedos para mover, um dedo no vazio também move. Botão ⤢ enquadra o nível.</p>
+  <p><b>Estrelas:</b> ★ passou · ★★ dentro do orçamento · ★★★ e tensão máxima abaixo de 80%.</p>
+  <table class="mt"><tr><th>Material</th><th>Custo</th><th>Máx.</th><th>Tração</th><th>Compr.</th><th>Peso</th></tr>${rows}</table>
+  <p style="font-size:12.5px;color:var(--ink2)">Pista: única superfície para veículos. Cabo: só tração, fica frouxo. Concreto: só nasce de âncoras ou de outro concreto. Pistão: segue a linha do tempo do nível.</p>
+  </div></div>`);
+  m.querySelector('#hClose').onclick = closeModal;
+}
+function showSettings() {
+  const s = S_();
+  const m = openModal(`<div class="card" style="max-width:460px"><div class="hd"><h2>Configurações</h2><div class="grow"></div><button class="ib" id="stClose">×</button></div><div class="bd">
+    <label class="tog">Som <input type="checkbox" id="stSound" ${s.sound ? 'checked' : ''}></label>
+    <label class="tog">Vibração <input type="checkbox" id="stHap" ${s.haptics ? 'checked' : ''}></label>
+    <label class="tog">Modo canhoto (barra espelhada) <input type="checkbox" id="stLefty" ${s.lefty ? 'checked' : ''}></label>
+    <label class="tog">Preview de tensão ligado <input type="checkbox" id="stStress" ${s.stress ? 'checked' : ''}></label>
+    <div class="row" style="margin-top:12px"><button class="btn" id="stReset" style="border-color:var(--bad);color:var(--bad)">Apagar progresso</button></div>
+  </div></div>`);
+  const bind = (id, key) => { m.querySelector(id).onchange = e => { s[key] = e.target.checked; Store.save(); if (key === 'stress') { G.stressView = s.stress; } }; };
+  bind('#stSound', 'sound'); bind('#stHap', 'haptics'); bind('#stLefty', 'lefty'); bind('#stStress', 'stress');
+  m.querySelector('#stClose').onclick = () => { closeModal(); renderMenu(); };
+  m.querySelector('#stReset').onclick = () => confirmBox('Apagar progresso?', 'Estrelas, custos e pontes salvas serão removidos.', () => { Store.reset(); renderMenu(); toast('Progresso apagado'); });
+}
+function goMenu() {
+  if (G.lv && G.lv.id !== 999 && G.mode === 'build' && G.br) { Store.data.bridges[G.lv.id] = G.br; Store.save(); }
+  G.S = null; G.mode = 'build'; G.lv = null; G.editor = false; closeModal();
+  showScreen('menu'); renderMenu();
+}
+
+/* =====================================================================
+   INPUT
+   ===================================================================== */
+const ptrs = new Map();
+let act = null; // ação corrente de um dedo
+let pinch = null;
+let lpTimer = 0;
+const HIT_NODE = 24, HIT_MEM = 14;
+function screenNode(sx, sy, skipId) {
+  let best = null, bd = HIT_NODE;
+  for (const n of nodeMap(G.lv, G.br).values()) {
+    if (n.id === skipId) continue;
+    const d = Math.hypot(wx2sx(n.x) - sx, wy2sy(n.y) - sy);
+    if (d < bd) { bd = d; best = n; }
+  }
+  return best;
+}
+function screenMember(sx, sy) {
+  const nm = nodeMap(G.lv, G.br); let best = null, bd = HIT_MEM;
+  for (const m of G.br.members) {
+    const a = nm.get(m.a), b = nm.get(m.b);
+    const ax = wx2sx(a.x), ay = wy2sy(a.y), bx = wx2sx(b.x), by = wy2sy(b.y);
+    const dx = bx - ax, dy = by - ay, L2 = dx * dx + dy * dy || 1;
+    let t = ((sx - ax) * dx + (sy - ay) * dy) / L2; t = Math.max(0, Math.min(1, t));
+    const d = Math.hypot(ax + dx * t - sx, ay + dy * t - sy);
+    if (d < bd) { bd = d; best = m; }
+  }
+  return best;
+}
+const snapG = v => Math.round(v / CFG.GRID) * CFG.GRID;
+function endTarget(from, sx, sy, mat) {
+  const M = MATS[mat];
+  const n = screenNode(sx, sy, from.id);
+  if (n) return { x: n.x, y: n.y, id: n.id, anchor: n.anchor };
+  let wx = sx2wx(sx), wy = sy2wy(sy);
+  const dx = wx - from.x, dy = wy - from.y, L = Math.hypot(dx, dy);
+  if (L > M.maxL) { wx = from.x + dx / L * M.maxL; wy = from.y + dy / L * M.maxL; }
+  let gx = snapG(wx), gy = snapG(wy);
+  if (Math.hypot(gx - from.x, gy - from.y) > M.maxL + 1e-6) {
+    let best = null, bd = 1e9;
+    for (let ix = -2; ix <= 2; ix++) for (let iy = -2; iy <= 2; iy++) {
+      const px = snapG(wx) + ix * CFG.GRID, py = snapG(wy) + iy * CFG.GRID;
+      if (Math.hypot(px - from.x, py - from.y) > M.maxL + 1e-6) continue;
+      const d = Math.hypot(px - wx, py - wy); if (d < bd) { bd = d; best = [px, py]; }
+    }
+    if (best) { gx = best[0]; gy = best[1]; }
+  }
+  const ex = findNodeAt(G.lv, G.br, gx, gy, 0.01);
+  if (ex) return { x: ex.x, y: ex.y, id: ex.id, anchor: ex.anchor };
+  return { x: gx, y: gy };
+}
+const mirrorX = x => G.lv.W - x;
+function mirrorPoint(P) {
+  const x = mirrorX(P.x), y = P.y;
+  const n = findNodeAt(G.lv, G.br, x, y, 0.01);
+  return n ? { x: n.x, y: n.y, id: n.id, anchor: n.anchor } : { x, y };
+}
+function updateGhost(sx, sy) {
+  const from = act.from, mat = G.tool;
+  const to = endTarget(from, sx, sy, mat);
+  const v = validateMember(G.lv, G.br, from, to, mat);
+  G.ghost = { a: from, b: to, mat, ok: v.ok, why: v.why };
+  if (G.mirror) {
+    const ma = mirrorPoint(from), mb = mirrorPoint(to);
+    if (Math.abs(ma.x - from.x) > 1e-6 || Math.abs(mb.x - to.x) > 1e-6) G.ghost.mirror = { a: ma, b: mb };
+  }
+  G.dirty = true;
+}
+function buildMember(from, to, mat) {
+  const v = validateMember(G.lv, G.br, from, to, mat);
+  if (!v.ok) { if (v.why) toast(v.why); Audio.bad(); vibe(30); return false; }
+  commit();
+  addMember(G.lv, G.br, from, to, mat);
+  if (G.mirror) {
+    const ma = mirrorPoint(from), mb = mirrorPoint(to);
+    if (!(Math.abs(ma.x - from.x) < 1e-6 && Math.abs(mb.x - to.x) < 1e-6) && !(Math.abs(ma.x - to.x) < 1e-6 && Math.abs(mb.x - from.x) < 1e-6 && Math.abs(ma.y - to.y) < 1e-6)) {
+      // recalcula ids após o primeiro membro criar juntas
+      const A = findNodeAt(G.lv, G.br, ma.x, ma.y, 0.01) || ma, B = findNodeAt(G.lv, G.br, mb.x, mb.y, 0.01) || mb;
+      addMember(G.lv, G.br, A, B, mat);
+    }
+  }
+  Audio.snap(); vibe(12);
+  const b = to; spawnParticles('dust', b.x, b.y);
+  onBridgeChanged();
+  return true;
+}
+function toggleWeld(n) {
+  if (!membersAt(G.br, n.id).length) { toast('Junta sem peças'); return; }
+  commit();
+  if (G.br.weld[n.id]) delete G.br.weld[n.id]; else G.br.weld[n.id] = true;
+  Audio.weld(); vibe([15, 30, 15]);
+  toast(G.br.weld[n.id] ? `Solda (rígida) · +${fmtMoney(CFG.WELD_COST)}` : 'Pino (articulado)');
+  onBridgeChanged();
+}
+function eraseAt(sx, sy, joints, a) {
+  const n = joints ? screenNode(sx, sy) : null;
+  if (n && !n.anchor) { if (!a.committed) { commit(); a.committed = true; } removeJoint(G.br, n.id); G.sel.delete(n.id); Audio.erase(); vibe(10); onBridgeChanged(); return; }
+  const m = screenMember(sx, sy);
+  if (m) { if (!a.committed) { commit(); a.committed = true; } removeMember(G.br, m.id); Audio.erase(); vibe(10); onBridgeChanged(); }
+}
+function moveValid(off) {
+  const lv = G.lv, br = G.br, nm = nodeMap(lv, br);
+  const pos = id => { const n = nm.get(id); return G.sel.has(id) ? { x: n.x + off.x, y: n.y + off.y } : n; };
+  const bb = buildBounds(lv);
+  for (const id of G.sel) {
+    const p = pos(id);
+    if (inSolid(lv, p.x, p.y) || p.x < bb.x0 || p.x > bb.x1 || p.y < bb.y0 || p.y > bb.y1) return false;
+    for (const n of nm.values()) if (!G.sel.has(n.id) && Math.hypot(n.x - p.x, n.y - p.y) < 0.01) return false;
+  }
+  for (const m of br.members) {
+    if (!G.sel.has(m.a) && !G.sel.has(m.b)) continue;
+    const a = pos(m.a), b = pos(m.b), L = Math.hypot(b.x - a.x, b.y - a.y);
+    if (L > MATS[m.m].maxL + 1e-6 || L < CFG.MIN_LEN) return false;
+  }
+  return true;
+}
+function applyMove(off) {
+  commit();
+  for (const j of G.br.joints) if (G.sel.has(j.id)) { j.x = Math.round((j.x + off.x) * 1000) / 1000; j.y = Math.round((j.y + off.y) * 1000) / 1000; }
+  Audio.snap(); vibe(10); onBridgeChanged();
+}
+function selectionClip() {
+  // membros que tocam a seleção + todos os seus nós (nós não selecionados viram pontos de encaixe)
+  const br = G.br, nm = nodeMap(G.lv, br);
+  const ms = br.members.filter(m => G.sel.has(m.a) || G.sel.has(m.b));
+  const joints = [], seen = new Set();
+  for (const m of ms) for (const id of [m.a, m.b]) if (!seen.has(id)) { seen.add(id); const n = nm.get(id); joints.push({ id, x: n.x, y: n.y, weld: !!br.weld[id] }); }
+  return { joints, members: ms.map(m => ({ a: m.a, b: m.b, m: m.m, inv: !!m.inv })) };
+}
+function copySel() {
+  G.clip = selectionClip();
+  toast(`${G.clip.members.length} peças copiadas`); Audio.click(); updateSelBar();
+}
+function pasteClip(transform) {
+  const clip = transform ? transform.clip : G.clip; if (!clip || !clip.members.length) return;
+  const f = transform ? transform.f : (p => ({ x: p.x + 2, y: p.y + 2 }));
+  commit();
+  const map = {}; const newSel = new Set();
+  for (const j of clip.joints) {
+    const p = f(j); const x = snapG(p.x), y = snapG(p.y);
+    const ex = findNodeAt(G.lv, G.br, x, y, 0.01);
+    map[j.id] = ex ? { x: ex.x, y: ex.y, id: ex.id, anchor: ex.anchor } : { x, y, weld: j.weld };
+  }
+  let n = 0;
+  for (const m of clip.members) {
+    const A = map[m.a], B = map[m.b];
+    const a = A.id ? A : (findNodeAt(G.lv, G.br, A.x, A.y, 0.01) || A);
+    const b = B.id ? B : (findNodeAt(G.lv, G.br, B.x, B.y, 0.01) || B);
+    if (addMember(G.lv, G.br, a, b, m.m, { inv: m.inv })) n++;
+  }
+  for (const j of clip.joints) {
+    const A = map[j.id], node = findNodeAt(G.lv, G.br, A.x, A.y, 0.01);
+    if (node && !node.anchor) { newSel.add(node.id); if (j.weld) G.br.weld[node.id] = true; }
+  }
+  G.sel = newSel;
+  if (!n) { G.undo.pop(); toast('Nada coube aqui'); Audio.bad(); return; }
+  Audio.snap(); vibe(12); onBridgeChanged(); updateSelBar();
+  toast(transform ? 'Espelhado' : 'Colado (+2 m) — arraste para posicionar');
+}
+function mirrorSel() {
+  pasteClip({ clip: selectionClip(), f: p => ({ x: mirrorX(p.x), y: p.y }) });
+}
+function deleteSel() {
+  if (!G.sel.size) return;
+  commit();
+  for (const id of [...G.sel]) removeJoint(G.br, id);
+  G.sel.clear(); Audio.erase(); vibe(15); onBridgeChanged(); updateSelBar();
+}
+
+function onDown(e) {
+  e.preventDefault();
+  Audio.unlock();
+  try { cv.setPointerCapture(e.pointerId); } catch (err) { /* ok */ }
+  ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, t0: performance.now() });
+  if (ptrs.size === 2) {
+    cancelAction();
+    const [a, b] = [...ptrs.values()];
+    pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2, s: G.cam.s, cx: G.cam.x, cy: G.cam.y };
+    pinch.wx = sx2wx(pinch.mx); pinch.wy = sy2wy(pinch.my);
+    G.userCam = true; G.stressCam = false; if (G.mode === 'test') updateTestButtons();
+    return;
+  }
+  if (ptrs.size > 2) return;
+  const sx = e.clientX, sy = e.clientY;
+  if (G.screen !== 'game' || !G.lv) return;
+  if (G.mode === 'test') { act = { type: 'pan', lx: sx, ly: sy }; return; }
+  if (!$('hint').classList.contains('hidden')) $('hint').classList.add('hidden');
+  if (G.editor) { act = { type: 'editor', lx: sx, ly: sy }; return; }
+  const node = screenNode(sx, sy);
+  clearTimeout(lpTimer);
+  if (node) lpTimer = setTimeout(() => { if (act && !act.moved) { act = null; G.ghost = null; G.moving = null; toggleWeld(node); } }, 520);
+  if (G.tool === 'erase') { act = { type: 'erase', lx: sx, ly: sy }; return; }
+  if (G.tool === 'select') {
+    if (node && !node.anchor) {
+      if (!G.sel.has(node.id)) { G.sel.clear(); G.sel.add(node.id); }
+      act = { type: 'move', sx, sy, node }; G.moving = { off: { x: 0, y: 0 }, invalid: false }; updateSelBar(); G.dirty = true;
+    } else act = { type: 'box', sx, sy, lx: sx, ly: sy, node };
+    return;
+  }
+  // material
+  if (node) { act = { type: 'build', from: node, sx, sy }; }
+  else act = { type: 'pan', lx: sx, ly: sy, tap: true };
+}
+function onMove(e) {
+  const p = ptrs.get(e.pointerId); if (!p) return;
+  e.preventDefault();
+  p.x = e.clientX; p.y = e.clientY;
+  if (pinch && ptrs.size >= 2) {
+    const [a, b] = [...ptrs.values()];
+    const d = Math.hypot(a.x - b.x, a.y - b.y), mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    G.cam.s = Math.max(4, Math.min(160, pinch.s * d / Math.max(10, pinch.d)));
+    // mantém o ponto do mundo sob o centro da pinça
+    G.cam.x = pinch.wx - (mx - VW / 2) / G.cam.s;
+    G.cam.y = pinch.wy + (my - VH / 2) / G.cam.s;
+    G.dirty = true; return;
+  }
+  if (!act) return;
+  const sx = e.clientX, sy = e.clientY;
+  const dist = Math.hypot(sx - p.x0, sy - p.y0);
+  if (dist > 8) { act.moved = true; clearTimeout(lpTimer); }
+  switch (act.type) {
+    case 'pan': G.cam.x -= (sx - act.lx) / G.cam.s; G.cam.y += (sy - act.ly) / G.cam.s; act.lx = sx; act.ly = sy; G.userCam = true; G.stressCam = false; G.dirty = true; break;
+    case 'build': if (act.moved) updateGhost(sx, sy); break;
+    case 'erase': if (act.moved) eraseAt(sx, sy, false, act); break;
+    case 'move': {
+      const off = { x: snapG(sx2wx(sx) - sx2wx(act.sx)), y: snapG(sy2wy(sy) - sy2wy(act.sy)) };
+      G.moving = { off, invalid: !moveValid(off) }; G.dirty = true; break;
+    }
+    case 'box': if (act.moved) { G.box = { x0: act.sx, y0: act.sy, x1: sx, y1: sy }; G.dirty = true; } break;
+    case 'editor': if (act.moved) { G.cam.x -= (sx - act.lx) / G.cam.s; G.cam.y += (sy - act.ly) / G.cam.s; G.dirty = true; } act.lx = sx; act.ly = sy; break;
+  }
+}
+function onUp(e) {
+  const p = ptrs.get(e.pointerId);
+  ptrs.delete(e.pointerId);
+  clearTimeout(lpTimer);
+  if (pinch) { if (ptrs.size < 2) pinch = null; act = null; return; }
+  if (!act || !p) return;
+  const sx = e.clientX, sy = e.clientY, tap = !act.moved && performance.now() - p.t0 < 450;
+  const a = act; act = null;
+  switch (a.type) {
+    case 'build':
+      if (tap) {
+        if (G.pending && G.pending !== a.from.id) { const from = nodeMap(G.lv, G.br).get(G.pending); G.pending = null; if (from) buildMember(from, { x: a.from.x, y: a.from.y, id: a.from.id, anchor: a.from.anchor }, G.tool); }
+        else { G.pending = G.pending === a.from.id ? null : a.from.id; Audio.click(); }
+      } else if (G.ghost) { const g = G.ghost; G.ghost = null; if (g.ok) buildMember(g.a, g.b, g.mat); else { if (g.why) toast(g.why); Audio.bad(); } }
+      G.ghost = null; break;
+    case 'pan':
+      if (tap && a.tap && G.pending && G.mode === 'build') {
+        const from = nodeMap(G.lv, G.br).get(G.pending); G.pending = null;
+        if (from) { const to = endTarget(from, sx, sy, G.tool); buildMember(from, to, G.tool); }
+      }
+      break;
+    case 'move':
+      if (a.moved && G.moving && !G.moving.invalid && (G.moving.off.x || G.moving.off.y)) applyMove(G.moving.off);
+      else if (a.moved && G.moving && G.moving.invalid) { toast('Posição inválida'); Audio.bad(); }
+      G.moving = null; break;
+    case 'box':
+      if (a.moved && G.box) {
+        const b = G.box, x0 = Math.min(b.x0, b.x1), x1 = Math.max(b.x0, b.x1), y0 = Math.min(b.y0, b.y1), y1 = Math.max(b.y0, b.y1);
+        G.sel.clear();
+        for (const j of G.br.joints) { const X = wx2sx(j.x), Y = wy2sy(j.y); if (X >= x0 && X <= x1 && Y >= y0 && Y <= y1) G.sel.add(j.id); }
+        Audio.click();
+      } else if (tap) {
+        const m = screenMember(sx, sy);
+        if (m && MATS[m.m].piston) { commit(); m.inv = !m.inv; if (!m.inv) delete m.inv; toast(m.inv ? 'Pistão: recolhe ⇣' : 'Pistão: estende ⇡'); Audio.weld(); onBridgeChanged(); }
+        else G.sel.clear();
+      }
+      G.box = null; updateSelBar(); break;
+    case 'erase':
+      if (tap) eraseAt(sx, sy, true, a); break;
+    case 'editor':
+      if (tap) editorTap(sx, sy); break;
+  }
+  G.dirty = true;
+}
+function cancelAction() { act = null; G.ghost = null; G.box = null; G.moving = null; clearTimeout(lpTimer); G.dirty = true; }
+function onWheel(e) {
+  if (G.screen !== 'game') return;
+  e.preventDefault();
+  const k = Math.exp(-e.deltaY * 0.0015);
+  const wx = sx2wx(e.clientX), wy = sy2wy(e.clientY);
+  G.cam.s = Math.max(4, Math.min(160, G.cam.s * k));
+  G.cam.x = wx - (e.clientX - VW / 2) / G.cam.s; G.cam.y = wy + (e.clientY - VH / 2) / G.cam.s;
+  G.userCam = true; G.dirty = true;
+}
+function onKey(e) {
+  if (G.screen !== 'game' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); if (e.shiftKey) doRedo(); else doUndo(); }
+  else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') { e.preventDefault(); doRedo(); }
+  else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c' && G.sel.size) copySel();
+  else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v' && G.clip) pasteClip();
+  else if (e.key === 'Delete' || e.key === 'Backspace') deleteSel();
+  else if (e.key === ' ' && G.mode === 'test') { G.paused = !G.paused; updateTestButtons(); }
+  else if (e.key === 'Escape') { if (!$('modal').classList.contains('hidden')) closeModal(); else if (G.mode === 'test') stopTest(); }
+}
+
+/* =====================================================================
+   EDITOR DE NÍVEIS (oculto: segure o título)
+   ===================================================================== */
+function levelToJSON(lv) {
+  const o = { id: 999, w: lv.w || 1, name: lv.name, hint: lv.hint, W: lv.W, hl: lv.hl, hr: lv.hr, floor: lv.floor, anchors: lv.anchors, rocks: lv.rocks, water: lv.water, veh: lv.veh, mat: lv.mat, ev: lv.ev, budget: lv.budget };
+  return JSON.stringify(o);
+}
+function openEditor(base) {
+  const src = base || Store.data.custom || levelById(1);
+  const lv = normLevel(JSON.parse(levelToJSON(src)));
+  lv.id = 999;
+  startLevel(999, lv);
+  G.editor = true;
+  $('hint').classList.add('hidden');
+  $('lvTitle').innerHTML = 'Editor de níveis <small>· toque na grade para pôr/tirar âncoras</small>';
+  renderEditorPanel();
+}
+function renderEditorPanel() {
+  const lv = G.lv, p = $('editorPanel');
+  p.classList.remove('hidden');
+  const opts = ['<option value="">— base —</option>'].concat(LEVELS.map(l => `<option value="${l.id}">${l.id}. ${l.name}</option>`)).join('');
+  p.innerHTML = `<h3>Editor</h3><div class="bd">
+    <div class="row"><select id="edBase">${opts}</select></div>
+    <div class="row"><label class="f">Nome<input type="text" id="edName" value="${(lv.name || '').replace(/"/g, '&quot;')}"></label></div>
+    <div class="row"><label class="f">Vão W<input type="number" id="edW" value="${lv.W}" min="4" max="60"></label><label class="f">Orçamento<input type="number" id="edB" value="${lv.budget}" step="500"></label></div>
+    <div class="row"><label class="f">Margem esq.<input type="number" id="edHl" value="${lv.hl}"></label><label class="f">Margem dir.<input type="number" id="edHr" value="${lv.hr}"></label><label class="f">Fundo<input type="number" id="edF" value="${lv.floor}"></label></div>
+    <div class="row"><label class="f">Água (vazio = sem)<input type="number" id="edWa" value="${lv.water ? lv.water.y : ''}"></label></div>
+    <div class="row"><button class="btn" id="edApply">Aplicar campos</button></div>
+    <label class="f">JSON do nível</label><textarea id="edJson"></textarea>
+    <div class="row"><button class="btn" id="edCopy">Exportar (copiar)</button><button class="btn" id="edPaste">Importar (colar)</button></div>
+    <div class="row"><button class="btn" id="edLoad">Carregar JSON</button><button class="btn primary" id="edPlay">Jogar nível</button></div>
+  </div>`;
+  const ta = p.querySelector('#edJson'); ta.value = levelToJSON(lv);
+  const num = (id, d) => { const v = parseFloat(p.querySelector(id).value); return Number.isFinite(v) ? v : d; };
+  p.querySelector('#edBase').onchange = e => { const id = +e.target.value; if (id) { const b = levelById(id); applyEditorLevel(JSON.parse(levelToJSON(b))); } };
+  p.querySelector('#edApply').onclick = () => {
+    const o = JSON.parse(levelToJSON(G.lv));
+    o.name = p.querySelector('#edName').value || 'Meu nível';
+    o.W = Math.max(4, Math.min(60, Math.round(num('#edW', o.W))));
+    o.budget = Math.max(0, Math.round(num('#edB', o.budget)));
+    o.hl = Math.round(num('#edHl', o.hl)); o.hr = Math.round(num('#edHr', o.hr)); o.floor = Math.round(num('#edF', o.floor));
+    const wv = p.querySelector('#edWa').value.trim();
+    o.water = wv === '' ? null : Object.assign({}, o.water || {}, { y: parseFloat(wv) });
+    // mantém âncoras das margens coerentes
+    o.anchors = o.anchors.map(([x, y]) => [x >= (G.lv.W - 1e-6) && G.lv.W !== o.W ? x - G.lv.W + o.W : x, y]);
+    applyEditorLevel(o);
+  };
+  p.querySelector('#edCopy').onclick = () => copyText(ta.value);
+  p.querySelector('#edPaste').onclick = () => pasteText(t => { ta.value = t; loadEditorJSON(t); });
+  p.querySelector('#edLoad').onclick = () => loadEditorJSON(ta.value);
+  p.querySelector('#edPlay').onclick = () => { Store.data.custom = JSON.parse(levelToJSON(G.lv)); Store.save(); const c = Store.data.custom; G.editor = false; $('editorPanel').classList.add('hidden'); startLevel(999, c); };
+}
+function loadEditorJSON(t) {
+  try {
+    const o = JSON.parse(t);
+    if (!o || typeof o.W !== 'number' || !Array.isArray(o.anchors)) throw new Error('formato');
+    applyEditorLevel(o); toast('Nível carregado');
+  } catch (e) { toast('JSON inválido'); Audio.bad(); }
+}
+function applyEditorLevel(o) {
+  o.id = 999;
+  const lv = normLevel(o);
+  lv.mat = (lv.mat || []).filter(m => MATS[m]); if (!lv.mat.length) lv.mat = MAT_ORDER.slice();
+  lv.veh = (lv.veh || []).filter(v => VEH[v.t]); if (!lv.veh.length) lv.veh = [{ t: 'carro', at: 0 }];
+  G.lv = lv; G.br = newBridge(); Store.data.custom = JSON.parse(levelToJSON(lv)); Store.save();
+  buildMatButtons(); setTool(G.tool); fitView(); onBridgeChanged(true); renderEditorPanel();
+}
+function editorTap(sx, sy) {
+  const lv = G.lv, x = snapG(sx2wx(sx)), y = snapG(sy2wy(sy));
+  const i = lv.anchors.findIndex(a => Math.hypot(a[0] - x, a[1] - y) < 0.01);
+  const o = JSON.parse(levelToJSON(lv));
+  if (i >= 0) o.anchors.splice(i, 1); else o.anchors.push([x, y]);
+  Audio.snap(); applyEditorLevel(o);
+}
+function copyText(t) {
+  const fallback = () => {
+    try { const ta = document.createElement('textarea'); ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); const ok = document.execCommand('copy'); ta.remove(); toast(ok ? 'Copiado!' : 'Selecione e copie o texto'); } catch (e) { toast('Selecione e copie o texto'); }
+  };
+  try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(() => toast('Copiado para a área de transferência'), fallback); else fallback(); } catch (e) { fallback(); }
+}
+function pasteText(cb) {
+  try {
+    if (navigator.clipboard && navigator.clipboard.readText) { navigator.clipboard.readText().then(t => cb(t), () => toast('Cole o JSON na caixa e toque “Carregar JSON”')); return; }
+  } catch (e) { /* segue */ }
+  toast('Cole o JSON na caixa e toque “Carregar JSON”');
+}
+
+/* =====================================================================
+   LOOP PRINCIPAL
+   ===================================================================== */
+let lastT = performance.now();
+G.acc = 0;
+function frame(now) {
+  const dt = Math.min(0.1, (now - lastT) / 1000); lastT = now;
+  try {
+    if (G.screen === 'game' && G.mode === 'test' && G.S) {
+      const S = G.S;
+      if (!G.paused) {
+        G.acc += dt;
+        let n = 0;
+        while (G.acc >= CFG.DT && n < 3) { stepWorld(S, G.slow ? CFG.SUB / 4 : CFG.SUB); G.acc -= CFG.DT; n++; }
+        if (n === 3) G.acc = 0;
+      }
+      processSimEvents();
+      if (S.maxNow > 0.7 && !G.paused) Audio.creak(Math.min(1, (S.maxNow - 0.7) / 0.3));
+      if (G.stressCam && S.hot) {
+        const c = S.hot, tx = (c.pa.x + c.pb.x) / 2, ty = (c.pa.y + c.pb.y) / 2;
+        G.cam.x += (tx - G.cam.x) * 0.08; G.cam.y += (ty - G.cam.y) * 0.08;
+        const ts = Math.max(G.cam.s, 38); G.cam.s += (ts - G.cam.s) * 0.05;
+      }
+      $('clock').textContent = fmtNum(S.t) + ' s';
+      if (S.state !== 'run' && !G.resultShown && S.endT > (S.state === 'win' ? 1.0 : 2.2)) finishTest();
+      if ((G.frameN = (G.frameN || 0) + 1) % 6 === 0) updateChips();
+      render(dt);
+    } else if (G.screen === 'game') {
+      render(dt);
+    }
+  } catch (err) {
+    // nunca deixa o loop morrer
+    if (!G.loopErr) { G.loopErr = true; setTimeout(() => { G.loopErr = false; }, 3000); if (window.console) console.warn(err); }
+  }
+  requestAnimationFrame(frame);
+}
+
+/* =====================================================================
+   BOOT
+   ===================================================================== */
+function bind() {
+  cv.addEventListener('pointerdown', onDown, { passive: false });
+  cv.addEventListener('pointermove', onMove, { passive: false });
+  cv.addEventListener('pointerup', onUp);
+  cv.addEventListener('pointercancel', e => { ptrs.delete(e.pointerId); pinch = null; cancelAction(); });
+  cv.addEventListener('wheel', onWheel, { passive: false });
+  cv.addEventListener('contextmenu', e => e.preventDefault());
+  window.addEventListener('keydown', onKey);
+  window.addEventListener('resize', resize);
+  window.addEventListener('orientationchange', () => setTimeout(resize, 200));
+  // bloqueia rolagem/zoom da página fora das áreas roláveis
+  document.addEventListener('touchmove', e => { if (!e.target.closest('#levelGrid,#mats,#worldTabs,.bd,textarea')) e.preventDefault(); }, { passive: false });
+  document.addEventListener('gesturestart', e => e.preventDefault());
+  document.addEventListener('dblclick', e => e.preventDefault());
+  document.addEventListener('visibilitychange', () => { if (document.hidden && G.mode === 'test') { G.paused = true; updateTestButtons(); } });
+  document.addEventListener('pointerdown', () => Audio.unlock(), { capture: true });
+
+  $('btnBack').onclick = () => { Audio.click(); if (G.mode === 'test') stopTest(); else goMenu(); };
+  $('btnFit').onclick = () => { Audio.click(); fitView(); };
+  $('btnHelp').onclick = () => { Audio.click(); showHelp(); };
+  $('btnHelp2').onclick = () => { Audio.click(); showHelp(); };
+  $('btnSettings').onclick = () => { Audio.click(); showSettings(); };
+  $('btnSandbox').onclick = () => { Audio.click(); startLevel(0); };
+  $('hintX').onclick = () => $('hint').classList.add('hidden');
+  $('hint').onclick = () => $('hint').classList.add('hidden');
+  $('tSel').onclick = () => { Audio.click(); setTool(G.tool === 'select' ? (G.lv.mat[0]) : 'select'); };
+  $('tErase').onclick = () => { Audio.click(); setTool(G.tool === 'erase' ? (G.lv.mat[0]) : 'erase'); };
+  $('tMirror').onclick = () => { G.mirror = !G.mirror; $('tMirror').classList.toggle('on', G.mirror); Audio.click(); toast(G.mirror ? `Espelho: simetria em x = ${fmtNum(G.lv.W / 2)} m` : 'Espelho desligado'); updateChips(); };
+  const togStress = () => { G.stressView = !G.stressView; S_().stress = G.stressView; Store.save(); $('tStress').classList.toggle('on', G.stressView); $('tStress2').classList.toggle('on', G.stressView); Audio.click(); updateChips(); G.dirty = true; };
+  $('tStress').onclick = togStress; $('tStress2').onclick = togStress;
+  $('tUndo').onclick = doUndo; $('tRedo').onclick = doRedo; $('tClear').onclick = doClear;
+  $('btnTest').onclick = startTest;
+  $('btnEdit').onclick = () => { Audio.click(); stopTest(); };
+  $('tPlay').onclick = () => { G.paused = !G.paused; Audio.click(); updateTestButtons(); updateChips(); };
+  $('tSlow').onclick = () => { G.slow = !G.slow; Audio.click(); updateTestButtons(); updateChips(); };
+  $('tRestart').onclick = () => { Audio.click(); restartTest(); };
+  $('tCam').onclick = () => { G.stressCam = !G.stressCam; if (!G.stressCam) fitView(); Audio.click(); updateTestButtons(); updateChips(); };
+  $('sCopy').onclick = copySel; $('sPaste').onclick = () => pasteClip(); $('sMirror').onclick = mirrorSel; $('sDel').onclick = deleteSel;
+  // segurar o título abre o editor oculto
+  let titleT = 0;
+  const title = $('title');
+  title.addEventListener('pointerdown', () => { clearTimeout(titleT); titleT = setTimeout(() => { vibe(40); Audio.weld(); openEditor(); }, 900); });
+  for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) title.addEventListener(ev, () => clearTimeout(titleT));
+  title.addEventListener('contextmenu', e => e.preventDefault());
+}
+bind();
+resize();
+renderMenu();
+showScreen('menu');
+requestAnimationFrame(frame);
+// para testes automatizados
+window.__PM = { G, startLevel, startTest, stopTest, openEditor, goMenu, Store };
+})();
+
+</script>
+</body>
+</html>

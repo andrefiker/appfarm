@@ -2,9 +2,9 @@
 
 A bright, touch-first air-traffic routing game for Android.
 
-## v1.1.0 gameplay
+## v1.1.1 gameplay
 - Top-down illustrated airfield instead of a radar console.
-- Touch an aircraft and draw its route directly with your finger.
+- Touch an aircraft and draw its route directly with your finger. v1.1.1 adds a large mobile grab radius, touch-through HUD, route-start correction, faster steering response, and slowed simulation while a route is being drawn.
 - Planes snap to runway approaches when the drawn path reaches either runway gate.
 - Helicopters land on the helipad.
 - Visible dotted routes stay on the map.
@@ -30,6 +30,6 @@ node --check web/game.js
 ## Android
 Package: `com.andrefiker.quietatc`
 
-Version: `1.1.0` / versionCode `2`
+Version: `1.1.1` / versionCode `3`
 
-GitHub Actions builds and verifies `Quiet-ATC-v1.1.0.apk`.
+GitHub Actions builds and verifies `Quiet-ATC-v1.1.1.apk`.

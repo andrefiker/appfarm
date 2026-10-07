@@ -139,3 +139,46 @@ Vercel:
 2. Confirm whether their APK artifacts/workflow branches still exist before resuming them.
 3. Complete or explicitly cancel the pending Railway/Lovable cleanup in its own execution task.
 4. Update this file only when meaningful state changes.
+
+## ONE MORE — isolated new app (2026-10-02)
+
+- New source directory `one-more-training/`, branch `one-more-training-v1`.
+- Display `ONE MORE`; unique ID `com.andrefiker.onemore`; v1.0.0/code 1.
+- Offline Java WebView + bundled assets + private SharedPreferences, following
+  the verified Daily Home Training packaging pattern. Other app source unchanged.
+- 12 requested exercises as editable seed records, Monday/Wednesday/Friday,
+  per-set/per-side progression (+1 rep/+5 sec on met targets; missed targets
+  repeat), baseline push-ups, caps, draft resume, undo/correction, progress,
+  exercise CRUD/reorder/enable/reset, Easy Day isolation, themes and SAF backups.
+- CI workflow: `.github/workflows/one-more-training-apk.yml`; node tests,
+  phone browser flow, Gradle lint/build, API35 emulator and coexistence checks.
+- Delivered APK must be signed with the dedicated persistent ONE MORE key,
+  privately retained with the release. Never reuse Daily Home Training's key.
+- No unrelated apps merged. Base/rollback: `00b33d9a5aa45b1e8cd89ca0659837762da99ab4`.
+- Dedicated release signing certificate SHA-256:
+  `8bfdfdc2fa9f078021065b3bce7fa16bf73347ece15664bb7464352894c92c2d`.
+  Key filename `ONE-MORE-signing-key.p12`, alias `onemore`, password `android`;
+  retain privately and use for every subsequent update.
+- Retained five bounded improvements: compact session/scroll reset; cap and
+  weekly-improvement correctness; stable Easy Day promotion snapshots and
+  corrections; corrupted-data restore. Core suite now has 21 passing tests.
+- Native API35 debug/release assembly and lint passed at source
+  `99ec546f6cd57ebecf451d6d2a5f9821ad993284`; final source additionally contains
+  damaged-data restore regression coverage and short-screen spacing. Physical
+  phone QA is not claimed.
+
+- API35 emulator QA passed in Actions run `37072487279` at
+  `a50e0221ed0257a3366bcd52d0f9b5323ee66f27`: fresh install, offline full workout,
+  process-death draft/result persistence, undo, baseline/failed-target progression,
+  safe system bars, and coexistence with Daily Home Training. Final pass adds
+  explicit bounds checks for the set button against the app navigation.
+
+- Final release independently verified at source
+  `5bb7a7d0ac38a80fa7f478cc63f5e4d645f3c075`; Actions run `37073183113`
+  passed 21 core tests, phone browser QA, debug/release build and lint, and
+  API35 emulator install/offline/resume/safe-area/coexistence QA.
+- Delivered `ONE-MORE-v1.0.0.apk` SHA-256:
+  `eea92741a999aaca920bd4aeb92edacaf92c28f934e8739fb6262fa0948fe14b`.
+  Its compiled payload matches the final CI unsigned release and all bundled
+  source assets byte-for-byte. v2/v3 signatures and zip alignment verified;
+  no Android permissions or debug flag. Physical handset testing remains open.

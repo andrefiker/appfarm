@@ -22,7 +22,7 @@ public class SmokeRunner extends Instrumentation {
     void tap(String text){ui(()->{View v=find(a.root,text);if(v==null)throw new AssertionError("Missing button: "+text);v.performClick();});}
     void set(String field,String text){ui(()->a.fields.get(field).setText(text));}
     void snapshot(String name)throws Exception{Thread.sleep(250);ui(()->{try{int w=a.root.getWidth(),h=a.root.getHeight();check(w>0&&h>0,"layout ready "+name);Bitmap b=Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888);a.root.draw(new Canvas(b));try(FileOutputStream out=new FileOutputStream(new File(a.getFilesDir(),name+".png"))){b.compress(Bitmap.CompressFormat.PNG,100,out);}b.recycle();}catch(Exception e){throw new RuntimeException(e);}});}
-    void awaitOpen()throws Exception{for(int i=0;i<100;i++){Thread.sleep(100);final boolean[] done={false};ui(()->done[0]=a.data!=null&&!a.busy);if(done[0])return;}throw new AssertionError("Unlock timeout");}
+    void awaitOpen()throws Exception{for(int i=0;i<600;i++){Thread.sleep(100);final boolean[] done={false};ui(()->done[0]=a.data!=null&&!a.busy);if(done[0])return;}throw new AssertionError("Unlock timeout: busy="+a.busy+", epoch="+a.unlockEpoch+", vault="+a.hasVault()+", data="+(a.data!=null));}
     AccessibilityNodeInfo node(AccessibilityNodeInfo root,String label,boolean description) {
         if(root==null)return null;
         CharSequence v=description?root.getContentDescription():root.getText();

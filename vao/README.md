@@ -1,9 +1,27 @@
-# VÃO 1.2.0 preview
+# VÃO 1.3.0 preview
 
-Recovered from the user supplied v1.0 APK (`SHA-256 1abef35798dc39da6507da49deee633bb5afc4a7ffeb9744990987826ac303f6`). The original bundled `assets/index.html` was the starting source. The 20 original levels, Matter.js simulation, editor, budget and replay remain in `index.html`; progression rules live in `progression.js`. No network, accounts or backend.
+VÃO is the local-first bridge-building / structural puzzle game in AppFarm. Version 1.3 keeps the recovered Matter.js physics, touch editor, budget system, replays, local saves, material simulation and Android WebView shell, but replaces the campaign layer with a much broader structural journey.
 
-Run `node vao/tests/progression.test.js` and `node vao/tests/editor.test.js` from the repository root. Open `vao/index.html` in a browser for the game. The Android WebView shell is `vao/android/`; the workflow copies both web files into assets and builds the update package `appfarm.vao` plus a separate, installable `appfarm.vao.preview12` version 1.2.0-preview (code 3). The downloadable workflow artifact is the preview, so installed v1 and v1.1 previews remain untouched. The editor can select and change an existing beam's material, replay records the first simulation failure, and the local v3 save adds discovery, challenges and personal best reward baselines.
+## 1.3 campaign overhaul
 
-The v1 APK uses a private signing certificate with SHA-256 fingerprint `E3:E3:98:5C:22:50:C8:CB:1B:7F:4E:1A:80:9D:E7:50:15:3A:1E:01:D2:C0:71:64:FE:BC:C3:7A:0D:AF:47:1B`. The original private key was not supplied. A debug signed `appfarm.vao` APK **cannot install over v1**. The v1.1 preview also used a transient CI debug key, so v1.2 uses a distinct preview package. It installs beside both older builds and begins with fresh progress. Do not uninstall older builds if their saved bridges matter. The code migrates v1/v1.1 `vao-v1` localStorage objects when installed as a correctly signed update of the matching package; it cannot read another app's storage. A compatible official release needs the original signing keystore, alias and password and a matching signer fingerprint.
+- 36 campaign levels instead of 20.
+- 9 structural chapters and at least 9 visually distinct environments.
+- Terrain now includes uneven banks, central islands, multiple piers, deep gorges, overhead rock / low-clearance problems, flood channels, industrial cuts, coastal pontoons, mountain crossings and multi-span viaducts.
+- Later stages combine wind, rising water, cargo, heavy vehicles and moving platforms instead of relying on material swaps for difficulty.
+- Six varied sandbox terrains replace the old three nearly-identical spans.
+- Environment-aware blueprint palettes and subtle scenery make quarry, canyon, river, coast, mountain, industrial and city crossings visually distinct while keeping construction readable.
+- Legacy v1-v1.2 progress migrates to save version 4. Completing the old 20-level campaign opens level 21; the full-campaign Veteran milestone now requires all 36 levels.
+- Existing core materials and physics are preserved. The extra materials (aluminum, concrete, composite) remain progression rewards rather than the main source of level variety.
 
-No VÃO source commit predates this recovery. The v1.1 rollback source commit is `c3b8ba046e18db07278cbd3c4159fc244c856029`; the v1 APK above is the original product rollback artifact. New levels were deferred to preserve balance.
+Run:
+- \`node vao/tests/progression.test.js\`
+- \`node vao/tests/editor.test.js\`
+- \`node vao/tests/campaign.test.js\`
+
+Open \`vao/index.html\` in a browser for the game. The Android WebView shell is \`vao/android/\`. The build workflow bundles \`index.html\`, \`progression.js\` and \`levels-v2.js\` locally; there is no network dependency, backend, login or analytics.
+
+Android preview package: \`appfarm.vao.preview13\`, version \`1.3.0-preview\` (version code 4). It installs beside the older v1, v1.1 and v1.2 preview packages.
+
+The original v1 package \`appfarm.vao\` uses a private signing certificate with SHA-256 fingerprint \`E3:E3:98:5C:22:50:C8:CB:1B:7F:4E:1A:80:9D:E7:50:15:3A:1E:01:D2:C0:71:64:FE:BC:C3:7A:0D:AF:47:1B\`. A compatible in-place upgrade still requires that original signing key.
+
+Rollback target before the 1.3 world/campaign overhaul: \`1b88ff13c3330fd8e7e07c042a83cdbb24a7a02c\`.

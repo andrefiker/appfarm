@@ -1,7 +1,7 @@
 name: Build VÃO APK
 on:
   push:
-    branches: [vao-v1.1-overhaul]
+    branches: [vao-v1.3-worlds]
     paths:
       - 'vao/**'
       - '.github/workflows/build-vao-apk.yml'
@@ -22,6 +22,7 @@ jobs:
         run: |
           node vao/tests/progression.test.js
           node vao/tests/editor.test.js
+          node vao/tests/campaign.test.js
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -36,16 +37,16 @@ jobs:
       - name: Bundle offline game and build
         run: |
           mkdir -p vao/android/app/src/main/assets
-          cp vao/index.html vao/progression.js vao/android/app/src/main/assets/
+          cp vao/index.html vao/progression.js vao/levels-v2.js vao/android/app/src/main/assets/
           cd vao/android
           gradle --no-daemon :app:assembleUpgradeDebug :app:assemblePreviewDebug
           mkdir -p ../dist
-          cp app/build/outputs/apk/preview/debug/app-preview-debug.apk ../dist/Vao-v1.2.0-preview.apk
+          cp app/build/outputs/apk/preview/debug/app-preview-debug.apk ../dist/Vao-v1.3.0-preview.apk
       - name: Verify APK
         run: |
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging vao/dist/Vao-v1.2.0-preview.apk | head -n 5
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging vao/dist/Vao-v1.3.0-preview.apk | head -n 5
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose vao/dist/Vao-v1.2.0-preview.apk
-          unzip -l vao/dist/Vao-v1.2.0-preview.apk | grep -E 'assets/(index.html|progression.js)'
+          unzip -l vao/dist/Vao-v1.2.0-preview.apk | grep -E 'assets/(index.html|progression.js|levels-v2.js)'
           if "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions vao/dist/Vao-v1.2.0-preview.apk | grep -q 'android.permission.INTERNET'; then exit 1; fi
       - uses: actions/upload-artifact@v4
         with:
@@ -62,7 +63,7 @@ jobs:
           script: |
             adb install -r vao/dist/Vao-v1.2.0-preview.apk
             adb logcat -c
-            adb shell am start -n appfarm.vao.preview12/appfarm.vao.MainActivity
+            adb shell am start -n appfarm.vao.preview13/appfarm.vao.MainActivity
             for i in $(seq 1 20); do
               if adb logcat -d -s VaoSmoke:I | grep -q '"ready"'; then break; fi
               sleep 2
@@ -75,11 +76,11 @@ jobs:
             adb shell input keyevent KEYCODE_BACK
             sleep 3
             adb shell dumpsys activity activities | grep -q 'appfarm.vao.preview12/appfarm.vao.MainActivity'
-            adb exec-out screencap -p > vao/dist/vao-v1.2-emulator.png
+            adb exec-out screencap -p > vao/dist/vao-v1.3-emulator.png
             if adb logcat -d -s AndroidRuntime:E | grep -q 'FATAL EXCEPTION'; then exit 1; fi
       - uses: actions/upload-artifact@v4
         with:
-          name: Vao-v1.2.0-emulator-smoke
+          name: Vao-v1.3.0-emulator-smoke
           path: vao/dist/vao-v1.2-emulator.png
           retention-days: 7
           if-no-files-found: error

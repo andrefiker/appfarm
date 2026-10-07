@@ -1,8 +1,9 @@
 /* VÃO progression. Pure rules, shared by the game and Node tests. */
 (function (root) {
 'use strict';
-var TITLES = ['Aprendiz', 'Construtor', 'Projetista', 'Engenheiro', 'Especialista', 'Mestre', 'Veterano'];
-var THRESHOLDS = [0, 180, 440, 800, 1280, 1880, 2600, 3440, 4400, 5480, 6680, 8000];
+var TITLES = ['Aprendiz', 'Construtor', 'Projetista', 'Engenheiro', 'Especialista', 'Mestre', 'Veterano', 'Referência', 'Lenda'];
+var THRESHOLDS = [0, 180, 440, 800, 1280, 1880, 2600, 3440, 4400, 5480, 6680, 8000, 9500, 11200, 13100, 15200];
+var CAMPAIGN_LEVELS = 36;
 var EXTRA = [
   { id: 'aluminum', name: 'Alumínio', level: 3, stage: 7, note: 'Leve; suporta vãos maiores que madeira.', traits: [3, 1, 3, 4] },
   { id: 'concrete', name: 'Concreto', level: 4, stage: 10, note: 'Ótimo em compressão; frágil em tração.', traits: [3, 5, 1, 2] },
@@ -27,7 +28,7 @@ var CHALLENGES = [
   { id: 'concrete', name: 'Compressão certa', note: 'Faça concreto trabalhar em compressão.', stage: 10 },
   { id: 'composite', name: 'Compósito eficiente', note: 'Use compósito e poupe 15% do orçamento.', stage: 15 },
   { id: 'truck', name: 'Caminhão sem cabos', note: 'Passe com caminhão sem usar cabos.', stage: 12 },
-  { id: 'late', name: 'Grande vão calmo', note: 'Passe uma fase final com até 70% de esforço.', stage: 16 }
+  { id: 'late', name: 'Grande vão calmo', note: 'Passe uma fase final com até 70% de esforço.', stage: 28 }
 ];
 function has(o, k) { return Object.prototype.hasOwnProperty.call(o || {}, k); }
 function count(p) { return Object.keys(p.best || {}).filter(function (k) { return Number.isFinite(+p.best[k]); }).length; }
@@ -47,12 +48,12 @@ function level(xp) {
 function title(n) { return TITLES[Math.min(TITLES.length - 1, n - 1)]; }
 function next(xp) { return THRESHOLDS[Math.min(THRESHOLDS.length - 1, level(xp))]; }
 function normalize(v1) {
-  var p = { v: 3, unlocked: 1, best: {}, designs: {}, sandbox: { t: 0, veh: 'carro', wind: 0, water: 0, design: null }, mute: false, seenHelp: false,
+  var p = { v: 4, unlocked: 1, best: {}, designs: {}, sandbox: { t: 0, veh: 'carro', wind: 0, water: 0, design: null }, mute: false, seenHelp: false,
     xp: 0, grades: {}, stress: {}, milestones: {}, sandboxAll: false, discovered: {}, challenges: {}, pbRewardBaseline: {}, gradeRewards: {} };
-  if (v1 && (v1.v === 1 || v1.v === 2 || v1.v === 3)) {
+  if (v1 && (v1.v === 1 || v1.v === 2 || v1.v === 3 || v1.v === 4)) {
     ['unlocked', 'best', 'designs', 'mute', 'seenHelp', 'sandbox'].forEach(function (k) { if (has(v1, k)) p[k] = v1[k]; });
     if (v1.v >= 2) ['xp', 'grades', 'stress', 'milestones', 'sandboxAll'].forEach(function (k) { if (has(v1, k)) p[k] = v1[k]; });
-    if (v1.v === 3) ['discovered', 'challenges', 'pbRewardBaseline', 'gradeRewards'].forEach(function (k) { if (has(v1, k)) p[k] = v1[k]; });
+    if (v1.v >= 3) ['discovered', 'challenges', 'pbRewardBaseline', 'gradeRewards'].forEach(function (k) { if (has(v1, k)) p[k] = v1[k]; });
     if (v1.v === 1) {
       Object.keys(p.best || {}).forEach(function (k) {
         if (!Number.isFinite(+p.best[k]) || +k < 1 || +k > 20) return;
@@ -65,7 +66,7 @@ function normalize(v1) {
       if (count(p) >= 5) { p.milestones.five = true; p.xp += 35; }
       if (Object.keys(p.best).some(function (k) { return +k >= 16 && +k <= 20; })) { p.milestones.long = true; p.xp += 35; }
       if (count(p) >= 10) { p.milestones.ten = true; p.xp += 35; }
-      if (count(p) >= 20) { p.milestones.veteran = true; p.xp += 35; }
+      if (count(p) >= CAMPAIGN_LEVELS) { p.milestones.veteran = true; p.xp += 35; }
     }
     if (v1.v < 3) {
       p.discovered.road = p.discovered.wood = true;
@@ -85,12 +86,16 @@ function normalize(v1) {
       });
     }
   }
+  if (v1 && v1.v < 4) {
+    if (count(p) >= 20 && p.unlocked >= 20) p.unlocked = Math.max(p.unlocked, 21);
+    if (count(p) < CAMPAIGN_LEVELS) delete p.milestones.veteran;
+  }
   if (!p.best || typeof p.best !== 'object') p.best = {};
   if (!p.designs || typeof p.designs !== 'object') p.designs = {};
   if (!p.sandbox || typeof p.sandbox !== 'object') p.sandbox = { t: 0, veh: 'carro', wind: 0, water: 0, design: null };
   ['grades', 'stress', 'milestones', 'discovered', 'challenges', 'pbRewardBaseline', 'gradeRewards'].forEach(function (k) { if (!p[k] || typeof p[k] !== 'object') p[k] = {}; });
   p.xp = Math.max(0, Math.floor(+p.xp || 0));
-  p.unlocked = Math.max(1, Math.min(20, Math.floor(+p.unlocked || 1)));
+  p.unlocked = Math.max(1, Math.min(CAMPAIGN_LEVELS, Math.floor(+p.unlocked || 1)));
   return p;
 }
 var BUDGETS = [2000,3000,7750,10000,8500,18000,9250,17750,16500,6500,14750,12000,10250,17000,12250,11500,12750,13500,6000,18250];
@@ -156,10 +161,10 @@ function milestonesFor(p, lv, left, stress) {
   if (left >= lv.budget * 0.25) ids.push('economy');
   if (stress < 80) ids.push('stress');
   if (c >= 5) ids.push('five');
-  if (lv.id >= 16) ids.push('long');
+  if (lv.id >= 33) ids.push('long');
   if (lv.vehicle === 'caminhao') ids.push('truck');
   if (c >= 10) ids.push('ten');
-  if (c >= 20) ids.push('veteran');
+  if (c >= CAMPAIGN_LEVELS) ids.push('veteran');
   return ids.filter(function (id) { return !p.milestones[id]; });
 }
 function award(p, lv, left, stress, context) {
@@ -181,7 +186,7 @@ function award(p, lv, left, stress, context) {
   ['B', 'A', 'S'].forEach(function (tier) {
     if (rank(g) >= rank(tier) && !p.gradeRewards[tier]) { p.gradeRewards[tier] = true; gain += tier === 'S' ? 50 : tier === 'A' ? 35 : 25; }
   });
-  p.unlocked = Math.max(p.unlocked, Math.min(20, lv.id + 1));
+  p.unlocked = Math.max(p.unlocked, Math.min(CAMPAIGN_LEVELS, lv.id + 1));
   var marks = milestonesFor(p, lv, left, stress);
   marks.forEach(function (id) { p.milestones[id] = true; gain += 35; });
   var wins = context ? challengeWins(p, lv, context.design, context.defs, context.beams, left, stress) : [];
@@ -195,7 +200,7 @@ function award(p, lv, left, stress, context) {
     milestones: marks, challenges: wins, newlyAvailable: unlocked };
 }
 var api = { normalize: normalize, award: award, grade: grade, level: level, title: title, next: next, available: available,
-  count: count, EXTRA: EXTRA, MILESTONES: MILESTONES, CHALLENGES: CHALLENGES, MATERIALS: MATERIALS, THRESHOLDS: THRESHOLDS,
+  count: count, EXTRA: EXTRA, MILESTONES: MILESTONES, CHALLENGES: CHALLENGES, MATERIALS: MATERIALS, THRESHOLDS: THRESHOLDS, CAMPAIGN_LEVELS: CAMPAIGN_LEVELS,
   discover: discover, materialState: materialState, nextUnlock: nextUnlock, changeMaterial: changeMaterial, structuralMass: structuralMass };
 if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.VaoProgress = api;
 })(this);

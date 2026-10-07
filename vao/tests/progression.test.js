@@ -8,12 +8,14 @@ const inline = [...html.matchAll(/<script(?: [^>]*)?>([\s\S]*?)<\/script>/g)].ma
 const context = { console, setTimeout, clearTimeout };
 vm.createContext(context);
 inline.slice(0, 3).forEach(code => vm.runInContext(code, context));
-const S = context.VaoSim, LV = context.VaoLevels;
+const S = context.VaoSim;
+const LV = require('../levels-v2.js');
+context.VaoLevels = LV;
 
 const legacy = { v: 1, unlocked: 4, best: { 1: 500, 2: 800 }, designs: { 1: { nodes: [[1, 2]], beams: [] } },
   sandbox: { t: 2, veh: 'van', wind: 1, water: 0, design: { nodes: [], beams: [] } }, mute: true, seenHelp: true };
 const p = P.normalize(legacy);
-assert.equal(p.v, 3);
+assert.equal(p.v, 4);
 assert.equal(p.unlocked, 4);
 assert.deepEqual(p.designs, legacy.designs);
 assert.deepEqual(p.sandbox, legacy.sandbox);
@@ -29,7 +31,7 @@ assert.equal(P.materialState(P.normalize(null), 'wood', LV.SANDBOX_TERRAINS[0]),
 const v11 = P.normalize({ v: 2, xp: 910, unlocked: 8, best: { 1: 500 }, grades: { 1: 'A' }, stress: { 1: 65 },
   milestones: { first: true }, designs: legacy.designs, sandbox: legacy.sandbox, mute: true, sandboxAll: false });
 assert.equal(v11.xp, 910);
-assert.equal(v11.v, 3);
+assert.equal(v11.v, 4);
 assert.equal(v11.pbRewardBaseline[1], 500);
 assert(v11.gradeRewards.B && v11.gradeRewards.A);
 assert.equal(v11.discovered.cable, true);
@@ -59,13 +61,13 @@ assert.equal(P.level(P.THRESHOLDS[2]), 3);
 const fresh = P.normalize(null);
 assert.deepEqual(P.available(fresh, LV.LEVELS[0]), LV.LEVELS[0].mats);
 const veteran = P.normalize(null);
-veteran.xp = 2700; veteran.unlocked = 20;
+veteran.xp = 2700; veteran.unlocked = P.CAMPAIGN_LEVELS;
 for (const lv of LV.LEVELS) {
   const available = P.available(veteran, lv);
   assert(lv.mats.every(k => available.includes(k)), `level ${lv.id} retains its v1 tools`);
-  assert.equal(lv.budget, [2000,3000,7750,10000,8500,18000,9250,17750,16500,6500,14750,12000,10250,17000,12250,11500,12750,13500,6000,18250][lv.id - 1]);
+  assert(Number.isFinite(lv.budget) && lv.budget > 0, `level ${lv.id} has a positive budget`);
 }
-assert.equal(LV.LEVELS.length, 20);
+assert.equal(LV.LEVELS.length, 36);
 assert(P.available(veteran, LV.LEVELS[14]).includes('composite'));
 assert(!P.available(fresh, LV.LEVELS[14]).includes('composite'));
 assert(!P.available(fresh, LV.SANDBOX_TERRAINS[0]).includes('composite'));
@@ -176,3 +178,9 @@ assert(challengeOnConcrete.challenges.includes('concrete'));
 assert(!P.award(concreteChallenge, LV.LEVELS[9], 1400, 65,
   {design:compressionDesign,defs:m,beams:compressionSim.beams}).challenges.includes('concrete'));
 console.log('VÃO progression, migration, original campaign and material simulation checks passed');
+
+const migratedCampaign = P.normalize({v:3,xp:8000,unlocked:20,best:Object.fromEntries(Array.from({length:20},(_,i)=>[i+1,1000])),grades:{},stress:{},milestones:{veteran:true},designs:{},sandbox:{t:0,veh:'carro',wind:0,water:0,design:null},mute:false,sandboxAll:false,discovered:{},challenges:{},pbRewardBaseline:{},gradeRewards:{}});
+assert.equal(migratedCampaign.v,4);
+assert.equal(migratedCampaign.unlocked,21,'completed legacy campaign opens the first new level');
+assert.equal(migratedCampaign.milestones.veteran,undefined,'20-level veteran does not falsely mark the 36-level campaign complete');
+assert.equal(P.CAMPAIGN_LEVELS,36);

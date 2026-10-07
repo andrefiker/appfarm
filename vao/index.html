@@ -111,7 +111,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .lv .bs{font-size:11px;color:var(--ok);font-weight:700}
 .lv.lock{opacity:.45;background:var(--paper2)}
 .lv.done{border-color:var(--ok)}
-.lv .tag{position:absolute;right:5px;top:4px;font-size:10px;color:var(--ink2);font-weight:700}
+.lv .tag{position:absolute;right:5px;top:4px;font-size:10px;color:var(--ink2);font-weight:700;max-width:64%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .blk{font-size:11px;font-weight:800;letter-spacing:.12em;color:var(--ink2);margin:2px 0 4px;text-transform:uppercase}
 
 #toast{position:fixed;left:50%;bottom:72px;transform:translateX(-50%);max-width:min(620px,92vw);background:var(--card);border:1.5px solid var(--ink);
@@ -915,6 +915,7 @@ var api = { LEVELS: LEVELS, SANDBOX_TERRAINS: SANDBOX_TERRAINS, H: H };
 if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.VaoLevels = api;
 })(this);
 </script>
+<script src="levels-v2.js"></script>
 <script src="progression.js"></script>
 <script>/* Vão — game UI, editor, renderer */
 (function () {
@@ -1210,7 +1211,7 @@ var toastT = 0;
 function toast(html, ms) { var t = $('toast'); t.innerHTML = html; t.classList.remove('hidden'); clearTimeout(toastT); if (ms) toastT = setTimeout(hideToast, ms); }
 function hideToast() { $('toast').classList.add('hidden'); }
 
-function blockName(i) { return ['Pista e madeira', 'Aço', 'Cabos', 'Vento', 'Veículos pesados e carga', 'Água', 'Plataforma flutuante'][[0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 6, 6][i]]; }
+function blockName(i) { var lv = LV.LEVELS[i]; return lv && lv.chapter ? lv.chapter : 'Campanha'; }
 function renderLevels() {
   refreshProgress();
   var root = $('lgrid'); root.innerHTML = '';
@@ -1220,7 +1221,7 @@ function renderLevels() {
     if (bn !== lastBlk) { var grp = document.createElement('div'); grp.className = 'bgrp'; grp.innerHTML = '<div class="blk">' + bn + '</div><div class="bin"></div>'; root.appendChild(grp); g = grp.lastChild; lastBlk = bn; }
     var b = document.createElement('button'), lock = lv.id > prog.unlocked, best = prog.best[lv.id];
     b.className = 'lv' + (lock ? ' lock' : '') + (best !== undefined ? ' done' : '');
-    b.innerHTML = '<span class="n">' + lv.id + '</span><span class="tag">' + S.VEHICLES[lv.vehicle].name + '</span><span class="nm">' + lv.name + '</span>' +
+    b.innerHTML = '<span class="n">' + lv.id + '</span><span class="tag">' + (lv.envName ? lv.envName + ' · ' : '') + S.VEHICLES[lv.vehicle].name + '</span><span class="nm">' + lv.name + '</span>' +
       (best !== undefined ? '<span class="bs">' + (prog.grades[lv.id] || 'C') + ' · ' + fmt(best) + ' livre</span>' : (lock ? '<span class="bs" style="color:#7f9bb8">bloqueado</span>' : '<span class="bs" style="color:#2f5b86">' + fmt(lv.budget) + '</span>'));
     if (!lock) b.onclick = function () { snd('tick'); openLevel(lv.id); };
     g.appendChild(b);
@@ -1237,7 +1238,7 @@ function openLevel(id, preferredMaterial) {
   P.discover(prog, cur.mats); save();
   undo = []; mat = preferredMaterial && cur.mats.indexOf(preferredMaterial) >= 0 ? preferredMaterial : cur.mats[0]; eraseMode = false; anchorMode = false;
   selectedBeam = -1; lastStress = null; lastFailure = null;
-  $('ttl').innerHTML = cur.sandbox ? 'Sandbox <small>· ' + cur.name + '</small>' : cur.id + ' · ' + cur.name + ' <small>· ' + S.VEHICLES[cur.vehicle].name + '</small>';
+  $('ttl').innerHTML = cur.sandbox ? 'Sandbox <small>· ' + cur.name + (cur.envName ? ' · ' + cur.envName : '') + '</small>' : cur.id + ' · ' + cur.name + ' <small>· ' + S.VEHICLES[cur.vehicle].name + (cur.envName ? ' · ' + cur.envName : '') + '</small>';
   buildMatButtons(); syncTools(); refreshBudget();
   fitCam(true);
   sim = null; frames = []; replay = null;
@@ -1359,51 +1360,95 @@ function heat(v) {
 var MCOL = { road: '#4a4a4a', wood: '#b07a3c', steel: '#5b6f86', cable: '#2b2b2b', aluminum: '#8aa8ab', concrete: '#918b78', composite: '#628a73' };
 function mw(m) { return Math.max(1.5, cam.s * ({ road: 0.2, wood: 0.13, steel: 0.13, cable: 0.05, aluminum: 0.11, concrete: 0.19, composite: 0.1 })[m]); }
 
+var ENV_STYLE = {
+  campina:{paper:'#f4f0e4',minor:'#d9e3ec',major:'#bfd0e0',terrain:'#e5d9bc',stroke:'#35556f',accent:'#88a071'},
+  pedreira:{paper:'#f1eee7',minor:'#ddd8cf',major:'#c8c0b3',terrain:'#d2c4b3',stroke:'#4c4a46',accent:'#a88768'},
+  canion:{paper:'#f7efe5',minor:'#ead8c5',major:'#d8bea2',terrain:'#d9ad82',stroke:'#70472f',accent:'#b26d42'},
+  planalto:{paper:'#edf3f5',minor:'#d6e2e7',major:'#b9cdd6',terrain:'#d7d7ca',stroke:'#355364',accent:'#7597a7'},
+  industrial:{paper:'#efefeb',minor:'#d8d8d2',major:'#bdbdb4',terrain:'#c9c6bd',stroke:'#41484c',accent:'#7f705c'},
+  rio:{paper:'#edf5f3',minor:'#d4e5e2',major:'#b9d3cf',terrain:'#d8d1b7',stroke:'#315b60',accent:'#5f9185'},
+  costa:{paper:'#edf5f7',minor:'#d4e6eb',major:'#b8d4dc',terrain:'#d8cfb6',stroke:'#2f5669',accent:'#6d94a4'},
+  montanha:{paper:'#f1f3f0',minor:'#dce1dd',major:'#c1cbc4',terrain:'#c8c8bd',stroke:'#3d5148',accent:'#798e80'},
+  cidade:{paper:'#f1f1f3',minor:'#ddddE3',major:'#c4c5ce',terrain:'#d0d0d0',stroke:'#3d4552',accent:'#7b8493'}
+};
+function envStyle() { return ENV_STYLE[(cur && cur.env) || 'campina'] || ENV_STYLE.campina; }
+function drawScenery(st) {
+  if (!cur) return;
+  ctx.save(); ctx.globalAlpha = 0.13; ctx.fillStyle = st.accent; ctx.strokeStyle = st.accent; ctx.lineWidth = 2;
+  if (cur.env === 'cidade' || cur.env === 'industrial') {
+    var base = H * 0.28;
+    for (var i = 0; i < 10; i++) {
+      var ww = 35 + (i % 3) * 14, hh = 28 + ((i * 29) % 70), xx = i * (W / 9) - 25;
+      ctx.fillRect(xx, base - hh, ww, hh);
+    }
+    if (cur.env === 'industrial') {
+      ctx.beginPath(); ctx.moveTo(W * .72, base - 95); ctx.lineTo(W * .72, base - 15); ctx.lineTo(W * .88, base - 15); ctx.moveTo(W * .72, base - 82); ctx.lineTo(W * .84, base - 82); ctx.stroke();
+    }
+  } else if (cur.env === 'montanha' || cur.env === 'canion' || cur.env === 'planalto') {
+    ctx.beginPath(); ctx.moveTo(0, H * .3);
+    for (var x = 0; x <= W; x += W / 8) {
+      var y = H * (.18 + .07 * Math.sin(x * .013 + (cur.seed || 1)));
+      ctx.lineTo(x, y);
+    }
+    ctx.lineTo(W, H * .36); ctx.lineTo(0, H * .36); ctx.closePath(); ctx.fill();
+  } else if (cur.env === 'rio' || cur.env === 'costa') {
+    ctx.fillRect(0, H * .24, W, 2);
+    for (var r = 0; r < 7; r++) { ctx.fillRect(r * W / 6 - 10, H * .22 - (r % 2) * 5, 28, 2); }
+  } else {
+    ctx.beginPath(); ctx.moveTo(0, H * .31);
+    for (var q = 0; q <= W; q += 55) ctx.lineTo(q, H * (.29 + .025 * Math.sin(q * .025)));
+    ctx.lineTo(W, H * .38); ctx.lineTo(0, H * .38); ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+}
 function drawPaper() {
-  ctx.fillStyle = '#f4f0e4'; ctx.fillRect(0, 0, W, H);
+  var st = envStyle();
+  ctx.fillStyle = st.paper; ctx.fillRect(0, 0, W, H);
+  drawScenery(st);
   var s = cam.s, tl = s2w(0, 0), br = s2w(W, H);
   var step = s < 14 ? 2 : 1;
   ctx.lineWidth = 1;
   for (var x = Math.floor(tl[0]); x <= br[0]; x += 1) {
     if (x % step) continue;
     var p = w2s(x, 0)[0];
-    ctx.strokeStyle = x % 4 === 0 ? '#bfd0e0' : '#d9e3ec';
+    ctx.strokeStyle = x % 4 === 0 ? st.major : st.minor;
     ctx.beginPath(); ctx.moveTo(Math.round(p) + 0.5, 0); ctx.lineTo(Math.round(p) + 0.5, H); ctx.stroke();
   }
   for (var y = Math.floor(tl[1]); y <= br[1]; y += 1) {
     if (y % step) continue;
     var q = w2s(0, y)[1];
-    ctx.strokeStyle = y % 4 === 0 ? '#bfd0e0' : '#d9e3ec';
+    ctx.strokeStyle = y % 4 === 0 ? st.major : st.minor;
     ctx.beginPath(); ctx.moveTo(0, Math.round(q) + 0.5); ctx.lineTo(W, Math.round(q) + 0.5); ctx.stroke();
   }
-  if (mode === 'build' && s >= 26) {      // half-grid dots
-    ctx.fillStyle = '#c3d2e0';
+  if (mode === 'build' && s >= 26) {
+    ctx.fillStyle = st.major;
     for (var hx = Math.floor(tl[0]); hx <= br[0]; hx += 0.5) for (var hy = Math.floor(tl[1]); hy <= br[1]; hy += 0.5) {
       if (hx % 1 === 0 && hy % 1 === 0) continue;
       var pp = w2s(hx, hy); ctx.fillRect(pp[0] - 1, pp[1] - 1, 2, 2);
     }
   }
 }
-var hatch = null;
+var hatches = {};
 function hatchPattern() {
-  if (hatch) return hatch;
+  var st = envStyle(), key = (cur && cur.env) || 'campina';
+  if (hatches[key]) return hatches[key];
   var c = document.createElement('canvas'); c.width = c.height = 12; var g = c.getContext('2d');
-  g.fillStyle = '#e6dcc4'; g.fillRect(0, 0, 12, 12); g.strokeStyle = '#b9a984'; g.lineWidth = 1.2;
+  g.fillStyle = st.terrain; g.fillRect(0, 0, 12, 12); g.globalAlpha = .34; g.strokeStyle = st.stroke; g.lineWidth = 1.1;
   g.beginPath(); g.moveTo(0, 12); g.lineTo(12, 0); g.moveTo(-3, 3); g.lineTo(3, -3); g.moveTo(9, 15); g.lineTo(15, 9); g.stroke();
-  hatch = ctx.createPattern(c, 'repeat'); return hatch;
+  hatches[key] = ctx.createPattern(c, 'repeat'); return hatches[key];
 }
 function drawTerrain() {
-  ctx.fillStyle = hatchPattern(); ctx.strokeStyle = '#1d3f63'; ctx.lineWidth = 2; ctx.lineJoin = 'round';
+  var st = envStyle();
+  ctx.fillStyle = hatchPattern(); ctx.strokeStyle = st.stroke; ctx.lineWidth = 2; ctx.lineJoin = 'round';
   cur.terrain.forEach(function (poly) {
     ctx.beginPath();
     poly.forEach(function (p, i) { var px = p[0] <= 0 ? -80 : p[0] >= cur.w ? cur.w + 80 : p[0], py = p[1] >= cur.h ? cur.h + 40 : p[1] <= -1 ? -40 : p[1]; var q = w2s(px, py); if (i) ctx.lineTo(q[0], q[1]); else ctx.moveTo(q[0], q[1]); });
     ctx.closePath(); ctx.fill(); ctx.stroke();
   });
-  // start & goal markers
   var gy = S.groundY(cur, cur.goal), g = w2s(cur.goal, gy);
-  ctx.strokeStyle = '#1d3f63'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g[0], g[1]); ctx.lineTo(g[0], g[1] - cam.s * 1.6); ctx.stroke();
+  ctx.strokeStyle = st.stroke; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(g[0], g[1]); ctx.lineTo(g[0], g[1] - cam.s * 1.6); ctx.stroke();
   var fs = cam.s * 0.25;
-  for (var i = 0; i < 4; i++) for (var j = 0; j < 2; j++) { ctx.fillStyle = (i + j) % 2 ? '#1d3f63' : '#fbf9f2'; ctx.fillRect(g[0] + i * fs, g[1] - cam.s * 1.6 + j * fs, fs, fs); }
+  for (var i = 0; i < 4; i++) for (var j = 0; j < 2; j++) { ctx.fillStyle = (i + j) % 2 ? st.stroke : '#fbf9f2'; ctx.fillRect(g[0] + i * fs, g[1] - cam.s * 1.6 + j * fs, fs, fs); }
   ctx.strokeRect(g[0], g[1] - cam.s * 1.6, fs * 4, fs * 2);
 }
 function drawWater(yPx, t) {

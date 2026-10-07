@@ -25,6 +25,7 @@ const context = { console, document, navigator: {}, innerWidth: 900, innerHeight
 context.window = context;
 vm.createContext(context);
 scripts.slice(0, 3).forEach(s => vm.runInContext(s, context));
+context.VaoLevels = require('../levels-v2.js');
 context.VaoProgress = require('../progression.js');
 vm.runInContext(scripts[scripts.length - 1], context);
 const game = context.__vao, Sim = context.VaoSim.Sim, M = context.Matter;

@@ -6,11 +6,15 @@ def nodes():
     adb('shell','uiautomator','dump','/sdcard/release-ui.xml')
     return list(ET.fromstring(adb('shell','cat','/sdcard/release-ui.xml')).iter('node'))
 def find(label,attribute='text'):
-    for _ in range(12):
-        for n in nodes():
+    deadline=time.monotonic()+60
+    while time.monotonic()<deadline:
+        current=nodes()
+        for n in current:
             if (n.get(attribute) or '').casefold()==label.casefold():return n
         time.sleep(.5)
-    raise AssertionError('UI item absent: '+label)
+    pathlib.Path('dist').mkdir(exist_ok=True)
+    pathlib.Path('dist/production-failure.xml').write_text(adb('shell','cat','/sdcard/release-ui.xml'))
+    raise AssertionError('UI item absent after 60s: '+label)
 def tap(label,attribute='text'):
     n=find(label,attribute); x1,y1,x2,y2=map(int,re.findall(r'\d+',n.get('bounds')))
     adb('shell','input','tap',str((x1+x2)//2),str((y1+y2)//2))

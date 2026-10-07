@@ -1,0 +1,60 @@
+name: Build Ponte Mestra APK
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'ponte-mestra/**'
+      - '.github/workflows/build-ponte-mestra-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Test game physics
+        working-directory: ponte-mestra
+        run: node --test tests/physics.test.js
+
+      - name: Bundle game into the wrapper
+        run: cp ponte-mestra/index.html ponte-mestra/android/app/src/main/assets/ponte-mestra.html
+
+      - name: Install Android 35
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-35' 'build-tools;35.0.0' >/dev/null
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Build and inspect APK
+        working-directory: ponte-mestra/android
+        run: |
+          gradle --no-daemon :app:assembleDebug
+          mkdir -p dist
+          cp app/build/outputs/apk/debug/app-debug.apk dist/Ponte-Mestra.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging dist/Ponte-Mestra.apk | head -n 4
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose dist/Ponte-Mestra.apk
+
+      - name: Upload installable APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ponte-mestra-android
+          path: ponte-mestra/android/dist/Ponte-Mestra.apk
+          if-no-files-found: error

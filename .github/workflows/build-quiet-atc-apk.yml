@@ -71,20 +71,20 @@ jobs:
         run: |
           gradle --no-daemon :app:assembleDebug
           mkdir -p ../dist
-          cp app/build/outputs/apk/debug/app-debug.apk ../dist/Quiet-ATC-v1.1.0.apk
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging ../dist/Quiet-ATC-v1.1.0.apk | tee ../dist/badging.txt
-          grep -q "package: name='com.andrefiker.quietatc' versionCode='2' versionName='1.1.0'" ../dist/badging.txt
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose ../dist/Quiet-ATC-v1.1.0.apk
-          ! "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions ../dist/Quiet-ATC-v1.1.0.apk | grep -q android.permission.INTERNET
-          unzip -l ../dist/Quiet-ATC-v1.1.0.apk | grep -q 'assets/index.html'
-          unzip -l ../dist/Quiet-ATC-v1.1.0.apk | grep -q 'assets/engine.js'
-          unzip -l ../dist/Quiet-ATC-v1.1.0.apk | grep -q 'assets/game.js'
-          unzip -l ../dist/Quiet-ATC-v1.1.0.apk | grep -q 'assets/style.css'
+          cp app/build/outputs/apk/debug/app-debug.apk ../dist/Quiet-ATC-v1.1.1.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging ../dist/Quiet-ATC-v1.1.1.apk | tee ../dist/badging.txt
+          grep -q "package: name='com.andrefiker.quietatc' versionCode='3' versionName='1.1.1'" ../dist/badging.txt
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose ../dist/Quiet-ATC-v1.1.1.apk
+          ! "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions ../dist/Quiet-ATC-v1.1.1.apk | grep -q android.permission.INTERNET
+          unzip -l ../dist/Quiet-ATC-v1.1.1.apk | grep -q 'assets/index.html'
+          unzip -l ../dist/Quiet-ATC-v1.1.1.apk | grep -q 'assets/engine.js'
+          unzip -l ../dist/Quiet-ATC-v1.1.1.apk | grep -q 'assets/game.js'
+          unzip -l ../dist/Quiet-ATC-v1.1.1.apk | grep -q 'assets/style.css'
 
       - name: Upload installable APK
         uses: actions/upload-artifact@v4
         with:
           name: quiet-atc-android
-          path: quiet-atc/dist/Quiet-ATC-v1.1.0.apk
+          path: quiet-atc/dist/Quiet-ATC-v1.1.1.apk
           retention-days: 7
           if-no-files-found: error

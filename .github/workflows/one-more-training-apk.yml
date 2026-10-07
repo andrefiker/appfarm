@@ -23,7 +23,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Core progression tests
+      - name: Core one-rep and migration tests
         run: node --test tests/*.test.cjs
       - name: Phone-sized browser QA
         run: |
@@ -39,14 +39,14 @@ jobs:
         run: |
           gradle --no-daemon :app:assembleDebug :app:assembleRelease :app:lintDebug :app:lintRelease
           gradle --no-daemon -p ../daily-home-training :app:assembleDebug
-          cp app/build/outputs/apk/debug/app-debug.apk dist/ONE-MORE-v1.0.0-ci.apk
-          cp app/build/outputs/apk/release/app-release-unsigned.apk dist/ONE-MORE-v1.0.0-unsigned.apk
+          cp app/build/outputs/apk/debug/app-debug.apk dist/ONE-MORE-v1.1.0-ci.apk
+          cp app/build/outputs/apk/release/app-release-unsigned.apk dist/ONE-MORE-v1.1.0-unsigned.apk
           cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" dist/apksigner.jar
           cp "$ANDROID_HOME/build-tools/35.0.0/zipalign" dist/zipalign
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging dist/ONE-MORE-v1.0.0-ci.apk > dist/badging.txt
-          grep -F "name='com.andrefiker.onemore' versionCode='1' versionName='1.0.0'" dist/badging.txt
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose dist/ONE-MORE-v1.0.0-ci.apk > dist/signature.txt
-          ! "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions dist/ONE-MORE-v1.0.0-ci.apk | grep -q 'android.permission.INTERNET'
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging dist/ONE-MORE-v1.1.0-ci.apk > dist/badging.txt
+          grep -F "name='com.andrefiker.onemore' versionCode='2' versionName='1.1.0'" dist/badging.txt
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose dist/ONE-MORE-v1.1.0-ci.apk > dist/signature.txt
+          ! "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions dist/ONE-MORE-v1.1.0-ci.apk | grep -q 'android.permission.INTERNET'
       - name: Enable emulator acceleration
         run: sudo chmod 666 /dev/kvm
       - name: Android install, offline workout and resume QA
@@ -63,7 +63,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: one-more-v1.0.0
+          name: one-more-v1.1.0
           path: |
             one-more-training/dist/
             one-more-training/app/build/reports/lint-results-debug.html

@@ -1,104 +1,104 @@
 # APP STATE — Clinical Cockpit
 
-## Identity and release
-- Display: Clínica • Cockpit
-- Directory: clinical-cockpit/
-- Package: com.andrefiker.clinicalcockpit
-- Version: 0.2.0 / code 2 / Android 11+
-- Branch: clinical-cockpit-android-v0-2; draft PR #19 (base v0-1); main unchanged.
-- Release source + exact signed binary: cd97614880d88699205a5508289aa1d6f1cc703d
-- Runtime build source: 540d645325c5c4ce2fdd057077d9b1ae84655b39;
-  runtime implementation: 5fb659a0bc0e0443b84cd6e5a210ac54dbc25194
-- APK: dl/Clinical-Cockpit-v0.2.0.apk; 82,623 bytes.
-- APK SHA-256: 76e7cefe8b5c371d7a9ddc45b6d8a6947f382913b3c7f1c9437c7b10545d4978
-- Status: signed, structurally verified and production-APK install-tested alpha.
+## Current release
+- Display: Clínica • Cockpit; directory clinical-cockpit/.
+- Package com.andrefiker.clinicalcockpit; Android 11+; 0.3.0 / versionCode 3.
+- Branch clinical-cockpit-android-v0-3; draft PR #20 based on v0-2; main unchanged.
+- Runtime build source: 924e47bc8b68dd3c6d24a800775e0cf4623941c0.
+- Verified source/test head: e373cfffb01b03b0190c3e2dff9a40d37f352369.
+- Signed APK/source checkpoint: b3598c33649402207fbb0ea9315a1fa3d646b72e.
+- APK dl/Clinical-Cockpit-v0.3.0.apk; 103,103 bytes.
+- SHA-256 4254ec4bb341fa265cb40ea726d6d924fe024ef3a6d7d063d2c3687fd07c21b7.
+- Status: signed, build/lint/native integration and exact production APK verified.
 
-## Architecture / scope
-Native Java Android, authenticated encrypted private JSON vault, SAF text import
-and native PDF/DOCX export; no backend or Android permissions. Opaque patient
-codes, cumulative formulation, session history, manual dossier/roadmap editors,
-human-review status, encrypted drafts/backups and local study-text library.
+## What changed
+- No daily app password. Fresh installs open directly; old vaults need their
+  original password once to validate/migrate without changing the old vault.
+- Android Keystore AES-GCM wraps the local vault keys; no raw key/password file.
+  Wrapped entries are bound to each vault salt; active/previous/incoming keys
+  coexist through restoration so an interrupted file replacement keeps access.
+- Process restart/background resume use the device key. Pausar wipes the open
+  model/key but Continuar is unauthenticated; access relies on the phone lock.
+- Portable .ccvault backups now ask for an independent 12+ character password,
+  reencrypting a snapshot with fresh salt/IV and the existing PBKDF2/AES-GCM format.
+  Device keys are not transferable; old backups retain their original passwords.
+- Local CSV/JSON patient roster import by file or paste; strict fields/dates/codes,
+  safe Notebook URL validation, preview and explicit confirmation. Up to 500
+  rows / 512 KB. Reimport skips existing codes without replacing sessions.
+- Optional sourceReference, imported-review reminder and per-patient Notebook
+  link. Built-in export request can be copied; Notebook opens only on user action.
 
-This is a **manual alpha**, not the complete fullstack/AI handoff. No real clinical
-data was used in development, tests, source, artifacts or connected services.
-No external production systems changed.
+## Verification — 2026-10-07
+- 20 crypto/rules/DOCX checks + 20 roster checks: passed locally and in CI.
+- Debug/release/instrumentation assembly and release lint: passed.
+- 64 synthetic offline Android checks: passed, including existing session/draft/
+  export/library flows, corruption/password/schema rejection, restore/undo,
+  Keystore key roundtrip/tamper rejection, password-free reopen, independent
+  portable backup encryption, roster JSON type validation/CSV UI confirmation,
+  cancellation, duplicate suppression, session preservation and persistence.
+- Build/native CI: https://github.com/andrefiker/appfarm/actions/runs/37689950910
+- Synthetic native pause/review/patient screenshots reviewed; controls fit.
+  Production FLAG_SECURE is unchanged. Instrumentation uses a separate debug key.
+- Android-exported PDF opened (five pages/Unicode); DOCX opened with python-docx.
+- Signed ZIP integrity, all unsigned payload entries, 4-byte local alignment and
+  persistent certificate/v2/v3 signatures: verified. No permissions/Internet.
+- 16 exact owner-signed production UI checks: passed on API35 offline. Signed
+  0.2→0.3 update retains patient/session; incorrect old password rejected; old
+  password entered once; process restart/pause/continue require no password;
+  physical SAF portable export independently decrypted; real CSV picker imports
+  two reviewed patients without overwriting existing sessions; reimport skips
+  duplicates; Notebook CTA visible; old portable backup restore, password-free
+  undo, prior-copy disposal and 320dp Continue bounds pass.
+- Exact signed CI: https://github.com/andrefiker/appfarm/actions/runs/37689950693
+- First production run stopped at an unindexed ADB-created CSV in DocumentsUI.
+  The test fixture now requests media indexing and captures picker navigation;
+  all 16 checks passed on the next run. Runtime/APK unchanged by the QA repair.
+- Physical handset and Android 11 runtime acceptance: not performed.
+- No real clinical material was fetched, exported to tools, committed or tested.
 
-## Verified — 2026-10-07
-- Core: 20 checks passed in CI (crypto, tamper/password rejection, strict
-  dates/codes, Unicode/XML and DOCX container correctness).
-- Exact production APK final CI: https://github.com/andrefiker/appfarm/actions/runs/37680329703
-- Eleven external UI checks passed on the exact owner-signed APK: offline
-  baseline install/vault/patient/session; in-place signed 0.1 → 0.2 upgrade
-  preserving records/password; lock persistence; locked process restart; real
-  Android DocumentsUI encrypted restore using another password; undo returning
-  previous records/password; explicit snapshot disposal; 320dp unlock fit.
-- Final signed SHA-256 from hosted CI equals the locally delivered APK.
-- ZIP integrity and every entry of unsigned build payload match signed APK.
-- Package/version, launchable activity, no permissions, zip alignment and
-  persistent-key APK v2/v3 signatures: passed locally / hosted CI.
-- Successful build/release lint and synthetic offline integration CI:
-  https://github.com/andrefiker/appfarm/actions/runs/37680329721
-  at c7fb37214107f6cbe9f547bd6b00fc671573b65a (test/controller adjustments only).
-- 42 Android checks passed: existing patient/session/draft/export/import/study
-  flows; password/schema/tamper rejection without writes; actual locked dialog;
-  recovery of damaged vault without reinstall; independently passworded restore;
-  snapshot/undo/redo; simulated snapshot I/O failure leaving target intact;
-  failed candidate-key erasure; cancellation; background lock and safe areas.
-- Delivered signed payload equals every entry of this successful CI build too.
-- Synthetic native locked/recovered-dashboard screenshots reviewed: controls fit
-  with no overlap; recovery snapshot buttons visible. Test-only rendering;
-  production FLAG_SECURE remains enabled. Owner key never signs instrumentation.
-- New Android-exported PDF: five pages opened, Unicode text extracted. Exported
-  DOCX opened with python-docx. Final native physical document checks passed.
-- Earlier successful evidence: integration CI 37679660419 and exact signed
-  production CI 37679318814. Final repeats above also passed after test-only
-  bounded-wait adjustments for emulator key-derivation latency; release runtime
-  and the APK were unchanged. Earlier dependency/download failures were transient.
-- Physical handset and Android 11 runtime testing: not performed.
-- No clinical-validation or legal-compliance certification is claimed.
+## Scope and source-of-truth decision
+Native Java, encrypted local JSON, no backend/network/auth service/analytics.
+Existing manual formulation, history, four-layer dossier, roadmap, human review,
+drafts, TXT import, physical PDF/DOCX and local study library remain available.
+Manual alpha: clinical AI/audio/semantic search/Google sync are pending.
 
-## Signing / recovery
-Dedicated persistent owner key retained privately: Clinical-Cockpit-signing-key.p12.
-Alias clinicalcockpit; PKCS12 store/key password android. Key is outside Git.
-Certificate SHA-256:
-60c09e631510afb847ccf08eb57c6ce3976082760140a9fb9b4f9c0014819fcf
-Use this same key for every future update; increase versionCode. Do not publish
-production-signed instrumentation apps, because they could access the target vault.
+Patient population is user-controlled local import; no real patient roster is
+bundled. Notebook generated output is a proposal, not clinical fact. Original
+source documents and reviewed therapist records are authoritative. This session
+has no authorized Notebook connector; no automatic scraping or API sync was added.
+Official APIs located describe the Enterprise/Cloud edition and licenses; the
+simpler supported route here is a checked CSV/JSON and an external Notebook link.
+References checked: developer.android.com/privacy-and-security/keystore;
+docs.cloud.google.com/gemini/enterprise/notebooklm-enterprise/docs/api-notebooks;
+support.google.com/gemininotebook/answer/16179559.
 
-Vault password has no reset. Export encrypted backups before uninstalling or
-moving phones. Restore is available from the locked screen without reinstalling.
-It validates and uses the backup’s own password, including an independently
-passworded backup. Encrypted snapshot write/readback must succeed before the
-current vault is replaced; candidate write/readback precedes key/data changes.
-If replacement fails, a rollback write is attempted; this cannot guarantee
-recovery if the device/filesystem itself fails. Cancel/background lock invalidates
-late asynchronous validation results before commit.
+## Signing / recovery / limits
+- Persistent owner certificate SHA-256:
+  60c09e631510afb847ccf08eb57c6ce3976082760140a9fb9b4f9c0014819fcf.
+  Dedicated signing key retained privately outside Git. Reuse for future updates.
+  Never owner-sign/distribute instrumentation, which could access clinical storage.
+- Do not uninstall to update. A legacy password is needed once for existing vaults;
+  wrong passwords or key-registration failures preserve the prior vault.
+- Phone unlock is the access barrier. This is not biometric/app authentication;
+  no guarantee of hardware-backed keys or complete managed-memory erasure.
+- Loss/uninstall of phone/app/Keystore needs an external portable backup and its
+  password. No reset service; never rely only on a same-device recovery snapshot.
+- Restore validates before replacement, writes/verifies the previous encrypted
+  snapshot and registers incoming key first. Candidate write/readback precedes
+  model/key swap; rollback is attempted on I/O failure, not guaranteed under
+  device/filesystem failure. Corrupt key indexes fail closed; inaccessible local
+  storage can prevent restoration and requires separate recovery investigation.
+- Undo normally uses cached device keys; unmigrated old copies need old passwords.
+  Damaged copies cannot be decrypted. Cancellation blocks late validation commit.
+- Prior snapshots can retain deleted records until explicitly discarded. Exported
+  backups and plain documents remain separate. Limit 8 MB per copy plus small
+  wrapped-key index; one global draft; no automatic backup/password rotation.
+- Pseudonyms/links do not anonymize clinical narrative. PDF/DOCX are unencrypted;
+  third-party keyboards/document providers can sync independently of this app.
 
-Desfazer última restauração validates the previous copy with its former password
-and swaps the vaults. Damaged prior copies are retained but cannot be decrypted;
-a valid external backup is still needed. Current vaults over the supported 8 MB
-read limit or inaccessible storage prevent snapshot-based replacement.
-
-The snapshot is on the same device and does not protect against device loss.
-It can retain deleted records until Cofre → Descartar cópia anterior explicitly
-removes it. Exported backups remain unaffected. Plain PDF/DOCX are unencrypted.
-
-## Known limits / next exact work
-- Manual entry only. AI, audio, semantic search, Google OAuth/integrations and
-  NotebookLM sync pending; these are not simulated.
-- Text import only (512 KB/file); compact vault cap 8 MB per copy. Optional
-  previous-vault snapshot can consume another 8 MB.
-- One global draft at a time. No password rotation, automatic backup or biometric
-  unlock. Dates have no appointment time component.
-- Codes do not establish anonymization of clinical narrative. Device/keyboard/
-  document-provider trust remains necessary; third-party tools might sync exports.
-- Start device acceptance with fictitious records. Next engineering objective:
-  retention/scale review and physical-device acceptance, then assess
-  a genuinely local inference route before adding any clinical AI processing.
-
-## Rollback
-Pre-app baseline: 0db2815c14b727031d63e7c14ef0a75255690e90 (app absent).
-First known signed baseline for future code changes: 2f492aa8c832b20926fa7cfa027ba23298178f99.
-0.2 keeps the 0.1 package/key and raises versionCode; exact signed upgrade was
-tested. Previous signed APK remains at dl/Clinical-Cockpit-v0.1.0.apk. Android
-version downgrades are not a data-recovery procedure; keep encrypted backups.
+## Rollback / next work
+- Prior verified signed release: 0.2.0, source cd97614880d88699205a5508289aa1d6f1cc703d;
+  checkpoint/docs 80cfbd8df010b0ceda38df4aa3df7559d54117a5; APK retained in dl/.
+- Android downgrade is not a recovery procedure. Preserve portable backups.
+- Next: physical-phone acceptance with fictitious data; import an appropriate
+  locally reviewed roster; retention/scale and genuine local inference feasibility.

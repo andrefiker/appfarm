@@ -140,49 +140,35 @@ Vercel:
 3. Complete or explicitly cancel the pending Railway/Lovable cleanup in its own execution task.
 4. Update this file only when meaningful state changes.
 
-## Clinical Cockpit — Android alpha 0.1.0 (2026-10-07)
+## Clinical Cockpit — current Android alpha 0.3.0 (2026-10-07)
 
-- New directory clinical-cockpit/; branch clinical-cockpit-android-v0-1; draft PR #18.
-- Release source/binary: 2f492aa8c832b20926fa7cfa027ba23298178f99.
-- Clínica • Cockpit; com.andrefiker.clinicalcockpit; version 0.1.0/code 1; Android 11+.
-- APK: dl/Clinical-Cockpit-v0.1.0.apk, 78,527 bytes; SHA-256
-  f94fe14ed8bf7644742cc50778c823594ef1b49c312c873d10bf9594d588e05c.
-- Local password-encrypted vault, patient codes, session history, manually edited
-  four-layer dossier/roadmap, encrypted drafts/backups, physical PDF/DOCX exports,
-  local study texts. No permissions/backend/network/analytics. No real clinical data.
-- Manual alpha: AI, audio transcription, Google and NotebookLM integrations pending.
-- 20 core checks; build/release lint; 24 synthetic API35 Android checks; native
-  visual QA; seven UI checks installing the exact signed production APK offline:
-  all passed. Physical handset/Android 11 runtime QA not performed.
-- Build CI 37665547610; production-signature/install CI 37666473207;
-  release-source repeat CI 37666473090. Detailed state: clinical-cockpit/APP_STATE.md.
-- Persistent dedicated signing key retained privately; certificate SHA-256
-  60c09e631510afb847ccf08eb57c6ce3976082760140a9fb9b4f9c0014819fcf.
-- Baseline before new app: 0db2815c14b727031d63e7c14ef0a75255690e90.
-- Start phone acceptance with fictitious data. Before clinical production, address
-  locked-screen recovery, storage scale and independent security/privacy review.
-
-## Clinical Cockpit — current Android alpha 0.2.0 (2026-10-07)
-
-- Branch clinical-cockpit-android-v0-2; draft PR #19 based on v0-1; main unchanged.
-- Signed source/binary: cd97614880d88699205a5508289aa1d6f1cc703d;
-  final verified source/test head: c7fb37214107f6cbe9f547bd6b00fc671573b65a.
-- Package/key preserved from 0.1; version 0.2.0/code 2; Android 11+.
-- APK dl/Clinical-Cockpit-v0.2.0.apk; 82,623 bytes; SHA-256
-  76e7cefe8b5c371d7a9ddc45b6d8a6947f382913b3c7f1c9437c7b10545d4978.
-- Locked-screen encrypted-backup recovery without reinstall; uses the backup’s
-  password; verified encrypted prior-copy write before replacement; undo/redo;
-  explicit snapshot disposal; cancellation prevents late validation commit.
-- Recovery copy may retain deleted records until discarded; up to another 8 MB.
-  Device loss still requires an external encrypted backup.
-- 20 core + 42 synthetic offline Android integration + 11 exact owner-signed
-  production UI checks passed. Build/lint, native visual review, physical PDF/DOCX,
-  signature/package/permissions/alignment passed. APK payload matches final build.
-- Integration CI 37680329721; exact signed update/recovery CI 37680329703.
-- Signed 0.1 → 0.2 in-place update tested preserving old records/password.
-  No real clinical data used; no backend/Internet; manual alpha, AI/Google pending.
-- Same persistent private signing certificate as 0.1. Old signed baseline
-  2f492aa8c832b20926fa7cfa027ba23298178f99 and old APK retained for reference.
-- Physical handset/Android 11 acceptance pending. Next: retention/scale review,
-  physical-phone acceptance and genuinely local inference feasibility.
-- Detailed current state/build/install/rollback: clinical-cockpit/APP_STATE.md.
+- Branch clinical-cockpit-android-v0-3; draft PR #20 based on v0-2; main unchanged.
+- Runtime build source 924e47bc8b68dd3c6d24a800775e0cf4623941c0;
+  signed source/binary checkpoint b3598c33649402207fbb0ea9315a1fa3d646b72e;
+  verified source/test head e373cfffb01b03b0190c3e2dff9a40d37f352369.
+- Package com.andrefiker.clinicalcockpit; Android 11+; version 0.3.0/code 3.
+- APK dl/Clinical-Cockpit-v0.3.0.apk, 103,103 bytes; SHA-256
+  4254ec4bb341fa265cb40ea726d6d924fe024ef3a6d7d063d2c3687fd07c21b7.
+- Daily password removed; Android Keystore wraps vault keys. Existing vaults need
+  the original password once to migrate; wrong passwords preserve old records.
+  Pausar/Continuar is unauthenticated; phone lock is the access barrier.
+- Portable encrypted backups retain a separate password and work independently
+  of device keys. Validated restoration, encrypted prior snapshot/undo retained.
+- Local CSV/JSON roster import via paste/file, field validation, review/confirmation,
+  duplicate suppression, source reference and optional per-patient Notebook link.
+  No real patients bundled/fetched; no automatic Notebook account synchronization.
+  Original documents and reviewed records are authoritative; model output is a proposal.
+- 40 core + 64 synthetic offline Android integration checks; build/lint; native
+  screen review; physical PDF/DOCX; signed payload/certificate verification passed.
+- Native CI 37689950910; exact signed production CI 37689950693: 16 checks passed,
+  including signed 0.2→0.3 migration, password-free reopen, physical portable backup
+  independent decryption, real CSV picker/dedup, old backup restore and password-free undo.
+- Persistent certificate SHA-256
+  60c09e631510afb847ccf08eb57c6ce3976082760140a9fb9b4f9c0014819fcf;
+  signing key retained privately outside Git, unchanged since 0.1.
+- Manual alpha: AI/audio/Google sync pending; no Internet permission/backend.
+  Physical handset/Android 11 runtime acceptance pending. Use fictitious data first.
+- Prior verified signed 0.2: cd97614880d88699205a5508289aa1d6f1cc703d,
+  docs checkpoint 80cfbd8df010b0ceda38df4aa3df7559d54117a5; prior APK retained.
+  Android downgrade is not recovery; preserve an external portable backup.
+- Detailed current scope, recovery limits, CI and next work: clinical-cockpit/APP_STATE.md.

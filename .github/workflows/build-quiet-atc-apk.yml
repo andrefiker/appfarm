@@ -2,9 +2,12 @@ name: Build QUIET ATC APK
 
 on:
   push:
-    branches: [ quiet-atc-v1.0.0 ]
+    branches: [ main ]
     paths:
-      - 'quiet-atc/**'
+      - 'quiet-atc/web/**'
+      - 'quiet-atc/android/**'
+      - 'quiet-atc/tests/**'
+      - 'quiet-atc/package.json'
       - '.github/workflows/build-quiet-atc-apk.yml'
   pull_request:
     branches: [ main ]

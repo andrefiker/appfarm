@@ -48,12 +48,13 @@ function level(xp) {
 function title(n) { return TITLES[Math.min(TITLES.length - 1, n - 1)]; }
 function next(xp) { return THRESHOLDS[Math.min(THRESHOLDS.length - 1, level(xp))]; }
 function normalize(v1) {
-  var p = { v: 4, unlocked: 1, best: {}, designs: {}, sandbox: { t: 0, veh: 'carro', wind: 0, water: 0, design: null }, mute: false, seenHelp: false,
-    xp: 0, grades: {}, stress: {}, milestones: {}, sandboxAll: false, discovered: {}, challenges: {}, pbRewardBaseline: {}, gradeRewards: {} };
-  if (v1 && (v1.v === 1 || v1.v === 2 || v1.v === 3 || v1.v === 4)) {
+  var p = { v: 5, unlocked: 1, best: {}, designs: {}, sandbox: { t: 0, veh: 'carro', wind: 0, water: 0, design: null }, mute: false, seenHelp: false,
+    xp: 0, grades: {}, stress: {}, milestones: {}, sandboxAll: false, discovered: {}, challenges: {}, briefs: {}, pbRewardBaseline: {}, gradeRewards: {} };
+  if (v1 && (v1.v === 1 || v1.v === 2 || v1.v === 3 || v1.v === 4 || v1.v === 5)) {
     ['unlocked', 'best', 'designs', 'mute', 'seenHelp', 'sandbox'].forEach(function (k) { if (has(v1, k)) p[k] = v1[k]; });
     if (v1.v >= 2) ['xp', 'grades', 'stress', 'milestones', 'sandboxAll'].forEach(function (k) { if (has(v1, k)) p[k] = v1[k]; });
     if (v1.v >= 3) ['discovered', 'challenges', 'pbRewardBaseline', 'gradeRewards'].forEach(function (k) { if (has(v1, k)) p[k] = v1[k]; });
+    if (v1.v >= 5 && has(v1, 'briefs')) p.briefs = v1.briefs;
     if (v1.v === 1) {
       Object.keys(p.best || {}).forEach(function (k) {
         if (!Number.isFinite(+p.best[k]) || +k < 1 || +k > 20) return;
@@ -93,7 +94,7 @@ function normalize(v1) {
   if (!p.best || typeof p.best !== 'object') p.best = {};
   if (!p.designs || typeof p.designs !== 'object') p.designs = {};
   if (!p.sandbox || typeof p.sandbox !== 'object') p.sandbox = { t: 0, veh: 'carro', wind: 0, water: 0, design: null };
-  ['grades', 'stress', 'milestones', 'discovered', 'challenges', 'pbRewardBaseline', 'gradeRewards'].forEach(function (k) { if (!p[k] || typeof p[k] !== 'object') p[k] = {}; });
+  ['grades', 'stress', 'milestones', 'discovered', 'challenges', 'briefs', 'pbRewardBaseline', 'gradeRewards'].forEach(function (k) { if (!p[k] || typeof p[k] !== 'object') p[k] = {}; });
   p.xp = Math.max(0, Math.floor(+p.xp || 0));
   p.unlocked = Math.max(1, Math.min(CAMPAIGN_LEVELS, Math.floor(+p.unlocked || 1)));
   return p;
@@ -137,6 +138,43 @@ function changeMaterial(design, index, material, allowed, defs) {
     return { ok: false, reason: 'Essa barra é longa demais para ' + md.name + '.' };
   var previous = b[2]; b[2] = material;
   return { ok: true, previous: previous };
+}
+function pointEq(a, b) { return Math.abs(a[0] - b[0]) < 1e-6 && Math.abs(a[1] - b[1]) < 1e-6; }
+function usedAnchorPoints(design) {
+  var used = [], idx = {};
+  if (!design || !Array.isArray(design.beams)) return used;
+  design.beams.forEach(function (b) { idx[b[0]] = idx[b[1]] = true; });
+  Object.keys(idx).forEach(function (i) { if (design.nodes[+i]) used.push([design.nodes[+i][0], design.nodes[+i][1]]); });
+  return used;
+}
+function briefMet(lv, design, defs, left, stress) {
+  var b = lv && lv.brief;
+  if (!b || !design || !Array.isArray(design.beams)) return false;
+  if (b.maxStress !== undefined && stress > b.maxStress) return false;
+  if (b.maxBeams !== undefined && design.beams.length > b.maxBeams) return false;
+  if (b.maxNonRoad !== undefined && design.beams.filter(function (x) { return x[2] !== 'road'; }).length > b.maxNonRoad) return false;
+  if (b.saveRatio !== undefined && (!Number.isFinite(lv.budget) || left < lv.budget * b.saveRatio)) return false;
+  if (b.maxAvgDensity !== undefined) {
+    var length = 0, mass = 0;
+    design.beams.forEach(function (x) {
+      if (x[2] === 'road') return;
+      var a = design.nodes[x[0]], c = design.nodes[x[1]], L = Math.hypot(a[0]-c[0], a[1]-c[1]);
+      length += L; mass += (defs[x[2]] ? defs[x[2]].dens : 0) * L;
+    });
+    if (!length || mass / length > b.maxAvgDensity) return false;
+  }
+  var pts = usedAnchorPoints(design);
+  if (b.anchorSet) {
+    var hits = b.anchorSet.filter(function (a) { return pts.some(function (p) { return pointEq(p, a); }); }).length;
+    if (hits < (b.minAnchors || 1)) return false;
+  }
+  if (b.anchorGroups) {
+    var groups = b.anchorGroups.filter(function (g) {
+      return g.some(function (a) { return pts.some(function (p) { return pointEq(p, a); }); });
+    }).length;
+    if (groups < (b.minAnchorGroups || 1)) return false;
+  }
+  return true;
 }
 function challengeWins(p, lv, design, defs, beams, left, stress) {
   if (!design || !beams) return [];
@@ -191,16 +229,18 @@ function award(p, lv, left, stress, context) {
   marks.forEach(function (id) { p.milestones[id] = true; gain += 35; });
   var wins = context ? challengeWins(p, lv, context.design, context.defs, context.beams, left, stress) : [];
   wins.forEach(function (id) { p.challenges[id] = true; gain += 45; });
+  var brief = !!(context && lv.brief && !p.briefs[lv.id] && briefMet(lv, context.design, context.defs, left, stress));
+  if (brief) { p.briefs[lv.id] = true; gain += lv.brief.reward || 35; }
   p.xp += gain;
   var unlocked = EXTRA.filter(function (m) {
       return (oldLevel < m.level || oldUnlocked < m.stage) && level(p.xp) >= m.level && p.unlocked >= m.stage;
     });
   discover(p, unlocked.map(function (m) { return m.id; }));
   return { gained: gain, first: first, improved: improved, previous: prev, grade: g,
-    milestones: marks, challenges: wins, newlyAvailable: unlocked };
+    milestones: marks, challenges: wins, brief: brief, newlyAvailable: unlocked };
 }
 var api = { normalize: normalize, award: award, grade: grade, level: level, title: title, next: next, available: available,
   count: count, EXTRA: EXTRA, MILESTONES: MILESTONES, CHALLENGES: CHALLENGES, MATERIALS: MATERIALS, THRESHOLDS: THRESHOLDS, CAMPAIGN_LEVELS: CAMPAIGN_LEVELS,
-  discover: discover, materialState: materialState, nextUnlock: nextUnlock, changeMaterial: changeMaterial, structuralMass: structuralMass };
+  discover: discover, materialState: materialState, nextUnlock: nextUnlock, changeMaterial: changeMaterial, structuralMass: structuralMass, briefMet: briefMet };
 if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.VaoProgress = api;
 })(this);

@@ -45,13 +45,13 @@ jobs:
       - name: Verify APK
         run: |
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging vao/dist/Vao-v1.3.0-preview.apk | head -n 5
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose vao/dist/Vao-v1.2.0-preview.apk
-          unzip -l vao/dist/Vao-v1.2.0-preview.apk | grep -E 'assets/(index.html|progression.js|levels-v2.js)'
-          if "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions vao/dist/Vao-v1.2.0-preview.apk | grep -q 'android.permission.INTERNET'; then exit 1; fi
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose vao/dist/Vao-v1.3.0-preview.apk
+          unzip -l vao/dist/Vao-v1.3.0-preview.apk | grep -E 'assets/(index.html|progression.js|levels-v2.js)'
+          if "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions vao/dist/Vao-v1.3.0-preview.apk | grep -q 'android.permission.INTERNET'; then exit 1; fi
       - uses: actions/upload-artifact@v4
         with:
           name: Vao-v1.2.0-preview
-          path: vao/dist/Vao-v1.2.0-preview.apk
+          path: vao/dist/Vao-v1.3.0-preview.apk
           retention-days: 7
           if-no-files-found: error
       - name: Emulator launch, orientation, resume and back smoke
@@ -61,7 +61,7 @@ jobs:
           arch: x86_64
           profile: pixel_4
           script: |
-            adb install -r vao/dist/Vao-v1.2.0-preview.apk
+            adb install -r vao/dist/Vao-v1.3.0-preview.apk
             adb logcat -c
             adb shell am start -n appfarm.vao.preview13/appfarm.vao.MainActivity
             for i in $(seq 1 20); do

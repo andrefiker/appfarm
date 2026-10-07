@@ -42,7 +42,7 @@ jobs:
           gradle --no-daemon :app:assembleDebug :app:assembleRelease :app:lintDebug :app:lintRelease
           gradle --no-daemon -p ../daily-home-training :app:assembleDebug
           mkdir -p /tmp/one-more-v1
-          git archive f04f0ddf2a87fa8971ba7282ddbfd01664f9b3bf one-more-training | tar -x -C /tmp/one-more-v1
+          git -C .. archive f04f0ddf2a87fa8971ba7282ddbfd01664f9b3bf one-more-training | tar -x -C /tmp/one-more-v1
           gradle --no-daemon -p /tmp/one-more-v1/one-more-training :app:assembleDebug
           cp /tmp/one-more-v1/one-more-training/app/build/outputs/apk/debug/app-debug.apk dist/ONE-MORE-v1.0.0-update-fixture.apk
           cp app/build/outputs/apk/debug/app-debug.apk dist/ONE-MORE-v1.1.0-ci.apk

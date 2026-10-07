@@ -112,6 +112,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 .lv.lock{opacity:.45;background:var(--paper2)}
 .lv.done{border-color:var(--ok)}
 .lv .tag{position:absolute;right:5px;top:4px;font-size:10px;color:var(--ink2);font-weight:700;max-width:64%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lv .brief{font-size:10px;color:var(--ink2);font-weight:700;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}.lv .brief.done{color:var(--ok)}
+.blk .cp{float:right;font-size:10px;letter-spacing:0;text-transform:none;color:var(--ink3)}
 .blk{font-size:11px;font-weight:800;letter-spacing:.12em;color:var(--ink2);margin:2px 0 4px;text-transform:uppercase}
 
 #toast{position:fixed;left:50%;bottom:72px;transform:translateX(-50%);max-width:min(620px,92vw);background:var(--card);border:1.5px solid var(--ink);
@@ -1212,16 +1214,31 @@ function toast(html, ms) { var t = $('toast'); t.innerHTML = html; t.classList.r
 function hideToast() { $('toast').classList.add('hidden'); }
 
 function blockName(i) { var lv = LV.LEVELS[i]; return lv && lv.chapter ? lv.chapter : 'Campanha'; }
+function hazardName(lv) {
+  var h = [];
+  if (lv.platform) h.push('BALSA');
+  if (lv.water && lv.water.y1 !== lv.water.y0) h.push('CHEIA');
+  if (lv.wind) h.push('VENTO');
+  if (lv.vehicle === 'caminhao') h.push('34 t');
+  else if (lv.vehicle === 'carga') h.push('CARGA');
+  return h.join(' · ');
+}
+function chapterProgress(name) {
+  var xs = LV.LEVELS.filter(function (x) { return x.chapter === name; });
+  var done = xs.filter(function (x) { return prog.best[x.id] !== undefined; }).length;
+  return done + '/' + xs.length;
+}
 function renderLevels() {
   refreshProgress();
   var root = $('lgrid'); root.innerHTML = '';
   var lastBlk = '', g = null;
   LV.LEVELS.forEach(function (lv, i) {
     var bn = blockName(i);
-    if (bn !== lastBlk) { var grp = document.createElement('div'); grp.className = 'bgrp'; grp.innerHTML = '<div class="blk">' + bn + '</div><div class="bin"></div>'; root.appendChild(grp); g = grp.lastChild; lastBlk = bn; }
+    if (bn !== lastBlk) { var grp = document.createElement('div'); grp.className = 'bgrp'; grp.innerHTML = '<div class="blk">' + bn + '<span class="cp">' + chapterProgress(bn) + '</span></div><div class="bin"></div>'; root.appendChild(grp); g = grp.lastChild; lastBlk = bn; }
     var b = document.createElement('button'), lock = lv.id > prog.unlocked, best = prog.best[lv.id];
     b.className = 'lv' + (lock ? ' lock' : '') + (best !== undefined ? ' done' : '');
-    b.innerHTML = '<span class="n">' + lv.id + '</span><span class="tag">' + (lv.envName ? lv.envName + ' · ' : '') + S.VEHICLES[lv.vehicle].name + '</span><span class="nm">' + lv.name + '</span>' +
+    b.innerHTML = '<span class="n">' + lv.id + '</span><span class="tag">' + (lv.envName ? lv.envName + ' · ' : '') + S.VEHICLES[lv.vehicle].name + (hazardName(lv) ? ' · ' + hazardName(lv) : '') + '</span><span class="nm">' + lv.name + '</span>' +
+      (lv.brief ? '<span class="brief' + (prog.briefs[lv.id] ? ' done' : '') + '">' + (prog.briefs[lv.id] ? '★ ' : '☆ ') + lv.brief.label + '</span>' : '') +
       (best !== undefined ? '<span class="bs">' + (prog.grades[lv.id] || 'C') + ' · ' + fmt(best) + ' livre</span>' : (lock ? '<span class="bs" style="color:#7f9bb8">bloqueado</span>' : '<span class="bs" style="color:#2f5b86">' + fmt(lv.budget) + '</span>'));
     if (!lock) b.onclick = function () { snd('tick'); openLevel(lv.id); };
     g.appendChild(b);
@@ -1243,7 +1260,7 @@ function openLevel(id, preferredMaterial) {
   fitCam(true);
   sim = null; frames = []; replay = null;
   setMode('build');
-  if (!cur.sandbox) toast('<b>' + cur.name + '.</b> ' + cur.hint, 9000);
+  if (!cur.sandbox) toast('<b>' + cur.name + '.</b> ' + cur.hint + (cur.brief ? '<br><b>Brief opcional:</b> ' + cur.brief.note + ' <span style="color:#2f5b86">(+' + cur.brief.reward + ' XP)</span>' : ''), 11000);
   else toast('<b>Sandbox.</b> Sem orçamento. Use <b>Âncora</b> para fixar pontos onde quiser.', 6000);
   hideResult();
 }
@@ -1303,7 +1320,7 @@ function showResult() {
       '<div class="stats"><span>Orçamento</span><b>' + fmt(b) + '</b><span>Usado</span><b>' + fmt(c) + '</b><span>Sobra</span><b>' + fmt(left) + '</b><span>Esforço máximo</span><b>' + maxPeak() + '%</b>' +
       (earned.previous !== null ? '<span>Melhor anterior</span><b>' + fmt(earned.previous) + (priorStress !== undefined ? ' · ' + priorStress + '% esforço' : '') + '</b>' : '') + '</div>' +
       '<p style="text-align:center;margin:4px 0;font-weight:800">' + (earned.improved && !earned.first ? 'NOVO RECORDE +' + fmt(left - earned.previous) + ' · ' : '') +
-      '+' + earned.gained + ' XP</p>' + (earned.challenges.length ? '<p>Desafio: ' + earned.challenges.map(function (id) { return P.CHALLENGES.find(function (v) { return v.id === id; }).name; }).join(' · ') + '</p>' : '') +
+      '+' + earned.gained + ' XP</p>' + (earned.brief ? '<p style="text-align:center;color:#2e8b57;font-weight:800">★ BRIEF CONCLUÍDO · ' + cur.brief.label + ' · +' + cur.brief.reward + ' XP</p>' : (cur.brief && !prog.briefs[cur.id] ? '<p class="material-note" style="text-align:center">☆ Brief ainda aberto: ' + cur.brief.note + '</p>' : '')) + (earned.challenges.length ? '<p>Desafio: ' + earned.challenges.map(function (id) { return P.CHALLENGES.find(function (v) { return v.id === id; }).name; }).join(' · ') + '</p>' : '') +
       (P.nextUnlock(prog) ? '<p class="material-note">Próximo: ' + P.nextUnlock(prog).material.name + (P.nextUnlock(prog).xpRemaining ? ' · ' + P.nextUnlock(prog).xpRemaining + ' XP restantes' : '') + (P.nextUnlock(prog).levelRemaining ? ' · avance na campanha' : '') + '</p>' : '')) +
       '<div class="row">' + (!cur.sandbox && cur.id < LV.LEVELS.length ? '<button class="btn okb" id="rNext">Próximo nível</button>' : '') +
       '<button class="btn" id="rReplay">Replay</button><button class="btn pri" id="rBack">Melhorar projeto</button></div>';
@@ -1374,30 +1391,40 @@ var ENV_STYLE = {
 function envStyle() { return ENV_STYLE[(cur && cur.env) || 'campina'] || ENV_STYLE.campina; }
 function drawScenery(st) {
   if (!cur) return;
-  ctx.save(); ctx.globalAlpha = 0.13; ctx.fillStyle = st.accent; ctx.strokeStyle = st.accent; ctx.lineWidth = 2;
-  if (cur.env === 'cidade' || cur.env === 'industrial') {
-    var base = H * 0.28;
-    for (var i = 0; i < 10; i++) {
-      var ww = 35 + (i % 3) * 14, hh = 28 + ((i * 29) % 70), xx = i * (W / 9) - 25;
-      ctx.fillRect(xx, base - hh, ww, hh);
-    }
-    if (cur.env === 'industrial') {
-      ctx.beginPath(); ctx.moveTo(W * .72, base - 95); ctx.lineTo(W * .72, base - 15); ctx.lineTo(W * .88, base - 15); ctx.moveTo(W * .72, base - 82); ctx.lineTo(W * .84, base - 82); ctx.stroke();
-    }
-  } else if (cur.env === 'montanha' || cur.env === 'canion' || cur.env === 'planalto') {
-    ctx.beginPath(); ctx.moveTo(0, H * .3);
-    for (var x = 0; x <= W; x += W / 8) {
-      var y = H * (.18 + .07 * Math.sin(x * .013 + (cur.seed || 1)));
-      ctx.lineTo(x, y);
-    }
-    ctx.lineTo(W, H * .36); ctx.lineTo(0, H * .36); ctx.closePath(); ctx.fill();
-  } else if (cur.env === 'rio' || cur.env === 'costa') {
-    ctx.fillRect(0, H * .24, W, 2);
-    for (var r = 0; r < 7; r++) { ctx.fillRect(r * W / 6 - 10, H * .22 - (r % 2) * 5, 28, 2); }
+  ctx.save(); ctx.globalAlpha = 0.14; ctx.fillStyle = st.accent; ctx.strokeStyle = st.accent; ctx.lineWidth = 2;
+  var base = H * 0.29;
+  if (cur.env === 'cidade') {
+    for (var i=0;i<12;i++){ var ww=28+(i%4)*10, hh=24+((i*31)%85), xx=i*(W/11)-18; ctx.fillRect(xx,base-hh,ww,hh); }
+    ctx.globalAlpha=.09; for(var s0=0;s0<W;s0+=70){ctx.fillRect(s0,base-8,42,3);}
+  } else if (cur.env === 'industrial') {
+    for (var j=0;j<8;j++){ var iw=45+(j%2)*24, ih=22+((j*19)%55), ix=j*(W/7)-30; ctx.fillRect(ix,base-ih,iw,ih); }
+    ctx.beginPath(); ctx.moveTo(W*.68,base-105); ctx.lineTo(W*.68,base-10); ctx.lineTo(W*.9,base-10);
+    ctx.moveTo(W*.68,base-92); ctx.lineTo(W*.86,base-92); ctx.lineTo(W*.78,base-58); ctx.stroke();
+    ctx.fillRect(W*.12,base-75,10,75); ctx.fillRect(W*.1,base-78,62,5);
+  } else if (cur.env === 'pedreira') {
+    for(var q=0;q<5;q++){ var y=H*(.16+q*.035); ctx.fillRect(W*.05+q*18,y,W*.38-q*28,3); ctx.fillRect(W*.62-q*12,y+14,W*.30-q*18,3); }
+    ctx.beginPath(); ctx.moveTo(W*.05,H*.34); ctx.lineTo(W*.19,H*.19); ctx.lineTo(W*.34,H*.24); ctx.lineTo(W*.45,H*.17); ctx.stroke();
+  } else if (cur.env === 'canion') {
+    ctx.beginPath(); ctx.moveTo(0,H*.34); ctx.lineTo(W*.08,H*.18); ctx.lineTo(W*.2,H*.13); ctx.lineTo(W*.31,H*.27); ctx.lineTo(W*.42,H*.31); ctx.lineTo(0,H*.4); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(W,H*.34); ctx.lineTo(W*.91,H*.16); ctx.lineTo(W*.8,H*.12); ctx.lineTo(W*.69,H*.26); ctx.lineTo(W*.58,H*.31); ctx.lineTo(W,H*.4); ctx.closePath(); ctx.fill();
+  } else if (cur.env === 'montanha') {
+    ctx.beginPath(); ctx.moveTo(0,H*.34);
+    for(var x=0;x<=W;x+=W/10){ var y2=H*(.14+.10*Math.abs(Math.sin(x*.015+(cur.seed||1)))); ctx.lineTo(x,y2); }
+    ctx.lineTo(W,H*.38); ctx.lineTo(0,H*.38); ctx.closePath(); ctx.fill();
+  } else if (cur.env === 'planalto') {
+    ctx.beginPath(); ctx.moveTo(0,H*.31); ctx.lineTo(W*.12,H*.24); ctx.lineTo(W*.32,H*.24); ctx.lineTo(W*.42,H*.3);
+    ctx.lineTo(W*.58,H*.3); ctx.lineTo(W*.68,H*.22); ctx.lineTo(W*.87,H*.22); ctx.lineTo(W,H*.29); ctx.lineTo(W,H*.38); ctx.lineTo(0,H*.38); ctx.closePath(); ctx.fill();
+  } else if (cur.env === 'rio') {
+    ctx.fillRect(0,H*.26,W,2);
+    for(var r=0;r<9;r++){ var rx=r*W/8; ctx.beginPath(); ctx.moveTo(rx,H*.27); ctx.lineTo(rx-5,H*.235); ctx.moveTo(rx,H*.27); ctx.lineTo(rx+7,H*.24); ctx.stroke(); }
+  } else if (cur.env === 'costa') {
+    ctx.fillRect(0,H*.23,W,2);
+    for(var bu=0;bu<5;bu++){ var bx=W*(.15+bu*.17), by=H*(.245+(bu%2)*.012); ctx.beginPath(); ctx.arc(bx,by,4,0,6.283); ctx.fill(); ctx.moveTo(bx,by); ctx.lineTo(bx,by+18); ctx.stroke(); }
+    ctx.beginPath(); ctx.moveTo(W*.72,H*.23); ctx.lineTo(W*.72,H*.17); ctx.lineTo(W*.77,H*.2); ctx.lineTo(W*.72,H*.205); ctx.stroke();
   } else {
-    ctx.beginPath(); ctx.moveTo(0, H * .31);
-    for (var q = 0; q <= W; q += 55) ctx.lineTo(q, H * (.29 + .025 * Math.sin(q * .025)));
-    ctx.lineTo(W, H * .38); ctx.lineTo(0, H * .38); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(0,H*.31);
+    for(var c=0;c<=W;c+=55) ctx.lineTo(c,H*(.29+.025*Math.sin(c*.025)));
+    ctx.lineTo(W,H*.38); ctx.lineTo(0,H*.38); ctx.closePath(); ctx.fill();
   }
   ctx.restore();
 }
@@ -1839,7 +1866,7 @@ on('bMute', function () { prog.mute = !prog.mute; save(); $('bMute').textContent
 on('lBack', function () { setMode('menu'); });
 on('hClose', function () { show('help', false); prog.seenHelp = true; save(); });
 on('tBack', function () { if (mode === 'build') { storeDesign(); if (cur.sandbox) setMode('menu'); else { renderLevels(); setMode('levels'); } } else stopTest(); });
-on('tHint', function () { toast(cur.sandbox ? 'Sandbox: sem orçamento; materiais surgem com sua experiência.' : '<b>Dica:</b> ' + cur.hint + '<br><span style="color:#2f5b86">Arraste de um ponto para criar barras · toque uma barra para editar · pinça para zoom.</span>', 9000); });
+on('tHint', function () { toast(cur.sandbox ? 'Sandbox: sem orçamento; materiais surgem com sua experiência.' : '<b>Dica:</b> ' + cur.hint + (cur.brief ? '<br><b>Brief:</b> ' + cur.brief.note + ' (+' + cur.brief.reward + ' XP)' : '') + '<br><span style="color:#2f5b86">Arraste de um ponto para criar barras · toque uma barra para editar · pinça para zoom.</span>', 10000); });
 on('tUndo', function () { if (undo.length) { design = JSON.parse(undo.pop()); selectedBeam = -1; lastStress = null; lastFailure = null; renderBeamEdit(); refreshBudget(); storeDesign(); } });
 on('tStress', function () { stressVisible = !stressVisible; $('tStress').classList.toggle('on', stressVisible); });
 on('tErase', function () { eraseMode = !eraseMode; anchorMode = false; syncTools(); });
@@ -1878,10 +1905,10 @@ function renderSandbox() {
 }
 function renderProgress() {
   var found = P.MATERIALS.filter(function (k) { return P.materialState(prog, k) === 'discovered'; });
-  var nextMaterial = P.nextUnlock(prog), completedChallenges = Object.keys(prog.challenges).filter(function (k) { return prog.challenges[k]; }).length;
+  var nextMaterial = P.nextUnlock(prog), completedChallenges = Object.keys(prog.challenges).filter(function (k) { return prog.challenges[k]; }).length, completedBriefs = Object.keys(prog.briefs || {}).filter(function (k) { return prog.briefs[k]; }).length;
   var currentStage = LV.LEVELS[Math.min(LV.LEVELS.length - 1, prog.unlocked - 1)];
   $('pcard').innerHTML = '<h2>Progresso</h2><div class="xp-line">' + xpLine() + '</div>' +
-    '<div class="stats"><span>Campanha</span><b>' + P.count(prog) + ' / ' + LV.LEVELS.length + '</b><span>Materiais</span><b>' + found.length + ' / 7</b><span>Marcos</span><b>' + Object.keys(prog.milestones).filter(function (k) { return prog.milestones[k]; }).length + ' / ' + P.MILESTONES.length + '</b><span>Desafios</span><b>' + completedChallenges + ' / ' + P.CHALLENGES.length + '</b></div>' +
+    '<div class="stats"><span>Campanha</span><b>' + P.count(prog) + ' / ' + LV.LEVELS.length + '</b><span>Briefs</span><b>' + completedBriefs + ' / ' + LV.LEVELS.length + '</b><span>Materiais</span><b>' + found.length + ' / 7</b><span>Marcos</span><b>' + Object.keys(prog.milestones).filter(function (k) { return prog.milestones[k]; }).length + ' / ' + P.MILESTONES.length + '</b><span>Desafios</span><b>' + completedChallenges + ' / ' + P.CHALLENGES.length + '</b></div>' +
     '<p class="material-note">' + P.MATERIALS.map(function (k) { var state = P.materialState(prog, k, currentStage); return state === 'discovered' ? MATS[k].name + ' ✓' : state === 'available' ? MATS[k].name + ' ○' : '???'; }).join(' · ') + '</p>' +
     (nextMaterial ? '<p class="material-note"><b>PRÓXIMO DESBLOQUEIO</b><br>' + nextMaterial.material.name + (nextMaterial.xpRemaining ? ' · ' + nextMaterial.xpRemaining + ' XP restantes' : '') + (nextMaterial.levelRemaining ? ' · avance na campanha' : '') + '</p>' : '') +
     '<div class="material-note">' + P.MILESTONES.map(function (m) { return '<p>' + (prog.milestones[m.id] ? '✓ ' : '○ ') + '<b>' + m.name + '</b> · ' + m.note + '</p>'; }).join('') + '</div>' +

@@ -43,4 +43,7 @@ assert(LV.LEVELS.filter(l=>l.water).length >= 9);
 assert(LV.LEVELS.filter(l=>l.wind).length >= 7);
 assert(LV.LEVELS.filter(l=>l.terrain.length >= 3).length >= 12);
 assert(LV.LEVELS.filter(l=>l.terrain.some(p=>p.some(q=>q[1] <= 4.5))).length >= 10);
-console.log('VÃO 1.3 campaign variety, terrain integrity and environment checks passed');
+assert.equal(LV.LEVELS.filter(l=>l.brief).length,36,'every campaign level has an engineering brief');
+assert(new Set(LV.LEVELS.map(l=>l.brief.type)).size>=6,'briefs use several engineering objective families');
+for(const lv of LV.LEVELS){ assert(lv.brief.label&&lv.brief.note&&lv.brief.reward>=30,'complete brief metadata on '+lv.id); }
+console.log('VÃO 1.4 campaign variety, terrain integrity and engineering brief checks passed');

@@ -47,6 +47,7 @@ Artwork: original procedural/vector map and aircraft drawings; no copied game as
 - bundled assets: index.html, engine.js, game.js, style.css verified inside APK
 - APK file: structurally valid Android package with APK Signing Block
 - physical-device install/play/resume QA: not performed in this execution environment
+- phone-sized Chromium render smoke: attempted from extracted APK assets, but the local Chromium environment hung on DBus/zygote startup; no screenshot result was claimed
 
 ## Known issues
 - The final visual/feel check still needs to happen on Andre's Android phone.

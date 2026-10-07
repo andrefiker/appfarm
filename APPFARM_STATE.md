@@ -137,7 +137,25 @@ Vercel:
 3. Complete or explicitly cancel the pending Railway/Lovable cleanup in its own execution task.
 4. Update this file only when meaningful state changes.
 
-## ONE MORE — isolated new app (2026-10-02)
+## ONE MORE — current release 1.1.0 (2026-10-07)
+
+- Branch one-more-training-v1-1; release source bce66dee5a7df14889950fb93af4c92711b96afe; draft PR #17.
+- ONE-MORE-v1.1.0.apk, com.andrefiker.onemore, version 1.1.0/code 2.
+- One rep/controlled hold per exercise, date-based balanced daily mix (default 8),
+  local movement diagrams, primary/assisting muscle maps, completed-only muscle
+  summary and exact completed/skipped lists. Pause/Continue; resumed Undo;
+  small-phone scroll reset. Schema-1 history/preferences/draft migration retained.
+- 16 core tests, browser QA, debug/release build and lint, API35 fresh install,
+  v1.0 fixture update, offline/resume/Undo/Skip/history/coexistence/safe-area QA passed.
+- CI: https://github.com/andrefiker/appfarm/actions/runs/37657527400
+- Final production certificate equals original v1.0 certificate; v2/v3 verified.
+  APK SHA-256: ed97f15e4592df8f642b801108852b8ac7bffc11a516797fb584b2acf26d06dc.
+- No permissions/backend/login/ads/analytics; wrapper and Daily Home Training unchanged.
+- Minimal movement habit; no claim that one rep is optimal hypertrophy training.
+- Rollback: one-more-training-v1, f04f0ddf2a87fa8971ba7282ddbfd01664f9b3bf.
+- Full verification: ONE_MORE_V1_1_RELEASE.md. Physical-phone check still pending.
+
+## ONE MORE — v1.0 baseline (2026-10-02)
 
 - New source directory `one-more-training/`, branch `one-more-training-v1`.
 - Display `ONE MORE`; unique ID `com.andrefiker.onemore`; v1.0.0/code 1.

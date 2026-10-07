@@ -230,7 +230,7 @@ public class MainActivity extends Activity {
     }
     void resumeDraft() {
         JSONObject d=data.optJSONObject("draft");if(d==null)return;String type=d.optString("type");JSONObject c=client(d.optString("clientId"));
-        if(type.equals("client"))editClient(c);else if(type.equals("session")&&c!=null)editSession(c,session(c,d.optString("sessionId")));else{data.remove("draft");persist();render();return;}
+        if(type.equals("client"))editClient(c);else if(type.equals("session")&&c!=null)editSession(c,session(c,d.optString("sessionId")));else if(type.equals("study")){JSONObject study=null;JSONArray studies=data.optJSONArray("studies");for(int i=0;i<studies.length();i++)if(studies.optJSONObject(i).optString("id").equals(d.optString("sessionId")))study=studies.optJSONObject(i);editStudy(study);}else{data.remove("draft");persist();render();return;}
         JSONObject values=d.optJSONObject("values");if(values!=null)for(String k:fields.keySet())if(values.has(k))fields.get(k).setText(values.optString(k));
     }
     void readDossier(JSONObject c,JSONObject s) {
@@ -258,8 +258,8 @@ public class MainActivity extends Activity {
     }
     void studyView(JSONObject s) {screen(s.optString("title"),true);note(s.optString("reference"));space();note(s.optString("content"));action("Editar texto",()->editStudy(s));action("Excluir texto",()->confirm("Excluir estudo?","O texto será removido do cofre.",()->{JSONArray ss=data.optJSONArray("studies"),next=new JSONArray();for(int i=0;i<ss.length();i++)if(ss.optJSONObject(i)!=s)next.put(ss.optJSONObject(i));try{data.put("studies",next);if(persist())studies();}catch(Exception e){error("Falha ao excluir.");}}));primary("Voltar à biblioteca",this::studies);}
     void editStudy(JSONObject s) {
-        screen("Texto de estudo",true);input("title","Título",s==null?"":s.optString("title"),1);input("reference","Referência bibliográfica",s==null?"":s.optString("reference"),2);input("content","Texto / suas notas",s==null?"":s.optString("content"),6);action("Importar TXT ou Markdown",()->pick("study"));
-        primary("Salvar estudo",()->{if(value("title").isEmpty()||value("content").isEmpty()){error("Preencha título e texto.");return;}try{JSONObject item=s==null?new JSONObject().put("id",UUID.randomUUID().toString()):s;for(String k:fields.keySet())item.put(k,value(k));if(s==null)data.optJSONArray("studies").put(item);if(persist())studies();}catch(Exception e){error("Falha ao salvar estudo.");}});
+        selectedClient="";selectedSession=s==null?"":s.optString("id");screen("Texto de estudo",true);input("title","Título",s==null?"":s.optString("title"),1);input("reference","Referência bibliográfica",s==null?"":s.optString("reference"),2);input("content","Texto / suas notas",s==null?"":s.optString("content"),6);action("Importar TXT ou Markdown",()->pick("study"));
+        primary("Salvar estudo",()->{if(value("title").isEmpty()||value("content").isEmpty()){error("Preencha título e texto.");return;}try{JSONObject item=s==null?new JSONObject().put("id",UUID.randomUUID().toString()):s;for(String k:fields.keySet())item.put(k,value(k));if(s==null)data.optJSONArray("studies").put(item);data.remove("draft");draftType="";if(persist())studies();}catch(Exception e){error("Falha ao salvar estudo.");}});draftType="study";
     }
     void settings() {
         screen("Seu cofre",true);note("AES-256-GCM · senha pessoal · sem permissão de Internet");
@@ -276,7 +276,7 @@ public class MainActivity extends Activity {
         pendingMode=mode;picker=true;saveDraft();Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(mode.equals("backup")?"*/*":"text/*");i.putExtra(Intent.EXTRA_LOCAL_ONLY,true);startActivityForResult(i,10);
     }
     void createFile(String mode,String mime,String name) {pendingMode=mode;picker=true;Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(mime);i.putExtra(Intent.EXTRA_TITLE,name);i.putExtra(Intent.EXTRA_LOCAL_ONLY,true);startActivityForResult(i,11);}
-    static byte[] readLimited(InputStream in,int max) throws Exception {try(InputStream stream=in;ByteArrayOutputStream out=new ByteArrayOutputStream()){if(stream==null)throw new IOException();byte[] buffer=new byte[8192];int n;while((n=stream.read(buffer))!=-1){if(out.size()+n>max)throw new IOException("Arquivo muito grande");out.write(buffer,0,n);}return out.toByteArray();}}
+    static byte[] readLimited(InputStream in,int max) throws Exception {try(InputStream stream=in;ByteArrayOutputStream out=new ByteArrayOutputStream()){if(stream==null)throw new IOException();byte[] buffer=new byte[8192];int n;while((n=stream.read(buffer))!=-1){if(out.size()+n>max)throw new IOException("Arquivo muito grande");out.write(buffer,0,n);}finally{doc.close();}return out.toByteArray();}}
     @Override protected void onActivityResult(int req,int result,Intent i) {
         super.onActivityResult(req,result,i);picker=false;
         if(data==null||result!=RESULT_OK||i==null){pendingBytes=null;return;}
@@ -309,7 +309,7 @@ public class MainActivity extends Activity {
         });
     }
     static byte[] pdf(String text) throws Exception {
-        ByteArrayOutputStream out=new ByteArrayOutputStream();try(PdfDocument doc=new PdfDocument()) {
+        ByteArrayOutputStream out=new ByteArrayOutputStream();PdfDocument doc=new PdfDocument();try {
             Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);paint.setColor(INK);paint.setTextSize(11);paint.setTypeface(Typeface.create("sans-serif",Typeface.NORMAL));
             int number=1;PdfDocument.Page page=doc.startPage(new PdfDocument.PageInfo.Builder(595,842,number).create());float y=50;
             for(String paragraph:text.split("\n",-1)) {
@@ -319,7 +319,7 @@ public class MainActivity extends Activity {
                 for(String line:wrapped){if(y>782){page.getCanvas().drawText("Clínica • "+number,50,810,paint);doc.finishPage(page);number++;page=doc.startPage(new PdfDocument.PageInfo.Builder(595,842,number).create());y=50;}page.getCanvas().drawText(line,50,y,paint);y+=16;}
             }
             page.getCanvas().drawText("Clínica • "+number,50,810,paint);doc.finishPage(page);doc.writeTo(out);
-        }return out.toByteArray();
+        }finally{doc.close();}return out.toByteArray();
     }
     @Override protected void onPause(){saveDraft();privacyHandler.postDelayed(()->{picker=false;lock();},120000);super.onPause();}
     @Override protected void onResume(){super.onResume();privacyHandler.removeCallbacksAndMessages(null);}

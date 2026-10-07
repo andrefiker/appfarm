@@ -1,10 +1,7 @@
 name: Clinical Cockpit Android
 on:
-  push:
-    branches: ['clinical-cockpit-android-v0-1']
-    paths: ['clinical-cockpit/**', '.github/workflows/clinical-cockpit-apk.yml']
   pull_request:
-    paths: ['clinical-cockpit/**', '.github/workflows/clinical-cockpit-apk.yml']
+    paths: ['clinical-cockpit/**', '!clinical-cockpit/**/*.md', '.github/workflows/clinical-cockpit-apk.yml']
 permissions:
   contents: read
 jobs:

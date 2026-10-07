@@ -10,6 +10,6 @@ public final class Rules {
         try { LocalDate.parse(s, DateTimeFormatter.ofPattern("uuuu-MM-dd").withResolverStyle(ResolverStyle.STRICT)); return s.length() == 10; }
         catch (Exception e) { return false; }
     }
-    public static String xml(String s) { return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&apos;"); }
+    public static String xml(String s) { return s.replaceAll("[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F]", "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;").replace("'", "&apos;"); }
     public static String normalizeText(String s) { return s.replace("\r\n", "\n").replace('\r', '\n').replace("\u0000", ""); }
 }

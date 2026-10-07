@@ -137,6 +137,46 @@ var LEVELS = [
     w:46, terrain:[bank(0,6,8,7),bank(40,46,7,8),roof(1,6,1.6,2.6),roof(40,45,2.6,1.6),pier(23,13,1.4)], anchors:[[6,7],[40,7],[6,2.6],[40,2.6],[6,13],[40,13],[22.3,13],[23.7,13]], platform:{x:28,y:8,w:4,amp:0.35,period:6.5,anchors:[[28,8],[32,8],[28,9],[32,9]]}, water:{y0:10.2,y1:9.6,rise:8,current:3}, wind:{base:0.45,gust:2.2,period:5.7,uplift:0.2}, vehicle:'caminhao',start:3.5,goal:42.5,budget:48000})
 ];
 
+var BRIEFS = {
+  1:{type:'compact',label:'Poucas barras',note:'Conclua com no máximo 12 barras.',maxBeams:12,reward:30},
+  2:{type:'calm',label:'Rampa tranquila',note:'Conclua com esforço máximo de 78%.',maxStress:78,reward:30},
+  3:{type:'support',label:'Use a ilha',note:'Use ao menos uma âncora da ilha central.',anchorSet:[[13,10],[16,10]],minAnchors:1,reward:35},
+  4:{type:'economy',label:'Aço com disciplina',note:'Poupe pelo menos 20% do orçamento.',saveRatio:.20,reward:35},
+  5:{type:'support',label:'Apoio deslocado',note:'Use ao menos uma âncora do apoio central e fique abaixo de 85% de esforço.',anchorSet:[[14,9.5],[16.5,9.5]],minAnchors:1,maxStress:85,reward:40},
+  6:{type:'compact',label:'Treliça limpa',note:'Conclua o grande vão com no máximo 24 barras.',maxBeams:24,reward:35},
+  7:{type:'compact',label:'Suspensão enxuta',note:'Conclua com no máximo 22 barras.',maxBeams:22,reward:35},
+  8:{type:'economy',label:'Assimetria eficiente',note:'Poupe pelo menos 15% do orçamento.',saveRatio:.15,reward:35},
+  9:{type:'support',label:'Agulha útil',note:'Use ao menos uma âncora da agulha central.',anchorSet:[[16.4,11.5],[17.6,11.5]],minAnchors:1,reward:40},
+  10:{type:'compact',label:'Baixo perfil',note:'Conclua com no máximo 22 barras.',maxBeams:22,reward:35},
+  11:{type:'calm',label:'Descida controlada',note:'Conclua com esforço máximo de 75%.',maxStress:75,reward:40},
+  12:{type:'calm',label:'Contra o vento',note:'Conclua com esforço máximo de 70%.',maxStress:70,reward:45},
+  13:{type:'support',label:'Dois apoios',note:'Use âncoras dos dois pilares intermediários.',anchorGroups:[[[13.25,12],[14.75,12]],[[21.25,12],[22.75,12]]],minAnchorGroups:2,reward:45},
+  14:{type:'support',label:'Viaduto de verdade',note:'Use pelo menos um ponto de cada pilar.',anchorGroups:[[[13.3,11.5],[14.7,11.5]],[[23.3,11.5],[24.7,11.5]]],minAnchorGroups:2,reward:45},
+  15:{type:'calm',label:'Carga intacta',note:'Conclua com esforço máximo de 65%.',maxStress:65,reward:45},
+  16:{type:'light',label:'Leve ao vento',note:'Mantenha a densidade estrutural média em até 0,006.',maxAvgDensity:.006,reward:45},
+  17:{type:'compact',label:'Fora da corrente',note:'Conclua com no máximo 20 barras estruturais (sem contar pista).',maxNonRoad:20,reward:40},
+  18:{type:'support',label:'Ilha sem dependência',note:'Use uma âncora da ilha e fique abaixo de 82% de esforço.',anchorSet:[[16,10.3],[18.5,10.3]],minAnchors:1,maxStress:82,reward:45},
+  19:{type:'support',label:'Pilar na água',note:'Use uma âncora do pilar central.',anchorSet:[[17.1,11.5],[18.9,11.5]],minAnchors:1,reward:40},
+  20:{type:'calm',label:'Tudo sob controle',note:'Água + vento + carga com esforço máximo de 70%.',maxStress:70,reward:50},
+  21:{type:'support',label:'Conexão flexível',note:'Use ao menos uma âncora da balsa.',anchorSet:[[14,8],[18,8],[14,9],[18,9]],minAnchors:1,reward:40},
+  22:{type:'support',label:'Duas conexões',note:'Use pelo menos duas âncoras da balsa.',anchorSet:[[17,8],[21,8],[17,9],[21,9]],minAnchors:2,reward:45},
+  23:{type:'support',label:'Maré controlada',note:'Use duas âncoras da balsa e fique abaixo de 80% de esforço.',anchorSet:[[16,8.2],[20,8.2],[16,9.2],[20,9.2]],minAnchors:2,maxStress:80,reward:50},
+  24:{type:'support',label:'Pendure a baía',note:'Use as duas âncoras altas das margens.',anchorSet:[[7,3],[35,3]],minAnchors:2,reward:50},
+  25:{type:'compact',label:'Descida limpa',note:'Conclua com no máximo 26 barras.',maxBeams:26,reward:40},
+  26:{type:'support',label:'Paredes do desfiladeiro',note:'Use as duas âncoras altas.',anchorSet:[[7,2],[33,2]],minAnchors:2,reward:50},
+  27:{type:'compact',label:'Túnel enxuto',note:'Conclua com no máximo 22 barras estruturais.',maxNonRoad:22,reward:45},
+  28:{type:'calm',label:'Crista estável',note:'Conclua com esforço máximo de 68%.',maxStress:68,reward:50},
+  29:{type:'support',label:'Corredor livre',note:'Use ao menos um ponto de cada pilar.',anchorGroups:[[[13.4,12],[14.6,12]],[[23.4,12],[24.6,12]]],minAnchorGroups:2,reward:45},
+  30:{type:'economy',label:'Obra urbana',note:'Poupe pelo menos 20% do orçamento.',saveRatio:.20,reward:40},
+  31:{type:'support',label:'Ancoragem única',note:'Use a âncora alta da margem direita.',anchorSet:[[29,3.5]],minAnchors:1,reward:45},
+  32:{type:'calm',label:'Carga especial',note:'Caminhão pesado com esforço máximo de 72%.',maxStress:72,reward:50},
+  33:{type:'support',label:'Três vãos contínuos',note:'Use ao menos um ponto de cada pilar intermediário.',anchorGroups:[[[14.2,12],[15.8,12]],[[26.2,12],[27.8,12]]],minAnchorGroups:2,reward:50},
+  34:{type:'support',label:'Vale partido',note:'Use ao menos uma âncora da ilha baixa.',anchorSet:[[19,11.5],[21.5,11.5]],minAnchors:1,reward:45},
+  35:{type:'support',label:'Estuário vivo',note:'Use duas âncoras da balsa e fique abaixo de 75% de esforço.',anchorSet:[[19,8],[23,8],[19,9],[23,9]],minAnchors:2,maxStress:75,reward:55},
+  36:{type:'master',label:'Projeto de mestre',note:'Use pelo menos três grupos de apoio especiais e termine abaixo de 75% de esforço.',anchorGroups:[[[6,2.6]],[[40,2.6]],[[22.3,13],[23.7,13]],[[28,8],[32,8],[28,9],[32,9]]],minAnchorGroups:3,maxStress:75,reward:75}
+};
+LEVELS.forEach(function (lv) { lv.brief = BRIEFS[lv.id]; });
+
 var SANDBOX_TERRAINS = [
   L({id:'sb0',name:'Vale curto',chapter:'Sandbox',env:'campina',envName:'Vale',kind:'sandbox-short',sandbox:true,w:26,terrain:[flat(0,9,8),flat(17,26,8)],anchors:[[9,8],[17,8],[9,11],[17,11]],start:3,goal:23,budget:Infinity,vehicle:'carro',mats:['road','wood','steel','cable']}),
   L({id:'sb1',name:'Cânion alto',chapter:'Sandbox',env:'canion',envName:'Cânion',kind:'sandbox-canyon',sandbox:true,w:34,terrain:[flat(0,7,8),flat(27,34,8),roof(2,7,2.2,3),roof(27,32,3,2.2)],anchors:[[7,8],[27,8],[7,3],[27,3],[7,12],[27,12]],start:3,goal:31,budget:Infinity,vehicle:'carro',mats:['road','wood','steel','cable']}),

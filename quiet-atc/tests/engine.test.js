@@ -5,6 +5,12 @@ assert.equal(E.normHeading(-10),350);
 assert.equal(E.normHeading(370),10);
 assert.equal(E.signedHeadingDelta(350,10),20);
 assert.equal(E.stepHeading(350,10,5),355);
+assert.ok(E.RUNWAY.captureRadius>=0.14);
+assert.ok(E.HELIPAD.captureRadius>=0.14);
+
+const trimmed=E.trimRouteStart([{x:.36,y:.4},{x:.42,y:.4},{x:.60,y:.4}],{x:.40,y:.4});
+assert.equal(trimmed.length,1);
+assert.equal(trimmed[0].x,.60);
 
 const pts=E.simplifyPoints([{x:.1,y:.1},{x:.101,y:.101},{x:.3,y:.3}]);
 assert.equal(pts.length,2);
@@ -33,11 +39,21 @@ assert.equal(E.assignPath(g,1,[{x:.5,y:.4},{x:E.RUNWAY.rightGate.x,y:E.RUNWAY.y}
 assert.equal(a.landing,true);
 assert.equal(a.selected,true);
 
+const movingAssign=E.createAircraft({id:9,callsign:'F9',type:'plane',x:.40,y:.40,heading:90,speed:.05});
+const movingGame=E.makeGame(9);movingGame.aircraft=[movingAssign];
+E.assignPath(movingGame,9,[{x:.36,y:.40},{x:.42,y:.40},{x:.60,y:.40}]);
+assert.ok(E.distance(movingAssign,movingAssign.route[0])>0.15);
+
 const m=E.createAircraft({id:3,callsign:'M3',type:'plane',x:.2,y:.2,heading:90,speed:.05});
 m.route=[{x:.5,y:.2}];
 E.moveAircraft(m,1);
 assert.ok(m.x>.2);
 assert.ok(Math.abs(m.y-.2)<.03);
+
+const turn=E.createAircraft({id:8,callsign:'T8',type:'plane',x:.2,y:.2,heading:0,speed:0});
+turn.route=[{x:.7,y:.2}];
+E.moveAircraft(turn,.25);
+assert.ok(turn.heading>35);
 
 assert.equal(E.trafficLevel(0,0),1);
 assert.equal(E.trafficLevel(60,6),2);
@@ -72,4 +88,4 @@ col.aircraft=[
 E.updateGame(col,.01);
 assert.equal(col.gameOver,true);assert.match(col.lastEvent,/COLLISION/);
 
-console.log('QUIET ATC v1.1 engine tests: 32 assertions passed');
+console.log('QUIET ATC v1.1.1 engine tests passed');

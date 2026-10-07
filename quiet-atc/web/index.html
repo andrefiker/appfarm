@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#071110">
+  <title>QUIET ATC</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="app" class="app">
+    <header class="topbar">
+      <div class="brand"><span class="scope-dot"></span><div><b>QUIET ATC</b><small id="sectorLabel">SECTOR GRU-1</small></div></div>
+      <div class="top-stats">
+        <div><span>SCORE</span><strong id="score">00000</strong></div>
+        <div><span>LEVEL</span><strong id="level">1</strong></div>
+      </div>
+    </header>
+
+    <section class="status-strip" aria-live="polite">
+      <span id="eventText">SHIFT READY</span>
+      <span class="traffic"><i id="trafficLamp"></i><b id="trafficCount">0</b> AIRCRAFT</span>
+    </section>
+
+    <section class="radar-wrap">
+      <canvas id="radar" aria-label="Air traffic radar display"></canvas>
+      <div class="radar-label top-left">120 NM</div>
+      <div class="radar-label top-right" id="clock">00:00</div>
+      <div id="toast" class="toast" hidden></div>
+    </section>
+
+    <section id="controls" class="controls disabled" aria-label="Aircraft controls">
+      <div class="selected-row">
+        <div><span>SELECTED</span><strong id="selectedCallsign">—</strong></div>
+        <div class="selected-meta" id="selectedMeta">Tap an aircraft</div>
+      </div>
+      <div class="command-grid">
+        <div class="command-block">
+          <span>HEADING</span>
+          <div class="stepper">
+            <button id="hdgMinus" aria-label="Decrease heading 15 degrees">−15</button>
+            <strong id="headingValue">---</strong>
+            <button id="hdgPlus" aria-label="Increase heading 15 degrees">+15</button>
+          </div>
+        </div>
+        <button id="approachBtn" class="approach" disabled><span>ILS</span><b>APPROACH</b></button>
+        <div class="command-block">
+          <span>ALTITUDE</span>
+          <div class="stepper">
+            <button id="altMinus" aria-label="Decrease altitude 1000 feet">−1K</button>
+            <strong id="altitudeValue">-----</strong>
+            <button id="altPlus" aria-label="Increase altitude 1000 feet">+1K</button>
+          </div>
+        </div>
+      </div>
+      <div class="tip">Tip: drag from a selected aircraft to point its new heading.</div>
+    </section>
+
+    <footer class="footer">
+      <div><span>LANDED</span><b id="landed">0</b></div>
+      <div><span>HANDOFFS</span><b id="handoffs">0</b></div>
+      <button id="pauseBtn">PAUSE</button>
+      <button id="newBtn">NEW SHIFT</button>
+    </footer>
+
+    <section id="overlay" class="overlay show">
+      <div class="modal">
+        <div class="radar-mark"><span></span></div>
+        <p class="kicker">SECTOR CONTROL</p>
+        <h1>QUIET ATC</h1>
+        <p>Guide arrivals onto runway 18, climb departures out of the sector, and keep every aircraft safely separated.</p>
+        <div class="rules">
+          <div><b>1</b><span>Tap a target</span></div>
+          <div><b>2</b><span>Set heading & altitude</span></div>
+          <div><b>3</b><span>Line arrivals up north of runway 18, then clear ILS</span></div>
+        </div>
+        <button id="startBtn" class="start">START SHIFT</button>
+        <small id="bestText">BEST 00000</small>
+      </div>
+    </section>
+  </main>
+  <script src="engine.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

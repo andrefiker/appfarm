@@ -2,7 +2,7 @@ name: Build Ponte Mestra APK
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, ccr-9d84ff48-6pvado ]
     paths:
       - 'ponte-mestra/**'
       - '.github/workflows/build-ponte-mestra-apk.yml'

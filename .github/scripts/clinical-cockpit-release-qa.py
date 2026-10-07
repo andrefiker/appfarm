@@ -26,8 +26,16 @@ def tap(label,attribute='text'):
 def fill(label,text):
     tap(label,'content-desc');adb('shell','input','text',text.replace(' ','%s'));adb('shell','input','keyevent','BACK')
     time.sleep(.4)
+def stage_download(local,name):
+    adb('push',local,'/sdcard/Download/'+name)
+    adb('shell','am','broadcast','-a','android.intent.action.MEDIA_SCANNER_SCAN_FILE','-d','file:///sdcard/Download/'+name)
+    time.sleep(1)
 def choose_download(name):
-    tap('Show roots','content-desc');tap('Downloads');tap(name)
+    tap('Show roots','content-desc')
+    pathlib.Path('dist/picker-roots.xml').write_text(adb('shell','cat','/sdcard/release-ui.xml'))
+    tap('Downloads');time.sleep(.5)
+    nodes();pathlib.Path('dist/picker-downloads.xml').write_text(adb('shell','cat','/sdcard/release-ui.xml'))
+    tap(name)
 def launch():adb('shell','am','start','-n',PKG+'/.MainActivity')
 
 pathlib.Path('dist').mkdir(exist_ok=True)
@@ -54,12 +62,12 @@ passed('production portable backup physically exported and independently decrypt
 # Actual document picker, bulk preview/confirmation, stable duplicate handling.
 roster='code,next,notebookUrl,formulation,sourceReference\nCL-002,,,,\nCL-007,2026-10-09,https://notebook.google.com/notebook/12345678-1234-1234-1234-123456789abc,,Synthetic source\nCL-008,,,,\n'
 pathlib.Path('dist/production-roster.csv').write_text(roster)
-adb('push','dist/production-roster.csv','/sdcard/Download/patients.csv')
+stage_download('dist/production-roster.csv','patients.csv')
 tap('Pacientes');tap('Importar pacientes • CSV / JSON');tap('Escolher arquivo CSV ou JSON');choose_download('patients.csv')
 find('Conferir cadastros');tap('Importar 2 pacientes');tap('Continuar');find('CL-002\n1 sessões');find('CL-007\n0 sessões');find('CL-008\n0 sessões');passed('real CSV picker adds two reviewed patients and preserves old sessions')
 tap('Importar pacientes • CSV / JSON');tap('Escolher arquivo CSV ou JSON');choose_download('patients.csv');find('Conferir cadastros');find('0 novos • 3 já cadastrados serão mantidos. Abra cada item para conferir os campos.');tap('Voltar aos pacientes');passed('reimport skips all existing codes')
 tap('CL-007\n0 sessões');find('Abrir caderno Notebook');passed('imported patient exposes an explicit Notebook link')
-adb('push','dist/recovery-fixture.ccvault','/sdcard/Download/recovery-fixture.ccvault')
+stage_download('dist/recovery-fixture.ccvault','recovery-fixture.ccvault')
 tap('Pausar');tap('Restaurar backup criptografado');tap('Continuar');choose_download('recovery-fixture.ccvault')
 fill('Senha do backup','different backup password');tap('Restaurar');find('Antes da próxima sessão');tap('Pacientes');find('CL-099\n1 sessões');passed('old independently passworded backup restores via actual picker')
 tap('Pausar');tap('Desfazer última restauração');tap('Continuar');find('Antes da próxima sessão');tap('Pacientes');find('CL-002\n1 sessões');find('CL-007\n0 sessões');passed('undo restores migrated vault and imported roster without password')

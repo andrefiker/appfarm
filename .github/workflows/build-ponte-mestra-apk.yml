@@ -31,7 +31,9 @@ jobs:
         run: node --test tests/physics.test.js
 
       - name: Bundle game into the wrapper
-        run: cp ponte-mestra/index.html ponte-mestra/android/app/src/main/assets/ponte-mestra.html
+        run: |
+          mkdir -p ponte-mestra/android/app/src/main/assets
+          cp ponte-mestra/index.html ponte-mestra/android/app/src/main/assets/ponte-mestra.html
 
       - name: Install Android 35
         run: |

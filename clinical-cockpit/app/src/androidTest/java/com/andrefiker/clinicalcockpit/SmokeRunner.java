@@ -36,11 +36,12 @@ public class SmokeRunner extends Instrumentation {
         final Exception[] fail={null};ui(()->{try{a.commitRecovery(candidate);}catch(Exception e){fail[0]=e;}});if(fail[0]!=null)throw fail[0];
     }
     void recoveryTests()throws Exception {
-        byte[] backup=a.vault.readFully(),oldKey=a.key.clone(),before=backup.clone();
+        byte[] backup=MainActivity.makeBackup(a.data,"synthetic test password".toCharArray()),oldKey=a.key.clone(),before=a.vault.readFully();
         boolean rejected=false;try{MainActivity.prepareRecovery(backup,"wrong backup password".toCharArray());}catch(Exception e){rejected=true;}
         check(rejected&&Arrays.equals(before,a.vault.readFully()),"wrong backup password leaves current vault intact");
         JSONObject invalid=new JSONObject(a.data.toString());invalid.put("schema",9);
-        byte[] malformed=VaultCrypto.encrypt(invalid.toString().getBytes(StandardCharsets.UTF_8),oldKey,a.salt);
+        byte[] backupSalt=VaultCrypto.salt(backup),backupKey=VaultCrypto.derive("synthetic test password".toCharArray(),backupSalt);
+        byte[] malformed=VaultCrypto.encrypt(invalid.toString().getBytes(StandardCharsets.UTF_8),backupKey,backupSalt);Arrays.fill(backupKey,(byte)0);
         rejected=false;try{MainActivity.prepareRecovery(malformed,"synthetic test password".toCharArray());}catch(Exception e){rejected=true;}
         check(rejected&&Arrays.equals(before,a.vault.readFully()),"authenticated unsupported schema cannot replace vault");
         byte[] tampered=backup.clone();tampered[tampered.length-1]^=1;
@@ -74,14 +75,42 @@ public class SmokeRunner extends Instrumentation {
         check(Arrays.equals(candidate.key,new byte[candidate.key.length]),"failed recovery candidate key erased");
         final byte[] unchanged=current;ui(()->{a.startRecovery(backup,"synthetic test password".toCharArray());a.lock();});Thread.sleep(1500);waitForIdleSync();
         check(a.data==null&&Arrays.equals(unchanged,a.vault.readFully()),"cancelled recovery cannot commit late");Arrays.fill(oldKey,(byte)0);Arrays.fill(newKey,(byte)0);
-        set("password","synthetic test password");tap("Abrir cofre");awaitOpen();
+        tap("Continuar");awaitOpen();
+    }
+    void deviceAndRosterTests()throws Exception {
+        byte[] current=a.vault.readFully(),storedKey=a.deviceKeys.read(a.salt);
+        check(Arrays.equals(storedKey,a.key),"Android Keystore wrapped key roundtrip");Arrays.fill(storedKey,(byte)0);
+        check(a.deviceKeys.read(VaultCrypto.randomSalt())==null,"unregistered salt has no device key");
+        check(!new String(a.deviceKeys.file.readFully(),StandardCharsets.UTF_8).contains(DeviceKeys.encode(a.key)),"raw vault key absent from key index");
+        byte[] index=a.deviceKeys.file.readFully();JSONObject damagedIndex=new JSONObject(new String(index,StandardCharsets.UTF_8));JSONObject keys=damagedIndex.getJSONObject("keys");
+        String first=keys.keys().next();byte[] altered=android.util.Base64.decode(keys.getString(first),android.util.Base64.NO_WRAP);altered[altered.length-1]^=1;keys.put(first,DeviceKeys.encode(altered));MainActivity.writeEnvelope(a.deviceKeys.file,damagedIndex.toString().getBytes(StandardCharsets.UTF_8));
+        boolean reject=false;try{a.deviceKeys.read(android.util.Base64.decode(first,android.util.Base64.NO_WRAP));}catch(Exception e){reject=true;}MainActivity.writeEnvelope(a.deviceKeys.file,index);
+        check(reject&&Arrays.equals(current,a.vault.readFully()),"tampered wrapped key rejected without altering vault");
+        ui(a::lock);check(!a.fields.containsKey("password"),"pause has no password field");tap("Continuar");awaitOpen();check(a.clients().length()==1,"device access reopens records without password");
+        byte[] backup=MainActivity.makeBackup(a.data,"portable synthetic password".toCharArray());
+        MainActivity.RecoveryCandidate candidate=MainActivity.prepareRecovery(backup,"portable synthetic password".toCharArray());
+        check(candidate.data.getJSONArray("clients").length()==1&&!Arrays.equals(candidate.key,a.key),"portable backup has independent password key");Arrays.fill(candidate.key,(byte)0);
+        String url="https://notebook.google.com/notebook/12345678-1234-1234-1234-123456789abc";
+        String csv="code,next,notebookUrl,formulation,sourceReference\nCL-001,,,,\nCL-004,2026-10-09,"+url+",,Synthetic source\nCL-005,,,,\n";
+        check(MainActivity.parseRoster("[{\"code\":\"CL-006\"}]").size()==1,"JSON roster accepted locally");
+        reject=false;try{MainActivity.parseRoster("[{\"code\":\"CL-006\"},{\"code\":\"CL-006\"}]");}catch(Exception e){reject=true;}check(reject,"JSON duplicate roster rejected");
+        reject=false;try{MainActivity.parseRoster("[{\"code\":\"CL-006\",\"unknown\":\"test\"}]");}catch(Exception e){reject=true;}check(reject,"JSON unknown fields rejected");
+        reject=false;try{MainActivity.parseRoster("[{\"code\":\"CL-006\",\"next\":42}]");}catch(Exception e){reject=true;}check(reject,"JSON field types validated");
+        ui(a::rosterImport);set("roster",csv);tap("Verificar importação");snapshot("roster-preview");
+        check(a.clients().length()==1,"roster preview does not mutate existing patients");tap("Cancelar importação");check(a.clients().length()==1,"cancelled roster leaves records intact");
+        ui(a::rosterImport);set("roster",csv);tap("Verificar importação");tap("Importar 2 pacientes");check(dialogNode("Continuar",false).performAction(AccessibilityNodeInfo.ACTION_CLICK),"roster confirmation action works");waitForIdleSync();
+        check(a.clients().length()==3&&a.clients().getJSONObject(0).getJSONArray("sessions").length()==1,"bulk import preserves old patient and sessions");
+        check(a.clients().getJSONObject(1).getString("notebookUrl").equals(url)&&a.clients().getJSONObject(1).getBoolean("imported"),"Notebook URL and review provenance retained");snapshot("roster");
+        final int[] count={-1};ui(()->{try{count[0]=a.commitRoster(MainActivity.parseRoster(csv));}catch(Exception e){throw new RuntimeException(e);}});check(count[0]==0&&a.clients().length()==3,"reimport skips existing codes without duplication");
+        ui(()->a.openClient(a.clients().optJSONObject(1).optString("id")));check(find(a.root,"Abrir caderno Notebook")!=null,"Notebook link action is visible");
+        byte[] updated=a.vault.readFully();ui(a::lock);tap("Continuar");awaitOpen();check(a.clients().length()==3&&Arrays.equals(updated,a.vault.readFully()),"imported roster persists through password-free reopen");
     }
     @Override public void onCreate(Bundle b){super.onCreate(b);start();}
     @Override public void onStart(){Bundle result=new Bundle();try{
         Intent intent=new Intent(getTargetContext(),MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         a=(MainActivity)startActivitySync(intent);
         check((a.getWindow().getAttributes().flags&WindowManager.LayoutParams.FLAG_SECURE)!=0,"secure window");
-        set("password","synthetic test password");set("confirm","synthetic test password");tap("Criar cofre");awaitOpen();
+        awaitOpen();check(!a.fields.containsKey("password"),"fresh install opens without app password");
         tap("Cadastrar primeiro paciente");set("code","CL-001");set("next","2026-10-08");set("formulation","Hipótese sintética a investigar");tap("Salvar paciente");
         ui(()->check(a.clients().length()==1,"patient created"));snapshot("patient");
         tap("Registrar sessão");set("date","2026-10-07");set("transcript","Notas inteiramente fictícias — teste sem pessoa real.");set("layer0","Relato fictício");set("layer1","Antecedente A; resposta B; consequência C — hipótese");set("evidence","Trecho fictício: A. Lacuna: contexto.");set("road0","Investigar a hipótese funcional");set("road2","O que aconteceu depois?");tap("Salvar sessão");
@@ -91,7 +120,7 @@ public class SmokeRunner extends Instrumentation {
         tap("Roteiro para próxima sessão");snapshot("roadmap");ui(()->check(a.body.getChildCount()>8,"roadmap renders"));tap("Voltar à sessão");
         tap("Dossiê • quatro camadas");snapshot("dossier");tap("Voltar à sessão");tap("Editar sessão");set("road1","Compromisso sintético salvo como rascunho");
         ui(()->a.lock());check(a.key==null&&a.data==null,"lock clears decrypted model and key");
-        set("password","synthetic test password");tap("Abrir cofre");awaitOpen();tap("Retomar rascunho");ui(()->check(a.fields.get("road1").getText().toString().contains("rascunho"),"draft restored after lock"));tap("Salvar sessão");
+        tap("Continuar");awaitOpen();tap("Retomar rascunho");ui(()->check(a.fields.get("road1").getText().toString().contains("rascunho"),"draft restored after lock"));tap("Salvar sessão");
         c=a.clients().getJSONObject(0);s=c.getJSONArray("sessions").getJSONObject(0);check(!s.optBoolean("reviewed"),"editing resets review");
         byte[] encrypted=a.vault.readFully();check(!new String(encrypted,StandardCharsets.UTF_8).contains("fictícias"),"vault file contains no plaintext fixture");
         byte[] original=a.key.clone();byte[] wrong=VaultCrypto.derive("wrong password".toCharArray(),a.salt);boolean rejected=false;try{VaultCrypto.decrypt(encrypted,wrong);}catch(Exception e){rejected=true;}check(rejected,"wrong password cannot decrypt vault");
@@ -106,6 +135,7 @@ public class SmokeRunner extends Instrumentation {
         ui(()->{a.editSession(cc,ss);a.pendingMode="text";a.onActivityResult(10,Activity.RESULT_OK,new Intent().setData(Uri.fromFile(t)));check(a.fields.get("transcript").getText().toString().contains("importado"),"TXT import result");a.saveDraft();});
         ui(()->{a.route="Estudos";a.render();});tap("Adicionar texto de estudo");set("title","Estudo fictício");set("reference","Referência de teste");set("content","Notas de leitura sintéticas");tap("Salvar estudo");check(a.data.getJSONArray("studies").length()==1,"library saves text");
         recoveryTests();
+        deviceAndRosterTests();
         ui(()->{check(a.root.getPaddingTop()>0,"status safe area");check(a.root.getPaddingBottom()>0,"navigation safe area");a.onStop();});check(a.data==null,"background locks vault");snapshot("locked");
         result.putString("stream",log+"\n"+checks+" Android checks passed\n");finish(Activity.RESULT_OK,result);
     }catch(Throwable e){result.putString("stream",log+"\nFAIL: "+e+"\n"+android.util.Log.getStackTraceString(e));finish(Activity.RESULT_CANCELED,result);}}

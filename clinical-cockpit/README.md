@@ -1,100 +1,94 @@
-# Clínica • Cockpit — Android 0.2.0
+# Clínica • Cockpit — Android 0.3.0
 
-Local Android implementation of the mobile clinical cockpit handoff.
-Portuguese UI; Android 11+; `com.andrefiker.clinicalcockpit`.
+Manual local clinical cockpit, PT-BR UI, Android 11+.
+Package `com.andrefiker.clinicalcockpit`; versionCode 3; same owner signing key.
 
-## Implemented
-- Password-encrypted private JSON vault, AES-256-GCM and PBKDF2-HMAC-SHA256
-  (310,000 iterations, random 16-byte salt and 12-byte IV; authenticated header).
-- Opaque patient codes (e.g. CL-001), cumulative formulation, next appointment
-  date, searchable list, archive/reactivate and explicit deletion.
-- Session history, TXT/Markdown import (512 KB cap), four manually completed
-  dossier layers, evidence/uncertainty field and five-part next-session roadmap.
-- Encrypted autosaved patient/session draft; editing resets human-review status.
-- Physical native PDF and DOCX exports through Android Storage Access Framework.
-  Raw transcript is excluded from dossier/roadmap exports.
-- Encrypted backup restore from the locked screen, including damaged vaults.
-  Validates with the backup’s own password before replacement; keeps a local
-  encrypted snapshot to undo the last restoration. Explicit snapshot disposal.
-- Local text study library, literal search and formulation question guide.
-- No permissions, Internet, backend, analytics, advertising or remote fonts.
+## Acesso sem senha
+New installs open directly. Existing password-based vaults ask for the old
+password **once**, to decrypt/validate the existing records and register their
+key with Android Keystore. Migration does not replace the vault or discard data.
+Wrong passwords leave the vault unchanged. The app then reopens without a password.
 
-## Scope / clinical use boundary
-This is a **manual alpha**, not the complete AI/fullstack specification. No AI
-model, audio transcription, semantic search, instrument scoring, automatically
-computed Hexaflex radar, Google OAuth, Gmail/Calendar/Drive or NotebookLM sync.
-These capabilities are pending, not simulated. Import is text only, not PDF/DOCX.
-No real patient data was used in development or QA.
+Vault AES-256-GCM keys are wrapped with a non-exportable Android Keystore AES key;
+no plaintext key or password is stored in files. This does not impose an app
+biometric/PIN barrier: anyone able to use the unlocked phone can open the app.
+Pausar clears the decrypted model/key, but Continuar requires no authentication.
+Background/resume and process restart reopen using the device key.
 
-Codes are pseudonyms, not proof of anonymization. Narrative may identify people.
-Never put real clinical data into this repository or development environment.
-No legal-compliance certification or clinical-validation claim is made.
+Android backups/device transfer are disabled. FLAG_SECURE remains enabled.
+Managed strings can persist until garbage collection; complete memory erasure
+is not claimed. Rooted/compromised devices are outside the protection boundary.
 
-## Data and privacy
-Choose a strong, unique password of at least 12 characters. The app has no
-password reset or recovery service. Password-derived key is held in memory while
-open and zeroed on lock; decrypted JSON/UI strings may remain in managed memory
-until garbage collection. No claim of complete memory erasure.
+## Popular pacientes e vincular Notebook
+1. **Pacientes → Importar pacientes • CSV / JSON**.
+2. **Copiar pedido para o Notebook** copies the export specification. Use your
+   appropriate source documents in Notebook and check the generated list there.
+3. Choose a CSV/JSON file already on your phone, or paste its text in the app.
+4. **Verificar importação** / file import opens a review with every code. Tap
+   each entry to inspect fields, then confirm importing the new records.
 
-The active private vault and optional encrypted recovery snapshot are the
-app’s persistent clinical stores. Android backups and
-device-transfer extraction are disabled. Window FLAG_SECURE blocks ordinary
-screenshots/recent-app previews. Lock on background; file-picker flows preserve
-the session for at most two minutes, then require reopening. Rooted or otherwise
-compromised devices and third-party keyboards remain outside this threat model.
+The app does not read your Notebook account or generate patient identities.
+No real patients are bundled; no real clinical data was used in development.
+Original documents and therapist-reviewed records are authoritative; model
+answers are proposals. Notebook links open the external app/browser only when
+selected. There is no automatic synchronization, OAuth or AI inference.
 
-Text input requests no suggestions and no autofill. IME behavior is OS/provider
-controlled. Vault size capped at 8 MB; this is an early compact-store design.
-
-PDF/DOCX are deliberately unencrypted and only written after explicit export
-confirmation. Android's document provider might sync a chosen destination;
-EXTRA_LOCAL_ONLY requests a local provider but does not audit its behavior.
-Do not export identifiable records to cloud-synced destinations. Exported files
-and previous backups are not removed by deleting a record inside the vault.
-
-Back up from **Cofre → Salvar backup criptografado** before uninstalling or
-moving devices. **Restaurar backup criptografado** is available before unlock.
-Restore replaces the whole vault and needs the password used to create that
-backup; that password becomes the restored vault’s password. Corrupt backups
-and unsupported versions are rejected before replacing records.
-
-Before replacement, the app writes and verifies an encrypted copy of the current
-vault on the same device. **Desfazer última restauração** asks for that copy’s
-password and swaps the two vaults. A damaged prior copy cannot be opened; a
-valid external backup is still necessary. Snapshot write failure prevents
-replacement. Cancel/background lock prevents a late validation result from
-committing. This snapshot does not protect against loss of the device.
-
-The prior copy can retain records deleted from the current vault. After checking
-the restored records and saving an external backup, use **Cofre → Descartar cópia
-anterior** to remove it explicitly. Existing exported backups remain unchanged.
-The 8 MB limit applies per vault; the snapshot can consume another 8 MB.
-
-## Build and QA
-Java 17, Gradle 8.10.2, Android SDK/build tools 35, AGP 8.7.3.
+CSV header (comma or semicolon):
+```csv
+code,next,notebookUrl,formulation,sourceReference
 ```
+JSON is an array of objects with those same fields. Only `code` is required;
+all supplied fields must be strings. Missing fields stay empty. Codes follow
+`CL-001`; dates use `AAAA-MM-DD`. Up to 500 patients / 512 KB per batch.
+CSV quoted commas, multiline text, escaped quotes, UTF-8 BOM and CRLF supported.
+Unknown columns/JSON fields, duplicates within the list, invalid dates and
+unsafe links are rejected before any changes. Existing codes are skipped;
+existing sessions and formulations are never overwritten by bulk import.
+Imported records retain a source reference and a visible review reminder.
+
+Notebook URLs allow HTTPS on `notebook.google.com` and `notebooklm.google.com`
+with a UUID notebook path. Query/fragment are removed. No arbitrary URLs or scripts.
+Edit an existing patient to add/change its link; **Abrir caderno Notebook** opens it.
+
+## Backup / restauração
+Device keys do not transfer to another phone. **Cofre → Salvar backup criptografado**
+asks for a separate password (12+ characters) and creates a portable encrypted
+`.ccvault` using PBKDF2-HMAC-SHA256, 310,000 iterations, fresh salt/IV and AES-GCM.
+Keep that password with a protected external backup before uninstalling/moving.
+No password reset service exists. Old 0.1/0.2 backups still use their old passwords.
+
+Restoration validates the backup before replacement, registers its key locally,
+and saves/verifies the previous encrypted vault for undo. Current/previous keys
+are retained as Keystore-wrapped entries to survive interrupted restoration.
+Undo normally needs no password on this phone; unmigrated old copies need their
+former password. Cancellation invalidates late validation results before commit.
+Filesystem failures cannot be fully recovered by software alone.
+
+Previous copies can retain deleted records. **Cofre → Descartar cópia anterior**
+removes the prior vault and prunes retained wrapped keys when possible. It does
+not delete exported files/backups. The snapshot does not protect against device loss.
+Vault limit: 8 MB per copy. Plain PDF/DOCX exports remain unencrypted.
+
+## Existing clinical functions / limits
+Opaque codes, cumulative formulation, next date, history, manual four-layer
+functional dossier, evidence/uncertainty, next-session roadmap, human review,
+encrypted drafts, TXT/Markdown import, native PDF/DOCX and local study library.
+No permissions, Internet, backend, analytics, ads or remote fonts.
+
+Manual alpha: AI, audio transcription, semantic search, scored Hexaflex,
+Google Calendar/Gmail/Drive and automatic Notebook integration remain pending.
+Codes do not establish anonymization of narratives or links. Do not put clinical
+material into Git/development tools. No independent clinical/security/legal audit.
+Physical phone/Android 11 runtime testing pending; use fictitious acceptance data.
+
+## Build / update
+Java 17, Gradle 8.10.2, AGP 8.7.3, Android SDK/build tools 35.
+```sh
 bash scripts/test-core.sh
 gradle :app:assembleDebug :app:assembleRelease :app:assembleDebugAndroidTest :app:lintRelease
-bash scripts/android-qa.sh  # connected disposable test emulator only
+bash scripts/android-qa.sh # disposable synthetic emulator only
 ```
-GitHub workflow: `.github/workflows/clinical-cockpit-apk.yml`.
-Release unsigned output is re-signed outside the public repo with the dedicated
-private owner key. Keep that key for future in-place updates. No signing key,
-password, clinical data or personal registration number belongs in this repo.
-
-## Architecture decision — 2026-10-07
-Mobile requirement supersedes desktop-first Next/Postgres proposal. Native Java
-Android makes storage, lock, import and physical document export direct, without
-WebView bridges or a server. Backend/Postgres is unnecessary for this first local
-version. AI must eventually run locally or use a separately validated input
-release process; neither a name+initial nor an opaque code establishes anonymity.
-
-See APP_STATE.md for exact verified release, QA limits and rollback.
-
-## Installation / update
-Download `dl/Clinical-Cockpit-v0.2.0.apk` and open it on Android 11+. It uses the
-same package and signing key as 0.1.0, with versionCode 2, so it updates in place.
-Export an encrypted backup first. Do not uninstall the old version to update.
-Start acceptance testing with fictitious records; physical-device QA is pending.
-
-See APP_STATE.md for the exact signed release, checksum and test evidence.
+Release signing is performed outside Git with the persistent private owner key.
+Never sign/distribute instrumentation with that key. Download the signed 0.3 APK
+and install over the old app; do not uninstall to update. The old password is
+needed once if a pre-0.3 vault exists. APK/source/checksum/CI/rollback: APP_STATE.md.

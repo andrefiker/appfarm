@@ -25,3 +25,5 @@ npm test
 
 ## Android
 The GitHub Actions workflow builds and verifies `Quiet-ATC-v1.0.0.apk` using the repo's proven hosted-runner Android SDK pattern.
+
+Release branch: `quiet-atc-v1.0.0`.

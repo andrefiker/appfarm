@@ -6,6 +6,11 @@ on:
     paths:
       - 'quiet-atc/**'
       - '.github/workflows/build-quiet-atc-apk.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'quiet-atc/**'
+      - '.github/workflows/build-quiet-atc-apk.yml'
   workflow_dispatch:
 
 permissions:

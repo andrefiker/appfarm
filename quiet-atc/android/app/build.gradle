@@ -1,0 +1,16 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.andrefiker.quietatc'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'com.andrefiker.quietatc'
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName '1.0.0'
+    }
+    sourceSets {
+        main.assets.srcDirs = ['../../web']
+    }
+}

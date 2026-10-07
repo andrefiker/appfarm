@@ -10,10 +10,10 @@ grep -q 'Android checks passed' dist/android-qa.txt
 ! grep -q 'FAIL:' dist/android-qa.txt
 adb exec-out run-as com.andrefiker.clinicalcockpit cat files/synthetic.pdf > dist/synthetic-test.pdf
 adb exec-out run-as com.andrefiker.clinicalcockpit cat files/saf-test.docx > dist/synthetic-export.docx
-for name in patient roadmap dossier locked recovery; do adb exec-out run-as com.andrefiker.clinicalcockpit cat "files/$name.png" > "dist/$name.png"; done
+for name in patient roadmap dossier locked recovery roster roster-preview; do adb exec-out run-as com.andrefiker.clinicalcockpit cat "files/$name.png" > "dist/$name.png"; done
 adb shell am force-stop com.andrefiker.clinicalcockpit
 adb shell am start -n com.andrefiker.clinicalcockpit/.MainActivity
 adb shell uiautomator dump /sdcard/cockpit.xml
 adb pull /sdcard/cockpit.xml dist/relaunch-locked.xml
-grep -q 'Seu espaço clínico' dist/relaunch-locked.xml
+grep -q 'Antes da próxima sessão' dist/relaunch-locked.xml
 ! grep -q 'Notas inteiramente' dist/relaunch-locked.xml

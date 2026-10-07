@@ -25,7 +25,8 @@ public class MainActivity extends Activity {
     JSONObject data;
     byte[] key, salt, pendingBytes;
     AtomicFile vault, previousVault;
-    boolean picker=false, busy=false, broken=false;
+    DeviceKeys deviceKeys;
+    boolean picker=false, busy=false, broken=false, recoveryPrompt=false;
     int unlockEpoch=0;
     final Handler privacyHandler=new Handler(Looper.getMainLooper());
     String route="Hoje", selectedClient="", selectedSession="", pendingMode="";
@@ -42,6 +43,7 @@ public class MainActivity extends Activity {
         getWindow().setStatusBarColor(BG); getWindow().setNavigationBarColor(BG);
         vault=new AtomicFile(new File(getFilesDir(),"clinical.vault"));
         previousVault=new AtomicFile(new File(getFilesDir(),"clinical.previous.vault"));
+        deviceKeys=new DeviceKeys(this);
         lock();
     }
     int dp(int n) { return (int)(n*getResources().getDisplayMetrics().density+.5f); }
@@ -70,7 +72,7 @@ public class MainActivity extends Activity {
         setContentView(root);root.requestApplyInsets();
         LinearLayout header=new LinearLayout(this);header.setGravity(Gravity.CENTER_VERTICAL);
         TextView logo=text("CLÍNICA  /  COCKPIT",12,GREEN);logo.setLetterSpacing(.12f); header.addView(logo,new LinearLayout.LayoutParams(0,dp(42),1));
-        if(navigation) { Button lock=button("Travar",this::lock,false);lock.setTextSize(12);header.addView(lock,new LinearLayout.LayoutParams(dp(76),dp(42))); }
+        if(navigation) { Button lock=button("Pausar",this::lock,false);lock.setTextSize(12);header.addView(lock,new LinearLayout.LayoutParams(dp(76),dp(42))); }
         root.addView(header);
         ScrollView scroll=new ScrollView(this);scroll.setFillViewport(true);scroll.setSaveEnabled(false);root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
         body=new LinearLayout(this);body.setOrientation(LinearLayout.VERTICAL);body.setPadding(0,dp(12),0,dp(16));scroll.addView(body);
@@ -95,33 +97,60 @@ public class MainActivity extends Activity {
         e.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int a,int c,int f){} public void onTextChanged(CharSequence s,int a,int b,int c){ if(!draftType.isEmpty()){handler.removeCallbacks(draftSave);draftSave=MainActivity.this::saveDraft;handler.postDelayed(draftSave,900);} }public void afterTextChanged(Editable e){} });
         space();return e;
     }
+    byte[] storedSalt(AtomicFile file) {
+        try{return VaultCrypto.salt(readEnvelope(file));}catch(Exception e){return null;}
+    }
+    void rememberDevice(byte[] incomingKey,byte[] incomingSalt) throws Exception {
+        deviceKeys.remember(incomingKey,incomingSalt,new byte[][]{storedSalt(vault),storedSalt(previousVault)});
+    }
     void lock() {
         saveDraft();unlockEpoch++;busy=false;handler.removeCallbacksAndMessages(null);if(key!=null)Arrays.fill(key,(byte)0);key=null;data=null;pendingBytes=null;fields.clear();
-        screen(hasVault()?"Seu espaço clínico":"Um espaço para cuidar",false);
-        note(hasVault()?"Cofre local bloqueado. Use sua senha para abrir.":"Registros no aparelho, criptografados. Sem contas, servidores ou envio de dados.");
-        EditText password=input("password","Senha do cofre • mínimo de 12 caracteres","",1);
-        password.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        EditText confirm=null;
-        if(!hasVault()) { confirm=input("confirm","Repita a senha","",1);confirm.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_PASSWORD);note("Guarde a senha. Sem ela, não há recuperação. Faça backups no menu Cofre."); }
-        final EditText confirmation=confirm;
-        primary(hasVault()?"Abrir cofre":"Criar cofre",()-> {
-            if(busy)return;String pass=password.getText().toString();
-            if(!hasVault()&&(pass.length()<12||!pass.equals(confirmation.getText().toString()))){error("Use pelo menos 12 caracteres e confirme a mesma senha.");return;}
-            final int epoch=unlockEpoch;busy=true;password.setText("");if(confirmation!=null)confirmation.setText("");
-            note("Abrindo com segurança…");char[] chars=pass.toCharArray();
-            new Thread(()-> {
-                byte[] newKey=null,newSalt=null;JSONObject loaded=null;Exception failure=null;
-                try {
-                    if(hasVault()) {byte[] envelope=readEnvelope(vault);newSalt=VaultCrypto.salt(envelope);newKey=VaultCrypto.derive(chars,newSalt);loaded=parseData(VaultCrypto.decrypt(envelope,newKey));}
-                    else {newSalt=VaultCrypto.randomSalt();newKey=VaultCrypto.derive(chars,newSalt);loaded=emptyData();}
-                } catch(Exception e){failure=e;} finally {Arrays.fill(chars,'\0');}
-                final byte[] nk=newKey,ns=newSalt; final JSONObject nd=loaded;final Exception f=failure;
-                runOnUiThread(()-> {if(epoch!=unlockEpoch){if(nk!=null)Arrays.fill(nk,(byte)0);return;}busy=false;if(f!=null){if(nk!=null)Arrays.fill(nk,(byte)0);error("Senha incorreta ou arquivo danificado. Nenhum registro foi sobrescrito.");return;}key=nk;salt=ns;data=nd;broken=false;if(!persist()){lock();return;}route="Hoje";render();});
-            }).start();
-        });
+        screen("Seu espaço clínico",false);
+        byte[] localSalt=storedSalt(vault);boolean legacy=false,available=!hasVault();
+        try{if(localSalt!=null){available=deviceKeys.contains(localSalt);legacy=!available;}}catch(Exception e){note("A chave local não está disponível. Restaure um backup protegido.");}
+        if(legacy){
+            note("Atualização única: digite a senha antiga para preservar seus registros e remover a senha de abertura.");
+            EditText password=input("password","Senha antiga • somente para migrar","",1);
+            password.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            primary("Remover senha de abertura",()-> {char[] pass=password.getText().toString().toCharArray();password.setText("");openLegacy(pass);});
+        }else if(available){
+            note("Sem senha do app. Seus registros continuam criptografados neste aparelho. O acesso acompanha a proteção do celular.");
+            primary("Continuar",this::openDevice);
+        }else note("Não foi possível abrir o cofre local. Use um backup para recuperar seus registros.");
         action("Restaurar backup criptografado",this::chooseRecovery);
         if(exists(previousVault))action("Desfazer última restauração",this::choosePrevious);
-        note("v0.2.0 • preenchimento clínico manual • Android");
+        note("v0.3.0 • acesso sem senha • importação local");
+    }
+    void openDevice() {
+        if(busy||data!=null)return;busy=true;final int epoch=unlockEpoch;
+        new Thread(()-> {
+            byte[] nk=null,ns=null;JSONObject nd=null;Exception failure=null;boolean fresh=!hasVault();
+            try{
+                if(fresh){ns=VaultCrypto.randomSalt();nk=new byte[32];new java.security.SecureRandom().nextBytes(nk);nd=emptyData();}
+                else{byte[] bytes=readEnvelope(vault);ns=VaultCrypto.salt(bytes);nk=deviceKeys.read(ns);if(nk==null)throw new IllegalStateException("Migration required");byte[] plain=VaultCrypto.decrypt(bytes,nk);try{nd=parseData(plain);}finally{Arrays.fill(plain,(byte)0);}}
+            }catch(Exception e){failure=e;}
+            final byte[] k=nk,t=ns;final JSONObject d=nd;final Exception f=failure;final boolean isNew=fresh;
+            runOnUiThread(()->{
+                if(epoch!=unlockEpoch){if(k!=null)Arrays.fill(k,(byte)0);return;}busy=false;
+                if(f!=null){if(k!=null)Arrays.fill(k,(byte)0);lock();return;}
+                try{if(isNew){rememberDevice(k,t);writeEnvelope(vault,VaultCrypto.encrypt(d.toString().getBytes(StandardCharsets.UTF_8),k,t));}key=k;salt=t;data=d;broken=false;route="Hoje";render();}
+                catch(Exception e){if(k!=null)Arrays.fill(k,(byte)0);lock();error("Não foi possível preparar o acesso local. Nenhum registro antigo foi substituído.");}
+            });
+        }).start();
+    }
+    void openLegacy(char[] password) {
+        if(busy){Arrays.fill(password,'\0');return;}busy=true;final int epoch=unlockEpoch;
+        new Thread(()->{
+            byte[] nk=null,ns=null;JSONObject nd=null;Exception failure=null;
+            try{byte[] bytes=readEnvelope(vault);ns=VaultCrypto.salt(bytes);nk=VaultCrypto.derive(password,ns);byte[] plain=VaultCrypto.decrypt(bytes,nk);try{nd=parseData(plain);}finally{Arrays.fill(plain,(byte)0);}}
+            catch(Exception e){failure=e;}finally{Arrays.fill(password,'\0');}
+            final byte[] k=nk,t=ns;final JSONObject d=nd;final Exception f=failure;
+            runOnUiThread(()->{if(epoch!=unlockEpoch){if(k!=null)Arrays.fill(k,(byte)0);return;}busy=false;
+                if(f!=null){if(k!=null)Arrays.fill(k,(byte)0);error("Senha antiga incorreta ou cofre danificado. Nenhum registro foi alterado.");return;}
+                try{rememberDevice(k,t);key=k;salt=t;data=d;broken=false;route="Hoje";render();message("Pronto: o app abre sem senha. Registros preservados.");}
+                catch(Exception e){if(k!=null)Arrays.fill(k,(byte)0);error("Não foi possível remover a senha. O cofre antigo foi preservado.");}
+            });
+        }).start();
     }
     static JSONObject emptyData() throws JSONException {return new JSONObject().put("schema",1).put("clients",new JSONArray()).put("studies",new JSONArray());}
     static JSONObject parseData(byte[] raw) throws Exception {
@@ -131,6 +160,7 @@ public class MainActivity extends Activity {
         for(int i=0;i<clients.length();i++){
             JSONObject c=clients.getJSONObject(i);String id=c.getString("id"), code=c.getString("code");
             if(!Rules.validCode(code)||!codes.add(code)||!ids.add(id))throw new IllegalArgumentException("Paciente inválido");
+            PatientRoster.notebookUrl(c.optString("notebookUrl"));
             String next=c.optString("next");if(!next.isEmpty()&&!Rules.validDate(next))throw new IllegalArgumentException("Data inválida");
             JSONArray sessions=c.getJSONArray("sessions");Set<String> sessionIds=new HashSet<>();
             for(int j=0;j<sessions.length();j++) {JSONObject s=sessions.getJSONObject(j);if(!sessionIds.add(s.getString("id"))||!Rules.validDate(s.getString("date")))throw new IllegalArgumentException("Sessão inválida");s.getString("transcript");}
@@ -158,7 +188,7 @@ public class MainActivity extends Activity {
         if(data.has("draft"))action("Retomar rascunho",this::resumeDraft);
         int total=0;for(int i=0;i<clients().length();i++)total+=clients().optJSONObject(i).optJSONArray("sessions").length();
         space();note(clients().length()+" pacientes  ·  "+total+" sessões registradas");
-        if(clients().length()==0){space();note("Cadastre um paciente usando um código como CL-001. A chave que relaciona código e identidade fica fora do app.");primary("Cadastrar primeiro paciente",()->editClient(null));return;}
+        if(clients().length()==0){space();note("Cadastre um paciente usando um código como CL-001. A chave que relaciona código e identidade fica fora do app.");action("Importar lista de pacientes",this::rosterImport);primary("Cadastrar primeiro paciente",()->editClient(null));return;}
         ArrayList<JSONObject> scheduled=new ArrayList<>();for(int i=0;i<clients().length();i++){JSONObject c=clients().optJSONObject(i);if(!c.optString("next").isEmpty()&&!c.optBoolean("archived"))scheduled.add(c);}
         scheduled.sort(Comparator.comparing(c->c.optString("next")));
         if(scheduled.isEmpty())note("Nenhuma próxima sessão agendada. Abra um paciente para definir a data.");
@@ -173,6 +203,7 @@ public class MainActivity extends Activity {
     JSONObject latest(JSONArray sessions) {JSONObject latest=null;for(int i=0;i<sessions.length();i++){JSONObject s=sessions.optJSONObject(i);if(latest==null||s.optString("date").compareTo(latest.optString("date"))>=0)latest=s;}return latest;}
     void patients() {
         screen("Pacientes",true);note("Códigos aleatórios. Não use nome, inicial, CPF ou telefone.");
+        action("Importar pacientes • CSV / JSON",this::rosterImport);
         EditText search=input("search","Buscar por código","",1);LinearLayout list=new LinearLayout(this);list.setOrientation(LinearLayout.VERTICAL);body.addView(list);
         Runnable populate=()-> {list.removeAllViews();String query=search.getText().toString().toUpperCase(Locale.ROOT);for(int i=0;i<clients().length();i++){JSONObject c=clients().optJSONObject(i);if(c.optString("code").contains(query)){Button b=button(c.optString("code")+(c.optBoolean("archived")?" · arquivado":"")+"\n"+c.optJSONArray("sessions").length()+" sessões",()->openClient(c.optString("id")),false);list.addView(b);}}};
         search.addTextChangedListener(new TextWatcher(){public void beforeTextChanged(CharSequence s,int a,int c,int f){}public void onTextChanged(CharSequence s,int a,int b,int c){populate.run();}public void afterTextChanged(Editable e){}});populate.run();primary("Novo paciente",()->editClient(null));
@@ -182,6 +213,7 @@ public class MainActivity extends Activity {
         screen(existing==null?"Novo paciente":"Editar paciente",true);
         input("code","Código • CL-001",existing==null?"":existing.optString("code"),1);
         input("next","Próxima sessão • AAAA-MM-DD",existing==null?"":existing.optString("next"),1);
+        input("notebookUrl","Link do caderno Notebook",existing==null?"":existing.optString("notebookUrl"),1);
         input("formulation","Formulação cumulativa • observação / hipótese / lacuna",existing==null?"":existing.optString("formulation"),5);
         note("O código reduz exposição, mas o texto clínico continua confidencial.");
         primary("Salvar paciente",()-> {
@@ -190,7 +222,8 @@ public class MainActivity extends Activity {
             if(!next.isEmpty()&&!Rules.validDate(next)){error("Data inválida. Use AAAA-MM-DD.");return;}
             for(int i=0;i<clients().length();i++){JSONObject c=clients().optJSONObject(i);if(c.optString("code").equals(code)&&c!=existing){error("Esse código já existe.");return;}}
             try {JSONObject c=existing==null?new JSONObject().put("id",UUID.randomUUID().toString()).put("sessions",new JSONArray()):existing;
-                c.put("code",code).put("next",next).put("formulation",value("formulation"));if(existing==null)clients().put(c);data.remove("draft");draftType="";if(persist())openClient(c.optString("id"));}
+                String url=PatientRoster.notebookUrl(value("notebookUrl"));
+                c.put("code",code).put("next",next).put("notebookUrl",url).put("formulation",value("formulation"));if(existing==null)clients().put(c);data.remove("draft");draftType="";if(persist())openClient(c.optString("id"));}
             catch(Exception e){error("Falha ao salvar paciente.");}
         });draftType="client";
     }
@@ -199,6 +232,9 @@ public class MainActivity extends Activity {
         note(c.optBoolean("archived")?"Arquivado":"Acompanhamento ativo");
         if(!c.optString("next").isEmpty())note("Próxima sessão: "+c.optString("next"));
         action("Editar cadastro e formulação",()->editClient(c));
+        if(!c.optString("notebookUrl").isEmpty())action("Abrir caderno Notebook",()->{try{startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse(PatientRoster.notebookUrl(c.optString("notebookUrl")))));}catch(Exception e){error("Não foi possível abrir o caderno.");}});
+        if(!c.optString("sourceReference").isEmpty())note("Fonte registrada: "+c.optString("sourceReference"));
+        if(c.optBoolean("imported"))note("Cadastro importado • confira a fonte e revise a formulação.");
         if(!c.optString("formulation").isEmpty()) {space();body.addView(text("Formulação cumulativa",19,INK));note(c.optString("formulation"));}
         space();body.addView(text("Linha do tempo",20,INK));ArrayList<JSONObject> sessions=new ArrayList<>();JSONArray ss=c.optJSONArray("sessions");for(int i=0;i<ss.length();i++)sessions.add(ss.optJSONObject(i));sessions.sort((a,b)->b.optString("date").compareTo(a.optString("date")));
         if(sessions.isEmpty())note("A primeira sessão começa com um registro. A interpretação é sua.");
@@ -264,23 +300,80 @@ public class MainActivity extends Activity {
         selectedClient="";selectedSession=s==null?"":s.optString("id");screen("Texto de estudo",true);input("title","Título",s==null?"":s.optString("title"),1);input("reference","Referência bibliográfica",s==null?"":s.optString("reference"),2);input("content","Texto / suas notas",s==null?"":s.optString("content"),6);action("Importar TXT ou Markdown",()->pick("study"));
         primary("Salvar estudo",()->{if(value("title").isEmpty()||value("content").isEmpty()){error("Preencha título e texto.");return;}try{JSONObject item=s==null?new JSONObject().put("id",UUID.randomUUID().toString()):s;for(String k:fields.keySet())item.put(k,value(k));if(s==null)data.optJSONArray("studies").put(item);data.remove("draft");draftType="";if(persist())studies();}catch(Exception e){error("Falha ao salvar estudo.");}});draftType="study";
     }
+    static final String ROSTER_PROMPT="Gere um arquivo CSV UTF-8 (ou uma matriz JSON) de cadastros, usando somente os documentos originais selecionados. Campos: code, next, notebookUrl, formulation, sourceReference. Use códigos únicos no formato CL-001; não inclua nome real, CPF, telefone, endereço ou familiares. Não invente pacientes, datas, links ou fatos. Datas: AAAA-MM-DD; campos desconhecidos: texto vazio. formulation deve ficar vazio, salvo formulação explicitamente revisada pelo terapeuta na fonte. sourceReference deve identificar o documento utilizado. notebookUrl: link real do caderno; deixe vazio se não o souber. Sem diagnóstico automático. A lista será conferida pelo terapeuta antes de importar. Não crie inferências clínicas. Exporte somente a tabela, sem comentários ou cercas Markdown.";
+    void rosterImport() {
+        saveDraft();screen("Importar pacientes",true);
+        note("Importe uma lista conferida a partir dos seus documentos. Os dados ficam no aparelho. Códigos existentes serão mantidos, sem substituir sessões.");
+        action("Escolher arquivo CSV ou JSON",()->pick("roster"));
+        action("Abrir Notebook",()->{try{startActivity(new Intent(Intent.ACTION_VIEW,Uri.parse("https://notebook.google.com/")));}catch(Exception e){error("Não foi possível abrir o Notebook.");}});
+        action("Copiar pedido para o Notebook",()->{android.content.ClipboardManager cm=(android.content.ClipboardManager)getSystemService(CLIPBOARD_SERVICE);cm.setPrimaryClip(ClipData.newPlainText("Pedido de cadastros",ROSTER_PROMPT));message("Pedido copiado. Use apenas fontes apropriadas no seu caderno.");});
+        note("CSV: code,next,notebookUrl,formulation,sourceReference. JSON: lista de objetos com esses campos. Só code é obrigatório. Até 500 linhas / 512 KB.");
+        input("roster","Cole CSV ou JSON aqui","",6);
+        primary("Verificar importação",()->{try{previewRoster(parseRoster(value("roster")));}catch(Exception e){error("Lista inválida. Confira códigos, datas, cabeçalho e links. Nenhum cadastro foi alterado.");}});
+    }
+    static List<PatientRoster.Row> parseRoster(String text) throws Exception {
+        if(text.getBytes(StandardCharsets.UTF_8).length>512*1024)throw new IllegalArgumentException("Roster size");
+        text=text.trim();if(text.startsWith("\ufeff"))text=text.substring(1).trim();
+        if(!text.startsWith("["))return PatientRoster.csv(text);
+        JSONArray input=new JSONArray(text);if(input.length()==0||input.length()>PatientRoster.MAX_ROWS)throw new IllegalArgumentException("Roster count");
+        List<PatientRoster.Row> rows=new ArrayList<>();Set<String> codes=new HashSet<>();Set<String> allowed=Set.of("code","next","notebookUrl","formulation","sourceReference");
+        for(int i=0;i<input.length();i++){
+            JSONObject item=input.getJSONObject(i);Iterator<String> names=item.keys();
+            while(names.hasNext()){String name=names.next();if(!allowed.contains(name)||!(item.get(name) instanceof String))throw new IllegalArgumentException("Roster field");}
+            PatientRoster.Row row=PatientRoster.row(item.getString("code"),item.optString("next"),item.optString("notebookUrl"),item.optString("formulation"),item.optString("sourceReference"));
+            if(!codes.add(row.code()))throw new IllegalArgumentException("Roster duplicate");rows.add(row);
+        }
+        return rows;
+    }
+    Set<String> patientCodes(){Set<String> codes=new HashSet<>();for(int i=0;i<clients().length();i++)codes.add(clients().optJSONObject(i).optString("code"));return codes;}
+    void previewRoster(List<PatientRoster.Row> rows) {
+        if(data==null)return;final int epoch=unlockEpoch;Set<String> existing=patientCodes();int newCount=0;for(PatientRoster.Row row:rows)if(!existing.contains(row.code()))newCount++;
+        final int count=newCount;screen("Conferir cadastros",true);note(count+" novos • "+(rows.size()-count)+" já cadastrados serão mantidos. Abra cada item para conferir os campos.");
+        for(PatientRoster.Row row:rows)action(row.code()+(existing.contains(row.code())?" · já existe":" · novo"),()->new AlertDialog.Builder(this).setTitle(row.code()).setMessage("Próxima sessão: "+row.next()+"\nCaderno: "+row.notebookUrl()+"\nFonte: "+row.sourceReference()+"\nFormulação a conferir:\n"+row.formulation()).setPositiveButton("OK",null).show());
+        if(count>0)primary("Importar "+count+" pacientes",()->confirm("Confirmar lista revisada?","Adiciona somente os novos códigos. Nenhum registro existente será substituído. Formulações importadas ficam sinalizadas para revisão.",()->{if(epoch!=unlockEpoch||data==null)return;try{int added=commitRoster(rows);route="Pacientes";render();message(added+" cadastros importados.");}catch(Exception e){error("Não foi possível importar. Os registros anteriores foram preservados.");}}));
+        else primary("Voltar aos pacientes",this::patients);
+        action("Cancelar importação",this::patients);
+    }
+    int commitRoster(List<PatientRoster.Row> rows) throws Exception {
+        if(data==null||busy||broken)throw new IllegalStateException("Vault unavailable");
+        JSONObject old=data,nextData=new JSONObject(data.toString());Set<String> existing=patientCodes();int added=0;
+        for(PatientRoster.Row row:rows)if(existing.add(row.code())){
+            nextData.getJSONArray("clients").put(new JSONObject().put("id",UUID.randomUUID().toString()).put("code",row.code()).put("next",row.next()).put("notebookUrl",row.notebookUrl()).put("formulation",row.formulation()).put("sourceReference",row.sourceReference()).put("imported",true).put("sessions",new JSONArray()));added++;
+        }
+        if(added==0)return 0;parseData(nextData.toString().getBytes(StandardCharsets.UTF_8));data=nextData;
+        if(!persist()){data=old;throw new IOException("Roster write failed");}return added;
+    }
+    static byte[] makeBackup(JSONObject snapshot,char[] password) throws Exception {
+        byte[] k=null,plain=null;
+        try{if(password.length<12)throw new IllegalArgumentException("Backup password length");byte[] s=VaultCrypto.randomSalt();k=VaultCrypto.derive(password,s);plain=snapshot.toString().getBytes(StandardCharsets.UTF_8);return VaultCrypto.encrypt(plain,k,s);}
+        finally{Arrays.fill(password,'\0');if(k!=null)Arrays.fill(k,(byte)0);if(plain!=null)Arrays.fill(plain,(byte)0);}
+    }
+    void backupPassword() {
+        EditText p=new EditText(this);p.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_PASSWORD);p.setSaveEnabled(false);p.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS);p.setContentDescription("Senha para o backup • mínimo de 12 caracteres");
+        new AlertDialog.Builder(this).setTitle("Senha só para o backup").setMessage("O app abre sem senha. Este arquivo portátil precisa de uma senha para recuperar em outro aparelho. Use pelo menos 12 caracteres e guarde-a.").setView(p).setNegativeButton("Cancelar",null).setPositiveButton("Preparar backup",(dialog,which)->{
+            char[] pass=p.getText().toString().toCharArray();p.setText("");if(pass.length<12){Arrays.fill(pass,'\0');error("Use pelo menos 12 caracteres para proteger o backup.");return;}
+            if(data==null||busy){Arrays.fill(pass,'\0');return;}saveDraft();final int epoch=unlockEpoch;final String snapshot=data.toString();busy=true;
+            new Thread(()->{byte[] bytes=null;Exception fail=null;try{bytes=makeBackup(new JSONObject(snapshot),pass);}catch(Exception e){fail=e;Arrays.fill(pass,'\0');}final byte[] ready=bytes;final Exception f=fail;
+                runOnUiThread(()->{if(epoch!=unlockEpoch)return;busy=false;if(f!=null){error("Não foi possível preparar o backup.");return;}pendingBytes=ready;createFile("backup","application/octet-stream","clinica-backup.ccvault");});}).start();
+        }).show();
+    }
     void settings() {
-        screen("Seu cofre",true);note("AES-256-GCM · senha pessoal · sem permissão de Internet");
-        space();note("Faça backup antes de trocar de aparelho ou desinstalar. A senha é necessária para restaurar. Guarde o backup em local protegido.");
-        action("Salvar backup criptografado",()-> {try{pendingBytes=readEnvelope(vault);createFile("backup","application/octet-stream","clinica-backup.ccvault");}catch(Exception e){error("Não foi possível preparar o backup.");}});
+        screen("Seu cofre",true);note("AES-256-GCM · chave protegida pelo Android · sem senha de abertura");
+        space();note("Faça backup antes de trocar de aparelho ou desinstalar. Escolha uma senha só para o backup portátil. Ela será necessária para restaurar em outro celular. A chave do aparelho não é transferida.");
+        action("Salvar backup criptografado",this::backupPassword);
         action("Restaurar backup",this::chooseRecovery);
         if(exists(previousVault)) {
             action("Desfazer última restauração",this::choosePrevious);
-            action("Descartar cópia anterior",()->confirm("Apagar cópia anterior?","Remove permanentemente a cópia local usada para desfazer a restauração. O cofre atual e backups exportados não serão alterados.",()->{previousVault.delete();if(exists(previousVault)){error("Não foi possível remover a cópia anterior.");}else{settings();message("Cópia anterior removida.");}}));
+            action("Descartar cópia anterior",()->confirm("Apagar cópia anterior?","Remove permanentemente a cópia local usada para desfazer a restauração. O cofre atual e backups exportados não serão alterados.",()->{previousVault.delete();if(exists(previousVault)){error("Não foi possível remover a cópia anterior.");}else{try{rememberDevice(key,salt);}catch(Exception ignored){}settings();message("Cópia anterior removida.");}}));
         }
         space();body.addView(text("Limites desta versão",20,INK));
         note("Preenchimento e revisão manual. Sem modelo de IA, transcrição de áudio, Gmail, Calendar, Drive ou sincronização NotebookLM. Não há promessa de anonimização automática nem conformidade jurídica certificada.");
         note("PDF e Word saem sem criptografia somente quando você escolhe exportar. A pasta escolhida pode ser sincronizada por outro aplicativo. Evite destinos externos para material identificável.");
-        primary("Travar cofre",this::lock);
+        primary("Pausar app",this::lock);
     }
     void confirm(String title,String text,Runnable run) {new AlertDialog.Builder(this).setTitle(title).setMessage(text).setNegativeButton("Cancelar",null).setPositiveButton("Continuar",(d,w)->run.run()).show();}
     void pick(String mode) {
-        pendingMode=mode;picker=true;saveDraft();Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(mode.equals("backup")?"*/*":"text/*");i.putExtra(Intent.EXTRA_LOCAL_ONLY,true);startActivityForResult(i,10);
+        pendingMode=mode;picker=true;saveDraft();Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(mode.equals("backup")||mode.equals("roster")?"*/*":"text/*");i.putExtra(Intent.EXTRA_LOCAL_ONLY,true);startActivityForResult(i,10);
     }
     void createFile(String mode,String mime,String name) {pendingMode=mode;picker=true;Intent i=new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(mime);i.putExtra(Intent.EXTRA_TITLE,name);i.putExtra(Intent.EXTRA_LOCAL_ONLY,true);startActivityForResult(i,11);}
     static byte[] readLimited(InputStream in,int max) throws Exception {try(InputStream stream=in;ByteArrayOutputStream out=new ByteArrayOutputStream()){if(stream==null)throw new IOException();byte[] buffer=new byte[8192];int n;while((n=stream.read(buffer))!=-1){if(out.size()+n>max)throw new IOException("Arquivo muito grande");out.write(buffer,0,n);}return out.toByteArray();}}
@@ -292,6 +385,7 @@ public class MainActivity extends Activity {
             if(req==11){if(pendingBytes==null)throw new IOException();try(OutputStream out=getContentResolver().openOutputStream(uri,"wt")){if(out==null)throw new IOException();out.write(pendingBytes);}pendingBytes=null;message("Arquivo salvo no destino escolhido.");}
             else if(req==10){byte[] bytes=readLimited(getContentResolver().openInputStream(uri),pendingMode.equals("backup")?VaultCrypto.MAX_BYTES+56:512*1024);
                 if(pendingMode.equals("backup"))restore(bytes);
+                else if(pendingMode.equals("roster")){previewRoster(parseRoster(new String(bytes,StandardCharsets.UTF_8)));}
                 else {String txt=Rules.normalizeText(new String(bytes,StandardCharsets.UTF_8));EditText target=fields.get(pendingMode.equals("study")?"content":"transcript");if(target!=null)target.setText(txt);saveDraft();message("Texto importado. Revise o conteúdo antes de salvar.");}
             }
         }catch(Exception e){pendingBytes=null;error("Arquivo inválido, grande demais ou inacessível. Nenhum registro foi restaurado.");}
@@ -309,11 +403,11 @@ public class MainActivity extends Activity {
         catch(Exception e){if(out!=null)file.failWrite(out);throw e;}
     }
     void chooseRecovery() {
-        confirm("Substituir cofre por um backup?", "Os registros serão substituídos só após validar o arquivo e sua senha. O cofre atual ficará como uma cópia criptografada no aparelho para desfazer a última restauração. A senha do backup passará a abrir o cofre.",()->pick("backup"));
+        confirm("Substituir cofre por um backup?", "Os registros serão substituídos só após validar o arquivo e sua senha. O cofre atual ficará como uma cópia criptografada no aparelho para desfazer a última restauração. O cofre restaurado também abrirá sem senha neste aparelho.",()->pick("backup"));
     }
     void choosePrevious() {
-        confirm("Desfazer última restauração?", "Abre a cópia anterior com a senha que ela usava. O cofre atual ficará guardado como a nova cópia anterior. Se a cópia estiver danificada, nada será substituído.",()-> {
-            try {restore(readEnvelope(previousVault));}
+        confirm("Desfazer última restauração?", "Abre a cópia anterior usando a chave protegida neste aparelho; cópias antigas podem pedir sua senha original. O cofre atual ficará guardado como a nova cópia anterior. Se a cópia estiver danificada, nada será substituído.",()-> {
+            try {byte[] bytes=readEnvelope(previousVault);if(deviceKeys.contains(VaultCrypto.salt(bytes)))startRecovery(bytes,null);else restore(bytes);}
             catch(Exception e){error("Não foi possível ler a cópia anterior. O cofre atual foi preservado.");}
         });
     }
@@ -322,21 +416,20 @@ public class MainActivity extends Activity {
         final byte[] key,salt,envelope;
         RecoveryCandidate(JSONObject d,byte[] k,byte[] s,byte[] e){data=d;key=k;salt=s;envelope=e;}
     }
+    static RecoveryCandidate prepareWithKey(byte[] bytes,byte[] recoveryKey) throws Exception {
+        byte[] plain=null;
+        try{if(recoveryKey==null)throw new IllegalArgumentException("Missing recovery key");byte[] recoverySalt=VaultCrypto.salt(bytes);plain=VaultCrypto.decrypt(bytes,recoveryKey);JSONObject restored=parseData(plain);return new RecoveryCandidate(restored,recoveryKey,recoverySalt,VaultCrypto.encrypt(plain,recoveryKey,recoverySalt));}
+        catch(Exception e){if(recoveryKey!=null)Arrays.fill(recoveryKey,(byte)0);throw e;}
+        finally{if(plain!=null)Arrays.fill(plain,(byte)0);}
+    }
     static RecoveryCandidate prepareRecovery(byte[] bytes,char[] password) throws Exception {
-        byte[] recoveryKey=null,plain=null;
-        try {
-            byte[] recoverySalt=VaultCrypto.salt(bytes);
-            recoveryKey=VaultCrypto.derive(password,recoverySalt);
-            plain=VaultCrypto.decrypt(bytes,recoveryKey);
-            JSONObject restored=parseData(plain);
-            return new RecoveryCandidate(restored,recoveryKey,recoverySalt,VaultCrypto.encrypt(plain,recoveryKey,recoverySalt));
-        }catch(Exception e){if(recoveryKey!=null)Arrays.fill(recoveryKey,(byte)0);throw e;}
-        finally{Arrays.fill(password,'\0');if(plain!=null)Arrays.fill(plain,(byte)0);}
+        try{return prepareWithKey(bytes,VaultCrypto.derive(password,VaultCrypto.salt(bytes)));}finally{Arrays.fill(password,'\0');}
     }
     void commitRecovery(RecoveryCandidate candidate) throws Exception {
         byte[] current=null;boolean replacing=false;
         try {
             // Snapshot before replacing; validate persistence before changing in-memory keys.
+            rememberDevice(candidate.key,candidate.salt);
             if(hasVault()){current=readEnvelope(vault);writeEnvelope(previousVault,current);}
             replacing=true;writeEnvelope(vault,candidate.envelope);
             if(key!=null)Arrays.fill(key,(byte)0);
@@ -348,7 +441,7 @@ public class MainActivity extends Activity {
         }
     }
     void startRecovery(byte[] bytes,char[] password) {
-        if(busy){Arrays.fill(password,'\0');message("Aguarde a operação atual.");return;}
+        if(busy){if(password!=null)Arrays.fill(password,'\0');message("Aguarde a operação atual.");return;}
         saveDraft();
         screen("Restaurando cofre",false);
         note("Validando o backup. Os registros atuais só serão substituídos quando a validação terminar.");
@@ -356,13 +449,13 @@ public class MainActivity extends Activity {
         busy=true;final int epoch=unlockEpoch;
         new Thread(()-> {
             RecoveryCandidate candidate=null;Exception failure=null;
-            try{candidate=prepareRecovery(bytes,password);}catch(Exception e){failure=e;}
+            try{candidate=password==null?prepareWithKey(bytes,deviceKeys.read(VaultCrypto.salt(bytes))):prepareRecovery(bytes,password);}catch(Exception e){failure=e;}
             final RecoveryCandidate ready=candidate;final Exception failed=failure;
             runOnUiThread(()-> {
                 if(epoch!=unlockEpoch){if(ready!=null)Arrays.fill(ready.key,(byte)0);return;}
                 busy=false;
                 if(failed!=null){lock();error("Senha incorreta ou backup inválido. Nenhum registro foi substituído.");return;}
-                try{commitRecovery(ready);route="Hoje";render();message("Backup restaurado. Use a senha deste backup para abrir o cofre.");}catch(Exception e){lock();error("Não foi possível concluir a restauração. Reabra o cofre; a cópia anterior também pode ser usada para recuperar os registros.");}
+                try{commitRecovery(ready);route="Hoje";render();message("Backup restaurado. O app continua abrindo sem senha.");}catch(Exception e){lock();error("Não foi possível concluir a restauração. Reabra o cofre; a cópia anterior também pode ser usada para recuperar os registros.");}
             });
         }).start();
     }
@@ -371,7 +464,8 @@ public class MainActivity extends Activity {
         EditText p=new EditText(this);p.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_PASSWORD);
         p.setSaveEnabled(false);p.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS);
         p.setContentDescription("Senha do backup");
-        new AlertDialog.Builder(this).setTitle("Senha do backup").setMessage("Digite a senha usada para criar este backup. Ela passará a abrir o cofre restaurado.").setView(p)
+        recoveryPrompt=true;
+        new AlertDialog.Builder(this).setOnDismissListener(dialog->recoveryPrompt=false).setTitle("Senha do backup").setMessage("Digite a senha usada para criar este backup. Ela é usada apenas para validar este backup. O app continuará abrindo sem senha.").setView(p)
             .setNegativeButton("Cancelar",null).setPositiveButton("Restaurar",(dialog,which)->{char[] pass=p.getText().toString().toCharArray();p.setText("");startRecovery(bytes,pass);}).show();
     }
     String document(JSONObject c,JSONObject s,boolean roadmap) {
@@ -399,7 +493,7 @@ public class MainActivity extends Activity {
         }finally{doc.close();}return out.toByteArray();
     }
     @Override protected void onPause(){saveDraft();privacyHandler.postDelayed(()->{picker=false;lock();},120000);super.onPause();}
-    @Override protected void onResume(){super.onResume();privacyHandler.removeCallbacksAndMessages(null);}
+    @Override protected void onResume(){super.onResume();privacyHandler.removeCallbacksAndMessages(null);if(data==null&&!picker&&!busy&&!recoveryPrompt&&!fields.containsKey("password"))openDevice();}
     @Override protected void onStop(){super.onStop();if(!picker)lock();}
     @Override public void onBackPressed(){saveDraft();if(data==null){super.onBackPressed();return;}route="Hoje";render();}
 }

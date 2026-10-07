@@ -1,7 +1,7 @@
 name: Clinical Cockpit Signed Release
 on:
   pull_request:
-    paths: ['dl/Clinical-Cockpit-v0.1.0.apk', '.github/scripts/clinical-cockpit-release-qa.py', '.github/workflows/clinical-cockpit-release-verify.yml']
+    paths: ['dl/Clinical-Cockpit-v0.2.0.apk', '.github/scripts/clinical-cockpit-release-qa.py', '.github/scripts/BackupFixture.java', '.github/workflows/clinical-cockpit-release-verify.yml']
 permissions:
   contents: read
 jobs:
@@ -22,13 +22,18 @@ jobs:
       - name: Inspect exact signed APK
         run: |
           mkdir -p dist
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --min-sdk-version 24 --verbose --print-certs ../dl/Clinical-Cockpit-v0.1.0.apk | tee dist/production-signature.txt
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --min-sdk-version 24 --verbose --print-certs ../dl/Clinical-Cockpit-v0.2.0.apk | tee dist/production-signature.txt
           grep -F '60c09e631510afb847ccf08eb57c6ce3976082760140a9fb9b4f9c0014819fcf' dist/production-signature.txt
-          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c -P 16 4 ../dl/Clinical-Cockpit-v0.1.0.apk
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging ../dl/Clinical-Cockpit-v0.1.0.apk > dist/production-badging.txt
-          grep -F "name='com.andrefiker.clinicalcockpit' versionCode='1' versionName='0.1.0'" dist/production-badging.txt
-          ! "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions ../dl/Clinical-Cockpit-v0.1.0.apk | grep -q 'uses-permission'
-          sha256sum ../dl/Clinical-Cockpit-v0.1.0.apk > dist/production-sha256.txt
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c -P 16 4 ../dl/Clinical-Cockpit-v0.2.0.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging ../dl/Clinical-Cockpit-v0.2.0.apk > dist/production-badging.txt
+          grep -F "name='com.andrefiker.clinicalcockpit' versionCode='2' versionName='0.2.0'" dist/production-badging.txt
+          ! "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions ../dl/Clinical-Cockpit-v0.2.0.apk | grep -q 'uses-permission'
+          sha256sum ../dl/Clinical-Cockpit-v0.2.0.apk > dist/production-sha256.txt
+      - name: Build synthetic backup fixture
+        run: |
+          mkdir -p dist/fixture
+          javac -d dist/fixture app/src/main/java/com/andrefiker/clinicalcockpit/VaultCrypto.java ../.github/scripts/BackupFixture.java
+          java -cp dist/fixture BackupFixture dist/recovery-fixture.ccvault
       - run: sudo chmod 666 /dev/kvm
       - name: Install and exercise exact signed production APK offline
         uses: reactivecircus/android-emulator-runner@v2
@@ -39,7 +44,7 @@ jobs:
           arch: x86_64
           profile: pixel_2
           disable-animations: true
-          script: cd clinical-cockpit && python3 ../.github/scripts/clinical-cockpit-release-qa.py | tee dist/production-ui-qa.txt && grep -q '7 production Android checks passed' dist/production-ui-qa.txt
+          script: cd clinical-cockpit && python3 ../.github/scripts/clinical-cockpit-release-qa.py | tee dist/production-ui-qa.txt && grep -q '11 production Android checks passed' dist/production-ui-qa.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:

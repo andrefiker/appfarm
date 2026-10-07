@@ -29,12 +29,12 @@ jobs:
       - name: Build and lint
         run: |
           gradle --no-daemon :app:assembleDebug :app:assembleRelease :app:assembleDebugAndroidTest :app:lintRelease
-          cp app/build/outputs/apk/release/app-release-unsigned.apk dist/Clinical-Cockpit-v0.1.0-unsigned.apk
+          cp app/build/outputs/apk/release/app-release-unsigned.apk dist/Clinical-Cockpit-v0.2.0-unsigned.apk
           cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" dist/apksigner.jar
           cp "$ANDROID_HOME/build-tools/35.0.0/zipalign" dist/zipalign
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging dist/Clinical-Cockpit-v0.1.0-unsigned.apk > dist/badging.txt
-          grep -F "name='com.andrefiker.clinicalcockpit' versionCode='1' versionName='0.1.0'" dist/badging.txt
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions dist/Clinical-Cockpit-v0.1.0-unsigned.apk > dist/permissions.txt
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging dist/Clinical-Cockpit-v0.2.0-unsigned.apk > dist/badging.txt
+          grep -F "name='com.andrefiker.clinicalcockpit' versionCode='2' versionName='0.2.0'" dist/badging.txt
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions dist/Clinical-Cockpit-v0.2.0-unsigned.apk > dist/permissions.txt
           ! grep -q 'uses-permission' dist/permissions.txt
       - name: Enable emulator acceleration
         run: sudo chmod 666 /dev/kvm
@@ -51,7 +51,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: clinical-cockpit-v0.1.0
+          name: clinical-cockpit-v0.2.0
           path: |
             clinical-cockpit/dist/
             clinical-cockpit/app/build/reports/lint-results-release.html

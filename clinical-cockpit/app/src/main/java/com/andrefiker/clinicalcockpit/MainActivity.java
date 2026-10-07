@@ -24,7 +24,7 @@ public class MainActivity extends Activity {
     LinearLayout root, body, dock;
     JSONObject data;
     byte[] key, salt, pendingBytes;
-    AtomicFile vault;
+    AtomicFile vault, previousVault;
     boolean picker=false, busy=false, broken=false;
     int unlockEpoch=0;
     final Handler privacyHandler=new Handler(Looper.getMainLooper());
@@ -41,6 +41,7 @@ public class MainActivity extends Activity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         getWindow().setStatusBarColor(BG); getWindow().setNavigationBarColor(BG);
         vault=new AtomicFile(new File(getFilesDir(),"clinical.vault"));
+        previousVault=new AtomicFile(new File(getFilesDir(),"clinical.previous.vault"));
         lock();
     }
     int dp(int n) { return (int)(n*getResources().getDisplayMetrics().density+.5f); }
@@ -96,29 +97,31 @@ public class MainActivity extends Activity {
     }
     void lock() {
         saveDraft();unlockEpoch++;busy=false;handler.removeCallbacksAndMessages(null);if(key!=null)Arrays.fill(key,(byte)0);key=null;data=null;pendingBytes=null;fields.clear();
-        screen(vault.getBaseFile().exists()?"Seu espaço clínico":"Um espaço para cuidar",false);
-        note(vault.getBaseFile().exists()?"Cofre local bloqueado. Use sua senha para abrir.":"Registros no aparelho, criptografados. Sem contas, servidores ou envio de dados.");
+        screen(hasVault()?"Seu espaço clínico":"Um espaço para cuidar",false);
+        note(hasVault()?"Cofre local bloqueado. Use sua senha para abrir.":"Registros no aparelho, criptografados. Sem contas, servidores ou envio de dados.");
         EditText password=input("password","Senha do cofre • mínimo de 12 caracteres","",1);
         password.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_PASSWORD);
         EditText confirm=null;
-        if(!vault.getBaseFile().exists()) { confirm=input("confirm","Repita a senha","",1);confirm.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_PASSWORD);note("Guarde a senha. Sem ela, não há recuperação. Faça backups no menu Cofre."); }
+        if(!hasVault()) { confirm=input("confirm","Repita a senha","",1);confirm.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_PASSWORD);note("Guarde a senha. Sem ela, não há recuperação. Faça backups no menu Cofre."); }
         final EditText confirmation=confirm;
-        primary(vault.getBaseFile().exists()?"Abrir cofre":"Criar cofre",()-> {
+        primary(hasVault()?"Abrir cofre":"Criar cofre",()-> {
             if(busy)return;String pass=password.getText().toString();
-            if(!vault.getBaseFile().exists()&&(pass.length()<12||!pass.equals(confirmation.getText().toString()))){error("Use pelo menos 12 caracteres e confirme a mesma senha.");return;}
+            if(!hasVault()&&(pass.length()<12||!pass.equals(confirmation.getText().toString()))){error("Use pelo menos 12 caracteres e confirme a mesma senha.");return;}
             final int epoch=unlockEpoch;busy=true;password.setText("");if(confirmation!=null)confirmation.setText("");
             note("Abrindo com segurança…");char[] chars=pass.toCharArray();
             new Thread(()-> {
                 byte[] newKey=null,newSalt=null;JSONObject loaded=null;Exception failure=null;
                 try {
-                    if(vault.getBaseFile().exists()) {byte[] envelope=vault.readFully();newSalt=VaultCrypto.salt(envelope);newKey=VaultCrypto.derive(chars,newSalt);loaded=parseData(VaultCrypto.decrypt(envelope,newKey));}
+                    if(hasVault()) {byte[] envelope=readEnvelope(vault);newSalt=VaultCrypto.salt(envelope);newKey=VaultCrypto.derive(chars,newSalt);loaded=parseData(VaultCrypto.decrypt(envelope,newKey));}
                     else {newSalt=VaultCrypto.randomSalt();newKey=VaultCrypto.derive(chars,newSalt);loaded=emptyData();}
                 } catch(Exception e){failure=e;} finally {Arrays.fill(chars,'\0');}
                 final byte[] nk=newKey,ns=newSalt; final JSONObject nd=loaded;final Exception f=failure;
                 runOnUiThread(()-> {if(epoch!=unlockEpoch){if(nk!=null)Arrays.fill(nk,(byte)0);return;}busy=false;if(f!=null){if(nk!=null)Arrays.fill(nk,(byte)0);error("Senha incorreta ou arquivo danificado. Nenhum registro foi sobrescrito.");return;}key=nk;salt=ns;data=nd;broken=false;if(!persist()){lock();return;}route="Hoje";render();});
             }).start();
         });
-        note("v0.1.0 • preenchimento clínico manual • Android");
+        action("Restaurar backup criptografado",this::chooseRecovery);
+        if(exists(previousVault))action("Desfazer última restauração",this::choosePrevious);
+        note("v0.2.0 • preenchimento clínico manual • Android");
     }
     static JSONObject emptyData() throws JSONException {return new JSONObject().put("schema",1).put("clients",new JSONArray()).put("studies",new JSONArray());}
     static JSONObject parseData(byte[] raw) throws Exception {
@@ -264,8 +267,12 @@ public class MainActivity extends Activity {
     void settings() {
         screen("Seu cofre",true);note("AES-256-GCM · senha pessoal · sem permissão de Internet");
         space();note("Faça backup antes de trocar de aparelho ou desinstalar. A senha é necessária para restaurar. Guarde o backup em local protegido.");
-        action("Salvar backup criptografado",()-> {try{pendingBytes=vault.readFully();createFile("backup","application/octet-stream","clinica-backup.ccvault");}catch(Exception e){error("Não foi possível preparar o backup.");}});
-        action("Restaurar backup",()->confirm("Restaurar um cofre?","Substitui os registros atuais. Faça backup primeiro. O arquivo deve usar a mesma senha deste cofre.",()->pick("backup")));
+        action("Salvar backup criptografado",()-> {try{pendingBytes=readEnvelope(vault);createFile("backup","application/octet-stream","clinica-backup.ccvault");}catch(Exception e){error("Não foi possível preparar o backup.");}});
+        action("Restaurar backup",this::chooseRecovery);
+        if(exists(previousVault)) {
+            action("Desfazer última restauração",this::choosePrevious);
+            action("Descartar cópia anterior",()->confirm("Apagar cópia anterior?","Remove permanentemente a cópia local usada para desfazer a restauração. O cofre atual e backups exportados não serão alterados.",()->{previousVault.delete();if(exists(previousVault)){error("Não foi possível remover a cópia anterior.");}else{settings();message("Cópia anterior removida.");}}));
+        }
         space();body.addView(text("Limites desta versão",20,INK));
         note("Preenchimento e revisão manual. Sem modelo de IA, transcrição de áudio, Gmail, Calendar, Drive ou sincronização NotebookLM. Não há promessa de anonimização automática nem conformidade jurídica certificada.");
         note("PDF e Word saem sem criptografia somente quando você escolhe exportar. A pasta escolhida pode ser sincronizada por outro aplicativo. Evite destinos externos para material identificável.");
@@ -279,7 +286,7 @@ public class MainActivity extends Activity {
     static byte[] readLimited(InputStream in,int max) throws Exception {try(InputStream stream=in;ByteArrayOutputStream out=new ByteArrayOutputStream()){if(stream==null)throw new IOException();byte[] buffer=new byte[8192];int n;while((n=stream.read(buffer))!=-1){if(out.size()+n>max)throw new IOException("Arquivo muito grande");out.write(buffer,0,n);}return out.toByteArray();}}
     @Override protected void onActivityResult(int req,int result,Intent i) {
         super.onActivityResult(req,result,i);picker=false;
-        if(data==null||result!=RESULT_OK||i==null){pendingBytes=null;return;}
+        if((data==null&&!(req==10&&pendingMode.equals("backup")))||result!=RESULT_OK||i==null){pendingBytes=null;return;}
         try {
             Uri uri=i.getData();if(uri==null)throw new IOException();
             if(req==11){if(pendingBytes==null)throw new IOException();try(OutputStream out=getContentResolver().openOutputStream(uri,"wt")){if(out==null)throw new IOException();out.write(pendingBytes);}pendingBytes=null;message("Arquivo salvo no destino escolhido.");}
@@ -289,13 +296,83 @@ public class MainActivity extends Activity {
             }
         }catch(Exception e){pendingBytes=null;error("Arquivo inválido, grande demais ou inacessível. Nenhum registro foi restaurado.");}
     }
+    static boolean exists(AtomicFile file) {
+        return file.getBaseFile().exists() || new File(file.getBaseFile()+".bak").exists();
+    }
+    boolean hasVault() { return exists(vault); }
+    static byte[] readEnvelope(AtomicFile file) throws Exception {
+        return readLimited(file.openRead(),VaultCrypto.MAX_BYTES+56);
+    }
+    static void writeEnvelope(AtomicFile file,byte[] bytes) throws Exception {
+        FileOutputStream out=null;
+        try {out=file.startWrite();out.write(bytes);out.getFD().sync();file.finishWrite(out);out=null;if(!Arrays.equals(bytes,readEnvelope(file)))throw new IOException("Persisted envelope mismatch");}
+        catch(Exception e){if(out!=null)file.failWrite(out);throw e;}
+    }
+    void chooseRecovery() {
+        confirm("Substituir cofre por um backup?", "Os registros serão substituídos só após validar o arquivo e sua senha. O cofre atual ficará como uma cópia criptografada no aparelho para desfazer a última restauração. A senha do backup passará a abrir o cofre.",()->pick("backup"));
+    }
+    void choosePrevious() {
+        confirm("Desfazer última restauração?", "Abre a cópia anterior com a senha que ela usava. O cofre atual ficará guardado como a nova cópia anterior. Se a cópia estiver danificada, nada será substituído.",()-> {
+            try {restore(readEnvelope(previousVault));}
+            catch(Exception e){error("Não foi possível ler a cópia anterior. O cofre atual foi preservado.");}
+        });
+    }
+    static final class RecoveryCandidate {
+        final JSONObject data;
+        final byte[] key,salt,envelope;
+        RecoveryCandidate(JSONObject d,byte[] k,byte[] s,byte[] e){data=d;key=k;salt=s;envelope=e;}
+    }
+    static RecoveryCandidate prepareRecovery(byte[] bytes,char[] password) throws Exception {
+        byte[] recoveryKey=null,plain=null;
+        try {
+            byte[] recoverySalt=VaultCrypto.salt(bytes);
+            recoveryKey=VaultCrypto.derive(password,recoverySalt);
+            plain=VaultCrypto.decrypt(bytes,recoveryKey);
+            JSONObject restored=parseData(plain);
+            return new RecoveryCandidate(restored,recoveryKey,recoverySalt,VaultCrypto.encrypt(plain,recoveryKey,recoverySalt));
+        }catch(Exception e){if(recoveryKey!=null)Arrays.fill(recoveryKey,(byte)0);throw e;}
+        finally{Arrays.fill(password,'\0');if(plain!=null)Arrays.fill(plain,(byte)0);}
+    }
+    void commitRecovery(RecoveryCandidate candidate) throws Exception {
+        byte[] current=null;boolean replacing=false;
+        try {
+            // Snapshot before replacing; validate persistence before changing in-memory keys.
+            if(hasVault()){current=readEnvelope(vault);writeEnvelope(previousVault,current);}
+            replacing=true;writeEnvelope(vault,candidate.envelope);
+            if(key!=null)Arrays.fill(key,(byte)0);
+            key=candidate.key;salt=candidate.salt;data=candidate.data;broken=false;
+            draftType="";fields.clear();
+        }catch(Exception e){
+            if(replacing&&current!=null){try{writeEnvelope(vault,current);}catch(Exception rollbackFailure){e.addSuppressed(rollbackFailure);}}
+            Arrays.fill(candidate.key,(byte)0);throw e;
+        }
+    }
+    void startRecovery(byte[] bytes,char[] password) {
+        if(busy){Arrays.fill(password,'\0');message("Aguarde a operação atual.");return;}
+        saveDraft();
+        screen("Restaurando cofre",false);
+        note("Validando o backup. Os registros atuais só serão substituídos quando a validação terminar.");
+        primary("Cancelar restauração",this::lock);
+        busy=true;final int epoch=unlockEpoch;
+        new Thread(()-> {
+            RecoveryCandidate candidate=null;Exception failure=null;
+            try{candidate=prepareRecovery(bytes,password);}catch(Exception e){failure=e;}
+            final RecoveryCandidate ready=candidate;final Exception failed=failure;
+            runOnUiThread(()-> {
+                if(epoch!=unlockEpoch){if(ready!=null)Arrays.fill(ready.key,(byte)0);return;}
+                busy=false;
+                if(failed!=null){lock();error("Senha incorreta ou backup inválido. Nenhum registro foi substituído.");return;}
+                try{commitRecovery(ready);route="Hoje";render();message("Backup restaurado. Use a senha deste backup para abrir o cofre.");}catch(Exception e){lock();error("Não foi possível concluir a restauração. Reabra o cofre; a cópia anterior também pode ser usada para recuperar os registros.");}
+            });
+        }).start();
+    }
     void restore(byte[] bytes) {
-        final byte[] backupSalt;try{backupSalt=VaultCrypto.salt(bytes);}catch(Exception e){error("Backup inválido.");return;}
-        EditText p=new EditText(this);p.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_PASSWORD);p.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS);
-        new AlertDialog.Builder(this).setTitle("Senha do backup").setMessage("Use a mesma senha do cofre aberto.").setView(p).setNegativeButton("Cancelar",null).setPositiveButton("Restaurar",(dialog,which)-> {
-            char[] pass=p.getText().toString().toCharArray();p.setText("");busy=true;final int epoch=unlockEpoch;final byte[] currentKey=key.clone(),currentSalt=salt.clone();
-            new Thread(()-> {byte[] bk=null;JSONObject restored=null;Exception fail=null;try {bk=VaultCrypto.derive(pass,backupSalt);restored=parseData(VaultCrypto.decrypt(bytes,bk));byte[] current=VaultCrypto.derive(pass,currentSalt);boolean same=java.security.MessageDigest.isEqual(current,currentKey);Arrays.fill(current,(byte)0);if(!same)throw new IllegalArgumentException();}catch(Exception e){fail=e;}finally{Arrays.fill(pass,'\0');Arrays.fill(currentKey,(byte)0);if(bk!=null)Arrays.fill(bk,(byte)0);}final JSONObject nd=restored;final Exception f=fail;runOnUiThread(()-> {if(epoch!=unlockEpoch)return;busy=false;if(f!=null){error("Senha incorreta, senha diferente do cofre ou backup inválido. Registros atuais preservados.");return;}data=nd;data.remove("draft");if(persist()){route="Hoje";render();message("Backup restaurado.");}});}).start();
-        }).show();
+        try{VaultCrypto.salt(bytes);}catch(Exception e){error("Backup inválido. O cofre atual foi preservado.");return;}
+        EditText p=new EditText(this);p.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        p.setSaveEnabled(false);p.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO_EXCLUDE_DESCENDANTS);
+        p.setContentDescription("Senha do backup");
+        new AlertDialog.Builder(this).setTitle("Senha do backup").setMessage("Digite a senha usada para criar este backup. Ela passará a abrir o cofre restaurado.").setView(p)
+            .setNegativeButton("Cancelar",null).setPositiveButton("Restaurar",(dialog,which)->{char[] pass=p.getText().toString().toCharArray();p.setText("");startRecovery(bytes,pass);}).show();
     }
     String document(JSONObject c,JSONObject s,boolean roadmap) {
         StringBuilder t=new StringBuilder(roadmap?"ROTEIRO PARA PRÓXIMA SESSÃO":"DOSSIÊ FUNCIONAL • QUATRO CAMADAS");

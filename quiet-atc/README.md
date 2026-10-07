@@ -1,29 +1,35 @@
 # QUIET ATC
 
-Minimalist offline air-traffic-control game for Android and the browser.
+A bright, touch-first air-traffic routing game for Android.
 
-## Gameplay
-- Tap an aircraft to select it.
-- Change heading in 15° steps or drag directly from the aircraft to set a heading.
-- Change cleared altitude in 1,000-ft steps.
-- Arrivals: line up north of runway 18 at <= 4,000 ft, then clear ILS approach.
-- Departures: climb to at least 5,000 ft and route out of the sector.
-- Overflights: route safely across and out of the sector.
-- Three missed arrivals end the shift; any collision ends it immediately.
-- Difficulty rises automatically from level 1 to 5.
+## v1.1.0 gameplay
+- Top-down illustrated airfield instead of a radar console.
+- Touch an aircraft and draw its route directly with your finger.
+- Planes snap to runway approaches when the drawn path reaches either runway gate.
+- Helicopters land on the helipad.
+- Visible dotted routes stay on the map.
+- Traffic conflicts warn before a collision; one collision ends the shift.
+- Three aircraft may escape before the shift ends.
+- Traffic density and speed increase through five levels.
+- 1× / 2× speed control, pause/resume, score, best score, and local stats.
 
 ## Architecture
-- Static HTML/CSS/JavaScript.
-- No backend, login, analytics, ads, purchases, network dependency, or remote assets.
-- LocalStorage stores best score and aggregate stats.
-- Android wrapper is a minimal Java WebView loading bundled assets.
+- Static HTML/CSS/Canvas JavaScript.
+- Original procedural/vector map and aircraft artwork; no copied game assets.
+- No backend, login, analytics, ads, purchases, remote assets, or Internet permission.
+- LocalStorage only for game stats.
+- Minimal Java Android WebView loading bundled assets.
 
 ## Test
 ```bash
 npm test
+node --check web/engine.js
+node --check web/game.js
 ```
 
 ## Android
-The GitHub Actions workflow builds and verifies `Quiet-ATC-v1.0.0.apk` using the repo's proven hosted-runner Android SDK pattern.
+Package: `com.andrefiker.quietatc`
 
-Release branch: `quiet-atc-v1.0.0`.
+Version: `1.1.0` / versionCode `2`
+
+GitHub Actions builds and verifies `Quiet-ATC-v1.1.0.apk`.

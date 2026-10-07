@@ -6,6 +6,8 @@ import android.os.*;
 import android.view.*;
 import android.widget.*;
 import android.graphics.*;
+import android.view.accessibility.AccessibilityNodeInfo;
+import android.util.AtomicFile;
 import org.json.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -21,6 +23,59 @@ public class SmokeRunner extends Instrumentation {
     void set(String field,String text){ui(()->a.fields.get(field).setText(text));}
     void snapshot(String name)throws Exception{Thread.sleep(250);ui(()->{try{int w=a.root.getWidth(),h=a.root.getHeight();check(w>0&&h>0,"layout ready "+name);Bitmap b=Bitmap.createBitmap(w,h,Bitmap.Config.ARGB_8888);a.root.draw(new Canvas(b));try(FileOutputStream out=new FileOutputStream(new File(a.getFilesDir(),name+".png"))){b.compress(Bitmap.CompressFormat.PNG,100,out);}b.recycle();}catch(Exception e){throw new RuntimeException(e);}});}
     void awaitOpen()throws Exception{for(int i=0;i<100;i++){Thread.sleep(100);final boolean[] done={false};ui(()->done[0]=a.data!=null&&!a.busy);if(done[0])return;}throw new AssertionError("Unlock timeout");}
+    AccessibilityNodeInfo node(AccessibilityNodeInfo root,String label,boolean description) {
+        if(root==null)return null;
+        CharSequence v=description?root.getContentDescription():root.getText();
+        if(v!=null&&v.toString().equals(label))return root;
+        for(int i=0;i<root.getChildCount();i++){AccessibilityNodeInfo found=node(root.getChild(i),label,description);if(found!=null)return found;}return null;
+    }
+    AccessibilityNodeInfo dialogNode(String label,boolean description)throws Exception{
+        for(int i=0;i<30;i++){AccessibilityNodeInfo n=node(getUiAutomation().getRootInActiveWindow(),label,description);if(n!=null)return n;Thread.sleep(100);}throw new AssertionError("Dialog node absent: "+label);
+    }
+    void apply(MainActivity.RecoveryCandidate candidate)throws Exception {
+        final Exception[] fail={null};ui(()->{try{a.commitRecovery(candidate);}catch(Exception e){fail[0]=e;}});if(fail[0]!=null)throw fail[0];
+    }
+    void recoveryTests()throws Exception {
+        byte[] backup=a.vault.readFully(),oldKey=a.key.clone(),before=backup.clone();
+        boolean rejected=false;try{MainActivity.prepareRecovery(backup,"wrong backup password".toCharArray());}catch(Exception e){rejected=true;}
+        check(rejected&&Arrays.equals(before,a.vault.readFully()),"wrong backup password leaves current vault intact");
+        JSONObject invalid=new JSONObject(a.data.toString());invalid.put("schema",9);
+        byte[] malformed=VaultCrypto.encrypt(invalid.toString().getBytes(StandardCharsets.UTF_8),oldKey,a.salt);
+        rejected=false;try{MainActivity.prepareRecovery(malformed,"synthetic test password".toCharArray());}catch(Exception e){rejected=true;}
+        check(rejected&&Arrays.equals(before,a.vault.readFully()),"authenticated unsupported schema cannot replace vault");
+        byte[] tampered=backup.clone();tampered[tampered.length-1]^=1;
+        rejected=false;try{MainActivity.prepareRecovery(tampered,"synthetic test password".toCharArray());}catch(Exception e){rejected=true;}
+        check(rejected&&Arrays.equals(before,a.vault.readFully()),"tampered backup cannot replace vault");
+        byte[] damaged="DAMAGED".getBytes(StandardCharsets.UTF_8);MainActivity.writeEnvelope(a.vault,damaged);ui(a::lock);
+        File fixture=new File(a.getFilesDir(),"recovery.ccvault");try(FileOutputStream out=new FileOutputStream(fixture)){out.write(backup);}
+        ui(()->{a.pendingMode="backup";a.onActivityResult(10,Activity.RESULT_OK,new Intent().setData(Uri.fromFile(fixture)));});
+        check(a.data==null,"locked recovery asks for password before exposing records");
+        Bundle input=new Bundle();input.putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE,"synthetic test password");
+        check(dialogNode("Senha do backup",true).performAction(AccessibilityNodeInfo.ACTION_SET_TEXT,input),"backup password dialog accepts input");
+        check(dialogNode("Restaurar",false).performAction(AccessibilityNodeInfo.ACTION_CLICK),"recovery dialog action works");awaitOpen();snapshot("recovery");
+        check(a.clients().getJSONObject(0).getString("code").equals("CL-001"),"damaged locked vault restored without reinstall");
+        check(Arrays.equals(damaged,a.previousVault.readFully()),"damaged prior file retained before replacement");
+        rejected=false;try{MainActivity.prepareRecovery(a.previousVault.readFully(),"synthetic test password".toCharArray());}catch(Exception e){rejected=true;}
+        check(rejected&&a.clients().length()==1,"invalid prior snapshot cannot replace restored records");
+        byte[] current=a.vault.readFully();JSONObject different=new JSONObject(a.data.toString());different.getJSONArray("clients").getJSONObject(0).put("code","CL-003");
+        byte[] newSalt=VaultCrypto.randomSalt(),newKey=VaultCrypto.derive("different backup password".toCharArray(),newSalt);
+        byte[] incoming=VaultCrypto.encrypt(different.toString().getBytes(StandardCharsets.UTF_8),newKey,newSalt);
+        apply(MainActivity.prepareRecovery(incoming,"different backup password".toCharArray()));
+        check(a.clients().getJSONObject(0).getString("code").equals("CL-003"),"restore supports independently passworded backup");
+        check(Arrays.equals(current,a.previousVault.readFully()),"valid former vault kept as encrypted undo snapshot");
+        check(MainActivity.parseData(VaultCrypto.decrypt(a.vault.readFully(),newKey)).getJSONArray("clients").length()==1,"restored vault uses backup password");
+        apply(MainActivity.prepareRecovery(a.previousVault.readFully(),"synthetic test password".toCharArray()));
+        check(a.clients().getJSONObject(0).getString("code").equals("CL-001"),"undo restore returns old data and password");
+        check(MainActivity.parseData(VaultCrypto.decrypt(a.previousVault.readFully(),newKey)).getJSONArray("clients").getJSONObject(0).getString("code").equals("CL-003"),"undo preserves displaced vault for redo");
+        AtomicFile originalSnapshot=a.previousVault;File blocked=new File(a.getFilesDir(),"blocked-parent");try(FileOutputStream out=new FileOutputStream(blocked)){out.write(1);}
+        a.previousVault=new AtomicFile(new File(blocked,"snapshot"));current=a.vault.readFully();MainActivity.RecoveryCandidate candidate=MainActivity.prepareRecovery(incoming,"different backup password".toCharArray());
+        rejected=false;try{apply(candidate);}catch(Exception e){rejected=true;}a.previousVault=originalSnapshot;
+        check(rejected&&Arrays.equals(current,a.vault.readFully()),"snapshot write failure prevents current vault replacement");
+        check(Arrays.equals(candidate.key,new byte[candidate.key.length]),"failed recovery candidate key erased");
+        final byte[] unchanged=current;ui(()->{a.startRecovery(backup,"synthetic test password".toCharArray());a.lock();});Thread.sleep(1500);waitForIdleSync();
+        check(a.data==null&&Arrays.equals(unchanged,a.vault.readFully()),"cancelled recovery cannot commit late");Arrays.fill(oldKey,(byte)0);Arrays.fill(newKey,(byte)0);
+        set("password","synthetic test password");tap("Abrir cofre");awaitOpen();
+    }
     @Override public void onCreate(Bundle b){super.onCreate(b);start();}
     @Override public void onStart(){Bundle result=new Bundle();try{
         Intent intent=new Intent(getTargetContext(),MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -50,6 +105,7 @@ public class SmokeRunner extends Instrumentation {
         File t=new File(a.getFilesDir(),"synthetic.txt");try(FileOutputStream out=new FileOutputStream(t)){out.write("Texto importado sintético".getBytes(StandardCharsets.UTF_8));}
         ui(()->{a.editSession(cc,ss);a.pendingMode="text";a.onActivityResult(10,Activity.RESULT_OK,new Intent().setData(Uri.fromFile(t)));check(a.fields.get("transcript").getText().toString().contains("importado"),"TXT import result");a.saveDraft();});
         ui(()->{a.route="Estudos";a.render();});tap("Adicionar texto de estudo");set("title","Estudo fictício");set("reference","Referência de teste");set("content","Notas de leitura sintéticas");tap("Salvar estudo");check(a.data.getJSONArray("studies").length()==1,"library saves text");
+        recoveryTests();
         ui(()->{check(a.root.getPaddingTop()>0,"status safe area");check(a.root.getPaddingBottom()>0,"navigation safe area");a.onStop();});check(a.data==null,"background locks vault");snapshot("locked");
         result.putString("stream",log+"\n"+checks+" Android checks passed\n");finish(Activity.RESULT_OK,result);
     }catch(Throwable e){result.putString("stream",log+"\nFAIL: "+e+"\n"+android.util.Log.getStackTraceString(e));finish(Activity.RESULT_CANCELED,result);}}

@@ -50,7 +50,7 @@ jobs:
           if "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions vao/dist/Vao-v1.3.0-preview.apk | grep -q 'android.permission.INTERNET'; then exit 1; fi
       - uses: actions/upload-artifact@v4
         with:
-          name: Vao-v1.2.0-preview
+          name: Vao-v1.3.0-preview
           path: vao/dist/Vao-v1.3.0-preview.apk
           retention-days: 7
           if-no-files-found: error

@@ -73,3 +73,16 @@ version. AI must eventually run locally or use a separately validated input
 release process; neither a name+initial nor an opaque code establishes anonymity.
 
 See APP_STATE.md for exact verified release, QA limits and rollback.
+
+## Verified release — 2026-10-07
+`dl/Clinical-Cockpit-v0.1.0.apk`, 78,527 bytes, owner-signed v2/v3.
+SHA-256 `f94fe14ed8bf7644742cc50778c823594ef1b49c312c873d10bf9594d588e05c`.
+20 core checks, 24 Android integration checks and seven external UI checks on the
+exact signed APK passed. Build/release lint and native visual QA passed. API35
+emulator only; physical phone testing pending. See APP_STATE.md for CI links.
+
+If the on-device vault itself is damaged and cannot unlock, this alpha has no
+locked-screen restore control. Preserve your encrypted backup; recovery needs a
+fresh empty app/cofre using the same password followed by backup restore. Never
+uninstall an app containing records you have not backed up. This alpha has not
+undergone an independent clinical/security audit; start with fictitious records.

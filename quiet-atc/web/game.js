@@ -238,39 +238,51 @@ function helicopterShape(c,s,shadow){
 }
 
 function hitAircraft(clientX,clientY){
-  const w=screenToWorld(clientX,clientY);
+  const rect=canvas.getBoundingClientRect();
+  const px=clientX-rect.left,py=clientY-rect.top;
+  const radius=Math.max(54,Math.min(72,mapW*.15));
   let best=null,bd=Infinity;
   for(const a of game.aircraft){
-    const d=E.distance(a,w);
-    if(d<0.065&&d<bd){best=a;bd=d}
+    const p=worldToScreen(a.x,a.y);
+    const d=Math.hypot(px-p.x,py-p.y);
+    if(d<=radius&&d<bd){best=a;bd=d}
   }
   return best;
 }
 
 function pointerDown(ev){
   if(!running||paused)return;
+  ev.preventDefault();
   const a=hitAircraft(ev.clientX,ev.clientY);
   if(!a)return;
   game.selectedId=a.id;for(const x of game.aircraft)x.selected=x.id===a.id;
-  draft={id:a.id,points:[{x:a.x,y:a.y}]};
-  const p=screenToWorld(ev.clientX,ev.clientY);draft.points.push(p);
-  canvas.setPointerCapture?.(ev.pointerId);beep(820,.025);buzz(7);
+  draft={id:a.id,points:[{x:a.x,y:a.y}],pointerId:ev.pointerId};
+  const p=screenToWorld(ev.clientX,ev.clientY);
+  if(E.distance(p,a)>0.015)draft.points.push(p);
+  canvas.setPointerCapture?.(ev.pointerId);
+  game.lastEvent=a.callsign+' — DRAW ROUTE';
+  beep(820,.025);buzz(10);
 }
 function pointerMove(ev){
   if(!draft)return;
+  ev.preventDefault();
   const p=screenToWorld(ev.clientX,ev.clientY),last=draft.points[draft.points.length-1];
-  if(E.distance(p,last)>=0.012)draft.points.push(p);
+  if(E.distance(p,last)>=0.016)draft.points.push(p);
 }
 function pointerUp(ev){
   if(!draft)return;
+  ev.preventDefault();
   const a=game.aircraft.find(x=>x.id===draft.id);
-  if(a&&draft.points.length>2){
+  const end=screenToWorld(ev.clientX,ev.clientY);
+  const lastPoint=draft.points[draft.points.length-1];
+  if(E.distance(end,lastPoint)>=0.008)draft.points.push(end);
+  if(a&&draft.points.length>=2){
     E.assignPath(game,a.id,draft.points);
     if(a.landing){
       game.lastEvent=a.type==='heli'?a.callsign+' HELIPAD LOCKED':a.callsign+' RUNWAY LOCKED';
-      beep(980,.07);buzz(14);
+      beep(980,.07);buzz(18);
     }else{
-      game.lastEvent=a.callsign+' ROUTE SET';beep(690,.04);
+      game.lastEvent=a.callsign+' ROUTE SET';beep(690,.04);buzz(8);
     }
   }
   draft=null;
@@ -310,7 +322,7 @@ function frame(now){
   const dt=Math.min(.06,(now-last)/1000);last=now;
   if(running&&!paused){
     const beforeLanded=game.landed,beforeEvent=game.lastEvent;
-    E.updateGame(game,dt*timeScale);
+    E.updateGame(game,dt*timeScale*(draft?0.42:1));
     if(game.landed>beforeLanded)beep(1060,.08);
     else if(game.lastEvent!==beforeEvent&&game.lastEvent.includes('MISSED'))beep(260,.10);
     if(game.gameOver){updateUI();draw();finish();requestAnimationFrame(frame);return}

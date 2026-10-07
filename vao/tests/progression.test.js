@@ -15,7 +15,7 @@ context.VaoLevels = LV;
 const legacy = { v: 1, unlocked: 4, best: { 1: 500, 2: 800 }, designs: { 1: { nodes: [[1, 2]], beams: [] } },
   sandbox: { t: 2, veh: 'van', wind: 1, water: 0, design: { nodes: [], beams: [] } }, mute: true, seenHelp: true };
 const p = P.normalize(legacy);
-assert.equal(p.v, 4);
+assert.equal(p.v, 5);
 assert.equal(p.unlocked, 4);
 assert.deepEqual(p.designs, legacy.designs);
 assert.deepEqual(p.sandbox, legacy.sandbox);
@@ -31,7 +31,7 @@ assert.equal(P.materialState(P.normalize(null), 'wood', LV.SANDBOX_TERRAINS[0]),
 const v11 = P.normalize({ v: 2, xp: 910, unlocked: 8, best: { 1: 500 }, grades: { 1: 'A' }, stress: { 1: 65 },
   milestones: { first: true }, designs: legacy.designs, sandbox: legacy.sandbox, mute: true, sandboxAll: false });
 assert.equal(v11.xp, 910);
-assert.equal(v11.v, 4);
+assert.equal(v11.v, 5);
 assert.equal(v11.pbRewardBaseline[1], 500);
 assert(v11.gradeRewards.B && v11.gradeRewards.A);
 assert.equal(v11.discovered.cable, true);
@@ -180,7 +180,9 @@ assert(!P.award(concreteChallenge, LV.LEVELS[9], 1400, 65,
 console.log('VÃO progression, migration, original campaign and material simulation checks passed');
 
 const migratedCampaign = P.normalize({v:3,xp:8000,unlocked:20,best:Object.fromEntries(Array.from({length:20},(_,i)=>[i+1,1000])),grades:{},stress:{},milestones:{veteran:true},designs:{},sandbox:{t:0,veh:'carro',wind:0,water:0,design:null},mute:false,sandboxAll:false,discovered:{},challenges:{},pbRewardBaseline:{},gradeRewards:{}});
-assert.equal(migratedCampaign.v,4);
+assert.equal(migratedCampaign.v,5);
 assert.equal(migratedCampaign.unlocked,21,'completed legacy campaign opens the first new level');
 assert.equal(migratedCampaign.milestones.veteran,undefined,'20-level veteran does not falsely mark the 36-level campaign complete');
 assert.equal(P.CAMPAIGN_LEVELS,36);
+
+const v4to5=P.normalize({v:4,xp:100,unlocked:2,best:{1:10},designs:{},sandbox:{t:0,veh:'carro',wind:0,water:0,design:null},grades:{},stress:{},milestones:{},discovered:{},challenges:{},pbRewardBaseline:{},gradeRewards:{}}); assert.equal(v4to5.v,5); assert.deepEqual(v4to5.briefs,{});

@@ -8,6 +8,9 @@ import java.util.concurrent.TimeUnit
 
 class AwayWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) = updateAll(context, manager)
+    override fun onAppWidgetOptionsChanged(context: Context, manager: AppWidgetManager, appWidgetId: Int, newOptions: android.os.Bundle) {
+        updateAll(context, manager)
+    }
     override fun onReceive(context: Context, intent: android.content.Intent) {
         super.onReceive(context, intent)
         if (intent.action == android.content.Intent.ACTION_USER_PRESENT) {

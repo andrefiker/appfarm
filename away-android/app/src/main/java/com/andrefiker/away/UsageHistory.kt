@@ -2,6 +2,7 @@ package com.andrefiker.away
 
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
+import android.app.AppOpsManager
 import android.content.Context
 import android.os.PowerManager
 import java.util.Calendar

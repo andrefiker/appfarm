@@ -10,7 +10,7 @@ From this directory, use Gradle 8.11.1, Java 17, Android SDK platform 36/build t
 gradle :app:testDebugUnitTest :app:assembleDebug
 ```
 
-The APK is `app/build/outputs/apk/debug/app-debug.apk`. GitHub Actions runs these tests and verifies the APK package/version, signature, and absence of Internet permission.
+The APK is `app/build/outputs/apk/debug/app-debug.apk`. GitHub Actions runs these tests and verifies the APK package/version, signature, Usage Access declaration, and absence of Internet permission.
 
 ## Setup and privacy
 

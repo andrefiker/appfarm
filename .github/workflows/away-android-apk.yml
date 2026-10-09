@@ -45,19 +45,19 @@ jobs:
           print(f'Unit tests passed: {total}')
           PY
           mkdir -p dist
-          cp app/build/outputs/apk/debug/app-debug.apk dist/AWAY-v1.0.0.apk
-          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging dist/AWAY-v1.0.0.apk | head -n 4
-          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump xmltree dist/AWAY-v1.0.0.apk AndroidManifest.xml > /tmp/away-manifest.txt
+          cp app/build/outputs/apk/debug/app-debug.apk dist/AWAY-v1.0.1.apk
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging dist/AWAY-v1.0.1.apk | head -n 4
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump xmltree dist/AWAY-v1.0.1.apk AndroidManifest.xml > /tmp/away-manifest.txt
           grep -q 'com.andrefiker.away.MainActivity' /tmp/away-manifest.txt
           grep -q 'com.andrefiker.away.AwayWidgetProvider' /tmp/away-manifest.txt
           grep -q 'android.appwidget.action.APPWIDGET_UPDATE' /tmp/away-manifest.txt
-          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump permissions dist/AWAY-v1.0.0.apk | tee /tmp/away-permissions.txt
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump permissions dist/AWAY-v1.0.1.apk | tee /tmp/away-permissions.txt
           grep -q 'android.permission.PACKAGE_USAGE_STATS' /tmp/away-permissions.txt
           ! grep -q 'android.permission.INTERNET' /tmp/away-permissions.txt
-          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose dist/AWAY-v1.0.0.apk
-          sha256sum dist/AWAY-v1.0.0.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose dist/AWAY-v1.0.1.apk
+          sha256sum dist/AWAY-v1.0.1.apk
       - uses: actions/upload-artifact@v4
         with:
           name: AWAY-android
-          path: away-android/dist/AWAY-v1.0.0.apk
+          path: away-android/dist/AWAY-v1.0.1.apk
           if-no-files-found: error

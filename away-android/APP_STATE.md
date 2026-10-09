@@ -3,7 +3,7 @@
 ## Identity
 - Directory: `away-android/`
 - Package ID: `com.andrefiker.away`
-- Version: 1.0.0 (versionCode 1)
+- Version: 1.0.1 (versionCode 2)
 - Branch: `away-android-1.0.0`
 
 ## Current verified source
@@ -19,7 +19,7 @@
 
 ## Verification
 - Android 16 CI run `37989758454`: build passed; 7 unit tests passed.
-- APK metadata: package `com.andrefiker.away`, version 1.0.0/code 1, min API 28, target API 36.
+- APK metadata: package `com.andrefiker.away`, version 1.0.1/code 2, min API 28, target API 36.
 - APK signature: one signer, APK Signature Scheme v2 verified.
 - APK permissions: requests `PACKAGE_USAGE_STATS` so AWAY is listed in Android's Usage Access settings; no Internet permission. Notification permission is only needed if notifications are enabled.
 - Compiled manifest checks passed for the launch activity, widget provider, and `APPWIDGET_UPDATE` registration.

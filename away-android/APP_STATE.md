@@ -6,6 +6,11 @@
 - Version: 1.0.0 (versionCode 1)
 - Branch: `away-android-1.0.0`
 
+## Current verified source
+- Latest app source commit: `5e2b9e2f7ad58d34c03ba65cb8333b309ee42700` (widget resize refresh).
+- Branch head with verification docs: recorded separately in `APPFARM_STATE.md` on this branch.
+- Rollback target: `0db2815c14b727031d63e7c14ef0a75255690e90` (pre-AWAY main).
+
 ## Architecture
 - Native Kotlin app with standard RemoteViews home-screen widget
 - Local UsageStatsManager event reads; SharedPreferences stores boot boundary and notification settings

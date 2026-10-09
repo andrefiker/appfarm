@@ -1,0 +1,47 @@
+name: AWAY Android APK
+
+on:
+  push:
+    branches: [ 'away-android-*' ]
+    paths:
+      - 'away-android/**'
+      - '.github/workflows/away-android-apk.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+    defaults:
+      run:
+        working-directory: away-android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Android 16 SDK
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-36' 'build-tools;36.0.0' >/dev/null
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Test and build
+        run: |
+          gradle --no-daemon :app:testDebugUnitTest :app:assembleDebug
+          mkdir -p dist
+          cp app/build/outputs/apk/debug/app-debug.apk dist/AWAY-v1.0.0.apk
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging dist/AWAY-v1.0.0.apk | head -n 4
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump permissions dist/AWAY-v1.0.0.apk | tee /tmp/away-permissions.txt
+          ! grep -q 'android.permission.INTERNET' /tmp/away-permissions.txt
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose dist/AWAY-v1.0.0.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AWAY-android
+          path: away-android/dist/AWAY-v1.0.0.apk
+          if-no-files-found: error

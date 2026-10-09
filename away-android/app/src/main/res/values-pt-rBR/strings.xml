@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">AWAY</string>
+    <string name="widget_permission">Ativar acesso</string>
+    <string name="widget_setup">Toque para ativar o Acesso a uso</string>
+    <string name="widget_ready">Pronto quando você quiser</string>
+    <string name="widget_now_away">Um pouco de espaço, agora.</string>
+    <string name="widget_caption_default">Você reservou um tempo para si.</string>
+    <string name="longest_today">Maior pausa hoje · %1$s</string>
+    <string name="access_ready">Acesso a uso ativado</string>
+    <string name="access_needed">Uma permissão do Android é necessária</string>
+    <string name="permission_button">Ativar Acesso a uso</string>
+    <string name="refresh_button">Atualizar</string>
+    <string name="permission_explanation">O AWAY lê os eventos de tela e bloqueio do Android para estimar períodos com a tela desligada. Esse tempo é apenas uma aproximação de desconexão; o app não sabe se você estava fisicamente longe. Não usa conta nem internet.</string>
+    <string name="hello_message">Um pouco de espaço pode fazer bem.</string>
+    <string name="today_longest">Sua maior pausa hoje</string>
+    <string name="today_heading">Sua maior pausa hoje</string>
+    <string name="widget_instructions">Adicione o widget AWAY à tela inicial. Toque nele para atualizar.</string>
+    <string name="notification_title">Bem-vindo de volta. Sem pressa.</string>
+    <string name="notification_channel">Celebrações de pausa</string>
+    <string name="notification_body">Você passou %1$s longe da tela.</string>
+    <string name="notifications_toggle">Celebração opcional ao desbloquear</string>
+    <string name="minimum_duration">Pausa mínima (minutos)</string>
+</resources>

@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">AWAY</string>
+    <string name="widget_permission">Set up access</string>
+    <string name="widget_setup">Tap to enable Usage Access</string>
+    <string name="widget_ready">Ready when you are</string>
+    <string name="widget_now_away">A little space, right now.</string>
+    <string name="widget_caption_default">You gave yourself some space.</string>
+    <string name="longest_today">Longest today · %1$s</string>
+    <string name="access_ready">Usage Access is on</string>
+    <string name="access_needed">One Android permission is needed</string>
+    <string name="permission_button">Enable Usage Access</string>
+    <string name="refresh_button">Refresh</string>
+    <string name="permission_explanation">AWAY reads Android’s screen and lock events to estimate screen-off breaks. Screen-off time is only a proxy for disengagement; it cannot tell whether you were physically away. No account or internet connection is used.</string>
+    <string name="hello_message">A little space can be a good thing.</string>
+    <string name="today_longest">Your longest break today</string>
+    <string name="today_heading">Your longest break today</string>
+    <string name="widget_instructions">Add the AWAY widget to your home screen. Tap it to refresh.</string>
+    <string name="notification_title">Welcome back. No rush.</string>
+    <string name="notification_channel">Break celebrations</string>
+    <string name="notification_body">You spent %1$s away from your screen.</string>
+    <string name="notifications_toggle">Optional unlock celebration</string>
+    <string name="minimum_duration">Minimum break (minutes)</string>
+</resources>

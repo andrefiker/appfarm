@@ -13,13 +13,13 @@
 - English and Brazilian Portuguese
 
 ## Verification
-- Android 16 CI run `37988111330`: build passed; 7 unit tests passed.
+- Android 16 CI run `37988441387`: build passed; 7 unit tests passed.
 - APK metadata: package `com.andrefiker.away`, version 1.0.0/code 1, min API 28, target API 36.
 - APK signature: one signer, APK Signature Scheme v2 verified.
 - APK permissions: no Internet permission; Usage Access is granted separately in Android Settings; notification permission is only needed if notifications are enabled.
 - Compiled manifest checks passed for the launch activity, widget provider, and `APPWIDGET_UPDATE` registration.
-- APK SHA-256 from run `37988111330`: `26426f5bc9aed145f3bf8b8770592ffc9b981b6f3ba901c3c802f8d20eda3978`.
-- Build artifact: `AWAY-android` in run `37988111330` (artifact ID `11643089620`).
+- APK SHA-256 from run `37988441387`: `017c1c749c318a4a5451bc437a9c44c7bcbcb3bb3de074de62b924f4d962bd2b`.
+- Build artifact: `AWAY-android` in run `37988441387` (artifact ID `11643659184`).
 - Device/widget-cycle verification: not performed; no device or emulator was available in this workspace.
 
 ## Limitations

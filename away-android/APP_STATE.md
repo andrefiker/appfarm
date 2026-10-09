@@ -13,15 +13,21 @@
 - English and Brazilian Portuguese
 
 ## Verification
-- Source/test and Actions build status: pending first CI run
-- Device/widget verification: pending; no device attached to this workspace
-- Expected APK: GitHub Actions artifact `AWAY-android`
+- Android 16 CI run `37988111330`: build passed; 7 unit tests passed.
+- APK metadata: package `com.andrefiker.away`, version 1.0.0/code 1, min API 28, target API 36.
+- APK signature: one signer, APK Signature Scheme v2 verified.
+- APK permissions: no Internet permission; Usage Access is granted separately in Android Settings; notification permission is only needed if notifications are enabled.
+- Compiled manifest checks passed for the launch activity, widget provider, and `APPWIDGET_UPDATE` registration.
+- APK SHA-256 from run `37988111330`: `26426f5bc9aed145f3bf8b8770592ffc9b981b6f3ba901c3c802f8d20eda3978`.
+- Build artifact: `AWAY-android` in run `37988111330` (artifact ID `11643089620`).
+- Device/widget-cycle verification: not performed; no device or emulator was available in this workspace.
 
 ## Limitations
 - Requires the user to enable Android Usage Access in system settings.
 - Widget refreshes rely on unlock/boot broadcasts and Android's minimum 30-minute periodic update; OS/OEM policies may delay them.
 - Screen-off duration is a proxy. Screen activation, notification wakeups, or other interactive events invalidate an interval.
 - AWAY does not open itself over the launcher on unlock.
+- CI's debug signing key is not preserved for future builds; a future update APK must use a persistent key or be installed after removing the previous app.
 
 ## Rollback
 - Source rollback: `0db2815c14b727031d63e7c14ef0a75255690e90` (pre-AWAY main)

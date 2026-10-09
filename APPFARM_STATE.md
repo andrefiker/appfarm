@@ -139,3 +139,12 @@ Vercel:
 2. Confirm whether their APK artifacts/workflow branches still exist before resuming them.
 3. Complete or explicitly cancel the pending Railway/Lovable cleanup in its own execution task.
 4. Update this file only when meaningful state changes.
+
+
+## AWAY v1.0.0
+
+- Source: `away-android/`, branch `away-android-1.0.0`; package `com.andrefiker.away`, versionCode 1, Android 16 target (API 36), min API 28.
+- Verified build commit: `c6a2066fa3f44fb37e51efca7fe4bc756cfd6ebb`; source change commit: `739b59aa584fa7ef0fa4a74e5429c955869c933a`; rollback to pre-AWAY `0db2815c14b727031d63e7c14ef0a75255690e90`.
+- GitHub Actions run `37988111330` passed; 7 unit tests passed (interval, interruption/deduplication, local date boundary, reboot, and permission gate). APK package/version/target checked; widget provider, update action, and launcher activity were found in compiled manifest; Internet permission absent; v2 signature verified with one signer.
+- APK SHA-256: `26426f5bc9aed145f3bf8b8770592ffc9b981b6f3ba901c3c802f8d20eda3978`. Artifact `AWAY-android`, ID `11643089620`, expires 2027-01-07.
+- Physical-device install, unlock cycle, launcher widget render, and HyperOS-specific behavior were not tested. Widget refresh is best-effort through user-present/boot broadcasts plus Android's 30-minute minimum periodic cadence. Notification permission is optional and off by default. CI signing is debug-key based; preserve a future release key before publishing updates.

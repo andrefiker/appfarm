@@ -4,7 +4,10 @@ on:
   push:
     branches: [ 'away-android-*' ]
     paths:
-      - 'away-android/**'
+      - 'away-android/app/**'
+      - 'away-android/build.gradle'
+      - 'away-android/settings.gradle'
+      - 'away-android/gradle.properties'
       - '.github/workflows/away-android-apk.yml'
 
 permissions:

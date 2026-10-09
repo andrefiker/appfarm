@@ -23,9 +23,23 @@ object UsageHistory {
 
     fun read(context: Context, now: Long = System.currentTimeMillis()): AwaySnapshot {
         if (!hasAccess(context)) return AwaySnapshot(null, null, null, false)
-        val bootAt = context.getSharedPreferences("away", Context.MODE_PRIVATE).getLong("boot_at", 0L)
+        val prefs = context.getSharedPreferences("away", Context.MODE_PRIVATE)
+        val currentBoot = try { android.provider.Settings.Global.getInt(context.contentResolver, android.provider.Settings.Global.BOOT_COUNT, -1) } catch (_: Exception) { -1 }
+        var bootAt = prefs.getLong("boot_at", 0L)
+        val knownBoot = prefs.getInt("boot_count", -1)
+        if (currentBoot >= 0 && currentBoot != knownBoot) {
+            // If the reboot receiver was delayed or suppressed, sacrifice history since boot
+            // rather than infer a break that may have crossed a reboot.
+            bootAt = now
+            prefs.edit().putLong("boot_at", now).putInt("boot_count", currentBoot).apply()
+        }
+        var firstSeen = prefs.getLong("first_seen_at", 0L)
+        if (firstSeen == 0L) {
+            firstSeen = now
+            prefs.edit().putLong("first_seen_at", now).apply()
+        }
         val dayStart = localDayStart(now)
-        val start = maxOf(bootAt, now - 7L * 24 * 60 * 60 * 1000)
+        val start = queryStart(now, bootAt, firstSeen)
         val manager = context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         val usage = manager.queryEvents(start, now)
         val raw = mutableListOf<ScreenEvent>()
@@ -57,6 +71,9 @@ object UsageHistory {
         .sortedWith(compareBy<ScreenEvent> { it.at }.thenBy { it.kind.ordinal })
 
     fun needsAccess(granted: Boolean): Boolean = !granted
+
+    fun queryStart(now: Long, bootAt: Long, firstSeen: Long, historyWindowMs: Long = 7L * 24 * 60 * 60 * 1000): Long =
+        maxOf(bootAt, firstSeen, now - historyWindowMs)
 
     fun localDayStart(now: Long, timeZone: java.util.TimeZone = java.util.TimeZone.getDefault()): Long =
         java.util.Calendar.getInstance(timeZone).apply {

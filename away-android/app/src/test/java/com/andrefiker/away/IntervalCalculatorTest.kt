@@ -59,4 +59,10 @@ class IntervalCalculatorTest {
         assertTrue(UsageHistory.needsAccess(false))
         assertFalse(UsageHistory.needsAccess(true))
     }
+
+    @Test fun historyStartsAfterInstallAndObservedRebootBoundary() {
+        val now = 10_000_000L
+        assertEquals(9_000_000L, UsageHistory.queryStart(now, 8_000_000L, 9_000_000L, 2_000_000L))
+        assertEquals(now, UsageHistory.queryStart(now, now, 1L, 7_000_000L))
+    }
 }

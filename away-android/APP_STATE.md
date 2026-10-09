@@ -7,7 +7,7 @@
 - Branch: `away-android-1.0.0`
 
 ## Current verified source
-- Latest app source commit: `7c378304fb9872cec8ebc69d151e27c4698c736e` (declares Usage Access so AWAY appears in Android's app-usage list).
+- Latest app source/release commit: `1d0aada92c1d96359e5d81c849c7c68432a87ae3` (AWAY 1.0.1 with Usage Access declaration).
 - Branch head with verification docs: recorded separately in `APPFARM_STATE.md` on this branch.
 - Rollback target: `0db2815c14b727031d63e7c14ef0a75255690e90` (pre-AWAY main).
 
@@ -18,13 +18,13 @@
 - English and Brazilian Portuguese
 
 ## Verification
-- Android 16 CI run `37989758454`: build passed; 7 unit tests passed.
+- Android 16 CI run `37990069012`: build passed; 7 unit tests passed.
 - APK metadata: package `com.andrefiker.away`, version 1.0.1/code 2, min API 28, target API 36.
 - APK signature: one signer, APK Signature Scheme v2 verified.
 - APK permissions: requests `PACKAGE_USAGE_STATS` so AWAY is listed in Android's Usage Access settings; no Internet permission. Notification permission is only needed if notifications are enabled.
 - Compiled manifest checks passed for the launch activity, widget provider, and `APPWIDGET_UPDATE` registration.
-- APK SHA-256 from run `37989758454`: `d13c11afebe7a680f09b4ae222f28ffa582d23eb4302dfc72549b8253ceaa842`.
-- Build artifact: `AWAY-android` in run `37989758454` (artifact ID `11644347389`).
+- APK SHA-256 from run `37990069012`: `83a57aea8a26af49b6d9a68c435c6b408ac048ec41bb2d0b1e844a9b92296e2e`.
+- Build artifact: `AWAY-android` in run `37990069012` (artifact ID `11645061534`).
 - Device/widget-cycle verification: not performed; no device or emulator was available in this workspace.
 
 ## Limitations

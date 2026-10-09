@@ -141,10 +141,10 @@ Vercel:
 4. Update this file only when meaningful state changes.
 
 
-## AWAY v1.0.0
+## AWAY v1.0.1
 
-- Source: `away-android/`, branch `away-android-1.0.0`; package `com.andrefiker.away`, versionCode 1, Android 16 target (API 36), min API 28.
-- Latest app source commit: `7c378304fb9872cec8ebc69d151e27c4698c736e` (declares Usage Access for Android settings); initial implementation commit: `739b59aa584fa7ef0fa4a74e5429c955869c933a`; rollback to pre-AWAY `0db2815c14b727031d63e7c14ef0a75255690e90`.
-- GitHub Actions run `37989758454` passed; 7 unit tests passed (interval, interruption/deduplication, local date boundary, reboot, and permission gate). APK package/version/target checked; widget provider, update action, and launcher activity were found in compiled manifest; `PACKAGE_USAGE_STATS` is declared for the Android Usage Access list; Internet permission absent; v2 signature verified with one signer.
-- APK SHA-256: `d13c11afebe7a680f09b4ae222f28ffa582d23eb4302dfc72549b8253ceaa842`. Artifact `AWAY-android`, ID `11644347389`, expires 2027-01-07.
+- Source: `away-android/`, branch `away-android-1.0.0`; package `com.andrefiker.away`, version 1.0.1/versionCode 2, Android 16 target (API 36), min API 28.
+- Latest app source/release commit: `1d0aada92c1d96359e5d81c849c7c68432a87ae3` (AWAY 1.0.1); Usage Access declaration fix: `7c378304fb9872cec8ebc69d151e27c4698c736e`; initial implementation commit: `739b59aa584fa7ef0fa4a74e5429c955869c933a`; rollback to pre-AWAY `0db2815c14b727031d63e7c14ef0a75255690e90`.
+- GitHub Actions run `37990069012` passed; 7 unit tests passed (interval, interruption/deduplication, local date boundary, reboot, and permission gate). APK package/version/target checked; widget provider, update action, and launcher activity were found in compiled manifest; `PACKAGE_USAGE_STATS` is declared for the Android Usage Access list; Internet permission absent; v2 signature verified with one signer.
+- APK SHA-256: `83a57aea8a26af49b6d9a68c435c6b408ac048ec41bb2d0b1e844a9b92296e2e`. Artifact `AWAY-android`, ID `11645061534`, expires 2027-01-07.
 - The earlier v1.0.0 APK omitted `PACKAGE_USAGE_STATS`, so AWAY did not appear in Usage Access settings; corrected by commit `7c378304fb9872cec8ebc69d151e27c4698c736e`. Physical-device install, unlock cycle, launcher widget render, and HyperOS-specific behavior were not tested. Widget refresh is best-effort through user-present/boot broadcasts plus Android's 30-minute minimum periodic cadence. Notification permission is optional and off by default. CI signing is debug-key based; preserve a future release key before publishing updates.

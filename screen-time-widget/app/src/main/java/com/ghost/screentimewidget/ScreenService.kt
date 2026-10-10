@@ -20,12 +20,13 @@ class ScreenService: Service() {
     private val receiver = object: BroadcastReceiver() {
         override fun onReceive(context: Context,intent: Intent) {
             when (intent.action) {
-                Intent.ACTION_SCREEN_ON -> UsageRepository.transition(true)
-                Intent.ACTION_SCREEN_OFF -> UsageRepository.transition(false)
+                Intent.ACTION_SCREEN_ON -> { UsageRepository.transition(true); if(getSystemService(KeyguardManager::class.java).isKeyguardLocked) UsageRepository.event(EventKind.LOCK) }
+                Intent.ACTION_SCREEN_OFF -> { UsageRepository.transition(false); if(getSystemService(KeyguardManager::class.java).isKeyguardLocked) UsageRepository.event(EventKind.LOCK) }
                 Intent.ACTION_TIME_CHANGED, Intent.ACTION_TIMEZONE_CHANGED, Intent.ACTION_DATE_CHANGED -> { UsageRepository.invalidate(true); scheduleMidnight() }
+                Intent.ACTION_USER_PRESENT -> UsageRepository.event(EventKind.RETURN)
                 else -> UsageRepository.invalidate()
             }
-            scope.launch { updateOnce(); Refresh.midnight(this@ScreenService) }
+            scope.launch { updateOnce(intent.action == Intent.ACTION_USER_PRESENT); Refresh.midnight(this@ScreenService) }
         }
     }
     override fun onCreate() {
@@ -34,7 +35,7 @@ class ScreenService: Service() {
         manager.createNotificationChannel(NotificationChannel("instant","Instant widget updates",NotificationManager.IMPORTANCE_LOW).apply { setSound(null,null); enableVibration(false); setShowBadge(false) })
         val open = PendingIntent.getActivity(this,0,Intent(this,MainActivity::class.java),PendingIntent.FLAG_IMMUTABLE)
         val notification = NotificationCompat.Builder(this,"instant").setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle("Screen Time Widget").setContentText("Instant screen on/off updates are enabled")
+            .setContentTitle("Screen Time Widget").setContentText("Quiet return feedback · local only")
             .setContentIntent(open).setOngoing(true).setSilent(true).setPriority(NotificationCompat.PRIORITY_LOW).build()
         if (Build.VERSION.SDK_INT >= 34) startForeground(1,notification,ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE) else startForeground(1,notification)
         running = true
@@ -44,8 +45,8 @@ class ScreenService: Service() {
         },ContextCompat.RECEIVER_NOT_EXPORTED)
         scheduleMidnight()
     }
-    private suspend fun updateOnce() {
-        Refresh.widgets(this@ScreenService)
+    private suspend fun updateOnce(naturalReturn: Boolean = false) {
+        Refresh.widgets(this@ScreenService,naturalReturn=naturalReturn)
         val s = UsageRepository.read(this@ScreenService)
         val remaining = 3600000L - s.totals.screenMillis - (SystemClock.elapsedRealtime() - s.elapsedAt)
         handler.post {
@@ -78,9 +79,10 @@ class ScreenTimeApplication: Application(), androidx.work.Configuration.Provider
             when (intent.action) {
                 Intent.ACTION_SCREEN_ON -> UsageRepository.transition(true)
                 Intent.ACTION_SCREEN_OFF -> UsageRepository.transition(false)
+                Intent.ACTION_USER_PRESENT -> UsageRepository.event(EventKind.RETURN)
                 else -> UsageRepository.invalidate()
             }
-            Refresh.scope.launch { Refresh.widgets(context) }
+            Refresh.scope.launch { Refresh.widgets(context,naturalReturn=intent.action == Intent.ACTION_USER_PRESENT) }
         }
     }
     override fun onCreate() {

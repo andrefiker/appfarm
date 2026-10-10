@@ -11,5 +11,5 @@
     </style>
     <style name="AppTheme" parent="AppThemeBase"/>
     <string name="app_name">Screen Time Widget</string>
-    <string name="widget_description">Today’s screen-on clock and most-used apps. Updates instantly with screen changes.</string>
+    <string name="widget_description">Quiet daytime breaks, meaningful progress and local screen usage.</string>
 </resources>

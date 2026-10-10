@@ -6,10 +6,12 @@ import kotlinx.coroutines.runBlocking
 
 class AppRowsService: RemoteViewsService() {
     override fun onGetViewFactory(intent: Intent): RemoteViewsFactory = object: RemoteViewsFactory {
+        private var dark = false
         private var rows = emptyList<RankedApp>()
         override fun onCreate() {}
         override fun onDataSetChanged() {
             rows = runBlocking {
+                dark = darkTheme(applicationContext,SettingsStore(applicationContext).read())
                 val data = UsageRepository.read(applicationContext)
                 if (!data.granted || data.message != null) emptyList() else AppCatalog.ranking(applicationContext,data,SettingsStore(applicationContext).read())
             }
@@ -19,6 +21,8 @@ class AppRowsService: RemoteViewsService() {
         override fun getViewAt(position: Int): RemoteViews? {
             val app = rows.getOrNull(position) ?: return null
             return RemoteViews(packageName,R.layout.widget_app_row).apply {
+                setTextColor(R.id.app_label,android.graphics.Color.parseColor(if(dark) "#E4EEE7" else "#183E32"))
+                setTextColor(R.id.app_duration,android.graphics.Color.parseColor(if(dark) "#BAC8BF" else "#53685B"))
                 setTextViewText(R.id.app_label,app.label)
                 setTextViewText(R.id.app_duration,durationLabel(app.millis))
                 app.icon?.let { setImageViewBitmap(R.id.app_icon,it) }

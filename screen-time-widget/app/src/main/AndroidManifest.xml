@@ -19,7 +19,7 @@
         </activity>
         <service android:name=".AppRowsService" android:permission="android.permission.BIND_REMOTEVIEWS" android:exported="false"/>
         <service android:name=".ScreenService" android:exported="false" android:foregroundServiceType="specialUse">
-            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="User-enabled local home-screen widget screen-state monitoring; stops elapsed timer immediately on display sleep without per-second updates" />
+            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="User-controlled offline widget screen-state monitoring for quiet completed-break feedback on natural unlock; reacts only to broadcasts, without per-second polling" />
         </service>
         <receiver android:name=".LifecycleReceiver" android:enabled="true" android:exported="false" android:directBootAware="true">
             <intent-filter>

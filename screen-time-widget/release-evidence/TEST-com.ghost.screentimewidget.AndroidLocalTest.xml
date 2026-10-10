@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.ghost.screentimewidget.AndroidLocalTest" tests="15" skipped="0" failures="0" errors="0" timestamp="2026-10-10T01:16:15" hostname="0d3bca5ab8ac" time="6.043">
+  <properties/>
+  <testcase name="actualRemoteViewsRenderExpandedLightAndDark" classname="com.ghost.screentimewidget.AndroidLocalTest" time="5.293"/>
+  <testcase name="journalSurvivesCloseReopenAndDeduplicates" classname="com.ghost.screentimewidget.AndroidLocalTest" time="0.046"/>
+  <testcase name="clockFencePersistsAcrossRestart" classname="com.ghost.screentimewidget.AndroidLocalTest" time="0.038"/>
+  <testcase name="historyMissingDaysAreUnavailableNotZeroBaseline" classname="com.ghost.screentimewidget.AndroidLocalTest" time="0.032"/>
+  <testcase name="actualRemoteViewsRenderCompactLightAndDark" classname="com.ghost.screentimewidget.AndroidLocalTest" time="0.086"/>
+  <testcase name="overnightCannotCompleteChallengeOrAward" classname="com.ghost.screentimewidget.AndroidLocalTest" time="0.049"/>
+  <testcase name="clockResetDropsPendingAndRestartsBaseline" classname="com.ghost.screentimewidget.AndroidLocalTest" time="0.031"/>
+  <testcase name="openingAppCannotRotateMessagesOrClaimRewards" classname="com.ghost.screentimewidget.AndroidLocalTest" time="0.071"/>
+  <testcase name="delayedNativeEventReplacesBroadcast" classname="com.ghost.screentimewidget.AndroidLocalTest" time="0.031"/>
+  <testcase name="actualRemoteViewsMediumHostFitsCore" classname="com.ghost.screentimewidget.AndroidLocalTest" time="0.082"/>
+  <testcase name="noonChallengeNotCreatedAfterLunch" classname="com.ghost.screentimewidget.AndroidLocalTest" time="0.064"/>
+  <testcase name="retentionKeepsRecentHistoryOnly" classname="com.ghost.screentimewidget.AndroidLocalTest" time="0.039"/>
+  <testcase name="actualRemoteViewsSmallHostFitsCore" classname="com.ghost.screentimewidget.AndroidLocalTest" time="0.082"/>
+  <testcase name="challengeThresholdIsStableForTheDay" classname="com.ghost.screentimewidget.AndroidLocalTest" time="0.042"/>
+  <testcase name="awardsAreAutomaticAndIdempotentAcrossReopen" classname="com.ghost.screentimewidget.AndroidLocalTest" time="0.055"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

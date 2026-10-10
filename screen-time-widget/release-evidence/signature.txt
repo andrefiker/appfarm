@@ -1,0 +1,17 @@
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): false
+Verified using v3 scheme (APK Signature Scheme v3): true
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+Signer #1 certificate DN: CN=Screen Time Widget Debug, O=Andre Fiker, C=BR
+Signer #1 certificate SHA-256 digest: fffd977bc63ed751632f4c554dc951472675a487de9cfbbdeebd6934220a0c92
+Signer #1 certificate SHA-1 digest: 0fcbcd499d2fdba4a59e62a22f7be6e7019bbe07
+Signer #1 certificate MD5 digest: 3f637194e3d34a05085cdded6faffd51
+Signer #1 key algorithm: RSA
+Signer #1 key size (bits): 2048
+Signer #1 public key SHA-256 digest: 7ea02840656684da132c3d84f9df2f351d7e7dbf8f959eb9a3222ee1031919bc
+Signer #1 public key SHA-1 digest: 6dd165707933705e397c28974d914f220f4ea338
+Signer #1 public key MD5 digest: 6607c0973e69ddc3ac13c9b65c9d2f93

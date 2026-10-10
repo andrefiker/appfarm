@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.ghost.screentimewidget.BehaviorMathTest" tests="53" skipped="0" failures="0" errors="0" timestamp="2026-10-10T01:16:22" hostname="0d3bca5ab8ac" time="0.021">
+  <properties/>
+  <testcase name="comparisonUsesSuppliedEquivalentPeriods" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.002"/>
+  <testcase name="missingEndKeepsPending" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.001"/>
+  <testcase name="noHistoryIsNotClockJump" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="duplicateUnlocksCountOnce" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.001"/>
+  <testcase name="sixtyDistinctMessagesMinimum" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="celebrationFreshBreakOnly" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.001"/>
+  <testcase name="historicalReparseHasStableIds" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="overnightEntirelyExcluded" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.001"/>
+  <testcase name="multipleSleepWindows" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="partialDaysExcluded" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="zeroNegativeDuration" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="beforeLunchExcludesAfternoon" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.001"/>
+  <testcase name="noDuplicateCelebration" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="normalMonotonicProgressAccepted" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="newSessionAfterRebootWorks" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="futureEventsIgnored" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="lateUnlockConfirmsEstimate" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="missingStartDoesNotInventBreak" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.001"/>
+  <testcase name="challengeCompleteOne" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="multiDayAmbiguityNotEligible" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="overlappingSleepSubtractsOnlyOverlap" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="challengeNoOvernightAward" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="equalSleepEndpointsDisable" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="challengeIncompleteExpiresWithoutPenalty" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="noDivideByZero" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="estimatedBreakNotEligible" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="screenWakeDoesNotAward" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="comparisonInsufficientUnavailable" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="unorderedEventsStable" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="baselineRequiresThreeFullDays" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="dstSpringSleepUsesActualEpochs" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.002"/>
+  <testcase name="midnightSpan" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.001"/>
+  <testcase name="emptyBaselineUnavailable" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="reconciliationAvoidsBroadcastDuplicate" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.001"/>
+  <testcase name="consecutiveSessionsCountSeparately" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="shortBreakMeasured" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="clockForwardJumpDetected" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="challengeThreeRequiresThree" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.001"/>
+  <testcase name="shortBaselineShapesAchievable" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="rebootDropsOpenBreak" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="longBreakMeasured" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.001"/>
+  <testcase name="messagesStableUntilSequenceAdvances" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="clockBackwardJumpDetected" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="establishedBaselineIncreases" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="firstMilestones" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.001"/>
+  <testcase name="celebrationRateLimited" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="rebootIsNotClockJump" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="sixBreaksFormBaseline" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="fallbackForegroundEstimated" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.001"/>
+  <testcase name="lockCountsAsAwayBoundary" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="daytimeSleepWindow" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.001"/>
+  <testcase name="knownLockCannotCloseWithForeground" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <testcase name="missingUnlockComparisonUnavailable" classname="com.ghost.screentimewidget.BehaviorMathTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

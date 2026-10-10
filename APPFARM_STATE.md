@@ -149,3 +149,14 @@ Vercel:
 - Final APK `Screen-Time-Widget-v1.0.0.apk`, SHA-256 `bc08c85ee1aeb944720849700c88dab6b7a2ca0abaca711c6680c47e1907000f`.
 - Reuse private persistent debug key for updates; key is excluded from Git and included in the private delivered source bundle.
 - `README.md`, `PROJECT_STATE.md`, `VERIFICATION.md`, and `TEST_CHECKLIST.md` contain recovery semantics, limitations and manual device tests. Force-stop requires relaunch.
+
+
+## Screen Time Widget v1.1.0 — behavioral reinforcement release
+
+- Latest app source: `feat/screen-time-widget-v1.1-20261010`, `screen-time-widget/`; supersedes v1.0.0 on its isolated branch. No main or unrelated app changes.
+- Package `com.ghost.screentimewidget`, versionCode 2/versionName 1.1.0, minSdk 28, targetSdk 35. Original signing certificate matches v1.0.0 for update compatibility.
+- Completed daytime away intervals replace screen time as the widget's primary metric. SQLite journal/ledgers survive process death; sleep exclusion, adaptive milestones, 66 bounded humor messages, recorded unlocks, same-time comparisons, daily optional challenge, trends and light/dark themes are implemented. Existing screen-time/apps/settings and optional instant service remain; no network/backend/analytics.
+- Local Gradle wrapper build, 84 tests (67 pure logic + 17 Android host tests), lint (0 errors/23 warnings), production RemoteViews/native graphics and Compose startup/permission-state QA, APK v3 signature, ZIP integrity and 16 KiB alignment passed. CI not run. No physical adb device: actual install/update, Android 16/HyperOS/launcher/boot/overnight/battery reliability remains unverified.
+- APK `Screen-Time-Widget-v1.1.0.apk`, SHA-256 `3cec81e4c82980dc02446e8985e4b65b1ba681c8769c00c8c1a23a5a148bfad9`. Certificate SHA-256 `fffd977bc63ed751632f4c554dc951472675a487de9cfbbdeebd6934220a0c92`; private key excluded from Git and preserved in private source bundle.
+- Rollback source `d131aa31f74b5921cde1ab9cf66771bf34615904` (v1.0.0); source rollback requires a higher versionCode with the same key to preserve installed data. Force-stop needs explicit relaunch.
+- README, PROJECT_STATE, VERIFICATION, TEST_CHECKLIST and release-evidence contain reproducible checks and remaining device tests. Release source commit is in Git history; no behavioral-effectiveness claim.

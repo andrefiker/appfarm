@@ -1,7 +1,7 @@
 package com.ghost.screentimewidget
 
 /** Android-independent, stable-sort reducer. Times are wall-clock milliseconds. */
-enum class EventKind { SCREEN_ON, SCREEN_OFF, RESUME, PAUSE, RESET }
+enum class EventKind { SCREEN_ON, SCREEN_OFF, RESUME, PAUSE, RESET, LOCK, RETURN }
 data class TimedEvent(val time: Long, val kind: EventKind, val pkg: String = "", val activity: String = "")
 data class UsageTotals(val screenMillis: Long, val packages: Map<String, Long>, val screenOn: Boolean)
 
@@ -31,6 +31,7 @@ fun deriveUsage(events: List<TimedEvent>, midnight: Long, now: Long): UsageTotal
                 if (activities.isEmpty()) starts[e.pkg] = e.time
                 activities.add(e.activity)
             }
+            EventKind.LOCK, EventKind.RETURN -> Unit
             EventKind.PAUSE -> {
                 val activities = active[e.pkg] ?: continue
                 // Some OEMs omit the class name on pause: close that package conservatively.

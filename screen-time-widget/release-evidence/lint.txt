@@ -1,0 +1,168 @@
+/workspace/scratch/ea26b9200344/screen-time-widget/app/src/main/res/xml/screen_widget_info.xml:1: Warning: Attribute previewLayout is only used in API level 31 and higher (current min is 28) [UnusedAttribute]
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android" android:minWidth="120dp" android:minHeight="110dp" android:minResizeWidth="120dp" android:minResizeHeight="110dp" android:targetCellWidth="4" android:targetCellHeight="2" android:updatePeriodMillis="1800000" android:initialLayout="@layout/screen_widget" android:resizeMode="horizontal|vertical" android:widgetCategory="home_screen" android:description="@string/widget_description" android:previewLayout="@layout/screen_widget"/>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/ea26b9200344/screen-time-widget/app/src/main/res/xml/screen_widget_info.xml:1: Warning: Attribute targetCellHeight is only used in API level 31 and higher (current min is 28) [UnusedAttribute]
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android" android:minWidth="120dp" android:minHeight="110dp" android:minResizeWidth="120dp" android:minResizeHeight="110dp" android:targetCellWidth="4" android:targetCellHeight="2" android:updatePeriodMillis="1800000" android:initialLayout="@layout/screen_widget" android:resizeMode="horizontal|vertical" android:widgetCategory="home_screen" android:description="@string/widget_description" android:previewLayout="@layout/screen_widget"/>
+                                                                                                                                                                                                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/ea26b9200344/screen-time-widget/app/src/main/res/xml/screen_widget_info.xml:1: Warning: Attribute targetCellWidth is only used in API level 31 and higher (current min is 28) [UnusedAttribute]
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android" android:minWidth="120dp" android:minHeight="110dp" android:minResizeWidth="120dp" android:minResizeHeight="110dp" android:targetCellWidth="4" android:targetCellHeight="2" android:updatePeriodMillis="1800000" android:initialLayout="@layout/screen_widget" android:resizeMode="horizontal|vertical" android:widgetCategory="home_screen" android:description="@string/widget_description" android:previewLayout="@layout/screen_widget"/>
+                                                                                                                                                                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "UnusedAttribute":
+   This check finds attributes set in XML files that were introduced in a
+   version newer than the oldest version targeted by your application (with
+   the minSdkVersion attribute).
+
+   This is not an error; the application will simply ignore the attribute.
+   However, if the attribute is important to the appearance or functionality
+   of your application, you should consider finding an alternative way to
+   achieve the same result with only available attributes, and then you can
+   optionally create a copy of the layout in a layout-vNN folder which will be
+   used on API NN or higher where you can take advantage of the newer
+   attribute.
+
+   Note: This check does not only apply to attributes. For example, some tags
+   can be unused too, such as the new <tag> element in layouts introduced in
+   API 21.
+
+/workspace/scratch/ea26b9200344/screen-time-widget/app/src/main/java/com/ghost/screentimewidget/MainActivity.kt:139: Warning: Use of REQUEST_IGNORE_BATTERY_OPTIMIZATIONS violates the Play Store Content Policy regarding acceptable use cases, as described in https://developer.android.com/training/monitoring-device-state/doze-standby.html [BatteryLife]
+                            if(settings.instant && !batteryFree) OutlinedButton(onClick={open(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,Uri.parse("package:$packageName")))},modifier=Modifier.fillMaxWidth()) { Text("Battery exception (optional)") }
+                                                                                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "BatteryLife":
+   This issue flags code that either
+   * negatively affects battery life, or
+   * uses APIs that have recently changed behavior to prevent background tasks
+   from consuming memory and battery excessively.
+
+   Generally, you should be using WorkManager instead.
+
+   For more details on how to update your code, please see
+   https://developer.android.com/topic/performance/background-optimization
+
+
+/workspace/scratch/ea26b9200344/screen-time-widget/app/build.gradle.kts:46: Warning: A newer version of androidx.datastore:datastore-preferences than 1.1.2 is available: 1.2.1 [GradleDependency]
+    implementation("androidx.datastore:datastore-preferences:1.1.2")
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "GradleDependency":
+   This detector looks for usages of libraries where the version you are using
+   is not the current stable release. Using older versions is fine, and there
+   are cases where you deliberately want to stick with an older version.
+   However, you may simply not be aware that a more recent version is
+   available, and that is what this lint check helps find.
+
+/workspace/scratch/ea26b9200344/screen-time-widget/app/src/main/AndroidManifest.xml:13: Warning: The attribute android:allowBackup is deprecated from Android 12 and higher and may be removed in future versions. Consider adding the attribute android:dataExtractionRules specifying an @xml resource which configures cloud backups and device transfers on Android 12 and higher. [DataExtractionRules]
+    <application android:name=".ScreenTimeApplication" android:label="Screen Time Widget" android:icon="@drawable/ic_launcher" android:theme="@style/AppTheme" android:allowBackup="false" android:supportsRtl="true">
+                                                                                                                                                                                    ~~~~~
+
+   Explanation for issues of type "DataExtractionRules":
+   Before Android 12, the attributes android:allowBackup and
+   android:fullBackupContent were used to configure all forms of backup,
+   including cloud backups, device-to-device transfers and adb backup.
+
+   In Android 12 and higher, these attributes have been deprecated and will
+   only apply to cloud backups. You should instead use the attribute
+   android:dataExtractionRules, specifying an @xml resource that configures
+   which files to back up, for cloud backups and for device-to-device
+   transfers, separately. If your minSdkVersion supports older versions,
+   you'll still want to specify an android:fullBackupContent resource if the
+   default behavior is not right for your app.
+
+   https://developer.android.com/about/versions/12/backup-restore#xml-changes
+   https://goo.gle/DataExtractionRules
+
+/workspace/scratch/ea26b9200344/screen-time-widget/app/src/main/res/mipmap-anydpi-v26: Warning: This folder configuration (v26) is unnecessary; minSdkVersion is 28. Merge all the resources in this folder into mipmap-anydpi. [ObsoleteSdkInt]
+
+   Explanation for issues of type "ObsoleteSdkInt":
+   This check flags version checks that are not necessary, because the
+   minSdkVersion (or surrounding known API level) is already at least as high
+   as the version checked for.
+
+   Similarly, it also looks for resources in -vNN folders, such as values-v14
+   where the version qualifier is less than or equal to the minSdkVersion,
+   where the contents should be merged into the best folder.
+
+/workspace/scratch/ea26b9200344/screen-time-widget/app/src/main/res/values/styles.xml:13: Warning: The resource R.string.app_name appears to be unused [UnusedResources]
+    <string name="app_name">Screen Time Widget</string>
+            ~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "UnusedResources":
+   Unused resources make applications larger and slow down builds.
+
+
+   The unused resource check can ignore tests. If you want to include
+   resources that are only referenced from tests, consider packaging them in a
+   test source set instead.
+
+   You can include test sources in the unused resource check by setting the
+   system property lint.unused-resources.include-tests =true, and to exclude
+   them (usually for performance reasons), use
+   lint.unused-resources.exclude-tests =true.
+   ,
+
+/workspace/scratch/ea26b9200344/screen-time-widget/app/src/main/res/layout/screen_widget.xml:6: Warning: Avoid using sizes smaller than 11sp: 10sp [SmallSp]
+    <TextView android:id="@+id/comparison" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:textSize="10sp" android:textColor="#53685B" android:maxLines="1" android:ellipsize="end"/>
+                                                                                                                                                   ~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/ea26b9200344/screen-time-widget/app/src/main/res/layout/screen_widget.xml:7: Warning: Avoid using sizes smaller than 11sp: 10sp [SmallSp]
+    <TextView android:id="@+id/widget_challenge" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="10sp" android:textColor="#53685B" android:maxLines="2" android:ellipsize="end"/>
+                                                                                                                          ~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/ea26b9200344/screen-time-widget/app/src/main/res/layout/screen_widget.xml:10: Warning: Avoid using sizes smaller than 11sp: 10sp [SmallSp]
+            <TextView android:id="@+id/secondary_label" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Screen on" android:textSize="10sp" android:textColor="#53685B" android:maxLines="1" android:ellipsize="end"/>
+                                                                                                                                                          ~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/ea26b9200344/screen-time-widget/app/src/main/res/layout/screen_widget.xml:15: Warning: Avoid using sizes smaller than 11sp: 10sp [SmallSp]
+    <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="10sp" android:textColor="#53685B" android:maxLines="1"/>
+                                                                                                                ~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/ea26b9200344/screen-time-widget/app/src/main/res/layout/widget_compact.xml:2: Warning: Avoid using sizes smaller than 11sp: 10sp [SmallSp]
+    <TextView android:id="@+id/away_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="DAYTIME AWAY" android:textSize="10sp" android:textColor="#53685B" android:maxLines="1"/>
+                                                                                                                                                ~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "SmallSp":
+   Avoid using sizes smaller than 11sp.
+
+/workspace/scratch/ea26b9200344/screen-time-widget/app/src/main/res/layout/screen_widget.xml:2: Warning: Hardcoded string "TIME AWAY · DAYTIME", should use @string resource [HardcodedText]
+    <TextView android:id="@+id/away_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="TIME AWAY · DAYTIME" android:textSize="11sp" android:textColor="#53685B"/>
+                                                                                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/ea26b9200344/screen-time-widget/app/src/main/res/layout/screen_widget.xml:3: Warning: Hardcoded string "—", should use @string resource [HardcodedText]
+    <TextView android:id="@+id/away_number" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="—" android:textSize="38sp" android:textStyle="bold" android:fontFamily="sans-serif-medium" android:textColor="#183E32" android:maxLines="1" android:autoSizeTextType="uniform" android:autoSizeMinTextSize="24sp" android:autoSizeMaxTextSize="38sp" android:autoSizeStepGranularity="2sp"/>
+                                                                                                                     ~~~~~~~~~~~~~~~~
+/workspace/scratch/ea26b9200344/screen-time-widget/app/src/main/res/layout/screen_widget.xml:4: Warning: Hardcoded string "Waiting for your next break", should use @string resource [HardcodedText]
+    <TextView android:id="@+id/away_details" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Waiting for your next break" android:textSize="12sp" android:textColor="#53685B" android:maxLines="1"/>
+                                                                                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/ea26b9200344/screen-time-widget/app/src/main/res/layout/screen_widget.xml:5: Warning: Hardcoded string "Measured time; sleep excluded.", should use @string resource [HardcodedText]
+    <TextView android:id="@+id/reinforcement" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="5dp" android:text="Measured time; sleep excluded." android:textSize="12sp" android:textColor="#53685B" android:maxLines="2" android:ellipsize="end"/>
+                                                                                                                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/ea26b9200344/screen-time-widget/app/src/main/res/layout/screen_widget.xml:10: Warning: Hardcoded string "Screen on", should use @string resource [HardcodedText]
+            <TextView android:id="@+id/secondary_label" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Screen on" android:textSize="10sp" android:textColor="#53685B" android:maxLines="1" android:ellipsize="end"/>
+                                                                                                                                 ~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/ea26b9200344/screen-time-widget/app/src/main/res/layout/screen_widget.xml:13: Warning: Hardcoded string "Refresh snapshot", should use @string resource [HardcodedText]
+        <ImageView android:id="@+id/refresh" android:layout_width="48dp" android:layout_height="48dp" android:padding="14dp" android:src="@drawable/ic_refresh" android:contentDescription="Refresh snapshot"/>
+                                                                                                                                                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/ea26b9200344/screen-time-widget/app/src/main/res/layout/widget_app_row.xml:2: Warning: Hardcoded string "App icon", should use @string resource [HardcodedText]
+    <ImageView android:id="@+id/app_icon" android:layout_width="24dp" android:layout_height="24dp" android:layout_marginEnd="8dp" android:contentDescription="App icon" android:src="@drawable/ic_launcher"/>
+                                                                                                                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/ea26b9200344/screen-time-widget/app/src/main/res/layout/widget_compact.xml:2: Warning: Hardcoded string "DAYTIME AWAY", should use @string resource [HardcodedText]
+    <TextView android:id="@+id/away_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="DAYTIME AWAY" android:textSize="10sp" android:textColor="#53685B" android:maxLines="1"/>
+                                                                                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/ea26b9200344/screen-time-widget/app/src/main/res/layout/widget_compact.xml:3: Warning: Hardcoded string "—", should use @string resource [HardcodedText]
+    <TextView android:id="@+id/away_number" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="—" android:textSize="30sp" android:textStyle="bold" android:fontFamily="sans-serif-medium" android:textColor="#183E32" android:maxLines="1" android:autoSizeTextType="uniform" android:autoSizeMinTextSize="20sp" android:autoSizeMaxTextSize="38sp" android:autoSizeStepGranularity="2sp"/>
+                                                                                                                     ~~~~~~~~~~~~~~~~
+/workspace/scratch/ea26b9200344/screen-time-widget/app/src/main/res/layout/widget_compact.xml:4: Warning: Hardcoded string "Waiting for your next break", should use @string resource [HardcodedText]
+    <TextView android:id="@+id/away_details" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Waiting for your next break" android:textSize="11sp" android:textColor="#53685B" android:maxLines="2"/>
+                                                                                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "HardcodedText":
+   Hardcoding text attributes directly in layout files is bad for several
+   reasons:
+
+   * When creating configuration variations (for example for landscape or
+   portrait) you have to repeat the actual text (and keep it up to date when
+   making changes)
+
+   * The application cannot be translated to other languages by just adding
+   new translations for existing string resources.
+
+   There are quickfixes to automatically extract this hardcoded string into a
+   resource lookup.
+
+0 errors, 23 warnings

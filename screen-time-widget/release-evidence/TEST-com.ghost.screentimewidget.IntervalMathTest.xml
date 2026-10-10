@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.ghost.screentimewidget.IntervalMathTest" tests="14" skipped="0" failures="0" errors="0" timestamp="2026-10-10T01:16:22" hostname="0d3bca5ab8ac" time="0.008">
+  <properties/>
+  <testcase name="duplicatesAndUnsorted" classname="com.ghost.screentimewidget.IntervalMathTest" time="0.004"/>
+  <testcase name="futureEventsIgnored" classname="com.ghost.screentimewidget.IntervalMathTest" time="0.0"/>
+  <testcase name="overlappingActivitiesUseUnion" classname="com.ghost.screentimewidget.IntervalMathTest" time="0.0"/>
+  <testcase name="durationFormattingNeverWraps" classname="com.ghost.screentimewidget.IntervalMathTest" time="0.001"/>
+  <testcase name="openForegroundClampedAtNow" classname="com.ghost.screentimewidget.IntervalMathTest" time="0.0"/>
+  <testcase name="repeatedPauseIsHarmless" classname="com.ghost.screentimewidget.IntervalMathTest" time="0.0"/>
+  <testcase name="spansMidnight" classname="com.ghost.screentimewidget.IntervalMathTest" time="0.0"/>
+  <testcase name="overlappingPackagesAreIndependent" classname="com.ghost.screentimewidget.IntervalMathTest" time="0.001"/>
+  <testcase name="screenIntervalsAndOpenTail" classname="com.ghost.screentimewidget.IntervalMathTest" time="0.0"/>
+  <testcase name="offClosesMissingPause" classname="com.ghost.screentimewidget.IntervalMathTest" time="0.001"/>
+  <testcase name="rebootClosesAllIntervals" classname="com.ghost.screentimewidget.IntervalMathTest" time="0.001"/>
+  <testcase name="allBeforeMidnightContributeZero" classname="com.ghost.screentimewidget.IntervalMathTest" time="0.0"/>
+  <testcase name="unmatchedPauseDoesNotInventUsage" classname="com.ghost.screentimewidget.IntervalMathTest" time="0.0"/>
+  <testcase name="blankPauseClosesKnownClass" classname="com.ghost.screentimewidget.IntervalMathTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

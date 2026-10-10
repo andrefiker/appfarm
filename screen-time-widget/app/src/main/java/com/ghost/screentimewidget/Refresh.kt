@@ -17,8 +17,8 @@ object Refresh {
     const val MIDNIGHT = "com.ghost.screentimewidget.MIDNIGHT"
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val lock = Mutex()
-    suspend fun widgets(context: Context, force: Boolean = true) = lock.withLock {
-        val snapshot = UsageRepository.read(context,force)
+    suspend fun widgets(context: Context, force: Boolean = true, naturalReturn: Boolean = false) = lock.withLock {
+        val snapshot = UsageRepository.read(context,force,naturalReturn)
         val settings = SettingsStore(context).read()
         ScreenWidget.renderAll(context,snapshot,settings)
     }

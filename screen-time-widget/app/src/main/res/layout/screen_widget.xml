@@ -1,9 +1,17 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/widget_root" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="@drawable/widget_background" android:padding="12dp">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/widget_root" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="@drawable/widget_background" android:padding="14dp">
+    <TextView android:id="@+id/away_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="TIME AWAY · DAYTIME" android:textSize="11sp" android:textColor="#53685B"/>
+    <TextView android:id="@+id/away_number" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="—" android:textSize="38sp" android:textStyle="bold" android:fontFamily="sans-serif-medium" android:textColor="#183E32" android:maxLines="1" android:autoSizeTextType="uniform" android:autoSizeMinTextSize="24sp" android:autoSizeMaxTextSize="38sp" android:autoSizeStepGranularity="2sp"/>
+    <TextView android:id="@+id/away_details" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Waiting for your next break" android:textSize="12sp" android:textColor="#53685B" android:maxLines="1"/>
+    <TextView android:id="@+id/reinforcement" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="5dp" android:text="Measured time; sleep excluded." android:textSize="12sp" android:textColor="#53685B" android:maxLines="2" android:ellipsize="end"/>
+    <TextView android:id="@+id/comparison" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:textSize="10sp" android:textColor="#53685B" android:maxLines="1" android:ellipsize="end"/>
+    <TextView android:id="@+id/widget_challenge" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="10sp" android:textColor="#53685B" android:maxLines="2" android:ellipsize="end"/>
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
-        <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Screen on today" android:textColor="#59675F" android:textSize="12sp"/>
-        <ImageView android:id="@+id/refresh" android:layout_width="32dp" android:layout_height="32dp" android:padding="6dp" android:src="@drawable/ic_refresh" android:contentDescription="Refresh usage"/>
+        <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical">
+            <TextView android:id="@+id/secondary_label" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Screen on" android:textSize="10sp" android:textColor="#53685B" android:maxLines="1" android:ellipsize="end"/>
+            <Chronometer android:id="@+id/screen_clock" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="14sp" android:textColor="#53685B"/>
+        </LinearLayout>
+        <ImageView android:id="@+id/refresh" android:layout_width="48dp" android:layout_height="48dp" android:padding="14dp" android:src="@drawable/ic_refresh" android:contentDescription="Refresh snapshot"/>
     </LinearLayout>
-    <Chronometer android:id="@+id/screen_clock" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="34sp" android:textStyle="bold" android:fontFamily="sans-serif-medium" android:textColor="#18251E" android:singleLine="true"/>
-    <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="10sp" android:textColor="#65736B" android:maxLines="2"/>
-    <ListView android:id="@+id/app_rows" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:layout_marginTop="6dp" android:divider="@android:color/transparent" android:dividerHeight="0dp" android:scrollbars="vertical"/>
+    <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="10sp" android:textColor="#53685B" android:maxLines="1"/>
+    <ListView android:id="@+id/app_rows" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:visibility="gone" android:divider="@android:color/transparent" android:scrollbars="vertical"/>
 </LinearLayout>

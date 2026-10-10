@@ -139,3 +139,13 @@ Vercel:
 2. Confirm whether their APK artifacts/workflow branches still exist before resuming them.
 3. Complete or explicitly cancel the pending Railway/Lovable cleanup in its own execution task.
 4. Update this file only when meaningful state changes.
+
+
+## Screen Time Widget v1.0.0 — isolated feature branch
+
+- Source: `feat/screen-time-widget-v1-20261009`, `screen-time-widget/`; main unchanged.
+- Package `com.ghost.screentimewidget`, minSdk 28, targetSdk 35, versionCode 1. Native Kotlin/Compose/RemoteViews; local UsageEvents, widget Chronometer, optional default-on silent screen-state service. No Internet/network-state permission.
+- Local Gradle wrapper build, 14 pure Kotlin tests, lint (0 errors), v3 signature and 16 KiB ZIP alignment passed. No adb device; physical install/launch/widget/boot/OEM behavior unverified. CI not run.
+- Final APK `Screen-Time-Widget-v1.0.0.apk`, SHA-256 `bc08c85ee1aeb944720849700c88dab6b7a2ca0abaca711c6680c47e1907000f`.
+- Reuse private persistent debug key for updates; key is excluded from Git and included in the private delivered source bundle.
+- `README.md`, `PROJECT_STATE.md`, `VERIFICATION.md`, and `TEST_CHECKLIST.md` contain recovery semantics, limitations and manual device tests. Force-stop requires relaunch.

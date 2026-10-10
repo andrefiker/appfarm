@@ -1,0 +1,9 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/widget_root" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="@drawable/widget_background" android:padding="12dp">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
+        <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Screen on today" android:textColor="#59675F" android:textSize="12sp"/>
+        <ImageView android:id="@+id/refresh" android:layout_width="32dp" android:layout_height="32dp" android:padding="6dp" android:src="@drawable/ic_refresh" android:contentDescription="Refresh usage"/>
+    </LinearLayout>
+    <Chronometer android:id="@+id/screen_clock" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="34sp" android:textStyle="bold" android:fontFamily="sans-serif-medium" android:textColor="#18251E" android:singleLine="true"/>
+    <TextView android:id="@+id/status" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="10sp" android:textColor="#65736B" android:maxLines="2"/>
+    <ListView android:id="@+id/app_rows" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:layout_marginTop="6dp" android:divider="@android:color/transparent" android:dividerHeight="0dp" android:scrollbars="vertical"/>
+</LinearLayout>

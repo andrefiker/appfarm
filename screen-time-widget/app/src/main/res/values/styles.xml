@@ -1,0 +1,15 @@
+<resources>
+    <style name="AppThemeBase" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowBackground">#F4F6F8</item>
+        <item name="android:colorAccent">#236A56</item>
+        <item name="android:statusBarColor">#F4F6F8</item>
+        <item name="android:navigationBarColor">#F4F6F8</item>
+    </style>
+    <style name="AppTheme" parent="AppThemeBase"/>
+    <string name="app_name">Screen Time Widget</string>
+    <string name="widget_description">Today’s screen-on clock and most-used apps. Updates instantly with screen changes.</string>
+</resources>

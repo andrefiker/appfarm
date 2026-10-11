@@ -1,0 +1,9 @@
+.gradle/
+build/
+app/build/
+local.properties
+*.jks
+*.keystore
+*.apk
+clients_data*.json
+backup_anotacoes*.json

@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Atendimentos - André Fiker</title>
+  
+  <!-- PWA & Mobile Meta -->
+
+  <meta name="theme-color" content="#0a0c10" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Atendimentos" />
+
+
+
+  <style>
+    :root {
+      --bg: #0a0c10;
+      --surface: #121620;
+      --surface-elevated: #1a202c;
+      --surface-card: #151b26;
+      --border: #232d3f;
+      --border-subtle: #1a2230;
+      --primary: #10b981;
+      --primary-hover: #059669;
+      --primary-dim: rgba(16, 185, 129, 0.15);
+      --accent: #f59e0b;
+      --accent-dim: rgba(245, 158, 11, 0.15);
+      --info: #3b82f6;
+      --info-dim: rgba(59, 130, 246, 0.15);
+      --purple: #a855f7;
+      --purple-dim: rgba(168, 85, 247, 0.15);
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-subtle: #6b7280;
+      --radius: 14px;
+      --radius-sm: 8px;
+      --radius-lg: 20px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      font-size: 15px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      padding-top: var(--safe-top);
+      padding-bottom: calc(var(--safe-bottom) + 24px);
+    }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: rgba(10, 12, 16, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+
+    .brand-icon svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .brand-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .brand-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--primary-dim);
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-icon:active {
+      transform: scale(0.94);
+      background: var(--surface-elevated);
+    }
+
+    .btn-focus {
+      background: linear-gradient(135deg, #10b981, #059669);
+      border: none;
+      color: #ffffff;
+      font-weight: 600;
+      padding: 0 14px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35);
+      transition: all 0.15s ease;
+    }
+
+    .btn-focus:active {
+      transform: scale(0.96);
+    }
+
+    /* Search & Selector Carousel */
+    .controls-bar {
+      padding: 12px 16px 8px;
+      background: var(--bg);
+    }
+
+    .search-box {
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 14px 10px 38px;
+      color: #ffffff;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-box input:focus {
+      border-color: var(--primary);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-subtle);
+      pointer-events: none;
+    }
+
+    /* Client Chips Horizontal List */
+    .clients-carousel {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .clients-carousel::-webkit-scrollbar {
+      display: none;
+    }
+
+    .client-chip {
+      flex: 0 0 auto;
+      padding: 8px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 100px;
+      transition: all 0.15s ease;
+    }
+
+    .client-chip:active {
+      transform: scale(0.96);
+    }
+
+    .client-chip.active {
+      background: var(--surface-elevated);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px var(--primary), 0 4px 14px rgba(0,0,0,0.5);
+    }
+
+    .client-chip .chip-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    .client-chip.active .chip-name {
+      color: var(--primary);
+    }
+
+    .client-chip .chip-date {
+      font-size: 11px;
+      color: var(--text-subtle);
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      padding: 8px 16px;
+      max-width: 800px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* Client Navigation Bar */
+    .client-nav-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .btn-nav {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-nav:hover, .btn-nav:active {
+      background: var(--surface-elevated);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    /* Selected Client Hero Card */
+    .client-hero {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    .client-hero-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .client-hero-title h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.4px;
+    }
+
+    .client-hero-title p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .badge-rogerian {
+      background: rgba(16, 185, 129, 0.12);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* Quick Action Grid */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+    }
+
+    .qa-btn {
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+      color: var(--text);
+      font-size: 10px;
+      font-weight: 600;
+      transition: all 0.15s ease;
+      text-align: center;
+    }
+
+    .qa-btn:active {
+      transform: scale(0.93);
+      background: var(--border);
+    }
+
+    .qa-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .qa-btn.meet { color: #34d399; }
+    .qa-btn.notebook { color: #60a5fa; }
+    .qa-btn.drive { color: #fbbf24; }
+    .qa-btn.dossier { color: #a78bfa; }
+    .qa-btn.roadmap { color: #f472b6; }
+
+    /* Tabs */
+    .tabs-bar {
+      display: flex;
+      gap: 6px;
+      background: var(--surface);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px 6px;
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .tab-btn.active {
+      background: var(--surface-elevated);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    /* Tab Content Cards */
+    .tab-pane {
+      display: none;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    .tab-pane.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: -0.2px;
+    }
+
+    .card-title svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .card-title.accent-primary { color: #10b981; }
+    .card-title.accent-amber { color: #f59e0b; }
+    .card-title.accent-blue { color: #3b82f6; }
+    .card-title.accent-purple { color: #a855f7; }
+
+    .card-body {
+      font-size: 14px;
+      color: #e5e7eb;
+      line-height: 1.6;
+    }
+
+    /* Bullet List */
+    .bullet-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .bullet-item {
+      padding: 10px 12px;
+      background: var(--surface);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      font-size: 13.5px;
+      color: #e2e8f0;
+      line-height: 1.5;
+    }
+
+    /* Reflection Items */
+    .reflection-item {
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      font-style: italic;
+      color: #cbd5e1;
+      font-size: 13.5px;
+      line-height: 1.5;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .reflection-item:active {
+      background: var(--surface-elevated);
+      border-color: var(--primary);
+    }
+
+    .copy-hint {
+      display: inline-block;
+      font-size: 10px;
+      font-style: normal;
+      color: var(--primary);
+      margin-top: 4px;
+      font-weight: 600;
+    }
+
+    /* Timer Pill */
+    .timer-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .timer-pill.running {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-dim);
+    }
+
+    /* Notes Area */
+    .notes-textarea {
+      width: 100%;
+      height: 180px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.5;
+      outline: none;
+      resize: vertical;
+      margin-bottom: 10px;
+    }
+
+    .notes-textarea:focus {
+      border-color: var(--primary);
+    }
+
+    .notes-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-subtle);
+    }
+
+    .notes-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface-elevated);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-sm:active {
+      transform: scale(0.96);
+    }
+
+    .btn-sm.primary {
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+    }
+
+    /* Fullscreen Modal / Focus Mode */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      padding: var(--safe-top) 16px calc(var(--safe-bottom) + 16px);
+      overflow-y: auto;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+
+    .modal-header h3 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .focus-mantra {
+      background: rgba(245, 158, 11, 0.1);
+      border-left: 4px solid var(--accent);
+      padding: 12px 14px;
+      border-radius: 0 10px 10px 0;
+      font-size: 13px;
+      color: #fde68a;
+      margin-bottom: 20px;
+      font-style: italic;
+    }
+
+    .focus-content h4 {
+      font-size: 15px;
+      color: var(--primary);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .focus-content p {
+      font-size: 16px;
+      line-height: 1.7;
+      color: #ffffff;
+      margin-bottom: 20px;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: calc(var(--safe-bottom) + 24px);
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #10b981;
+      color: #ffffff;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+      z-index: 200;
+      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      pointer-events: none;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top App Bar -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+          <path d="M2 12h20"></path>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title">
+          Atendimentos
+          <span class="brand-badge">Rogers</span>
+        </div>
+        <div class="brand-sub">André Fiker • Psicologia Clínica</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-focus" id="btnOpenFocus" title="Modo Sessão Imediata (2 Min)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+        Sessão Agora
+      </button>
+      <button class="btn-icon" id="btnOpenSettings" title="Configurações e Sincronização">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Controls: Search & Carousel -->
+  <div class="controls-bar">
+    <div class="search-box">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input type="text" id="searchInput" placeholder="Buscar paciente por nome, queixa ou tema..." autocomplete="off" />
+    </div>
+
+    <!-- Client selector chips -->
+    <div class="clients-carousel" id="clientsCarousel"></div>
+  </div>
+
+  <!-- Main Patient Screen -->
+  <main>
+    <!-- Previous / Next Client Quick Navigator -->
+    <div class="client-nav-bar">
+      <button class="btn-nav" id="btnPrevClient">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        <span id="labelPrevClient">Anterior</span>
+      </button>
+      <span style="font-size:12px; color:var(--text-subtle);" id="labelClientIndex">1 de 11</span>
+      <button class="btn-nav" id="btnNextClient">
+        <span id="labelNextClient">Próximo</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </button>
+    </div>
+
+    <div class="client-hero" id="clientHero">
+      <div class="client-hero-header">
+        <div class="client-hero-title">
+          <h2 id="heroClientName">-</h2>
+          <p id="heroClientMeta">Última sessão: -</p>
+        </div>
+        <span class="badge-rogerian">ACP / Rogers</span>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="quick-actions">
+        <a class="qa-btn meet" id="linkMeet" href="https://meet.google.com" target="_blank">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+          Meet
+        </a>
+        <a class="qa-btn notebook" id="linkNotebook" href="https://notebooklm.google.com" target="_blank">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+          Notebook
+        </a>
+        <a class="qa-btn drive" id="linkDrive" href="#" target="_blank">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+          Pasta
+        </a>
+        <a class="qa-btn dossier" id="linkDossier" href="#" target="_blank">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          Dossiê
+        </a>
+        <a class="qa-btn roadmap" id="linkRoadmap" href="#" target="_blank">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>
+          Roteiro
+        </a>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tabs-bar">
+      <button class="tab-btn active" data-tab="tab-briefing">
+        ⚡ Roteiro (2 Min)
+      </button>
+      <button class="tab-btn" data-tab="tab-dossier">
+        📜 Dossiê Clínico
+      </button>
+      <button class="tab-btn" data-tab="tab-notes">
+        ✏️ Caderno Pós-Sessão
+      </button>
+      <button class="tab-btn" data-tab="tab-history">
+        📂 Documentos
+      </button>
+    </div>
+
+    <!-- Tab 1: Briefing Rogeriano (Default) -->
+    <div class="tab-pane active" id="tab-briefing">
+      <!-- Card: Briefing Fenomenologico -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title accent-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            1. Briefing Fenomenológico
+          </div>
+          <div class="timer-pill" id="timerBtn" title="Timer de Transição (2 minutos)">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            <span id="timerDisplay">02:00</span>
+          </div>
+        </div>
+        <div class="card-body" id="contentBriefing">-</div>
+      </div>
+
+      <!-- Card: Zonas de Afeto -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title accent-amber">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+            2. Zonas de Afeto a Acompanhar
+          </div>
+        </div>
+        <ul class="bullet-list" id="contentZonasAfeto"></ul>
+      </div>
+
+      <!-- Card: Postura e Presenca do Terapeuta -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title accent-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
+            3. Postura e Atitudes Facilitadoras (Rogers)
+          </div>
+        </div>
+        <div class="card-body" id="contentPostura">-</div>
+      </div>
+
+      <!-- Card: Reflexoes Empaticas Sugeridas -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title accent-purple">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            4. Reflexões Empáticas Sugeridas (Toque para copiar)
+          </div>
+        </div>
+        <div id="contentReflexoes"></div>
+      </div>
+    </div>
+
+    <!-- Tab 2: Dossie Rogeriano Completo -->
+    <div class="tab-pane" id="tab-dossier">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title accent-primary">1. Quadro Interno de Referência</div>
+        </div>
+        <div class="card-body" id="contentDossierQuadro">-</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title accent-amber">2. Incongruência e Ameaça ao Self</div>
+        </div>
+        <div class="card-body" id="contentDossierIncongruencia">-</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title accent-blue">3. Condições de Valor e Locus de Avaliação</div>
+        </div>
+        <div class="card-body" id="contentDossierCondicoes">-</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title accent-purple">4. Clima Relacional e Defensividade</div>
+        </div>
+        <div class="card-body" id="contentDossierClima">-</div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title accent-primary">5. Tendência Atualizante e Recursos</div>
+        </div>
+        <div class="card-body" id="contentDossierTendencia">-</div>
+      </div>
+    </div>
+
+    <!-- Tab 3: Caderno Pos-Sessao (Local Notes) -->
+    <div class="tab-pane" id="tab-notes">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title accent-amber">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            Anotações Imediatas Pós-Sessão
+          </div>
+          <span style="font-size:11px; color:var(--primary);" id="notesSaveStatus">Salvo localmente</span>
+        </div>
+        <textarea class="notes-textarea" id="clientNotesTextarea" placeholder="Digite aqui impressões imediatas, temas sensíveis tocados no encontro ou lembretes para a próxima sessão..."></textarea>
+        <div class="notes-toolbar">
+          <div class="notes-actions">
+            <button class="btn-sm" id="btnInsertDate">Inserir Data/Hora</button>
+            <button class="btn-sm" id="btnCopyNotes">Copiar</button>
+            <button class="btn-sm" id="btnClearNotes">Limpar</button>
+          </div>
+          <span style="font-size:11px; color:var(--text-subtle);">Salvo no aparelho</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 4: Arquivos e Historico -->
+    <div class="tab-pane" id="tab-history">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Links e Documentos Oficiais</div>
+        </div>
+        <div class="card-body">
+          <ul class="bullet-list" id="contentHistoryLinks"></ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Sincronização Local (Linux / Desktop)</div>
+        </div>
+        <div class="card-body">
+          <p style="font-size:13px; color:var(--text-muted);">
+            Todos os documentos desta sessão possuem cópias espelho em formato <strong>.pdf</strong> geradas automaticamente pelo robô de transcripts na pasta do paciente no Google Drive. Eles sincronizam para o desktop (Nemo / GVFS) garantindo leitura offline rápida no Linux.
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Fullscreen Modal: Focus Mode (Sessão Agora) -->
+  <div class="modal-overlay" id="modalFocus">
+    <div class="modal-header">
+      <div>
+        <h3 id="focusClientName">Sessão Imediata</h3>
+        <p style="font-size:12px; color:var(--text-muted);" id="focusClientDate">Transição pré-sessão</p>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div class="timer-pill" id="focusTimerBtn" style="padding:6px 12px; font-size:13px;">
+          <span id="focusTimerDisplay">02:00</span>
+        </div>
+        <button class="btn-icon" id="btnCloseFocus">&times;</button>
+      </div>
+    </div>
+
+    <div class="focus-mantra">
+      "Dread is global. Work is local. The urge is real, but it is not an instruction."<br>
+      <strong>Ação local:</strong> Olhar as anotações, sentar, receber o cliente, abrir espaço para a experiência vivida.
+    </div>
+
+    <div class="focus-content">
+      <h4>Briefing Fenomenológico</h4>
+      <p id="focusBriefingText">-</p>
+
+      <h4>Postura Facilitadora (Rogers)</h4>
+      <p id="focusPosturaText">-</p>
+
+      <h4>Reflexões para Sintonia Empática</h4>
+      <div id="focusReflexoesContainer"></div>
+    </div>
+
+    <!-- Quick In-Focus Navigation -->
+    <div style="display:flex; justify-content:space-between; margin-top:20px; padding-top:16px; border-top:1px solid var(--border);">
+      <button class="btn-nav" id="btnFocusPrev">← Anterior</button>
+      <button class="btn-nav" id="btnFocusNext">Próximo →</button>
+    </div>
+  </div>
+
+  <!-- Settings & Data Sync Modal -->
+  <div class="modal-overlay" id="modalSettings">
+    <div class="modal-header">
+      <h3>Configuração & PWA</h3>
+      <button class="btn-icon" id="btnCloseSettings">&times;</button>
+    </div>
+
+    <div class="card"><div class="card-header"><div class="card-title">Dados privados no aparelho</div></div>
+      <div class="card-body">O APK não contém registros clínicos. Importe o seu arquivo JSON no próprio celular.
+      O conteúdo fica no armazenamento privado deste aplicativo. Mantenha o arquivo original protegido e apague cópias desnecessárias da pasta Downloads.</div></div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Dados Clínicos & Backup de Notas</div>
+      </div>
+      <div class="card-body">
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom: 12px;">
+          Base importada localmente. Exportações são arquivos clínicos sem criptografia; guarde-os em local protegido.
+        </p>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <label class="btn-focus" for="importClients" style="width:100%; justify-content:center; cursor:pointer;">Importar clients_data.json</label>
+          <input type="file" id="importClients" accept="application/json,.json" style="display:none" />
+          <button class="btn-sm" id="btnImportNotes" style="width:100%; padding:10px; justify-content:center;">Importar backup de anotações</button>
+          <input type="file" id="importNotes" accept="application/json,.json" style="display:none" />
+          <button class="btn-focus" id="btnExportJson" style="width:100%; justify-content:center;">
+            Baixar clients_data.json
+          </button>
+          <button class="btn-sm" id="btnExportAllNotes" style="width:100%; padding:10px; justify-content:center;">
+            Exportar Todas as Anotações Locais (Backup)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feedback Toast -->
+  <div class="toast" id="toast">Reflexão copiada!</div>
+
+  <script src="client-data.js"></script>
+  <script>
+    // Clinical data is imported privately on-device; none is shipped in the APK.
+    window.CLIENTS = [];
+    try { window.CLIENTS = validateClients(JSON.parse(localStorage.getItem('atendimentos_clients_v1') || '[]')); }
+    catch (_) { localStorage.removeItem('atendimentos_clients_v1'); }
+
+    // State
+    let currentIndex = 0;
+    let currentClient = window.CLIENTS[0] || null;
+    let timerInterval = null;
+    let timerSeconds = 120;
+
+    // DOM Elements
+    const clientsCarousel = document.getElementById('clientsCarousel');
+    const searchInput = document.getElementById('searchInput');
+    const heroName = document.getElementById('heroClientName');
+    const heroMeta = document.getElementById('heroClientMeta');
+    const linkMeet = document.getElementById('linkMeet');
+    const linkNotebook = document.getElementById('linkNotebook');
+    const linkDrive = document.getElementById('linkDrive');
+    const linkDossier = document.getElementById('linkDossier');
+    const linkRoadmap = document.getElementById('linkRoadmap');
+
+    const contentBriefing = document.getElementById('contentBriefing');
+    const contentZonasAfeto = document.getElementById('contentZonasAfeto');
+    const contentPostura = document.getElementById('contentPostura');
+    const contentReflexoes = document.getElementById('contentReflexoes');
+
+    const contentDossierQuadro = document.getElementById('contentDossierQuadro');
+    const contentDossierIncongruencia = document.getElementById('contentDossierIncongruencia');
+    const contentDossierCondicoes = document.getElementById('contentDossierCondicoes');
+    const contentDossierClima = document.getElementById('contentDossierClima');
+    const contentDossierTendencia = document.getElementById('contentDossierTendencia');
+    const contentHistoryLinks = document.getElementById('contentHistoryLinks');
+
+    const clientNotesTextarea = document.getElementById('clientNotesTextarea');
+    const notesSaveStatus = document.getElementById('notesSaveStatus');
+    const btnInsertDate = document.getElementById('btnInsertDate');
+    const btnCopyNotes = document.getElementById('btnCopyNotes');
+    const btnClearNotes = document.getElementById('btnClearNotes');
+
+    const btnPrevClient = document.getElementById('btnPrevClient');
+    const btnNextClient = document.getElementById('btnNextClient');
+    const labelPrevClient = document.getElementById('labelPrevClient');
+    const labelNextClient = document.getElementById('labelNextClient');
+    const labelClientIndex = document.getElementById('labelClientIndex');
+
+    const timerBtn = document.getElementById('timerBtn');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const focusTimerBtn = document.getElementById('focusTimerBtn');
+    const focusTimerDisplay = document.getElementById('focusTimerDisplay');
+    const toast = document.getElementById('toast');
+
+    // Modals
+    const modalFocus = document.getElementById('modalFocus');
+    const btnOpenFocus = document.getElementById('btnOpenFocus');
+    const btnCloseFocus = document.getElementById('btnCloseFocus');
+    const focusClientName = document.getElementById('focusClientName');
+    const focusClientDate = document.getElementById('focusClientDate');
+    const focusBriefingText = document.getElementById('focusBriefingText');
+    const focusPosturaText = document.getElementById('focusPosturaText');
+    const focusReflexoesContainer = document.getElementById('focusReflexoesContainer');
+    const btnFocusPrev = document.getElementById('btnFocusPrev');
+    const btnFocusNext = document.getElementById('btnFocusNext');
+
+    const modalSettings = document.getElementById('modalSettings');
+    const btnOpenSettings = document.getElementById('btnOpenSettings');
+    const btnCloseSettings = document.getElementById('btnCloseSettings');
+    const btnExportJson = document.getElementById('btnExportJson');
+    const btnExportAllNotes = document.getElementById('btnExportAllNotes');
+
+    // Render Client Chips
+    function renderClientChips(filter = '') {
+      clientsCarousel.innerHTML = '';
+      const filterLower = filter.toLowerCase();
+      const filtered = window.CLIENTS.filter(c => 
+        c.name.toLowerCase().includes(filterLower) ||
+        c.briefing.toLowerCase().includes(filterLower) ||
+        c.zonasAfeto.some(z => z.toLowerCase().includes(filterLower)) ||
+        (getStoredNotes(c.id) || '').toLowerCase().includes(filterLower)
+      );
+
+      filtered.forEach((client, idx) => {
+        const chip = document.createElement('div');
+        chip.className = `client-chip ${client.id === currentClient.id ? 'active' : ''}`;
+        const name = document.createElement('span'); name.className = 'chip-name'; name.textContent = client.name;
+        const date = document.createElement('span'); date.className = 'chip-date'; date.textContent = formatDate(client.lastSession);
+        chip.append(name, date);
+        chip.addEventListener('click', () => {
+          const realIdx = window.CLIENTS.findIndex(c => c.id === client.id);
+          selectClientByIndex(realIdx);
+        });
+        clientsCarousel.appendChild(chip);
+      });
+
+      // Auto-scroll active chip into view
+      const activeChip = clientsCarousel.querySelector('.client-chip.active');
+      if (activeChip) {
+        activeChip.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    }
+
+    function formatDate(isoStr) {
+      if (!isoStr) return '';
+      const parts = isoStr.split('-');
+      return `${parts[2]}/${parts[1]}`;
+    }
+
+    // Local Storage Notes Management
+    function getStoredNotes(clientId) {
+      return localStorage.getItem(`atendimentos_notes_${clientId}`) || '';
+    }
+
+    function saveStoredNotes(clientId, text) {
+      localStorage.setItem(`atendimentos_notes_${clientId}`, text);
+      notesSaveStatus.textContent = 'Salvo no aparelho (' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}) + ')';
+    }
+
+    // Select Client by Index
+    function selectClientByIndex(index) {
+      if (!window.CLIENTS.length) {
+        currentClient = null; currentIndex = 0;
+        labelClientIndex.textContent = '0 de 0';
+        heroName.textContent = 'Importe sua lista clínica';
+        heroMeta.textContent = 'Abra Configurações → Importar clients_data.json';
+        [btnPrevClient, btnNextClient, btnOpenFocus, btnCopyNotes, btnInsertDate, btnClearNotes].forEach(b => b.disabled = true);
+        clientNotesTextarea.disabled = true;
+        [linkDrive, linkDossier, linkRoadmap].forEach(a => { a.removeAttribute('href'); a.style.pointerEvents = 'none'; });
+        renderClientChips();
+        return;
+      }
+      [btnPrevClient, btnNextClient, btnOpenFocus, btnCopyNotes, btnInsertDate, btnClearNotes].forEach(b => b.disabled = false);
+      clientNotesTextarea.disabled = false;
+      [linkDrive, linkDossier, linkRoadmap].forEach(a => a.style.pointerEvents = '');
+      if (index < 0) index = window.CLIENTS.length - 1;
+      if (index >= window.CLIENTS.length) index = 0;
+      
+      currentIndex = index;
+      currentClient = window.CLIENTS[index];
+
+      // Update Navigation Buttons
+      const prevIdx = (currentIndex - 1 + window.CLIENTS.length) % window.CLIENTS.length;
+      const nextIdx = (currentIndex + 1) % window.CLIENTS.length;
+      labelPrevClient.textContent = window.CLIENTS[prevIdx].name;
+      labelNextClient.textContent = window.CLIENTS[nextIdx].name;
+      labelClientIndex.textContent = `${currentIndex + 1} de ${window.CLIENTS.length}`;
+
+      renderClientChips(searchInput.value);
+
+      // Hero
+      heroName.textContent = currentClient.name;
+      heroMeta.textContent = `Última sessão: ${currentClient.lastSession} • Status: ${currentClient.status}`;
+      linkDrive.href = currentClient.driveFolderUrl;
+      linkDossier.href = currentClient.dossierUrl;
+      linkRoadmap.href = currentClient.roadmapUrl;
+      linkNotebook.href = currentClient.notebookUrl;
+
+      // Briefing Tab
+      contentBriefing.textContent = currentClient.briefing;
+      
+      contentZonasAfeto.innerHTML = '';
+      currentClient.zonasAfeto.forEach(z => {
+        const li = document.createElement('li');
+        li.className = 'bullet-item';
+        li.textContent = z;
+        contentZonasAfeto.appendChild(li);
+      });
+
+      contentPostura.textContent = currentClient.postura;
+
+      contentReflexoes.innerHTML = '';
+      currentClient.reflexoes.forEach(r => {
+        const div = document.createElement('div');
+        div.className = 'reflection-item';
+        div.textContent = '“' + r + '”';
+        const hint = document.createElement('span'); hint.className = 'copy-hint'; hint.textContent = ' Toque para copiar'; div.appendChild(hint);
+        div.addEventListener('click', () => {
+          copyToClipboard(r);
+        });
+        contentReflexoes.appendChild(div);
+      });
+
+      // Dossier Tab
+      contentDossierQuadro.textContent = currentClient.dossier.quadroReferencia;
+      contentDossierIncongruencia.textContent = currentClient.dossier.incongruencia;
+      contentDossierCondicoes.textContent = currentClient.dossier.condicoesValor;
+      contentDossierClima.textContent = currentClient.dossier.climaRelacional;
+      contentDossierTendencia.textContent = currentClient.dossier.tendenciaAtualizante;
+
+      // Notes Tab
+      clientNotesTextarea.value = getStoredNotes(currentClient.id);
+      notesSaveStatus.textContent = 'Salvo no aparelho';
+
+      // History Tab
+      contentHistoryLinks.replaceChildren();
+      [['Dossiê Completo', currentClient.dossierUrl], ['Roteiro para Próxima Sessão', currentClient.roadmapUrl],
+       ['Pasta do Paciente', currentClient.driveFolderUrl], ['NotebookLM', currentClient.notebookUrl]].forEach(([label, url]) => {
+        const li = document.createElement('li'); li.className = 'bullet-item';
+        const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener';
+        a.textContent = label; li.appendChild(a); contentHistoryLinks.appendChild(li);
+      });
+
+      // Update Focus Modal if open
+      if (modalFocus.classList.contains('open')) {
+        updateFocusModalContent();
+      }
+
+      resetTimer();
+    }
+
+    // Client Nav Button Listeners
+    btnPrevClient.addEventListener('click', () => selectClientByIndex(currentIndex - 1));
+    btnNextClient.addEventListener('click', () => selectClientByIndex(currentIndex + 1));
+    btnFocusPrev.addEventListener('click', () => selectClientByIndex(currentIndex - 1));
+    btnFocusNext.addEventListener('click', () => selectClientByIndex(currentIndex + 1));
+
+    // Notes auto-save on typing
+    clientNotesTextarea.addEventListener('input', (e) => {
+      notesSaveStatus.textContent = 'Salvando...';
+      saveStoredNotes(currentClient.id, e.target.value);
+    });
+
+    btnInsertDate.addEventListener('click', () => {
+      const now = new Date();
+      const timestamp = `\n[${now.toLocaleDateString('pt-BR')} ${now.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}] - `;
+      clientNotesTextarea.value += timestamp;
+      clientNotesTextarea.focus();
+      saveStoredNotes(currentClient.id, clientNotesTextarea.value);
+    });
+
+    btnCopyNotes.addEventListener('click', () => {
+      copyToClipboard(clientNotesTextarea.value);
+      showToast('Anotações copiadas!');
+    });
+
+    btnClearNotes.addEventListener('click', () => {
+      if (confirm('Deseja limpar as anotações deste cliente?')) {
+        clientNotesTextarea.value = '';
+        saveStoredNotes(currentClient.id, '');
+        showToast('Anotações limpas.');
+      }
+    });
+
+    // Tabs Switcher
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        
+        btn.classList.add('active');
+        const targetId = btn.getAttribute('data-tab');
+        document.getElementById(targetId).classList.add('active');
+      });
+    });
+
+    // Search Input
+    searchInput.addEventListener('input', (e) => {
+      renderClientChips(e.target.value);
+    });
+
+    // Copy to clipboard helper
+    function copyToClipboard(text) {
+      if (window.AndroidBridge) {
+        AndroidBridge.copyText(text);
+        showToast('Copiado para a área de transferência!');
+      } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => showToast('Copiado!')).catch(() => showToast('Falha ao copiar'));
+      } else showToast('Área de transferência indisponível');
+    }
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2000);
+    }
+
+    // 2-Minute Pre-Session Timer
+    function toggleTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        timerBtn.classList.remove('running');
+        focusTimerBtn.classList.remove('running');
+      } else {
+        timerBtn.classList.add('running');
+        focusTimerBtn.classList.add('running');
+        timerInterval = setInterval(() => {
+          timerSeconds--;
+          if (timerSeconds <= 0) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timerBtn.classList.remove('running');
+            focusTimerBtn.classList.remove('running');
+            timerDisplay.textContent = '00:00';
+            focusTimerDisplay.textContent = '00:00';
+            showToast('Tempo de preparação concluído. Boa sessão!');
+            return;
+          }
+          const m = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+          const s = String(timerSeconds % 60).padStart(2, '0');
+          const timeStr = `${m}:${s}`;
+          timerDisplay.textContent = timeStr;
+          focusTimerDisplay.textContent = timeStr;
+        }, 1000);
+      }
+    }
+
+    timerBtn.addEventListener('click', toggleTimer);
+    focusTimerBtn.addEventListener('click', toggleTimer);
+
+    function resetTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      timerSeconds = 120;
+      timerDisplay.textContent = '02:00';
+      focusTimerDisplay.textContent = '02:00';
+      timerBtn.classList.remove('running');
+      focusTimerBtn.classList.remove('running');
+    }
+
+    // Focus Mode (Sessão Agora)
+    function updateFocusModalContent() {
+      focusClientName.textContent = currentClient.name;
+      focusClientDate.textContent = `Sessão: ${currentClient.lastSession}`;
+      focusBriefingText.textContent = currentClient.briefing;
+      focusPosturaText.textContent = currentClient.postura;
+
+      focusReflexoesContainer.innerHTML = '';
+      currentClient.reflexoes.forEach(r => {
+        const item = document.createElement('div');
+        item.className = 'reflection-item';
+        item.style.fontSize = '15px';
+        item.textContent = '“' + r + '”';
+        item.addEventListener('click', () => copyToClipboard(r));
+        focusReflexoesContainer.appendChild(item);
+      });
+    }
+
+    btnOpenFocus.addEventListener('click', () => {
+      updateFocusModalContent();
+      modalFocus.classList.add('open');
+    });
+
+    btnCloseFocus.addEventListener('click', () => {
+      modalFocus.classList.remove('open');
+    });
+
+    // Settings Modal
+    btnOpenSettings.addEventListener('click', () => {
+      modalSettings.classList.add('open');
+    });
+
+    btnCloseSettings.addEventListener('click', () => {
+      modalSettings.classList.remove('open');
+    });
+
+    function exportJson(filename, payload) {
+      const json = JSON.stringify(payload, null, 2);
+      if (window.AndroidBridge) { AndroidBridge.saveJson(filename, json); return; }
+      const url = URL.createObjectURL(new Blob([json], {type:'application/json'}));
+      const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+    async function readJsonFile(file) {
+      if (!file || file.size > 2 * 1024 * 1024) throw Error('Arquivo maior que 2 MB');
+      return JSON.parse(await file.text());
+    }
+    document.getElementById('importClients').addEventListener('change', async e => {
+      try {
+        const clients = validateClients(await readJsonFile(e.target.files[0]));
+        if (!clients.length) throw Error('Lista vazia');
+        if (window.CLIENTS.length && !confirm('Substituir a lista atual? As anotações locais permanecem no aparelho.')) return;
+        localStorage.setItem('atendimentos_clients_v1', JSON.stringify(clients));
+        window.CLIENTS = clients; searchInput.value = ''; selectClientByIndex(0);
+        modalSettings.classList.remove('open'); showToast(clients.length + ' pacientes importados no aparelho');
+      } catch (error) { showToast('Importação recusada: ' + error.message); }
+      finally { e.target.value = ''; }
+    });
+    const importNotes = document.getElementById('importNotes');
+    document.getElementById('btnImportNotes').addEventListener('click', () => importNotes.click());
+    importNotes.addEventListener('change', async e => {
+      try {
+        const backup = await readJsonFile(e.target.files[0]);
+        if (!backup || typeof backup !== 'object' || Array.isArray(backup)) throw Error('Formato inválido');
+        const entries = Object.entries(backup);
+        if (entries.length > 200 || !entries.every(([id,v]) => /^[a-z0-9_-]{1,80}$/i.test(id) &&
+          window.CLIENTS.some(c => c.id === id) && v && typeof v.notes === 'string' && v.notes.length < 100000)) throw Error('Backup incompatível');
+        if (!confirm('Importar ' + entries.length + ' anotações? As existentes com o mesmo ID serão substituídas.')) return;
+        entries.forEach(([id,v]) => localStorage.setItem('atendimentos_notes_' + id, v.notes));
+        selectClientByIndex(currentIndex); showToast('Anotações importadas');
+      } catch (error) { showToast('Backup recusado: ' + error.message); }
+      finally { e.target.value = ''; }
+    });
+    btnExportJson.addEventListener('click', () => exportJson('clients_data.json', window.CLIENTS));
+    btnExportAllNotes.addEventListener('click', () => {
+      const backup = {};
+      window.CLIENTS.forEach(c => { const notes = getStoredNotes(c.id); if (notes) backup[c.id] = {name:c.name, notes}; });
+      exportJson('backup_anotacoes_' + new Date().toISOString().slice(0,10) + '.json', backup);
+    });
+
+    // All document links leave the clinical WebView and open in the device browser.
+    document.addEventListener('click', e => {
+      const a = e.target.closest('a[href]');
+      if (!a) return;
+      e.preventDefault();
+      if (window.AndroidBridge) AndroidBridge.openLink(a.href);
+      else window.open(a.href, '_blank', 'noopener');
+    });
+
+    // Initial Load
+    selectClientByIndex(0);
+  </script>
+</body>
+</html>

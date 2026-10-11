@@ -1,0 +1,50 @@
+name: Atendimentos sanitized APK
+on:
+  push:
+    branches: [work/atendimentos-apk-20261011]
+    paths:
+      - 'atendimentos/**'
+      - '.github/workflows/atendimentos-apk.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Synthetic data tests and privacy gate
+        working-directory: atendimentos
+        run: |
+          node --test tests/client-data.test.js
+          python3 tests/verify_source.py
+      - name: Build signed debug APK
+        working-directory: atendimentos
+        run: gradle --no-daemon :app:assembleDebug
+      - name: Verify APK structure and signature
+        working-directory: atendimentos
+        run: |
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | tee apk-badging.txt
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK" | tee apk-signature.txt
+          unzip -l "$APK" | tee apk-contents.txt
+          unzip -p "$APK" assets/index.html | grep -q 'Importar clients_data.json'
+          unzip -p "$APK" assets/client-data.js | grep -q 'validateClients'
+          if unzip -Z1 "$APK" | grep -Eq '(^|/)clients_data.*\.json$'; then echo 'Clinical JSON bundled'; exit 1; fi
+          if "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions "$APK" | grep -q 'android.permission.INTERNET'; then echo 'Unexpected Internet permission'; exit 1; fi
+          sha256sum "$APK" | tee apk-sha256.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Atendimentos-v1.0.0-debug-signed
+          path: atendimentos/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 3

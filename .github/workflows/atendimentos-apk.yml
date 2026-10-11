@@ -51,6 +51,25 @@ jobs:
           npm install --no-save --no-package-lock playwright@1.55.0
           npx playwright install chromium
           node tests/browser-smoke.cjs
+      - name: Emulator launch, resume and offline restart
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_4
+          target: google_apis
+          disable-animations: true
+          script: |
+            adb install atendimentos/app/build/outputs/apk/debug/app-debug.apk
+            adb shell am start -W -n com.andrefiker.atendimentos/.MainActivity
+            adb shell pidof com.andrefiker.atendimentos
+            adb shell input keyevent KEYCODE_HOME
+            adb shell am start -W -n com.andrefiker.atendimentos/.MainActivity
+            adb shell pidof com.andrefiker.atendimentos
+            adb shell svc wifi disable
+            adb shell am force-stop com.andrefiker.atendimentos
+            adb shell am start -W -n com.andrefiker.atendimentos/.MainActivity
+            adb shell pidof com.andrefiker.atendimentos
       - name: Make verified APK retrievable for direct attachment
         if: always()
         working-directory: atendimentos

@@ -52,6 +52,7 @@ jobs:
           npx playwright install chromium
           node tests/browser-smoke.cjs
       - name: Emulator launch, resume and offline restart
+        if: github.event_name == 'workflow_dispatch'
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35

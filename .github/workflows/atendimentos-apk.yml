@@ -45,6 +45,21 @@ jobs:
           if unzip -Z1 "$APK" | grep -Eq '(^|/)clients_data.*\.json$'; then echo 'Clinical JSON bundled'; exit 1; fi
           if "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions "$APK" | grep -q 'android.permission.INTERNET'; then echo 'Unexpected Internet permission'; exit 1; fi
           sha256sum "$APK" | tee apk-sha256.txt
+      - name: Browser interaction smoke with synthetic records
+        working-directory: atendimentos
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install chromium
+          node tests/browser-smoke.cjs
+      - name: Make verified APK retrievable for direct attachment
+        if: always()
+        working-directory: atendimentos
+        run: |
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          echo APK_BASE64_BEGIN
+          base64 -w0 "$APK" | fold -w 4000
+          echo APK_BASE64_END
       - uses: actions/upload-artifact@v4
         with:
           name: Atendimentos-v1.0.0-debug-signed

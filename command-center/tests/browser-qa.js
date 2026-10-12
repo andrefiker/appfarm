@@ -24,13 +24,16 @@ const seed=JSON.parse(fs.readFileSync(path.join(root,'web',fs.existsSync(path.jo
   await page.locator('[data-view="sources"]').click();assert.equal(await page.locator('#sources .source').count(),seed.sources.length);await page.screenshot({path:`command-center/evidence/sources-${width}.png`});
   // Unsafe input cannot overwrite the valid UI.
   await page.locator('#importfile').setInputFiles({name:'invalid.json',mimeType:'application/json',buffer:Buffer.from('{}')});assert((await page.locator('#import-error').innerText()).includes('supported'));assert.equal(await page.locator('#sources .source').count(),seed.sources.length);
+  const newer=JSON.parse(JSON.stringify(seed));newer.capturedAt=new Date(Date.parse(seed.capturedAt)+1000).toISOString();newer.sources[0].result='ERROR';newer.sources[0].summary='TEST SNAPSHOT: source error retained';
+  await page.locator('#importfile').setInputFiles({name:'newer.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(newer))});await page.waitForFunction(()=>document.querySelector('#sources').textContent.includes('TEST SNAPSHOT'));
+  assert((await page.locator('#sources').innerText()).includes('ERROR'));await page.reload();await page.locator('[data-view="sources"]').click();assert((await page.locator('#sources').innerText()).includes('TEST SNAPSHOT'));assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('cc-snapshot-v1')).sources[0].lastSuccess),seed.sources[0].lastSuccess);
   await page.locator('[data-view="completed"]').click();assert.equal(await page.locator('#completed .source').count(),8);
   await page.locator('[data-view="projects"]').click();await page.locator('[data-filter="BLOCKED"]').click();await page.reload();assert.equal(await page.locator('#projects .card').count(),2);
   await page.locator('[data-filter="ALL"]').click();
   // Bundled assets survive loss of the network; no provider requests.
   await context.setOffline(true);await page.goto(appUrl);
   await page.waitForSelector('#projects .card');assert.equal(await page.locator('#projects .card').count(),15);
-  results.push({width,projects:15,filters:true,details:true,sources:seed.sources.length,completed:8,invalidImportRejected:true,filterPersistence:true,offline:true,overflow:false});await context.close();await browser.close();
+  results.push({width,projects:15,filters:true,details:true,sources:seed.sources.length,completed:8,invalidImportRejected:true,validImportPersisted:true,errorVisible:true,lastSuccessRetained:true,filterPersistence:true,offline:true,overflow:false});await context.close();await browser.close();
  }
  assert.equal(errors.length,0);fs.writeFileSync('command-center/evidence/browser-qa.json',JSON.stringify({results,errors},null,2));console.log(JSON.stringify({results,errors}));
 })().catch(e=>{console.error(e);process.exit(1)});

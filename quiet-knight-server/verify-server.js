@@ -87,6 +87,14 @@ try {
   await redis.connect();
   await start();
   assert.equal((await request('/players/health')).data.migration, 4);
+  const frontend = await fetch(`${base}/assets/quiet-knight/index.html`, { signal: AbortSignal.timeout(8000) });
+  assert.equal(frontend.status, 200, 'Android canonical frontend route must resolve');
+  const html = await frontend.text();
+  assert.match(html, /<html[^>]*>/i);
+  assert.match(html, /\/assets\//, 'bundled frontend assets must resolve from the same origin');
+  assert.doesNotMatch(html, /localhost|127\.0\.0\.1/, 'Android page must not depend on a development server');
+  const manifest = await fetch(`${base}/manifest.webmanifest`, { signal: AbortSignal.timeout(8000) });
+  assert.equal(manifest.status, 200, 'PWA manifest must be bundled');
   assert.equal((await post('/rooms', {})).status, 401);
   const alice = await post('/players/register', { handle: 'PredeployAlice', password: 'ordinarypass' });
   const bob = await post('/players/register', { handle: 'PredeployBob', password: 'ordinarypass' });
@@ -144,7 +152,7 @@ try {
   assert.equal((await request(`/rooms/${mate.code}`, { cookie: a })).data.room.status, 'checkmate');
   assert.equal((await pool.query('SELECT count(*)::int AS n FROM qk_games WHERE room_code=$1', [mate.code])).rows[0].n, 1);
 
-  console.log(JSON.stringify({ event: 'server.acceptance', passed: true, migration: 4, checks: ['mandatory auth', 'registration and duplicate ID', 'room create/join and ownership', 'legal/illegal moves', 'authenticated WebSocket seats', 'reconnect/resume', 'clock synchronization', 'nudge rate limit', 'resignation', 'checkmate', 'exactly-once results', 'server restart persistence'] }));
+  console.log(JSON.stringify({ event: 'server.acceptance', passed: true, migration: 4, checks: ['canonical Android frontend and PWA manifest', 'mandatory auth', 'registration and duplicate ID', 'room create/join and ownership', 'legal/illegal moves', 'authenticated WebSocket seats', 'reconnect/resume', 'clock synchronization', 'nudge rate limit', 'resignation', 'checkmate', 'exactly-once results', 'server restart persistence'] }));
 } finally {
   for (const ws of sockets) ws.terminate();
   await stop();

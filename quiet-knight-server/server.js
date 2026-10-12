@@ -10,10 +10,11 @@ import { StockfishService, EngineError } from './stockfish.js';
 import {IdentityStore,IdentityError,publicPlayer,terminal} from './identity.js';
 import {ownsRoomSeat,requireAuthenticated} from './access-control.js';
 import {PushService,PushError,movePushPlan,nudgePlan} from './push-notifications.js';
+import {frontendPath} from './frontend-delivery.js';
 import {resetClock,deadline,flagClock,moveClock,stopClock,timed} from './clock.js';
 
 const PORT = Number(process.env.PORT || 3000);
-const FRONTEND_ORIGIN = new URL(process.env.FRONTEND_ORIGIN || 'https://quiet-knight-live-v2xp3y.v2.appdeploy.ai').origin;
+const FRONTEND_ORIGIN = new URL(process.env.FRONTEND_ORIGIN || 'https://quiet-knight-server-production.up.railway.app').origin;
 const RAILWAY_FRONTEND_ORIGIN = 'https://quiet-knight-server-production.up.railway.app';
 const PUBLIC_DIR = fileURLToPath(new URL('./public/', import.meta.url));
 const BUILD = 'qk-server-2026-09-13-r10-mutual-pause';
@@ -194,7 +195,7 @@ async function createRoom(player=null) {
 async function handleApi(req, res, url) {
   const origin = req.headers.origin || '';
   if (req.method === 'OPTIONS') return send(res, 204, {}, origin);
-  if (req.method === 'GET' && url.pathname === '/health') { const healthy=redis.isReady&&subscriber.isReady; return send(res,healthy?200:503,{ok:healthy,service:'quiet-knight-live',build:BUILD,commit:process.env.RAILWAY_GIT_COMMIT_SHA||null,clock:'10+0'},origin); }
+  if (req.method === 'GET' && url.pathname === '/health') { const identity=await identities.health(); const healthy=redis.isReady&&subscriber.isReady&&identity.available&&identity.migration>=4; return send(res,healthy?200:503,{ok:healthy,service:'quiet-knight-live',build:BUILD,commit:process.env.RAILWAY_GIT_COMMIT_SHA||null,identity,clock:'10+0'},origin); }
   if (req.method === 'GET' && url.pathname === '/computer/health') return send(res, computer.ready ? 200 : 503, computer.status(), origin);
   if(req.method==='GET'&&url.pathname==='/push/public-key')return send(res,pushes.available?200:503,{supported:pushes.available,public_key:pushes.available?pushes.publicKey:null},origin);
   if(req.method==='POST'&&(url.pathname==='/push/subscribe'||url.pathname==='/push/unsubscribe')){
@@ -434,7 +435,12 @@ function staticHeaders(filePath,fallback=false){
   return headers;
 }
 async function serveFrontend(req,res,url){
-  const pathname=decodeURIComponent(url.pathname);
+  const routePath=frontendPath(url.pathname,identities.ready);
+  if(!routePath){
+    res.writeHead(503,{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store','Retry-After':'60'});
+    return res.end('Quiet Knight account service is not ready');
+  }
+  const pathname=decodeURIComponent(routePath);
   const rel=pathname.replace(/^\/+/, '');
   const root=path.resolve(PUBLIC_DIR);
   const exact=path.resolve(PUBLIC_DIR,rel||'index.html');

@@ -8,6 +8,7 @@ import { createClient } from 'redis';
 import { WebSocketServer } from 'ws';
 import { StockfishService, EngineError } from './stockfish.js';
 import {IdentityStore,IdentityError,publicPlayer,terminal} from './identity.js';
+import {ownsRoomSeat,requireAuthenticated} from './access-control.js';
 import {PushService,PushError,movePushPlan,nudgePlan} from './push-notifications.js';
 import {resetClock,deadline,flagClock,moveClock,stopClock,timed} from './clock.js';
 
@@ -18,7 +19,8 @@ const PUBLIC_DIR = fileURLToPath(new URL('./public/', import.meta.url));
 const BUILD = 'qk-server-2026-09-13-r10-mutual-pause';
 const log = (event, fields = {}) => console.log(JSON.stringify({event,...fields}));
 const identities=new IdentityStore();
-await identities.migrate().then(()=>log('identity.storage',{ready:identities.ready,migration:identities.ready?3:0})).catch(()=>log('identity.unavailable'));
+const migrationMode=process.env.QK_APPLY_IDENTITY_MIGRATIONS==='true'?'apply':'check';
+await (migrationMode==='apply'?identities.migrate():identities.checkSchema()).then(async()=>log('identity.storage',{...(await identities.health()),mode:migrationMode})).catch(()=>log('identity.unavailable',{mode:migrationMode}));
 const pushes=new PushService({pool:identities.ready?identities.pool:null,logger:log});
 log('push.storage',pushes.status());
 const computer = new StockfishService();
@@ -158,6 +160,12 @@ function send(res, status, data, origin) {
   res.writeHead(status, { ...corsHeaders(origin), 'Content-Type': 'application/json; charset=utf-8' });
   res.end(JSON.stringify(data));
 }
+function identityCookie(req){const raw=req.headers.cookie||'';const value=raw.split(';').map(x=>x.trim()).find(x=>x.startsWith('qk_session='))?.slice('qk_session='.length)||'';try{return decodeURIComponent(value);}catch{return '';}}
+function sessionCookie(token){return `qk_session=${encodeURIComponent(token)}; Path=/; Max-Age=2592000; HttpOnly; Secure; SameSite=Lax`;}
+function clearSessionCookie(){return 'qk_session=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax';}
+function sendSession(res,status,data,origin,token){res.writeHead(status,{...corsHeaders(origin),'Content-Type':'application/json; charset=utf-8','Set-Cookie':sessionCookie(token)});res.end(JSON.stringify(data));}
+function sendLoggedOut(res,status,data,origin){res.writeHead(status,{...corsHeaders(origin),'Content-Type':'application/json; charset=utf-8','Set-Cookie':clearSessionCookie()});res.end(JSON.stringify(data));}
+async function authenticated(req,{registered=true}={}){return requireAuthenticated(identities,req,identityCookie(req),{registered});}
 
 async function bodyJson(req) {
   const chunks = [];
@@ -190,24 +198,36 @@ async function handleApi(req, res, url) {
   if (req.method === 'GET' && url.pathname === '/computer/health') return send(res, computer.ready ? 200 : 503, computer.status(), origin);
   if(req.method==='GET'&&url.pathname==='/push/public-key')return send(res,pushes.available?200:503,{supported:pushes.available,public_key:pushes.available?pushes.publicKey:null},origin);
   if(req.method==='POST'&&(url.pathname==='/push/subscribe'||url.pathname==='/push/unsubscribe')){
-    const input=await bodyJson(req);const code=normalizeCode(input.room_code);const room=await loadRoom(code);
+    const player=await authenticated(req);const input=await bodyJson(req);const code=normalizeCode(input.room_code);const room=await loadRoom(code);
     if(!room)return send(res,404,{error:'Room not found'},origin);
+    const token=typeof input.seat_token==='string'?input.seat_token:'';
+    const color=token&&token===room.white_token?'w':token&&token===room.black_token?'b':null;
+    if(!color||(color==='w'?room.white_player?.id:room.black_player?.id)!==player.id)return send(res,403,{error:'This Knight ID does not own that seat'},origin);
     try{return send(res,200,url.pathname.endsWith('/subscribe')?await pushes.subscribe(room,input.seat_token,input.subscription):await pushes.unsubscribe(room,input.seat_token,input.endpoint),origin);}catch(error){if(error instanceof PushError)return send(res,error.status,{error:error.message},origin);throw error;}
   }
   if(req.method==='GET'&&url.pathname==='/players/health')return send(res,200,await identities.health(),origin);
-  if(req.method==='POST'&&url.pathname==='/players'){
-    const rateKey=keyPrefix+'id-create:'+hash(String(req.headers['x-forwarded-for']||req.socket.remoteAddress).split(',')[0]);
-    const count=await redis.incr(rateKey);if(count===1)await redis.expire(rateKey,3600);
-    if(count>12)return send(res,429,{error:'Please wait before creating another Knight ID'},origin);
-    const input=await bodyJson(req);return send(res,201,await identities.create(input.handle),origin);
+  if(req.method==='POST'&&['/players/register','/players/login','/players/recover','/players/claim'].includes(url.pathname)){
+    const forwarded=String(req.headers['x-forwarded-for']||'').split(',').map(value=>value.trim()).filter(Boolean);
+    const address=forwarded.at(-1)||req.socket.remoteAddress||'unknown';
+    const kind=url.pathname.split('/').at(-1),key=keyPrefix+`identity:${kind}:`+hash(address),count=await redis.incr(key);if(count===1)await redis.expire(key,3600);
+    if(count>(kind==='login'||kind==='recover'?15:6))return send(res,429,{error:'Please wait before trying again'},origin);
+    const input=await bodyJson(req);let result;
+    if(kind==='register')result=await identities.register(input.handle,input.password);
+    else if(kind==='login')result=await identities.login(input.handle,input.password);
+    else if(kind==='recover')result=await identities.recover(input.handle,input.recovery_code,input.password);
+    else result=await identities.claim(req.headers.authorization,identityCookie(req),input.password);
+    const{session,...publicResult}=result;return sendSession(res,kind==='register'?201:200,publicResult,origin,session);
   }
+  if(req.method==='POST'&&url.pathname==='/players/logout'){await identities.logout(identityCookie(req));return sendLoggedOut(res,200,{ok:true},origin);}
   if(req.method==='GET'&&url.pathname==='/players/me'){
-    const player=await identities.authenticate(req.headers.authorization);if(!player)return send(res,401,{error:'A Knight ID credential is required'},origin);
-    return send(res,200,{player,games:await identities.recent(player.id)},origin);
+    const player=await identities.authenticate(req.headers.authorization,identityCookie(req));if(!player)return send(res,401,{error:'An authenticated Quiet Knight account is required'},origin);
+    return send(res,200,{player,games:await identities.recent(player.id),computer_games:player.registered?await identities.recentComputer(player.id):[]},origin);
   }
+  if(req.method==='POST'&&url.pathname==='/players/me/computer-games'){const player=await authenticated(req);const input=await bodyJson(req);const game=await identities.recordComputer(player.id,input.client_game_id,input.moves,input.human_color,input.level);return send(res,201,{game},origin);}
   const pairMatch=url.pathname.match(/^\/players\/([a-f0-9-]{36})\/head-to-head\/([a-f0-9-]{36})$/);
-  if(req.method==='GET'&&pairMatch)return send(res,200,await identities.headToHead(pairMatch[1],pairMatch[2]),origin);
+  if(req.method==='GET'&&pairMatch){const player=await authenticated(req);if(![pairMatch[1],pairMatch[2]].includes(player.id))return send(res,403,{error:'You cannot view another account’s records'},origin);return send(res,200,await identities.headToHead(pairMatch[1],pairMatch[2]),origin);}
   if (req.method === 'POST' && url.pathname === '/computer/move') {
+    await authenticated(req);
     const controller = new AbortController();
     const closed = () => { if (!res.writableEnded) controller.abort(); };
     res.once('close', closed);
@@ -226,7 +246,7 @@ async function handleApi(req, res, url) {
     } finally { res.off('close', closed); }
   }
   if (req.method === 'POST' && url.pathname === '/rooms') {
-    const player=await identities.authenticate(req.headers.authorization);
+    const player=await authenticated(req);
     const room = await createRoom(player);
     return send(res, 200, { room: publicRoom(room), seat_token: room.white_token, role: 'white' }, origin);
   }
@@ -236,22 +256,23 @@ async function handleApi(req, res, url) {
   const action = match[2] || '';
   let room = await loadRoom(code);
   if (!room) return send(res, 404, { error: 'Room not found' }, origin);
-  if (req.method === 'GET' && !action) return send(res, 200, { room: publicRoom(await settleRoom(room)) }, origin);
+  if (req.method === 'GET' && !action) {await authenticated(req);return send(res, 200, { room: publicRoom(await settleRoom(room)) }, origin);}
   if (req.method !== 'POST') return send(res, 405, { error: 'Method not allowed' }, origin);
   const input = await bodyJson(req);
   room=await expireRoom(room);
   if(!room)return send(res,404,{error:'Room not found'},origin);
 
   if (action === 'join') {
+    const joiningPlayer=await authenticated(req);
     const seatToken = typeof input.seat_token === 'string' ? input.seat_token : '';
     const joinKey = typeof input.join_key === 'string' && /^[a-f0-9]{48}$/.test(input.join_key) ? input.join_key : '';
     const joinDigest = joinKey ? digestJoin(joinKey) : null;
-    if(joinDigest&&room.white_join_digest===joinDigest)return send(res,200,{room:publicRoom(room),seat_token:room.white_token,role:'white'},origin);
-    if (seatToken && seatToken === room.white_token) return send(res, 200, { room: publicRoom(room), seat_token: room.white_token, role: 'white' }, origin);
-    if (seatToken && room.black_token && seatToken === room.black_token) return send(res, 200, { room: publicRoom(room), seat_token: room.black_token, role: 'black' }, origin);
-    if (joinDigest && room.black_token && room.black_join_digest === joinDigest) return send(res, 200, { room: publicRoom(room), seat_token: room.black_token, role: 'black' }, origin);
+    if(joinDigest&&room.white_join_digest===joinDigest)return ownsRoomSeat(room,room.white_token,joiningPlayer.id)?send(res,200,{room:publicRoom(room),seat_token:room.white_token,role:'white'},origin):send(res,403,{error:'This Knight ID does not own that seat'},origin);
+    if (seatToken && seatToken === room.white_token) return ownsRoomSeat(room,seatToken,joiningPlayer.id)?send(res, 200, { room: publicRoom(room), seat_token: room.white_token, role: 'white' }, origin):send(res,403,{error:'This Knight ID does not own that seat'},origin);
+    if (seatToken && room.black_token && seatToken === room.black_token) return ownsRoomSeat(room,seatToken,joiningPlayer.id)?send(res, 200, { room: publicRoom(room), seat_token: room.black_token, role: 'black' }, origin):send(res,403,{error:'This Knight ID does not own that seat'},origin);
+    if (joinDigest && room.black_token && room.black_join_digest === joinDigest) return ownsRoomSeat(room,room.black_token,joiningPlayer.id)?send(res,200,{room:publicRoom(room),seat_token:room.black_token,role:'black'},origin):send(res,403,{error:'This Knight ID does not own that seat'},origin);
     if (!room.black_token) {
-      const player=await identities.authenticate(req.headers.authorization);
+      const player=joiningPlayer;
       room.black_token = joinKey ? seatFromJoin(joinKey) : randomUUID();
       room.black_join_digest = joinDigest;
       room.black_player=publicPlayer(player);
@@ -267,9 +288,12 @@ async function handleApi(req, res, url) {
     return send(res, 200, { room: publicRoom(room), seat_token: null, role: 'spectator' }, origin);
   }
 
+  const player=await authenticated(req);
+
   const seatToken = typeof input.seat_token === 'string' ? input.seat_token : '';
   const color = seatToken === room.white_token ? 'w' : seatToken && seatToken === room.black_token ? 'b' : null;
   if (!color) return send(res, 403, { error: 'You do not own a seat in this game' }, origin);
+  if (!ownsRoomSeat(room,seatToken,player.id)) return send(res,403,{error:'This Knight ID does not own that seat'},origin);
 
   if (action === 'pause') {
     const now=Date.now();
@@ -454,11 +478,13 @@ server.on('upgrade', async (req, socket, head) => {
   try {
     const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
     if (url.pathname !== '/ws') return socket.destroy();
+    const player=await authenticated(req);
     const code = normalizeCode(url.searchParams.get('room'));
     const room = await loadRoom(code);
     if (!room) return socket.destroy();
     wss.handleUpgrade(req, socket, head, ws => {
       ws.roomCode = code;
+      ws.playerId=player.id;
       log('ws.connected',{room:code,version:room.version});
       const set = sockets.get(code) || new Set();
       set.add(ws);
@@ -474,6 +500,8 @@ server.on('upgrade', async (req, socket, head) => {
             const token=typeof message.seat_token==='string'&&message.seat_token.length<=128?message.seat_token:'';
             const latest=await loadRoom(code);if(!latest||ws.readyState!==1)return;
             ws.seatDigest=token?hash(token):null;ws.seatRole=roleFor(latest,ws.seatDigest);
+            const assigned=ws.seatRole==='white'?latest.white_player?.id:ws.seatRole==='black'?latest.black_player?.id:null;
+            if(assigned!==ws.playerId)ws.seatRole='spectator';
             ws.send(JSON.stringify({type:'seat.role',role:ws.seatRole,game_number:latest.game_number||1,room_version:latest.version}));publishPresence(code);return;
           }
           if(message.type!=='room.sync')return;

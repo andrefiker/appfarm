@@ -421,6 +421,7 @@ export type GameSurfaceProps = {
     b?: { handle: string; quiet_points: number } | null;
   };
   tableExtra?: React.ReactNode;
+  animalReaction?: string;
   computerEngine?: string;
   board: BoardProps;
   online: boolean;
@@ -584,6 +585,7 @@ export function GameSurface(p: GameSurfaceProps) {
             <h2>{p.status}</h2>
             {p.ended ? <span className="end-reason">{p.hint}</span> : null}
           </div>
+          {p.animalReaction ? <p className="animal-reaction" role="status" aria-live="polite" aria-atomic="true">{p.animalReaction}</p> : null}
           {p.ended && !p.spectator && !p.waiting && p.viewerLost ? (
             <p className="loss-message">{LOSS_MESSAGE}</p>
           ) : null}

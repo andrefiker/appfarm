@@ -1,0 +1,81 @@
+name: Quiet Knight Animal Kingdom APK
+
+on:
+  push:
+    branches: [ feature/quiet-knight-animal-kingdom ]
+    paths:
+      - 'quiet-knight-server/frontend/**'
+      - 'android-store/**'
+      - '.github/workflows/quiet-knight-animal-kingdom.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-quiet-knight:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: quiet-knight-server/frontend/package-lock.json
+
+      - name: Build the static game
+        working-directory: quiet-knight-server/frontend
+        run: |
+          npm ci
+          npm run test:animal
+          npm run build -- --base=./
+
+      - name: Bundle the game into the existing Android app
+        run: |
+          mkdir -p android-store/app/src/main/assets/quiet-knight
+          cp -R quiet-knight-server/frontend/dist/. android-store/app/src/main/assets/quiet-knight/
+          test -s android-store/app/src/main/assets/quiet-knight/index.html
+          find android-store/app/src/main/assets/quiet-knight -type f | sort
+
+      - name: Set up Java 17 and Android SDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install Android 35 build tools
+        run: yes | sdkmanager 'platforms;android-35' 'build-tools;35.0.0' >/dev/null
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+
+      - name: Assemble signed debug APK
+        working-directory: android-store
+        run: gradle --no-daemon :app:assembleQuietKnightDebug
+
+      - name: Verify package, signature, permissions, and bundled game assets
+        working-directory: android-store
+        run: |
+          mkdir -p dist
+          cp app/build/outputs/apk/quietKnight/debug/app-quietKnight-debug.apk dist/QuietKnight-Animal-Kingdom-debug.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging dist/QuietKnight-Animal-Kingdom-debug.apk | head -n 4
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions dist/QuietKnight-Animal-Kingdom-debug.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs dist/QuietKnight-Animal-Kingdom-debug.apk
+          unzip -l dist/QuietKnight-Animal-Kingdom-debug.apk | grep -E 'assets/quiet-knight/(index.html|assets/.*\.(js|css))' | head -n 20
+          unzip -l dist/QuietKnight-Animal-Kingdom-debug.apk | grep -q 'assets/quiet-knight/index.html'
+          sha256sum dist/QuietKnight-Animal-Kingdom-debug.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: quiet-knight-animal-kingdom-debug-apk
+          path: android-store/dist/QuietKnight-Animal-Kingdom-debug.apk
+          if-no-files-found: error
+          retention-days: 1

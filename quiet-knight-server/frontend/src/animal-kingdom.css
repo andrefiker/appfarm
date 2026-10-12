@@ -1,0 +1,48 @@
+/* Royal Meadow: quiet color, clear states, and an exact flat 8x8 playing field. */
+.animal-piece { filter: drop-shadow(0 1.25px 1px #11181372); }
+.animal-reaction { min-height:28px; margin:1px 0 8px; padding:5px 10px; border-left:2px solid #b18b59; color:#e5dcc8; font:italic 14px/1.35 Georgia,serif; letter-spacing:.01em; }
+.animal-reaction:empty { display:none; }
+
+body[data-atmosphere="royal-meadow"] {
+  --surface:#292d27; --text:#eee8dc; --muted:#c3c8bc; --line:#536052; --accent:#c9a56d;
+  --light-a:#eee4d1; --light-b:#e8ddc5; --dark-a:#71836e; --dark-b:#657763;
+  background:radial-gradient(ellipse at 20% 0,#78866b22,transparent 58%),#20251f;
+}
+body[data-atmosphere="royal-meadow"] .board-frame {
+  position:relative; padding:7px; border:1px solid #8f7957; border-radius:5px;
+  background:#292d27; box-shadow:0 2px 0 #171b17,0 12px 28px #0006,inset 0 1px #ffffff12;
+}
+body[data-atmosphere="royal-meadow"] .board-frame::before {
+  content:""; position:absolute; inset:3px; z-index:0; pointer-events:none;
+  border:1px solid #d0b77a38; border-radius:2px;
+}
+body[data-atmosphere="royal-meadow"] .board { position:relative; z-index:1; outline:1px solid #242923; box-shadow:0 0 0 1px #c7ae7545; }
+body[data-atmosphere="royal-meadow"] .square-light { background:#e8ddc5; }
+body[data-atmosphere="royal-meadow"] .square-dark { background:#657763; }
+body[data-atmosphere="royal-meadow"] .square-last::after { background:#c2a75b48; box-shadow:inset 0 0 0 1px #806a3c9c; }
+body[data-atmosphere="royal-meadow"] .square-selected::after { border-color:#fff0c5; background:#edd18455; box-shadow:inset 0 0 0 2px #292d278c; }
+body[data-atmosphere="royal-meadow"] .square-check::after { background:radial-gradient(ellipse,#ac5146bb,#87382f66); border-color:#91483d; }
+body[data-atmosphere="royal-meadow"] .target-dot { background:#263329dc; box-shadow:0 0 0 2px #eee4d1cc; }
+body[data-atmosphere="royal-meadow"] .capture-ring { border-color:#263329e8; box-shadow:inset 0 0 0 2px #eee4d1b8; }
+body[data-atmosphere="royal-meadow"] .game-status h2, body[data-atmosphere="royal-meadow"] .game-title h1 { color:#eee4d1; }
+body[data-atmosphere="royal-meadow"] .animal-reaction { color:#eee4d1; border-left-color:#c9a56d; }
+
+@media(prefers-reduced-motion:reduce) { .animal-piece, .animal-reaction { animation:none!important; transition:none!important; } }
+
+.account-gate { display:grid; min-height:100dvh; place-items:center; padding:24px 18px; background:radial-gradient(ellipse at 50% 0,#65745c26,transparent 55%),#18221e; }
+.account-card { width:min(100%,420px); padding:clamp(24px,7vw,38px); border:1px solid #53645a; border-radius:12px; background:#26342e; box-shadow:0 18px 48px #0005; }
+.account-kicker { margin:0 0 13px; color:#d7bd83; font:600 11px/1.3 ui-sans-serif,system-ui,sans-serif; letter-spacing:.19em; }
+.account-card h1 { margin:0; color:#f0e7d4; font:500 clamp(27px,7vw,35px)/1.12 Georgia,serif; letter-spacing:-.025em; }
+.account-intro { margin:12px 0 26px; color:#c4c9bd; font-size:14px; line-height:1.6; }
+.account-actions,.account-form { display:grid; gap:13px; }
+.account-form { margin-top:20px; }
+.account-form h2,.account-card h2 { margin:0 0 5px; color:#f0e7d4; font:500 22px/1.2 Georgia,serif; }
+.account-form label { margin-top:4px; color:#e7dfd0; font-size:13px; }
+.account-form input { width:100%; min-height:46px; padding:10px 12px; border:1px solid #748277; border-radius:6px; background:#18221e; color:#f4eddf; font-size:16px; }
+.account-form input:focus-visible { outline:2px solid #dec783; outline-offset:2px; }
+.account-form small,.account-security { color:#b9c1b7; font-size:12px; line-height:1.5; }
+.account-security { margin:24px 0 0; padding-top:16px; border-top:1px solid #53645a; }
+.account-card .wide { width:100%; min-height:46px; }
+.account-card .text-button { min-height:40px; border:0; background:transparent; color:#d9c795; text-decoration:underline; text-underline-offset:3px; }
+.account-card [role=alert] { color:#ffd3c9; font-size:13px; line-height:1.5; }
+.account-card .recovery-code { display:block; margin:15px 0; padding:13px; border:1px dashed #d7bd83; border-radius:6px; color:#fff0c7; font:600 20px/1.3 ui-monospace,monospace; letter-spacing:.06em; overflow-wrap:anywhere; text-align:center; }

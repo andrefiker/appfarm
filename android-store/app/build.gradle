@@ -19,7 +19,7 @@ android {
             dimension 'app'
             applicationId 'com.andrefiker.quietknight.appfarm'
             resValue 'string', 'app_name', 'Quiet Knight'
-            buildConfigField 'String', 'HOME_URL', '"https://quiet-knight-live-v2xp3y.v2.appdeploy.ai/"'
+            buildConfigField 'String', 'HOME_URL', '"https://quiet-knight-server-production.up.railway.app/assets/quiet-knight/index.html"'
         }
         performanceCourse {
             dimension 'app'
@@ -43,4 +43,8 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+}
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.12.1'
 }

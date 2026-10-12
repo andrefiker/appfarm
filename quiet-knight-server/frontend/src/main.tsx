@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import './index.css'; import './game.css';
 import './modern.css';
+import './animal-kingdom.css';
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>

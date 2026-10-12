@@ -12,7 +12,7 @@ import {
 } from "./table-atmosphere";
 import type { Atmosphere } from "./table-atmosphere";
 import { HeadToHead } from "./head-to-head";
-import { useKnightId, KnightIdPanel } from "./knight-id";
+import { useKnightId, KnightIdPanel, AccountGate } from "./knight-id";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Chess } from "chess.js";
 import type { Square } from "chess.js";
@@ -29,6 +29,7 @@ import type { Position, Motion } from "./chess-ui";
 import type { Color } from "./pieces";
 import { lossesFromHistory } from "./chess-view-model";
 import { buildGame } from "./computer";
+import { animalReactionForMove } from "./animal-reactions";
 import { useComputerOpponent } from "./use-computer-opponent";
 import type { LocalMove } from "./computer";
 type Role = "white" | "black" | "spectator";
@@ -67,7 +68,7 @@ type Modal =
   | "resign"
   | "invite"
   | null;
-const BUILD = "QK • Kawaii Faces";
+const BUILD = "QK • Kawaii Faces + Animal Kingdom";
 function roleColor(role: Role | null): Color | null {
   return role === "white" ? "w" : role === "black" ? "b" : null;
 }
@@ -93,6 +94,7 @@ function remember(key: string, value: string) {
     return false;
   }
 }
+const localGameIdKey = (playerId?: string) => playerId ? `qk-local-table-id-v1:${playerId}` : "qk-local-table-id-v1";
 function limited(err: unknown) {
   return isQuota(err);
 }
@@ -141,6 +143,10 @@ export default function GameApp() {
   } | null>(null);
   const [modal, setModal] = useState<Modal>(null);
   const [sound, setSound] = useState(() => stored("qk-sound") !== "false");
+  const [unquiet, setUnquiet] = useState(() => stored("qk-unquiet-mode-v1") === "true");
+  const [animalReaction, setAnimalReaction] = useState("");
+  const lastAnimalReaction = useRef(0);
+  const animalReactionTimer = useRef<number | null>(null);
   const [haptics, setHaptics] = useState(
     () => stored("qk-haptics") !== "false",
   );
@@ -159,6 +165,11 @@ export default function GameApp() {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const preferences = useRef({ sound, haptics });
   preferences.current = { sound, haptics };
+  const accountId = knight.player?.id ?? null;
+  const activeAccount = useRef<string | null>(null);
+  const [gameOwner, setGameOwner] = useState<string | null>(null);
+  const savedComputerGames = useRef(new Set<string>());
+  const [onlineRetry, setOnlineRetry] = useState(0);
   const acceptRoom = useCallback((next: RoomState) => {
     if (
       !next ||
@@ -186,9 +197,33 @@ export default function GameApp() {
       },
     });
   useEffect(() => {
-    if (mode === "local")
-      saveLocal({ moves: localMoves, color: humanColor, level });
-  }, [localMoves, humanColor, level, mode]);
+    const previous = activeAccount.current;
+    if (previous === accountId) return;
+    activeAccount.current = accountId;
+    requestGeneration.current++;
+    roomCodeRef.current = null;
+    if (resumeLive) forgetLiveRoom(resumeLive);
+    setResumeLive(null);
+    setRoom(null); setRole(null); setRoleGame(1); setPresence(null); setSeatToken(null);
+    setJoinCode(""); setMode("local"); setScreen("home"); setSelected(null);
+    setPromotion(null); setModal(null); setViewedGame(null); setMessage("");
+    const saved = accountId ? loadLocal(accountId) : { moves: [], color: "w" as Color, level: 5 };
+    setLocalMoves(saved.moves); setHumanColor(saved.color); setLevel(saved.level);
+    const id = (accountId && stored(localGameIdKey(accountId))) || crypto.randomUUID();
+    setLocalTableId(id); if (accountId) remember(localGameIdKey(accountId), id);
+    setMemories(accountId ? recentTables(accountId) : []);
+    endReactionKey.current = "";
+    setGameOwner(accountId);
+  }, [accountId]);
+  useEffect(() => {
+    if (mode === "local" && knight.player && gameOwner === accountId)
+      saveLocal({ moves: localMoves, color: humanColor, level }, knight.player.id);
+  }, [localMoves, humanColor, level, mode, accountId, gameOwner]);
+  useEffect(() => {
+    const retry = () => setOnlineRetry(value => value + 1);
+    window.addEventListener("online", retry);
+    return () => window.removeEventListener("online", retry);
+  }, []);
   const localGame = useMemo(() => buildGame(localMoves), [localMoves]);
   const game = useMemo(
     () => (room ? new Chess(room.fen) : localGame),
@@ -200,6 +235,15 @@ export default function GameApp() {
   const ended = room
     ? !["waiting", "active"].includes(room.status)
     : localGame.isGameOver();
+  const endReactionKey = useRef("");
+  useEffect(() => {
+    if (!ended || screen !== "game" || !unquiet || table.pieceSet !== "animal-kingdom") return;
+    const key = room ? `${room.code}:${room.game_number || 1}:${room.status}` : `${localTableId}:${localMoves.length}:finished`;
+    if (endReactionKey.current === key) return;
+    endReactionKey.current = key;
+    const winner = room?.winner || (localGame.isCheckmate() ? (localGame.turn() === "w" ? "b" : "w") : null);
+    setAnimalReaction(winner && winner === me ? "The kingdom survives." : winner ? "The kingdom requests an investigation." : "The kingdom survives.");
+  }, [ended, screen, unquiet, table.pieceSet, room?.code, room?.game_number, room?.status, room?.winner, localTableId, localMoves.length, localGame, me]);
   const waiting = room?.status === "waiting";
   const history = useMemo(() => {
     if (!room) return localGame.history({ verbose: true });
@@ -267,6 +311,19 @@ export default function GameApp() {
     remember("qk-haptics", String(haptics));
     remember("qk-volume", String(volume));
   }, [sound, haptics, volume]);
+  useEffect(() => { remember("qk-unquiet-mode-v1", String(unquiet)); }, [unquiet]);
+  useEffect(() => () => { if (animalReactionTimer.current !== null) window.clearTimeout(animalReactionTimer.current); }, []);
+  const reactToAnimalMove = useCallback((made: { piece: string; captured?: string; promotion?: string; san: string }, after: Chess) => {
+    if (!unquiet || table.pieceSet !== "animal-kingdom") return;
+    const now = Date.now();
+    if (now - lastAnimalReaction.current < 35_000) return;
+    const line = animalReactionForMove(made, after.isCheck());
+    if (!line) return;
+    lastAnimalReaction.current = now;
+    setAnimalReaction(line);
+    if (animalReactionTimer.current !== null) window.clearTimeout(animalReactionTimer.current);
+    animalReactionTimer.current = window.setTimeout(() => setAnimalReaction(""), 3600);
+  }, [table.pieceSet, unquiet]);
   useEffect(() => {
     setSelected(null);
     setPromotion(null);
@@ -342,6 +399,18 @@ export default function GameApp() {
     setLocalMoves,
     setMessage,
   );
+  useEffect(() => {
+    if (!knight.player || gameOwner !== accountId || room || mode !== "local" || !localGame.isGameOver()) return;
+    const key = `${knight.player.id}:${localTableId}`;
+    if (savedComputerGames.current.has(key)) return;
+    savedComputerGames.current.add(key);
+    void knight.recordComputer({
+      client_game_id: localTableId,
+      moves: localMoves.map(({ from, to, promotion }) => ({ from, to, promotion })),
+      human_color: humanColor,
+      level,
+    }).then(ok => { if (!ok) savedComputerGames.current.delete(key); });
+  }, [knight.player?.id, knight.recordComputer, gameOwner, accountId, room, mode, localGame, localTableId, localMoves, humanColor, level, onlineRetry]);
   const record: GameRecord = {
     id: room ? room.code + ":" + (room.game_number || 1) : localTableId,
     white:
@@ -372,11 +441,11 @@ export default function GameApp() {
         : undefined,
   };
   useEffect(() => {
-    if (ended && !knight.player && (mode === "local" || role !== "spectator")) {
-      rememberTable(record);
-      setMemories(recentTables());
+    if (ended && knight.player && gameOwner === knight.player.id && (mode === "local" || role !== "spectator")) {
+      rememberTable(record, knight.player.id);
+      setMemories(recentTables(knight.player.id));
     }
-  }, [ended, record.id, room?.score_event?.id]);
+  }, [ended, record.id, room?.score_event?.id, accountId, gameOwner]);
   const dialogOpen = Boolean(modal || promotion);
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -512,7 +581,7 @@ export default function GameApp() {
   function newLocalTable() {
     const id = crypto.randomUUID();
     setLocalTableId(id);
-    remember("qk-local-table-id-v1", id);
+    if (knight.player) remember(localGameIdKey(knight.player.id), id);
   }
   function startComputer(color: Color) {
     newLocalTable();
@@ -548,8 +617,15 @@ export default function GameApp() {
         expected_fen: room.fen,
         connection_id: connectionId || undefined,
       });
-      if (generation === requestGeneration.current)
+      if (generation === requestGeneration.current) {
+        try {
+          const next = new Chess(room.fen);
+          const made = next.move({ from, to, promotion: promotionPiece });
+          next.load((data.room as RoomState).fen);
+          reactToAnimalMove(made, next);
+        } catch { /* A server-confirmed move remains authoritative if presentation cannot classify it. */ }
         acceptRoom(data.room as RoomState);
+      }
     } catch (err) {
       setMessage(
         failureText(
@@ -585,6 +661,7 @@ export default function GameApp() {
     try {
       const next = buildGame(localMoves);
       const made = next.move({ from, to, promotion: promotionPiece });
+      reactToAnimalMove(made, next);
       setLocalMoves((prev) => [
         ...prev,
         {
@@ -890,7 +967,7 @@ export default function GameApp() {
         />
       </label>
       <label className="preference-row">
-        <span>Table atmosphere</span>
+        <span>Board style</span>
         <select
           aria-label="Table atmosphere"
           value={table.atmosphere}
@@ -900,6 +977,17 @@ export default function GameApp() {
             <option key={name}>{name}</option>
           ))}
         </select>
+      </label>
+      <label className="preference-row">
+        <span>Chess pieces</span>
+        <select aria-label="Chess piece set" value={table.pieceSet} onChange={(e) => table.setPieceSet(e.target.value as "kawaii-faces" | "animal-kingdom")}>
+          <option value="kawaii-faces">Kawaii Faces</option>
+          <option value="animal-kingdom">Animal Kingdom</option>
+        </select>
+      </label>
+      <label className="preference-row">
+        <span>Unquiet Mode</span>
+        <input type="checkbox" checked={unquiet} onChange={(e) => setUnquiet(e.target.checked)} />
       </label>
       <label className="preference-row">
         <span>Move sounds</span>
@@ -1024,6 +1112,8 @@ export default function GameApp() {
                 : modal === "resign"
                   ? "Resign this game?"
                   : "Your invite";
+  if (!knight.player || knight.recoveryCode) return <AccountGate knight={knight} />;
+  if (gameOwner !== knight.player.id) return <main className="account-gate"><section className="account-card" role="status"><p className="account-kicker">QUIET KNIGHT</p><h1>Loading your account</h1><p className="account-intro">Preparing your saved games.</p></section></main>;
   return (
     <>
       {screen === "home" && localMoves.length > 0 ? (
@@ -1065,7 +1155,7 @@ export default function GameApp() {
                 {knight.player
                   ? `${knight.player.handle} · ${knight.player.quiet_points} Quiet Points`
                   : knight.profile
-                    ? "Knight ID · Guest mode"
+                    ? "Link this existing Knight ID"
                     : "Create Knight ID"}
               </button>
               {!knight.player && memories[0] ? (
@@ -1190,6 +1280,7 @@ export default function GameApp() {
               </div>
             ) : null
           }
+          animalReaction={animalReaction}
           computerEngine={computerEngine}
           board={{
             position,

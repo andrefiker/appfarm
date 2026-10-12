@@ -12,9 +12,11 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import androidx.webkit.WebViewAssetLoader;
 
 public class MainActivity extends Activity {
     private WebView webView;
+    private WebViewAssetLoader assetLoader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +25,10 @@ public class MainActivity extends Activity {
         getWindow().setNavigationBarColor(Color.BLACK);
 
         webView = new WebView(this);
+        assetLoader = new WebViewAssetLoader.Builder()
+                .setDomain("quiet-knight-server-production.up.railway.app")
+                .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
+                .build();
         webView.setLayoutParams(new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
@@ -43,6 +49,11 @@ public class MainActivity extends Activity {
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
         webView.setWebChromeClient(new WebChromeClient());
         webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public android.webkit.WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                return assetLoader.shouldInterceptRequest(request.getUrl());
+            }
+
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();

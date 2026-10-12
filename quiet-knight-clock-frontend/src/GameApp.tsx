@@ -141,6 +141,10 @@ export default function GameApp() {
   } | null>(null);
   const [modal, setModal] = useState<Modal>(null);
   const [sound, setSound] = useState(() => stored("qk-sound") !== "false");
+  const [unquiet, setUnquiet] = useState(() => stored("qk-unquiet-mode-v1") === "true");
+  const [animalReaction, setAnimalReaction] = useState("");
+  const lastAnimalReaction = useRef(0);
+  const animalReactionTimer = useRef<number | null>(null);
   const [haptics, setHaptics] = useState(
     () => stored("qk-haptics") !== "false",
   );
@@ -200,6 +204,15 @@ export default function GameApp() {
   const ended = room
     ? !["waiting", "active"].includes(room.status)
     : localGame.isGameOver();
+  const endReactionKey = useRef("");
+  useEffect(() => {
+    if (!ended || screen !== "game" || !unquiet || table.pieceSet !== "animal-kingdom") return;
+    const key = room ? `${room.code}:${room.game_number || 1}:${room.status}` : `${localTableId}:${localMoves.length}:finished`;
+    if (endReactionKey.current === key) return;
+    endReactionKey.current = key;
+    const winner = room?.winner || (localGame.isCheckmate() ? (localGame.turn() === "w" ? "b" : "w") : null);
+    setAnimalReaction(winner && winner === me ? "The kingdom survives." : winner ? "The kingdom requests an investigation." : "The kingdom survives.");
+  }, [ended, screen, unquiet, table.pieceSet, room?.code, room?.game_number, room?.status, room?.winner, localTableId, localMoves.length, localGame, me]);
   const waiting = room?.status === "waiting";
   const history = useMemo(() => {
     if (!room) return localGame.history({ verbose: true });
@@ -267,6 +280,26 @@ export default function GameApp() {
     remember("qk-haptics", String(haptics));
     remember("qk-volume", String(volume));
   }, [sound, haptics, volume]);
+  useEffect(() => { remember("qk-unquiet-mode-v1", String(unquiet)); }, [unquiet]);
+  useEffect(() => () => { if (animalReactionTimer.current !== null) window.clearTimeout(animalReactionTimer.current); }, []);
+  const reactToAnimalMove = useCallback((made: { piece: string; captured?: string; promotion?: string; san: string }, after: Chess) => {
+    if (!unquiet || table.pieceSet !== "animal-kingdom") return;
+    const now = Date.now();
+    if (now - lastAnimalReaction.current < 35_000) return;
+    let line = "";
+    if (made.promotion) line = made.promotion === "q" ? "Gerald is now management." : made.promotion === "n" ? "Gerald has become a horse. Questions remain." : "Against all expectations, Gerald has risen.";
+    else if (made.san.startsWith("O-O")) line = "Security has been upgraded.";
+    else if (made.piece === "q" && made.captured) line = "Naturally.";
+    else if (made.piece === "b" && made.captured) line = "The council has spoken.";
+    else if (made.piece === "n" && (made.captured || after.isCheck())) line = "HORSE SUCCESSFUL";
+    else if (made.captured === "p") line = Math.random() < .5 ? "Baa." : "He was only following orders.";
+    else if (after.isCheck()) line = "His Majesty is concerned.";
+    if (!line) return;
+    lastAnimalReaction.current = now;
+    setAnimalReaction(line);
+    if (animalReactionTimer.current !== null) window.clearTimeout(animalReactionTimer.current);
+    animalReactionTimer.current = window.setTimeout(() => setAnimalReaction(""), 3600);
+  }, [table.pieceSet, unquiet]);
   useEffect(() => {
     setSelected(null);
     setPromotion(null);
@@ -548,8 +581,15 @@ export default function GameApp() {
         expected_fen: room.fen,
         connection_id: connectionId || undefined,
       });
-      if (generation === requestGeneration.current)
+      if (generation === requestGeneration.current) {
+        try {
+          const next = new Chess(room.fen);
+          const made = next.move({ from, to, promotion: promotionPiece });
+          next.load((data.room as RoomState).fen);
+          reactToAnimalMove(made, next);
+        } catch { /* A server-confirmed move remains authoritative if presentation cannot classify it. */ }
         acceptRoom(data.room as RoomState);
+      }
     } catch (err) {
       setMessage(
         failureText(
@@ -585,6 +625,7 @@ export default function GameApp() {
     try {
       const next = buildGame(localMoves);
       const made = next.move({ from, to, promotion: promotionPiece });
+      reactToAnimalMove(made, next);
       setLocalMoves((prev) => [
         ...prev,
         {
@@ -890,7 +931,7 @@ export default function GameApp() {
         />
       </label>
       <label className="preference-row">
-        <span>Table atmosphere</span>
+        <span>Board style</span>
         <select
           aria-label="Table atmosphere"
           value={table.atmosphere}
@@ -900,6 +941,17 @@ export default function GameApp() {
             <option key={name}>{name}</option>
           ))}
         </select>
+      </label>
+      <label className="preference-row">
+        <span>Chess pieces</span>
+        <select aria-label="Chess piece set" value={table.pieceSet} onChange={(e) => table.setPieceSet(e.target.value as "classic" | "animal-kingdom")}>
+          <option value="classic">Champagne &amp; Obsidian</option>
+          <option value="animal-kingdom">Animal Kingdom</option>
+        </select>
+      </label>
+      <label className="preference-row">
+        <span>Unquiet Mode</span>
+        <input type="checkbox" checked={unquiet} onChange={(e) => setUnquiet(e.target.checked)} />
       </label>
       <label className="preference-row">
         <span>Move sounds</span>
@@ -1190,6 +1242,7 @@ export default function GameApp() {
               </div>
             ) : null
           }
+          animalReaction={animalReaction}
           computerEngine={computerEngine}
           board={{
             position,

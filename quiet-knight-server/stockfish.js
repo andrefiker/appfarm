@@ -6,8 +6,8 @@ import { Chess } from 'chess.js';
 export const LEVEL_NAMES = Object.freeze(['Gentle', 'Easy', 'Casual', 'Steady', 'Club', 'Strong', 'Tough', 'Expert', 'Master', 'Stockfish']);
 // Levels 1–3 use a bounded MultiPV search at full skill, then sample its legal
 // root moves. Skill is not applied a second time to those searches.
-export const SKILLS = Object.freeze([20, 20, 20, 2, 5, 8, 11, 15, 18, 20]);
-export const THINK_MS = Object.freeze([0, 0, 0, 160, 200, 260, 320, 400, 500, 650]);
+export const SKILLS = Object.freeze([20, 20, 20, 2, 5, 8, 14, 16, 18, 20]);
+export const THINK_MS = Object.freeze([0, 0, 0, 160, 200, 260, 420, 500, 580, 650]);
 export const BEGINNER = Object.freeze([
   { candidates: 6, nodes: 1800, weights: [1, 2, 3, 3, 2, 1], maxLoss: 1100 },
   { candidates: 5, nodes: 3500, weights: [4, 5, 4, 2, 1], maxLoss: 800 },

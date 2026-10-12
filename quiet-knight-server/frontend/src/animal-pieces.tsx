@@ -13,6 +13,6 @@ const animals: Record<Kind, { name: string; file: string }> = {
 export function AnimalPiece({ color, kind, label }: { color: Color; kind: Kind; scope: string; label?: string }): ReactElement {
   const army = color === 'w' ? 'ivory' : 'ebony';
   const animal = animals[kind];
-  const src = `./animal-kingdom/pieces/${army}-${animal.file}.svg`;
+  const src = `./animal-kingdom/pieces/${army}-${animal.file}.png`;
   return <img className={`chess-art animal-piece animal-${kind} art-${color}`} src={src} alt={label || `${color === 'w' ? 'Ivory' : 'Ebony'} ${animal.name}`} draggable={false} />;
 }

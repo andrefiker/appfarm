@@ -15,6 +15,28 @@ permissions:
 jobs:
   build-quiet-knight:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: qk_test
+          POSTGRES_DB: qk_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d qk_test"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
     steps:
       - name: Check out source
         uses: actions/checkout@v4
@@ -31,6 +53,7 @@ jobs:
         run: |
           npm ci
           npm run test:animal
+          npm run test:account
           npm run build -- --base=./
 
       - name: Bundle the game into the existing Android app
@@ -39,6 +62,20 @@ jobs:
           cp -R quiet-knight-server/frontend/dist/. android-store/app/src/main/assets/quiet-knight/
           test -s android-store/app/src/main/assets/quiet-knight/index.html
           find android-store/app/src/main/assets/quiet-knight -type f | sort
+
+      - name: Test real account HTTP against isolated PostgreSQL and Redis
+        working-directory: quiet-knight-server
+        env:
+          DATABASE_URL: postgresql://postgres:qk_test@127.0.0.1:5432/qk_test
+          REDIS_URL: redis://127.0.0.1:6379
+          QK_APPLY_IDENTITY_MIGRATIONS: 'true'
+        run: |
+          npm ci
+          npm run test:identity
+          npm run test:frontend-delivery
+          npm run test:migration-safety
+          npm run migrate:identity
+          npm run test:auth-http
 
       - name: Set up Java 17 and Android SDK
         uses: actions/setup-java@v4
@@ -79,6 +116,10 @@ jobs:
               unzip -Z1 dist/QuietKnight-Animal-Kingdom-debug.apk | grep -Fxq "assets/quiet-knight/animal-kingdom/pieces/${army}-${piece}.png"
             done
           done
+          if unzip -p dist/QuietKnight-Animal-Kingdom-debug.apk 'assets/quiet-knight/assets/*.js' | grep -Eq 'https?://(localhost|127\.0\.0\.1)'; then
+            echo 'Bundled game must not depend on a local development server' >&2
+            exit 1
+          fi
           sha256sum dist/QuietKnight-Animal-Kingdom-debug.apk
 
       - name: Upload APK

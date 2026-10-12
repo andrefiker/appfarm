@@ -132,8 +132,17 @@ assert.equal(await store.authenticate(null, expiring.session), null, 'Expired se
 await assert.rejects(requireAuthenticated(store, { headers: {} }, ''), error => error.status === 401, 'Gameplay guard must reject unauthenticated requests');
 assert.equal((await requireAuthenticated(store, { headers: {} }, created.session)).id, created.player.id);
 
-await assert.rejects(store.register('quietknight', password), error => error instanceof IdentityError && error.status === 400);
+await assert.rejects(store.register('quietknight', password), error => error instanceof IdentityError && error.status === 409);
 assert.equal((await store.login('QUIETKNIGHT', password)).player.id, created.player.id);
+const simpleAccount = await store.register('Fiker', 'password');
+assert.equal(simpleAccount.player.handle, 'Fiker');
+assert.equal((await store.login('fIKer', 'password')).player.id, simpleAccount.player.id);
+assert.match(pool.players.get(simpleAccount.player.id).password_hash, /^scrypt\$/);
+assert.equal(pool.players.get(simpleAccount.player.id).password_hash.includes('password'), false);
+await assert.rejects(store.register('FIKER', 'password'), error => error instanceof IdentityError && error.status === 409 && error.message === 'Knight ID already taken');
+await assert.rejects(store.register('A12', 'password'), error => error.status === 400, 'A Knight ID needs three letters');
+await assert.rejects(store.register('Bob', 'short'), error => error.status === 400, 'A password needs eight characters');
+for (const name of ['Bob', 'Ana', 'James']) assert.equal((await store.register(name, 'plainword')).player.handle, name);
 await assert.rejects(store.login('unknown-knight', password), error => error.status === 401);
 await assert.rejects(store.login('quietknight', 'incorrect-password'), error => error.status === 401);
 

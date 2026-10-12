@@ -18,6 +18,8 @@ android {
         quietKnight {
             dimension 'app'
             applicationId 'com.andrefiker.quietknight.appfarm'
+            versionCode 2
+            versionName '1.0.1'
             resValue 'string', 'app_name', 'Quiet Knight'
             buildConfigField 'String', 'HOME_URL', '"https://quiet-knight-server-production.up.railway.app/assets/quiet-knight/index.html"'
         }

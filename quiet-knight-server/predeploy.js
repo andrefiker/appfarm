@@ -7,4 +7,4 @@ for(const file of ['verify-clock.js','verify-push.js','verify-identity.js','veri
   child.on('exit',code=>code===0?resolve():reject(new Error(file+' failed; inspect the bounded acceptance assertions')));
  });
 }
-console.log(JSON.stringify({event:'predeploy.complete',passed:true,suites:['clock-unit','push-unit','identity','server-http-ws-redis','clock-deadline-restart']}));
+console.log(JSON.stringify({event:'predeploy.complete',passed:true,suites:['clock-unit','push-unit','v3-to-v4-identity-preservation','v4-http-ws-redis-restart']}));

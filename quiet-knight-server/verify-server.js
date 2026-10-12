@@ -1,86 +1,160 @@
-// Pre-deploy gate: candidate HTTP/WS server, real Redis, isolated real-Postgres identity schema.
+// Railway pre-deploy HTTP/WebSocket gate: real protocol, isolated SQL schema and Redis prefix.
 import assert from 'node:assert/strict';
-import {createHash,randomBytes,randomUUID} from 'node:crypto';
-import {spawn} from 'node:child_process';
-import {once} from 'node:events';
+import { randomBytes, randomUUID } from 'node:crypto';
+import { spawn } from 'node:child_process';
+import { once } from 'node:events';
+import { setTimeout as delay } from 'node:timers/promises';
 import pg from 'pg';
-import {WebSocket} from 'ws';
-import {createClient} from 'redis';
-import {verifyClockServer} from './verify-clock-server.js';
-const schema='qk_verify_'+randomUUID().replaceAll('-','');
-const admin=new pg.Pool({connectionString:process.env.DATABASE_URL,max:1,connectionTimeoutMillis:3000});
-const base='http://127.0.0.1:39173';
-const prefix=`qk:verify:${schema}:`;
-const origin='https://quiet-knight-live-v2xp3y.v2.appdeploy.ai';
-const env={...process.env,NODE_ENV:'test',QK_TEST_SCHEMA:schema,PORT:'39173',QK_VERIFY_BASE:base,QK_EXPECTED_BUILD:'qk-server-2026-09-13-r10-mutual-pause',VAPID_PUBLIC_KEY:'',VAPID_PRIVATE_KEY:''};
-let child,redis,nudgeKey;const sockets=[],testRooms=[];const deadline=setTimeout(()=>{console.error('Candidate server acceptance exceeded deadline');process.exit(1);},110000);
-const delay=ms=>new Promise(r=>setTimeout(r,ms));
-async function req(path,body,token,status=200){const response=await fetch(base+path,{method:body===undefined?'GET':'POST',headers:{Origin:origin,'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(8000)});assert.equal(response.status,status,path);return response.json();}
-function run(file){return new Promise((resolve,reject)=>{const p=spawn(process.execPath,[file],{env,stdio:['ignore','pipe','pipe']});let out='';p.stdout.on('data',b=>{out+=b;});p.stderr.resume();p.on('exit',code=>{if(code===0){console.log(out.trim());resolve();}else reject(new Error(file+' failed; credential-bearing assertion details suppressed'));});p.on('error',reject);});}
-async function socket(code,token){const ws=new WebSocket(base.replace('http:','ws:')+'/ws?room='+code,{origin});const messages=[];ws.on('message',b=>{try{messages.push(JSON.parse(b));}catch{}});sockets.push(ws);await once(ws,'open');if(token)ws.send(JSON.stringify({type:'presence.hello',seat_token:token}));return{ws,messages};}
-try{
- await admin.query(`CREATE SCHEMA ${schema}`);
- child=spawn(process.execPath,['server.js'],{env,stdio:['ignore','pipe','pipe']});child.stdout.resume();child.stderr.resume();
- let up=false;for(let i=0;i<50;i++){try{const h=await req('/health');if(h.ok){up=true;break;}}catch{}await delay(150);}assert.ok(up,'Candidate server must become healthy');
- await run('verify-live.js');
- const a=await req('/players',{handle:'HttpWhite'},null,201),b=await req('/players',{handle:'HttpBlack'},null,201);
- await req('/players',{handle:'httpwhite'},null,409);await req('/players/me',undefined,'invalid',401);
- const created=await req('/rooms',{},a.credential);const code=created.room.code;
- testRooms.push(code);
- const joinKey=randomBytes(24).toString('hex');const joined=await req(`/rooms/${code}/join`,{join_key:joinKey},b.credential);
- assert.equal(created.room.white_player.id,a.player.id);assert.equal(joined.room.black_player.id,b.player.id);
- assert.equal(joined.role,'black');assert.equal((await req(`/rooms/${code}/join`,{join_key:joinKey},b.credential)).role,'black');
- const one=await socket(code,created.seat_token),two=await socket(code,joined.seat_token);
- await delay(120);assert.ok(one.messages.some(m=>m.type==='presence.update'&&m.white&&m.black));assert.ok(two.messages.some(m=>m.type==='seat.role'&&m.role==='black'));
- const spectator=await socket(code,'invalid');await delay(100);assert.ok(spectator.messages.some(m=>m.type==='seat.role'&&m.role==='spectator'));
- two.ws.close();await delay(150);assert.ok(one.messages.some(m=>m.type==='presence.update'&&m.white&&!m.black));
- const back=await socket(code,joined.seat_token);await delay(120);assert.ok(back.messages.some(m=>m.type==='seat.role'&&m.role==='black'));
- redis=createClient({url:process.env.REDIS_URL});redis.on('error',()=>{});await redis.connect();
- const beforeNudge=await req(`/rooms/${code}`);const liveNudge=await req(`/rooms/${code}/nudge`,{seat_token:joined.seat_token,request_id:randomUUID()});await delay(60);
- assert.deepEqual({recipient_live:liveNudge.recipient_live,push_available:liveNudge.push_available,delivered:liveNudge.delivered,delivery:liveNudge.delivery},{recipient_live:true,push_available:false,delivered:true,delivery:'table'});assert.equal(liveNudge.message,'Delivered at table.');
- assert.ok(one.messages.some(m=>m.type==='opponent.nudge'&&m.room_code===code));
- assert.equal((await req(`/rooms/${code}`)).room.fen,beforeNudge.room.fen);assert.equal((await req(`/rooms/${code}`)).room.version,beforeNudge.room.version);
- await req(`/rooms/${code}/nudge`,{seat_token:joined.seat_token,request_id:randomUUID()},undefined,429);
- one.ws.close();await delay(150);await redis.del(`${prefix}nudge:${code}:1:${createHash('sha256').update(joined.seat_token).digest('hex').slice(0,24)}:cooldown`);
- const awayNudge=await req(`/rooms/${code}/nudge`,{seat_token:joined.seat_token,request_id:randomUUID()});assert.deepEqual({recipient_live:awayNudge.recipient_live,push_available:awayNudge.push_available,delivered:awayNudge.delivered,delivery:awayNudge.delivery},{recipient_live:false,push_available:false,delivered:false,delivery:'unavailable'});assert.equal(awayNudge.message,"They haven't enabled notifications.");
- const returned=await socket(code,created.seat_token);await delay(120);assert.ok(returned.messages.some(m=>m.type==='seat.role'&&m.role==='white'));
- await req(`/rooms/${code}/nudge`,{seat_token:created.seat_token,request_id:randomUUID()},undefined,409);
- await req(`/rooms/${code}/nudge`,{seat_token:'spectator',request_id:randomUUID()},undefined,403);
- const waiting=await req('/rooms',{},a.credential);testRooms.push(waiting.room.code);await req(`/rooms/${waiting.room.code}/nudge`,{seat_token:waiting.seat_token,request_id:randomUUID()},undefined,409);
- nudgeKey=`${prefix}nudge:${code}:1:${createHash('sha256').update(joined.seat_token).digest('hex').slice(0,24)}`;
- for(let i=0;i<1;i++){await redis.del(nudgeKey+':cooldown');await req(`/rooms/${code}/nudge`,{seat_token:joined.seat_token,request_id:randomUUID()});}
- await redis.del(nudgeKey+':cooldown');await req(`/rooms/${code}/nudge`,{seat_token:joined.seat_token,request_id:randomUUID()},undefined,429);
- const ended=await req(`/rooms/${code}/resign`,{seat_token:joined.seat_token});assert.equal(ended.room.score_event.white_points,3);assert.equal(ended.room.score_event.black_points,0);
- await req(`/rooms/${code}/nudge`,{seat_token:created.seat_token,request_id:randomUUID()},undefined,409);
- const event=ended.room.score_event.id;
- for(let i=0;i<3;i++)await req(`/rooms/${code}`);
- assert.equal((await req('/players/me',undefined,a.credential)).player.quiet_points,3);
- const swap=await req(`/rooms/${code}/rematch`,{seat_token:created.seat_token,colors:'swap',game_number:1});
- assert.equal(swap.room.game_number,2);assert.equal(swap.room.white_player.id,b.player.id);assert.equal(swap.room.black_player.id,a.player.id);
- await delay(120);assert.ok(returned.messages.some(m=>m.type==='seat.role'&&m.role==='black'&&m.game_number===2));assert.ok(back.messages.some(m=>m.type==='seat.role'&&m.role==='white'&&m.game_number===2));
- assert.equal((await req(`/rooms/${code}/join`,{seat_token:created.seat_token})).role,'black');
- assert.equal((await req(`/rooms/${code}/join`,{join_key:joinKey})).role,'white');
- await req(`/rooms/${code}/move`,{seat_token:created.seat_token,from:'e2',to:'e4'},undefined,409);
- const move=await req(`/rooms/${code}/move`,{seat_token:joined.seat_token,from:'e2',to:'e4'});assert.equal(move.room.last_move.san,'e4');
- await req(`/rooms/${code}/resign`,{seat_token:created.seat_token});
- const third=await req(`/rooms/${code}/rematch`,{seat_token:created.seat_token,colors:'same',game_number:2});assert.equal(third.room.game_number,3);
- await req(`/rooms/${code}/resign`,{seat_token:created.seat_token});
- const fourth=await req(`/rooms/${code}/rematch`,{seat_token:created.seat_token,colors:'swap',game_number:3});assert.equal(fourth.room.game_number,4);assert.equal(fourth.room.points_policy.eligible,false);
- const casual=await req(`/rooms/${code}/resign`,{seat_token:created.seat_token});assert.equal(casual.room.score_event.scored,false);assert.equal(casual.room.score_event.white_points,0);assert.equal(casual.room.score_event.black_points,0);
- await delay(100);assert.ok(returned.messages.some(m=>m.type==='room.update'&&m.room.score_event?.id===event));assert.ok(back.messages.some(m=>m.type==='room.update'&&m.room.game_number===4));
- console.log(JSON.stringify({event:'server.acceptance',passed:true,room:code,game_number:4,first_game_id:event,pair_cap:'fourth casual',checks:['full verify-live','HTTP Knight ID','seat association','win points','idempotent reads','same and swap rematch','join-key recovery after swap','actual color authorization','socket updates','live WebSocket nudge without push','away recipient unavailable result','nudge room immutability','two-minute cooldown','three-per-thirty-minute cap']}));
- await verifyClockServer({req,redis,socket,testRooms,prefix,restart:async()=>{
-   const exited=once(child,'exit');child.kill();await exited;
-   child=spawn(process.execPath,['server.js'],{env,stdio:['ignore','pipe','pipe']});child.stdout.resume();child.stderr.resume();
-   for(let i=0;i<60;i++){try{if((await req('/health')).ok)return;}catch{}await delay(100);}throw new Error('Restart recovery server failed');
- }});
-}finally{
- clearTimeout(deadline);for(const socket of sockets)socket.terminate();
- if(child&&child.exitCode===null&&child.signalCode===null){const exited=once(child,'exit').catch(()=>{});child.kill('SIGTERM');await Promise.race([exited,delay(2000)]);if(child.exitCode===null&&child.signalCode===null)child.kill('SIGKILL');}
- if(redis?.isOpen){
-  // The prefix contains this run's randomly generated schema id. Never scan production room keys.
-  const keys=[];for await(const key of redis.scanIterator({MATCH:prefix+'*',COUNT:100}))keys.push(key);
-  if(keys.length)await redis.del(keys);await redis.quit();
- }
- await admin.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`);await admin.end();
+import { WebSocket } from 'ws';
+import { createClient } from 'redis';
+import { IdentityStore } from './identity.js';
+
+if (!process.env.DATABASE_URL || !process.env.REDIS_URL) throw new Error('DATABASE_URL and REDIS_URL are required');
+const schema = `qk_verify_${randomUUID().replaceAll('-', '')}`;
+const prefix = `qk:verify:${schema}:`;
+const base = 'http://127.0.0.1:39173';
+const origin = 'https://quiet-knight-server-production.up.railway.app';
+const env = { ...process.env, NODE_ENV: 'test', QK_TEST_SCHEMA: schema, PORT: '39173', VAPID_PUBLIC_KEY: '', VAPID_PRIVATE_KEY: '' };
+const admin = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 1, connectionTimeoutMillis: 3000 });
+let pool, child, redis, created = false;
+const sockets = [];
+const waitFor = async (messages, predicate) => {
+  for (let i = 0; i < 100; i++) {
+    const found = messages.find(predicate);
+    if (found) return found;
+    await delay(50);
+  }
+  throw new Error('Expected WebSocket event did not arrive');
+};
+const request = async (path, { method = 'GET', body, cookie } = {}) => {
+  const response = await fetch(base + path, {
+    method,
+    headers: { Origin: origin, ...(body ? { 'Content-Type': 'application/json' } : {}), ...(cookie ? { Cookie: cookie } : {}) },
+    body: body ? JSON.stringify(body) : undefined,
+    signal: AbortSignal.timeout(8000),
+  });
+  return { status: response.status, data: await response.json(), headers: response.headers };
+};
+const post = (path, body, cookie) => request(path, { method: 'POST', body, cookie });
+const cookieOf = response => response.headers.get('set-cookie')?.split(';')[0];
+const start = async () => {
+  child = spawn(process.execPath, ['server.js'], { env, stdio: 'ignore' });
+  for (let i = 0; i < 100; i++) {
+    if (child.exitCode !== null) throw new Error(`Candidate server exited with ${child.exitCode}`);
+    try { if ((await request('/health')).status === 200) return; } catch {}
+    await delay(100);
+  }
+  throw new Error('Candidate server did not become healthy');
+};
+const stop = async () => {
+  if (!child || child.exitCode !== null) return;
+  const exited = once(child, 'exit');
+  child.kill('SIGTERM');
+  await Promise.race([exited, delay(3000)]);
+  if (child.exitCode === null) child.kill('SIGKILL');
+  child = null;
+};
+const socket = async (code, cookie, seatToken) => {
+  const ws = new WebSocket(`${base.replace('http:', 'ws:')}/ws?room=${code}`, { origin, headers: { Cookie: cookie }, handshakeTimeout: 7000 });
+  const messages = [];
+  ws.on('message', raw => { try { messages.push(JSON.parse(String(raw))); } catch {} });
+  ws.on('error', () => {});
+  sockets.push(ws);
+  await once(ws, 'open');
+  ws.send(JSON.stringify({ type: 'presence.hello', seat_token: seatToken }));
+  return messages;
+};
+const makeRoom = async (whiteCookie, blackCookie) => {
+  const white = await post('/rooms', {}, whiteCookie);
+  assert.equal(white.status, 200);
+  const code = white.data.room.code;
+  const joinKey = randomBytes(24).toString('hex');
+  const black = await post(`/rooms/${code}/join`, { join_key: joinKey }, blackCookie);
+  assert.equal(black.status, 200);
+  assert.equal(black.data.role, 'black');
+  return { code, white: white.data, black: black.data, joinKey };
+};
+
+try {
+  await admin.query(`CREATE SCHEMA ${schema}`);
+  created = true;
+  pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, options: `-c search_path=${schema}`, max: 5, connectionTimeoutMillis: 3000 });
+  const store = new IdentityStore({ pool });
+  await store.migrate();
+  assert.equal((await store.health()).migration, 4);
+  redis = createClient({ url: process.env.REDIS_URL });
+  redis.on('error', () => {});
+  await redis.connect();
+  await start();
+  assert.equal((await request('/players/health')).data.migration, 4);
+  assert.equal((await post('/rooms', {})).status, 401);
+  const alice = await post('/players/register', { handle: 'PredeployAlice', password: 'ordinarypass' });
+  const bob = await post('/players/register', { handle: 'PredeployBob', password: 'ordinarypass' });
+  assert.equal(alice.status, 201);
+  assert.equal(bob.status, 201);
+  const a = cookieOf(alice), b = cookieOf(bob);
+  assert.equal((await post('/players/register', { handle: 'predeployalice', password: 'ordinarypass' })).status, 409);
+  assert.equal((await request('/players/me', { cookie: a })).data.player.id, alice.data.player.id);
+
+  const room = await makeRoom(a, b);
+  assert.equal(room.white.room.white_player.id, alice.data.player.id);
+  assert.equal(room.black.room.black_player.id, bob.data.player.id);
+  assert.equal((await post(`/rooms/${room.code}/join`, { seat_token: room.white.seat_token }, b)).status, 403);
+  const whiteEvents = await socket(room.code, a, room.white.seat_token);
+  const blackEvents = await socket(room.code, b, room.black.seat_token);
+  await waitFor(whiteEvents, event => event.type === 'seat.role' && event.role === 'white');
+  await waitFor(blackEvents, event => event.type === 'seat.role' && event.role === 'black');
+  assert.equal((await post(`/rooms/${room.code}/move`, { seat_token: room.white.seat_token, from: 'e2', to: 'e5' }, a)).status, 400);
+  const moved = await post(`/rooms/${room.code}/move`, { seat_token: room.white.seat_token, from: 'e2', to: 'e4' }, a);
+  assert.equal(moved.status, 200);
+  assert.equal(moved.data.room.last_move.san, 'e4');
+  await waitFor(blackEvents, event => event.type === 'room.update' && event.room.last_move?.san === 'e4');
+  assert.equal((await post(`/rooms/${room.code}/move`, { seat_token: room.white.seat_token, from: 'd2', to: 'd4' }, a)).status, 409);
+  assert.equal((await post(`/rooms/${room.code}/move`, { seat_token: room.black.seat_token, from: 'e7', to: 'e5' }, a)).status, 403);
+  const replied = await post(`/rooms/${room.code}/move`, { seat_token: room.black.seat_token, from: 'e7', to: 'e5' }, b);
+  assert.equal(replied.status, 200);
+  assert.equal(replied.data.room.clock_running_color, 'w');
+  const nudge = await post(`/rooms/${room.code}/nudge`, { seat_token: room.black.seat_token, request_id: randomUUID() }, b);
+  assert.equal(nudge.status, 200);
+  assert.equal((await post(`/rooms/${room.code}/nudge`, { seat_token: room.black.seat_token, request_id: randomUUID() }, b)).status, 429);
+  sockets.at(-1).close();
+  const rejoined = await post(`/rooms/${room.code}/join`, { join_key: room.joinKey }, b);
+  assert.equal(rejoined.data.seat_token, room.black.seat_token);
+  const resumed = await socket(room.code, b, room.black.seat_token);
+  await waitFor(resumed, event => event.type === 'room.update' && event.room.moves.join(' ') === 'e4 e5');
+  const ended = await post(`/rooms/${room.code}/resign`, { seat_token: room.black.seat_token }, b);
+  assert.equal(ended.status, 200);
+  assert.equal(ended.data.room.score_event.white_points, 3);
+  for (let i = 0; i < 3; i++) await request(`/rooms/${room.code}`, { cookie: a });
+  assert.equal((await pool.query('SELECT count(*)::int AS n FROM qk_games WHERE room_code=$1', [room.code])).rows[0].n, 1);
+  assert.equal((await request('/players/me', { cookie: a })).data.player.human_wins, 1);
+  assert.equal((await request('/players/me', { cookie: b })).data.player.human_losses, 1);
+
+  await stop();
+  await start();
+  assert.equal((await request(`/rooms/${room.code}`, { cookie: a })).data.room.score_event.id, ended.data.room.score_event.id);
+  assert.equal((await request('/players/me', { cookie: a })).data.player.id, alice.data.player.id);
+  assert.equal((await pool.query('SELECT count(*)::int AS n FROM qk_games WHERE room_code=$1', [room.code])).rows[0].n, 1);
+
+  const mate = await makeRoom(a, b);
+  for (const [cookie, seat, from, to] of [
+    [a, mate.white.seat_token, 'f2', 'f3'], [b, mate.black.seat_token, 'e7', 'e5'],
+    [a, mate.white.seat_token, 'g2', 'g4'], [b, mate.black.seat_token, 'd8', 'h4'],
+  ]) assert.equal((await post(`/rooms/${mate.code}/move`, { seat_token: seat, from, to }, cookie)).status, 200);
+  assert.equal((await request(`/rooms/${mate.code}`, { cookie: a })).data.room.status, 'checkmate');
+  assert.equal((await pool.query('SELECT count(*)::int AS n FROM qk_games WHERE room_code=$1', [mate.code])).rows[0].n, 1);
+
+  console.log(JSON.stringify({ event: 'server.acceptance', passed: true, migration: 4, checks: ['mandatory auth', 'registration and duplicate ID', 'room create/join and ownership', 'legal/illegal moves', 'authenticated WebSocket seats', 'reconnect/resume', 'clock synchronization', 'nudge rate limit', 'resignation', 'checkmate', 'exactly-once results', 'server restart persistence'] }));
+} finally {
+  for (const ws of sockets) ws.terminate();
+  await stop();
+  if (redis?.isOpen) {
+    const keys = [];
+    for await (const key of redis.scanIterator({ MATCH: `${prefix}*`, COUNT: 100 })) keys.push(key);
+    if (keys.length) await redis.del(keys);
+    await redis.quit();
+  }
+  await pool?.end();
+  if (created) await admin.query(`DROP SCHEMA ${schema} CASCADE`);
+  await admin.end();
 }

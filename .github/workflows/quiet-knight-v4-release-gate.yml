@@ -1,0 +1,87 @@
+name: Quiet Knight v4 release gate
+
+on:
+  push:
+    branches: [feature/quiet-knight-animal-kingdom]
+    paths:
+      - 'quiet-knight-server/**'
+      - '.github/workflows/quiet-knight-v4-release-gate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolated-release-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: qk_test
+          POSTGRES_DB: qk_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd="pg_isready -U postgres -d qk_test"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+      redis:
+        image: redis:7
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build exact Railway Docker image with bundled frontend
+        run: docker build -t quiet-knight-v4 ./quiet-knight-server
+
+      - name: Run exact Railway predeploy command on isolated PostgreSQL and Redis
+        run: |
+          docker run --rm --network host \
+            -e DATABASE_URL=postgresql://postgres:qk_test@127.0.0.1:5432/qk_test \
+            -e REDIS_URL=redis://127.0.0.1:6379 \
+            quiet-knight-v4 node predeploy.js
+
+      - name: Check Stockfish 18 regression in the exact image
+        run: docker run --rm quiet-knight-v4 node verify-stockfish.js
+
+      - name: Prove synthetic v3 pg_dump restore and v4 migration
+        env:
+          PGPASSWORD: qk_test
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/qk-backup"
+          docker run --rm --network host -e PGPASSWORD=qk_test postgres:18 \
+            psql -h 127.0.0.1 -U postgres -d qk_test -v ON_ERROR_STOP=1 -c 'CREATE DATABASE qk_backup_source'
+          docker run --rm --network host -e PGPASSWORD=qk_test \
+            -v "$PWD/quiet-knight-server/tests/fixtures:/fixtures:ro" postgres:18 \
+            psql -h 127.0.0.1 -U postgres -d qk_backup_source -v ON_ERROR_STOP=1 \
+            -f /fixtures/schema-v3.sql -f /fixtures/synthetic-backup-seed.sql
+          docker run --rm --network host -e PGPASSWORD=qk_test \
+            -v "$RUNNER_TEMP/qk-backup:/backup" postgres:18 \
+            pg_dump -h 127.0.0.1 -U postgres -d qk_backup_source -Fc --no-owner --no-acl -f /backup/synthetic.dump
+          test -s "$RUNNER_TEMP/qk-backup/synthetic.dump"
+          docker run --rm --network host -e PGPASSWORD=qk_test postgres:18 \
+            psql -h 127.0.0.1 -U postgres -d qk_test -v ON_ERROR_STOP=1 -c 'CREATE DATABASE qk_backup_restored'
+          docker run --rm --network host -e PGPASSWORD=qk_test \
+            -v "$RUNNER_TEMP/qk-backup:/backup:ro" postgres:18 \
+            pg_restore -h 127.0.0.1 -U postgres -d qk_backup_restored --no-owner --no-acl --exit-on-error /backup/synthetic.dump
+          before="$(docker run --rm --network host -e PGPASSWORD=qk_test postgres:18 \
+            psql -h 127.0.0.1 -U postgres -d qk_backup_restored -At -c \
+            "SELECT (SELECT count(*) FROM qk_players)||'|'||(SELECT count(*) FROM qk_games)||'|'||(SELECT sum(quiet_points) FROM qk_players)")"
+          test "$before" = '2|2|5'
+          docker run --rm --network host \
+            -e DATABASE_URL=postgresql://postgres:qk_test@127.0.0.1:5432/qk_backup_restored \
+            -e QK_APPLY_IDENTITY_MIGRATIONS=true quiet-knight-v4 node migrate-identity.js
+          after="$(docker run --rm --network host -e PGPASSWORD=qk_test postgres:18 \
+            psql -h 127.0.0.1 -U postgres -d qk_backup_restored -At -c \
+            "SELECT (SELECT max(version) FROM qk_migrations)||'|'||(SELECT count(*) FROM qk_players)||'|'||(SELECT count(*) FROM qk_games)||'|'||(SELECT sum(quiet_points) FROM qk_players)")"
+          test "$after" = '4|2|2|5'
+          sha256sum "$RUNNER_TEMP/qk-backup/synthetic.dump"
+          echo 'Synthetic pg_dump/pg_restore and v3-to-v4 preservation passed.'

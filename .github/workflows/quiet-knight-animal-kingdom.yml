@@ -74,6 +74,11 @@ jobs:
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs dist/QuietKnight-Animal-Kingdom-debug.apk
           unzip -l dist/QuietKnight-Animal-Kingdom-debug.apk | grep -E 'assets/quiet-knight/(index.html|assets/.*\.(js|css))' | head -n 20
           unzip -l dist/QuietKnight-Animal-Kingdom-debug.apk | grep -q 'assets/quiet-knight/index.html'
+          for army in ivory ebony; do
+            for piece in king queen bishop knight rook pawn; do
+              unzip -Z1 dist/QuietKnight-Animal-Kingdom-debug.apk | grep -Fxq "assets/quiet-knight/animal-kingdom/pieces/${army}-${piece}.png"
+            done
+          done
           sha256sum dist/QuietKnight-Animal-Kingdom-debug.apk
 
       - name: Upload APK

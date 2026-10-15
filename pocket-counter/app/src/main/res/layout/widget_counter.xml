@@ -22,7 +22,12 @@
         <TextView android:id="@+id/widget_plus_0" android:layout_width="match_parent" android:layout_height="40dp" android:layout_marginTop="4dp" android:background="@drawable/widget_button" android:clickable="true" android:focusable="true" android:gravity="center" android:text="+1" android:textColor="#08251E" android:textSize="17sp" android:textStyle="bold" />
     </LinearLayout>
 
-    <View android:layout_width="1dp" android:layout_height="64dp" android:background="#40534B" />
+    <TextView
+        android:layout_width="1dp"
+        android:layout_height="64dp"
+        android:background="#40534B"
+        android:importantForAccessibility="no"
+        android:text="" />
 
     <LinearLayout
         android:layout_width="0dp"
@@ -36,7 +41,12 @@
         <TextView android:id="@+id/widget_plus_1" android:layout_width="match_parent" android:layout_height="40dp" android:layout_marginTop="4dp" android:background="@drawable/widget_button" android:clickable="true" android:focusable="true" android:gravity="center" android:text="+1" android:textColor="#08251E" android:textSize="17sp" android:textStyle="bold" />
     </LinearLayout>
 
-    <View android:layout_width="1dp" android:layout_height="64dp" android:background="#40534B" />
+    <TextView
+        android:layout_width="1dp"
+        android:layout_height="64dp"
+        android:background="#40534B"
+        android:importantForAccessibility="no"
+        android:text="" />
 
     <LinearLayout
         android:layout_width="0dp"

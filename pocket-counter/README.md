@@ -4,7 +4,7 @@ A small offline-first Android app with one three-column home-screen widget for R
 
 ## Build
 
-- Open this folder in Android Studio, or run `./gradlew testDebugUnitTest assembleDebug`.
+- Open this folder in Android Studio, or run `gradle --no-daemon testDebugUnitTest :app:assembleDebug` with Gradle 8.10.2.
 - Java 17, Android SDK platform 35, and Build Tools 35.0.0 are used by the verified build workflow.
 - Debug APK output: `app/build/outputs/apk/debug/app-debug.apk`.
 

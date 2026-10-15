@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Pocket Counter</string>
+    <string name="counter_rivotril">Rivotril</string>
+    <string name="counter_cigarro">Cigarro</string>
+    <string name="counter_baseado">Baseado</string>
+    <string name="increment">+1</string>
+    <string name="reset_all">Reset all to zero</string>
+    <string name="reset_title">Reset all counters?</string>
+    <string name="reset_message">This will set Rivotril, Cigarro, and Baseado to zero.</string>
+    <string name="cancel">Cancel</string>
+    <string name="reset">Reset</string>
+</resources>

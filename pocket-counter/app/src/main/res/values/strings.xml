@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">Pocket Counter</string>
+    <string name="widget_description">Three simple local counters</string>
     <string name="counter_rivotril">Rivotril</string>
     <string name="counter_cigarro">Cigarro</string>
     <string name="counter_baseado">Baseado</string>

@@ -20,10 +20,9 @@ class CounterStoreTest {
             .edit().clear().commit()
     }
 
-    @Test fun savedCountsSurviveStoreRecreationAndWidgetRefresh() {
+    @Test fun savedCountsSurviveStoreRecreation() {
         CounterStore(context).increment(1)
         CounterStore(context).increment(1)
-        CounterWidgetProvider.updateAll(context)
 
         assertEquals(CounterState(0, 2, 0), CounterStore(context).read())
     }

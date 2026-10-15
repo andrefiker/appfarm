@@ -20,4 +20,4 @@ All three counts are stored in local Android SharedPreferences. The app declares
 
 ## Tests
 
-JUnit and Robolectric tests cover independent increments, counts above the reference values, persisted SharedPreferences after creating a new store instance/widget refresh, broadcast-action handling, and reset.
+JUnit and Robolectric tests cover independent increments, counts above the reference values, persisted SharedPreferences after creating a new store instance, broadcast-action handling, and reset.

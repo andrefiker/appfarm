@@ -7,3 +7,8 @@ local.properties
 *.apk
 clients_data*.json
 backup_anotacoes*.json
+
+__pycache__/
+*.pyc
+staging/
+

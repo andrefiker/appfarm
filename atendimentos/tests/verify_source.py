@@ -1,8 +1,8 @@
 from pathlib import Path
 import re
 root=Path(__file__).resolve().parents[1]
-html=(root/'app/src/main/assets/index.html').read_text()
-manifest=(root/'app/src/main/AndroidManifest.xml').read_text()
+html=(root/'app/src/main/assets/index.html').read_text(encoding='utf-8')
+manifest=(root/'app/src/main/AndroidManifest.xml').read_text(encoding='utf-8')
 assert 'window.CLIENTS = []' in html
 assert 'atendimentos_clients_v1' in html
 assert 'clients_data.json' in html

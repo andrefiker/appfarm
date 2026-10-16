@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ClinicalPayloadSchemaV2",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "exported_at",
+    "export_environment",
+    "theoretical_framework_primary",
+    "clients"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "enum": ["2.0.0"] },
+    "exported_at": { "type": "string", "format": "date-time" },
+    "export_environment": { "type": "string" },
+    "theoretical_framework_primary": { "type": "string" },
+    "theoretical_framework_secondary": { "type": "string" },
+    "clients": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "codename",
+          "last_session_date",
+          "status",
+          "source_documents",
+          "formulations"
+        ],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "codename": { "type": "string" },
+          "last_session_date": { "type": "string" },
+          "status": { "type": "string", "enum": ["Ativo", "Pausa", "Concluído"] },
+          "source_documents": {
+            "type": "object",
+            "required": ["drive_folder_url", "dossier_url", "roadmap_url", "notebook_url"],
+            "properties": {
+              "drive_folder_url": { "type": "string", "format": "uri" },
+              "dossier_url": { "type": "string", "format": "uri" },
+              "roadmap_url": { "type": "string", "format": "uri" },
+              "notebook_url": { "type": "string", "format": "uri" }
+            }
+          },
+          "formulations": {
+            "type": "object",
+            "required": ["rogers_acp"],
+            "properties": {
+              "rogers_acp": {
+                "type": "object",
+                "required": [
+                  "briefing",
+                  "affective_zones",
+                  "therapist_posture",
+                  "empathic_reflections",
+                  "internal_frame_of_reference",
+                  "incongruence_self_threat",
+                  "conditions_of_worth",
+                  "relational_climate",
+                  "actualizing_tendency"
+                ],
+                "properties": {
+                  "briefing": { "type": "string" },
+                  "affective_zones": { "type": "array", "items": { "type": "string" } },
+                  "therapist_posture": { "type": "string" },
+                  "empathic_reflections": { "type": "array", "items": { "type": "string" } },
+                  "internal_frame_of_reference": { "type": "string" },
+                  "incongruence_self_threat": { "type": "string" },
+                  "conditions_of_worth": { "type": "string" },
+                  "relational_climate": { "type": "string" },
+                  "actualizing_tendency": { "type": "string" }
+                }
+              },
+              "contextual_behavioral": {
+                "type": "object",
+                "properties": {
+                  "experiential_avoidance": { "type": "string" },
+                  "cognitive_fusion": { "type": "string" },
+                  "valued_directions": { "type": "array", "items": { "type": "string" } },
+                  "crb1_in_session": { "type": "string" },
+                  "crb2_in_session": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

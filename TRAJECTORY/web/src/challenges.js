@@ -1,0 +1,17 @@
+export const CHALLENGES=[
+ ['First contact','A calm field. Find your range.','flat',0,4],
+ ['A little further','More distance calls for more power.','rolling',0,4],
+ ['Tailwind','A following wind carries your shell.','flat',12,4],
+ ['Headwind','Fire into the wind. Add a little power.','flat',-12,4],
+ ['Higher ground','The target is above you. Try a higher arc.','high',0,4],
+ ['Over the ridge','Lift your shell over the central ridge.','ridge',0,4],
+ ['Across the valley','Elevation changes the landing point.','valley',6,4],
+ ['Crosswind','Strong wind. Watch your first miss.','flat',24,4],
+ ['Against the gale','The wind is fierce. Plan a shorter flight.','rolling',-22,4],
+ ['The wall','A high arc clears the barrier.','flat',4,4],
+ ['Needlework','A small target. Only direct contact counts.','flat',0,5],
+ ['Heavy weather','Heavy shells fly more slowly.','rolling',-8,4,'heavy'],
+ ['Scattershot','Cluster shells split after the apex.','flat',8,4,'cluster'],
+ ['Night watch','Haze hides the hills. Trust the wind gauge.','ridge',-14,4],
+ ['Moving mark','Lead a moving target. It follows a steady rhythm.','flat',8,5]
+].map(([name,hint,profile,wind,ammo,weapon],i)=>({id:i,name,hint,profile,wind,ammo,weapon:weapon||null,seed:700+i,targetX:i===0?620:i===1?820:800,obstacles:i===9?[{x:470,y:245,w:28,h:200}]:[],directOnly:i===10,motion:i===14?.7:0,amplitude:i===14?60:0,fog:i===13}));

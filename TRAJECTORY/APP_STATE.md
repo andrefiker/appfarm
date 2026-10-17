@@ -9,7 +9,7 @@ Branch: feat/trajectory-20261017
 ## Current verified release
 APK: TRAJECTORY-v1.0.0.apk (direct deliverable; not committed as a binary)
 SHA-256: 78c14c362f36b8800bd8e5b6e5fed29156da17f6cf76fa3b12bd17e1d39f2ec4
-Source commit: recorded after canonical upload.
+Source commit: f0a496da2762c7b0ef9220e3bb8c6113562fbd03 (game/wrapper/tests/evidence; later state-only commit records this anchor).
 Android debug certificate: 39bd289abd6f0415fe88afb31d491374356d0002ef24a48100e0f1849bd88e1c
 Preserved private key: TRAJECTORY-v1.0.0-signing.p12; alias androiddebugkey, standard debug password android. Kept separately from public source.
 

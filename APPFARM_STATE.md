@@ -139,3 +139,14 @@ Vercel:
 2. Confirm whether their APK artifacts/workflow branches still exist before resuming them.
 3. Complete or explicitly cancel the pending Railway/Lovable cleanup in its own execution task.
 4. Update this file only when meaningful state changes.
+
+
+## TRAJECTORY — 2026-10-17
+
+- v1.0.0 / code 1; directory `TRAJECTORY`; package `com.andrefiker.trajectory`.
+- Source branch `feat/trajectory-20261017`; verified source commit `f0a496da2762c7b0ef9220e3bb8c6113562fbd03`. No merge or deployment.
+- Offline portrait artillery: three difficulties, three weapons, destructible terrain, practice, fifteen challenges, tutorial, local records/settings.
+- APK `TRAJECTORY-v1.0.0.apk`, SHA-256 `78c14c362f36b8800bd8e5b6e5fed29156da17f6cf76fa3b12bd17e1d39f2ec4`. Local Java 17/Gradle 8.10.2/SDK 35 build.
+- 22 Node tests and mobile touch browser QA at three sizes passed, including offline production file launch. APK package/version, v2/v3 signature, alignment, assets and VIBRATE-only permission verified. Native install/physical-device play remains unverified.
+- Preserved private debug key stored separately as `TRAJECTORY-v1.0.0-signing.p12`; reuse for updates. Details and evidence in `TRAJECTORY/APP_STATE.md` and `RELEASE.md`.
+- Rollback: initial playable `2c15242662efb41b849b7c85a8246af2e79fb5e6`; pre-project `0db2815c14b727031d63e7c14ef0a75255690e90`.

@@ -2,7 +2,7 @@
 
 Package: com.andrefiker.trajectory · versionName 1.0.0 · versionCode 1
 Android minSdk 26 / targetSdk 35 / compileSdk 35. Portrait launcher: com.andrefiker.trajectory.MainActivity.
-Source branch: feat/trajectory-20261017. Canonical commit recorded in APP_STATE.md after upload.
+Source branch: feat/trajectory-20261017. Canonical source commit: f0a496da2762c7b0ef9220e3bb8c6113562fbd03.
 
 APK: TRAJECTORY-v1.0.0.apk
 SHA-256: 78c14c362f36b8800bd8e5b6e5fed29156da17f6cf76fa3b12bd17e1d39f2ec4

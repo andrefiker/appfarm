@@ -37,7 +37,7 @@ export function Piece({
   const crownY = kind === 'p' ? 50 : kind === 'r' ? 36 : kind === 'n' ? 60 : 39;
   return (
     <svg
-      className={`chess-art art-${color}`}
+      className={`chess-art art-${color} ${white ? 'animal-dog' : 'animal-cat'}`}
       viewBox='0 0 100 100'
       role={label ? 'img' : undefined}
       aria-label={label}
@@ -362,6 +362,46 @@ export function Piece({
               fillOpacity='.42'
               stroke='none'
             />
+          </g>
+        )}
+        {white ? (
+          <g className='animal-face animal-face-dog' aria-hidden='true'>
+            {kind === 'p' ? (
+              <>
+                <path d='M40 34 C34 30 31 33 32 39 Q33 44 42 43Z' fill={shade} stroke={edge} strokeWidth='.8' />
+                <path d='M60 34 C66 30 69 33 68 39 Q67 44 58 43Z' fill={shade} stroke={edge} strokeWidth='.8' />
+                <ellipse cx='50' cy='46' rx='7.5' ry='5.3' fill={top} stroke={edge} strokeWidth='.55' />
+                <path d='M47.4 43.2 Q50 41.4 52.6 43.2 Q52 46 50 46.3 Q48 46 47.4 43.2Z' fill={faceInk} stroke='none' />
+                <path d='M50 46.5 Q49 49 47 48.5 M50 46.5 Q51 49 53 48.5' fill='none' stroke={faceInk} strokeWidth='.8' strokeLinecap='round' />
+              </>
+            ) : (
+              <>
+                <path d='M39 27 C32 22 27 26 29 33 Q31 38 42 37Z' fill={shade} stroke={edge} strokeWidth='.8' />
+                <path d='M61 27 C68 22 73 26 71 33 Q69 38 58 37Z' fill={shade} stroke={edge} strokeWidth='.8' />
+                <ellipse cx='50' cy='38' rx='7' ry='4.7' fill={top} stroke={edge} strokeWidth='.55' />
+                <path d='M47.6 35.4 Q50 33.8 52.4 35.4 Q52 38 50 38.3 Q48 38 47.6 35.4Z' fill={faceInk} stroke='none' />
+                <path d='M50 38.5 Q49 41 47 40.5 M50 38.5 Q51 41 53 40.5' fill='none' stroke={faceInk} strokeWidth='.8' strokeLinecap='round' />
+                <path d='M42 43 Q50 46 58 43' fill='none' stroke={top} strokeWidth='1' strokeLinecap='round' />
+              </>
+            )}
+          </g>
+        ) : (
+          <g className='animal-face animal-face-cat' aria-hidden='true'>
+            {kind === 'p' ? (
+              <>
+                <path d='M39 35 L38 27 Q38 24 41 27 L46 33 M61 35 L62 27 Q62 24 59 27 L54 33' fill={shade} stroke={edge} strokeWidth='.8' strokeLinejoin='round' />
+                <path d='M48 43 Q50 41.5 52 43 L50 45Z' fill={blush} stroke={edge} strokeWidth='.45' />
+                <path d='M50 45 Q48.5 47 47 46.5 M50 45 Q51.5 47 53 46.5' fill='none' stroke={faceInk} strokeWidth='.75' strokeLinecap='round' />
+                <path d='M45 44 L39 42 M45 46 L39 47 M55 44 L61 42 M55 46 L61 47' fill='none' stroke={top} strokeWidth='.7' strokeLinecap='round' />
+              </>
+            ) : (
+              <>
+                <path d='M39 27 L38 20 Q38 17 41 20 L46 25 M61 27 L62 20 Q62 17 59 20 L54 25' fill={shade} stroke={edge} strokeWidth='.8' strokeLinejoin='round' />
+                <path d='M48 35 Q50 33.5 52 35 L50 37Z' fill={blush} stroke={edge} strokeWidth='.45' />
+                <path d='M50 37 Q48.5 39 47 38.5 M50 37 Q51.5 39 53 38.5' fill='none' stroke={faceInk} strokeWidth='.75' strokeLinecap='round' />
+                <path d='M45 36 L39 34 M45 38 L39 39 M55 36 L61 34 M55 38 L61 39' fill='none' stroke={top} strokeWidth='.7' strokeLinecap='round' />
+              </>
+            )}
           </g>
         )}
       </g>

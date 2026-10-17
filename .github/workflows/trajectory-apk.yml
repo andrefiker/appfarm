@@ -1,0 +1,49 @@
+name: TRAJECTORY offline APK
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: TRAJECTORY
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test and bundle offline game
+        run: |
+          node --test tests/*.test.js
+          node tools/build.mjs
+          node --check dist/game.js
+      - uses: android-actions/setup-android@v3
+      - name: Install pinned Android tools
+        run: yes | sdkmanager 'platforms;android-35' 'build-tools;35.0.0' >/dev/null
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Build and verify
+        run: |
+          gradle -p android --no-daemon :app:assembleDebug
+          mkdir -p release
+          cp android/app/build/outputs/apk/debug/app-debug.apk release/TRAJECTORY-v1.0.0-debug.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging release/*.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose release/*.apk
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c -P 16 -v 4 release/*.apk
+          ! "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions release/*.apk | grep -q android.permission.INTERNET
+          unzip -l release/*.apk | grep assets/game.js
+          sha256sum release/*.apk > release/SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TRAJECTORY-v1.0.0-APK
+          path: TRAJECTORY/release/*
+          retention-days: 14
+          if-no-files-found: error

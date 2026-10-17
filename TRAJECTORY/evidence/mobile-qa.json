@@ -1,0 +1,66 @@
+{
+  "results": [
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "passed": [
+        "tutorial controls",
+        "fire lock",
+        "flight",
+        "pause/resume",
+        "settings persistence",
+        "handedness",
+        "cluster and AI turn",
+        "rapid restart",
+        "native pause event",
+        "challenge victory and next",
+        "touch controls fit"
+      ]
+    },
+    {
+      "viewport": {
+        "width": 360,
+        "height": 640
+      },
+      "passed": [
+        "tutorial controls",
+        "fire lock",
+        "flight",
+        "pause/resume",
+        "settings persistence",
+        "handedness",
+        "cluster and AI turn",
+        "rapid restart",
+        "native pause event",
+        "challenge victory and next",
+        "touch controls fit"
+      ]
+    },
+    {
+      "viewport": {
+        "width": 412,
+        "height": 915
+      },
+      "passed": [
+        "tutorial controls",
+        "fire lock",
+        "flight",
+        "pause/resume",
+        "settings persistence",
+        "handedness",
+        "cluster and AI turn",
+        "rapid restart",
+        "native pause event",
+        "challenge victory and next",
+        "touch controls fit"
+      ]
+    },
+    {
+      "offline": "file:// production bundle launches and plays while network disabled"
+    }
+  ],
+  "errors": [],
+  "remote": []
+}

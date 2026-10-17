@@ -5,3 +5,5 @@ android/local.properties
 *.jks
 *.p12
 *.keystore
+qa-output/
+node_modules/

@@ -1,12 +1,151 @@
 <!doctype html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"><meta name="theme-color" content="#091b2b"><meta http-equiv="Content-Security-Policy" content="default-src 'self' data:; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; media-src 'self' blob:; object-src 'none'; base-uri 'none'"><title>TRAJECTORY</title><link rel="stylesheet" href="style.css"><script type="module" src="src/main.js"></script></head>
-<body><main id="app" class="menu-mode">
-<header id="hud" hidden><div class="health"><span>YOU <b id="you-hp">100</b></span><div class="health-track"><i id="you-bar"></i></div></div><div id="wind" aria-label="Wind"><span>WIND</span><strong id="wind-value">→ 0</strong><small>m/s²</small></div><div class="health rival"><span id="rival-label">RIVAL <b id="rival-hp">100</b></span><div class="health-track"><i id="rival-bar"></i></div></div><button id="pause" class="icon-btn" aria-label="Pause game"><svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg></button></header>
-<section id="field"><canvas id="battle" aria-label="Artillery battlefield. Drag to adjust aim."></canvas><div id="field-top" hidden><span id="mode-label">QUICK DUEL</span><span id="round-label">YOUR SHOT</span></div><div id="tip" role="status" hidden></div><div id="flight-label" hidden>SHELL IN FLIGHT</div><div id="toast" role="status" hidden></div></section>
-<section id="deck" hidden aria-label="Firing controls"><div id="weapons" role="group" aria-label="Weapon"><button data-weapon="standard" class="selected"><svg viewBox="0 0 32 18"><path d="M4 5h17l7 4-7 4H4zM10 5v8"/></svg><span>STANDARD</span></button><button data-weapon="heavy"><svg viewBox="0 0 32 18"><path d="M3 3h18l8 6-8 6H3zM10 3v12"/></svg><span>HEAVY</span></button><button data-weapon="cluster"><svg viewBox="0 0 32 18"><path d="M3 3h16l7 3-7 3H3zM6 9h16l7 3-7 3H6z"/></svg><span>CLUSTER</span></button></div>
-<div class="adjust"><label for="angle">ANGLE <output id="angle-out">48°</output></label><button data-step="angle:-1" aria-label="Decrease angle">−</button><input id="angle" type="range" min="5" max="85" step="1" value="48" aria-label="Launch angle"><button data-step="angle:1" aria-label="Increase angle">+</button></div>
-<div class="adjust"><label for="power">POWER <output id="power-out">65</output></label><button data-step="power:-1" aria-label="Decrease power">−</button><input id="power" type="range" min="0" max="100" step="1" value="65" aria-label="Launch power"><button data-step="power:1" aria-label="Increase power">+</button></div>
-<div id="action-row"><button id="fire"><svg viewBox="0 0 24 24"><path d="m12 2 2 7 6-4-3 8 5 2-7 2-3 5-2-6-7 1 5-5-3-5 6 3z"/></svg>FIRE</button><div id="shot-info"><strong id="weapon-info">Balanced & precise</strong><span id="shot-count">SHOT 1 · YOUR TURN</span></div></div><div id="deck-foot"><span>Drag the field to aim</span><button id="guide-toggle" hidden>GUIDE ON</button><span id="ammo"></span></div></section>
-<section id="menu"><div class="brand"><svg viewBox="0 0 64 34" aria-hidden="true"><path d="M3 29C19-4 44-4 61 29"/><circle cx="61" cy="29" r="3"/></svg><h1>TRAJECTORY</h1><p>Every shot teaches you something.</p></div><div class="menu-actions"><button id="play" class="primary"><span>PLAY</span><small>Quick duel</small><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button><div class="menu-pair"><button id="practice">PRACTICE<small>Find your range</small></button><button id="challenges">CHALLENGES<small id="challenge-progress">15 fields to master</small></button></div><button id="tutorial" class="text-btn">Learn the arc <span>↗</span></button><div class="menu-bottom"><button id="settings">SETTINGS</button><span>OFFLINE · 1.0.0</span><button id="records">RECORDS</button></div></div></section>
-<div id="modal" hidden><section id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" tabindex="-1"></section></div>
-</main></body></html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#091b2b" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self' data:; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; media-src 'self' blob:; object-src 'none'; base-uri 'none'"
+    />
+    <title>TRAJECTORY</title>
+    <link rel="stylesheet" href="style.css" />
+    <script type="module" src="src/main.js"></script>
+  </head>
+  <body>
+    <main id="app" class="menu-mode">
+      <header id="hud" hidden>
+        <div class="health">
+          <span>YOU <b id="you-hp">100</b></span>
+          <div class="health-track"><i id="you-bar"></i></div>
+        </div>
+        <div id="wind" aria-label="Wind">
+          <span>WIND</span><strong id="wind-value">→ 0</strong
+          ><small>m/s²</small>
+        </div>
+        <div class="health rival">
+          <span id="rival-label">RIVAL <b id="rival-hp">100</b></span>
+          <div class="health-track"><i id="rival-bar"></i></div>
+        </div>
+        <button id="pause" class="icon-btn" aria-label="Pause game">
+          <svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14" /></svg>
+        </button>
+      </header>
+      <section id="field">
+        <canvas
+          id="battle"
+          aria-label="Artillery battlefield. Drag to adjust aim."
+        ></canvas>
+        <div id="field-top" hidden>
+          <span id="mode-label">QUICK DUEL</span
+          ><span id="round-label">YOUR SHOT</span>
+        </div>
+        <div id="tip" role="status" hidden></div>
+        <div id="flight-label" hidden>SHELL IN FLIGHT</div>
+        <button id="guide-toggle" hidden>GUIDE ON</button>
+        <div id="toast" role="status" hidden></div>
+      </section>
+      <section id="deck" hidden aria-label="Firing controls">
+        <div id="weapons" role="group" aria-label="Weapon">
+          <button data-weapon="standard" class="selected">
+            <svg viewBox="0 0 32 18"><path d="M4 5h17l7 4-7 4H4zM10 5v8" /></svg
+            ><span>STANDARD</span></button
+          ><button data-weapon="heavy">
+            <svg viewBox="0 0 32 18">
+              <path d="M3 3h18l8 6-8 6H3zM10 3v12" /></svg
+            ><span>HEAVY</span></button
+          ><button data-weapon="cluster">
+            <svg viewBox="0 0 32 18">
+              <path d="M3 3h16l7 3-7 3H3zM6 9h16l7 3-7 3H6z" /></svg
+            ><span>CLUSTER</span>
+          </button>
+        </div>
+        <div class="adjust">
+          <label for="angle">ANGLE <output id="angle-out">48°</output></label
+          ><button data-step="angle:-1" aria-label="Decrease angle">−</button
+          ><input
+            id="angle"
+            type="range"
+            min="5"
+            max="85"
+            step="1"
+            value="48"
+            aria-label="Launch angle"
+          /><button data-step="angle:1" aria-label="Increase angle">+</button>
+        </div>
+        <div class="adjust">
+          <label for="power">POWER <output id="power-out">65</output></label
+          ><button data-step="power:-1" aria-label="Decrease power">−</button
+          ><input
+            id="power"
+            type="range"
+            min="0"
+            max="100"
+            step="1"
+            value="65"
+            aria-label="Launch power"
+          /><button data-step="power:1" aria-label="Increase power">+</button>
+        </div>
+        <div id="action-row">
+          <button id="fire">
+            <svg viewBox="0 0 24 24">
+              <path
+                d="m12 2 2 7 6-4-3 8 5 2-7 2-3 5-2-6-7 1 5-5-3-5 6 3z"
+              /></svg
+            >FIRE
+          </button>
+          <div id="shot-info">
+            <strong id="weapon-info">Balanced & precise</strong
+            ><span id="shot-count">SHOT 1 · YOUR TURN</span>
+          </div>
+        </div>
+        <div id="deck-foot">
+          <span>Drag the field to aim</span><span id="ammo"></span>
+        </div>
+      </section>
+      <section id="menu">
+        <div class="brand">
+          <svg viewBox="0 0 64 34" aria-hidden="true">
+            <path d="M3 29C19-4 44-4 61 29" />
+            <circle cx="61" cy="29" r="3" />
+          </svg>
+          <h1>TRAJECTORY</h1>
+          <p>Every shot teaches you something.</p>
+        </div>
+        <div class="menu-actions">
+          <button id="play" class="primary">
+            <span>PLAY</span><small>Quick duel</small
+            ><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7" /></svg>
+          </button>
+          <div class="menu-pair">
+            <button id="practice">PRACTICE<small>Find your range</small></button
+            ><button id="challenges">
+              CHALLENGES<small id="challenge-progress"
+                >15 fields to master</small
+              >
+            </button>
+          </div>
+          <button id="tutorial" class="text-btn">
+            Learn the arc <span>↗</span>
+          </button>
+          <div class="menu-bottom">
+            <button id="settings">SETTINGS</button><span>OFFLINE · 1.0.0</span
+            ><button id="records">RECORDS</button>
+          </div>
+        </div>
+      </section>
+      <div id="modal" hidden>
+        <section
+          id="sheet"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="sheet-title"
+          tabindex="-1"
+        ></section>
+      </div>
+    </main>
+  </body>
+</html>

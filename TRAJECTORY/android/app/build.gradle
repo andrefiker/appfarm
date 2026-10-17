@@ -2,6 +2,7 @@ plugins { id 'com.android.application' }
 android {
  namespace 'com.andrefiker.trajectory'
  compileSdk 35
+ buildToolsVersion '35.0.0'
  defaultConfig {
   applicationId 'com.andrefiker.trajectory'
   minSdk 26

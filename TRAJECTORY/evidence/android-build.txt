@@ -8,22 +8,43 @@ Daemon will be stopped at the end of the build
 > Task :app:generateDebugResValues UP-TO-DATE
 > Task :app:mapDebugSourceSetPaths UP-TO-DATE
 > Task :app:generateDebugResources UP-TO-DATE
-> Task :app:mergeDebugResources UP-…1188 tokens truncated…ht, restart is fresh and scores bounded (0.36776ms)
-✔ AI uses shared physics and improves precision by difficulty and experience (853.254673ms)
-✔ all fifteen authored challenges have a one-shot solution under actual game simulation (2212.6095ms)
-✔ ammo exhaustion, defeat, victory and mutual destruction resolve once (0.618379ms)
-✔ cluster preview follows live craters and target destruction for later bomblets (8.637944ms)
-✔ camera and particles setting disables all camera follow axes (1.172654ms)
-✔ moving challenge stays solvable at sixteen different firing times (3167.899749ms)
-✔ generated duel fields provide a firing solution from both sides (1246.973665ms)
-✔ AI learns range across attempts without changing physics (713.87017ms)
-✔ storage loads safe defaults, validates hostile data, and survives unavailable storage (1.34399ms)
-✔ results record once, achievements unlock and best scores never regress (0.3746ms)
-ℹ tests 22
-ℹ suites 0
-ℹ pass 22
-ℹ fail 0
-ℹ cancelled 0
-ℹ skipped 0
-ℹ todo 0
-ℹ duration_ms 5243.026966
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest
+> Task :app:mergeDebugShaders
+> Task :app:compileDebugShaders NO-SOURCE
+> Task :app:generateDebugAssets UP-TO-DATE
+> Task :app:mergeDebugAssets
+> Task :app:desugarDebugFileDependencies
+> Task :app:compressDebugAssets
+> Task :app:processDebugJavaRes NO-SOURCE
+> Task :app:checkDebugDuplicateClasses
+> Task :app:mergeDebugJniLibFolders
+> Task :app:mergeDebugNativeLibs NO-SOURCE
+> Task :app:stripDebugDebugSymbols NO-SOURCE
+> Task :app:mergeExtDexDebug
+> Task :app:mergeLibDexDebug
+> Task :app:mergeDebugJavaResource
+> Task :app:validateSigningDebug
+> Task :app:writeDebugAppMetadata
+> Task :app:writeDebugSigningConfigVersions
+> Task :app:processDebugManifestForPackage
+> Task :app:processDebugResources
+
+> Task :app:compileDebugJavaWithJavac
+Note: /workspace/scratch/73633411c23a/appfarm/TRAJECTORY/android/app/src/main/java/com/andrefiker/trajectory/MainActivity.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :app:dexBuilderDebug
+> Task :app:mergeDebugGlobalSynthetics
+> Task :app:mergeProjectDexDebug
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect
+> Task :app:assembleDebug
+
+BUILD SUCCESSFUL in 9s
+32 actionable tasks: 21 executed, 11 up-to-date

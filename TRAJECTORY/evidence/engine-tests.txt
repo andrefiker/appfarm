@@ -1,0 +1,30 @@
+✔ exact constant acceleration is independent of partitions (1.12288ms)
+✔ gravity, wind and angle units (0.822701ms)
+✔ power is clamped and heavy is slower (0.446568ms)
+✔ 500 seeds produce valid stable terrain and flat gun support (64.024503ms)
+✔ craters remove ground monotonically and stay finite after repeated destruction (1.701506ms)
+✔ guns settle without floating on crater rims (0.255793ms)
+✔ swept terrain, unit, obstacle and boundary collisions cannot tunnel (0.953898ms)
+✔ damage is consistent, decays with distance, direct-only targets reject splash (0.222893ms)
+✔ cluster splits once into three independently simulated bomblets (3.605214ms)
+✔ extreme shots including wind terminate within bounded steps (9.200455ms)
+✔ deterministic replay yields identical terrain, health and outcome (2.173502ms)
+✔ fire is locked in flight, restart is fresh and scores bounded (0.36776ms)
+✔ AI uses shared physics and improves precision by difficulty and experience (853.254673ms)
+✔ all fifteen authored challenges have a one-shot solution under actual game simulation (2212.6095ms)
+✔ ammo exhaustion, defeat, victory and mutual destruction resolve once (0.618379ms)
+✔ cluster preview follows live craters and target destruction for later bomblets (8.637944ms)
+✔ camera and particles setting disables all camera follow axes (1.172654ms)
+✔ moving challenge stays solvable at sixteen different firing times (3167.899749ms)
+✔ generated duel fields provide a firing solution from both sides (1246.973665ms)
+✔ AI learns range across attempts without changing physics (713.87017ms)
+✔ storage loads safe defaults, validates hostile data, and survives unavailable storage (1.34399ms)
+✔ results record once, achievements unlock and best scores never regress (0.3746ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5243.026966

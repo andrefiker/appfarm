@@ -1,0 +1,310 @@
+{
+  "game": "MAGNET LAB",
+  "date": "2026-10-17T17:58:28.614Z",
+  "checks": [
+    {
+      "name": "All 12 authored chambers physically solvable",
+      "passed": true
+    },
+    {
+      "name": "Attraction and repulsion change acceleration in opposite directions",
+      "passed": true
+    },
+    {
+      "name": "Barrier collision fails and a goal is not teleported",
+      "passed": true
+    },
+    {
+      "name": "Hot zones and timeout fail deterministically",
+      "passed": true
+    },
+    {
+      "name": "Standalone HTML has no external scripts or network assets",
+      "passed": true
+    },
+    {
+      "name": "Accessible polarity button toggles attraction",
+      "passed": true
+    },
+    {
+      "name": "Canvas coil touch cycles polarity to repel",
+      "passed": true
+    },
+    {
+      "name": "Real animation loop launches, pauses and resumes",
+      "passed": true
+    },
+    {
+      "name": "Window blur pauses; repeated blur and focus never auto-resume",
+      "passed": true
+    },
+    {
+      "name": "Retry resets particle and timer",
+      "passed": true
+    },
+    {
+      "name": "Actual UI failure state and retry button",
+      "passed": true
+    },
+    {
+      "name": "Actual capture, success dialog and next chamber",
+      "passed": true
+    },
+    {
+      "name": "Completion, best time and last chamber persist after reload",
+      "passed": true
+    },
+    {
+      "name": "All 12 chambers won through the real browser state machine",
+      "passed": true
+    },
+    {
+      "name": "Chamber selection opens and navigates all unlocked levels",
+      "passed": true
+    },
+    {
+      "name": "Tutorial and help dismissal",
+      "passed": true
+    },
+    {
+      "name": "Viewport 320×852 has no horizontal overflow and launch visible",
+      "passed": true
+    },
+    {
+      "name": "Viewport 393×852 has no horizontal overflow and launch visible",
+      "passed": true
+    },
+    {
+      "name": "Viewport 768×852 has no horizontal overflow and launch visible",
+      "passed": true
+    },
+    {
+      "name": "No browser runtime errors",
+      "passed": true
+    }
+  ],
+  "chambers": [
+    {
+      "id": 1,
+      "name": "First attraction",
+      "solution": [
+        1
+      ],
+      "solutions": [
+        [
+          1
+        ]
+      ],
+      "captureSeconds": 1.65,
+      "fixedSteps": 198
+    },
+    {
+      "id": 2,
+      "name": "A gentle push",
+      "solution": [
+        -1
+      ],
+      "solutions": [
+        [
+          -1
+        ]
+      ],
+      "captureSeconds": 1.45,
+      "fixedSteps": 174
+    },
+    {
+      "id": 3,
+      "name": "Leave space",
+      "solution": [
+        1,
+        0
+      ],
+      "solutions": [
+        [
+          1,
+          0
+        ]
+      ],
+      "captureSeconds": 1.808,
+      "fixedSteps": 217
+    },
+    {
+      "id": 4,
+      "name": "Push and pull",
+      "solution": [
+        -1,
+        1
+      ],
+      "solutions": [
+        [
+          -1,
+          1
+        ]
+      ],
+      "captureSeconds": 1.725,
+      "fixedSteps": 207
+    },
+    {
+      "id": 5,
+      "name": "The return arc",
+      "solution": [
+        1,
+        -1
+      ],
+      "solutions": [
+        [
+          1,
+          -1
+        ]
+      ],
+      "captureSeconds": 1.917,
+      "fixedSteps": 230
+    },
+    {
+      "id": 6,
+      "name": "Upper passage",
+      "solution": [
+        -1,
+        1
+      ],
+      "solutions": [
+        [
+          -1,
+          1
+        ]
+      ],
+      "captureSeconds": 1.533,
+      "fixedSteps": 184
+    },
+    {
+      "id": 7,
+      "name": "Long reach",
+      "solution": [
+        0,
+        1
+      ],
+      "solutions": [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "captureSeconds": 2.117,
+      "fixedSteps": 254
+    },
+    {
+      "id": 8,
+      "name": "Quiet third",
+      "solution": [
+        -1,
+        1,
+        0
+      ],
+      "solutions": [
+        [
+          -1,
+          1,
+          0
+        ]
+      ],
+      "captureSeconds": 2.033,
+      "fixedSteps": 244
+    },
+    {
+      "id": 9,
+      "name": "Narrow ascent",
+      "solution": [
+        1,
+        -1,
+        0
+      ],
+      "solutions": [
+        [
+          1,
+          -1,
+          0
+        ],
+        [
+          1,
+          -1,
+          -1
+        ]
+      ],
+      "captureSeconds": 1.858,
+      "fixedSteps": 223
+    },
+    {
+      "id": 10,
+      "name": "Side pressure",
+      "solution": [
+        -1,
+        0,
+        -1
+      ],
+      "solutions": [
+        [
+          -1,
+          0,
+          -1
+        ],
+        [
+          -1,
+          1,
+          1
+        ],
+        [
+          -1,
+          1,
+          -1
+        ]
+      ],
+      "captureSeconds": 1.675,
+      "fixedSteps": 201
+    },
+    {
+      "id": 11,
+      "name": "Curl inward",
+      "solution": [
+        1,
+        0,
+        -1
+      ],
+      "solutions": [
+        [
+          1,
+          0,
+          -1
+        ]
+      ],
+      "captureSeconds": 1.817,
+      "fixedSteps": 218
+    },
+    {
+      "id": 12,
+      "name": "Perfect alignment",
+      "solution": [
+        -1,
+        1,
+        -1
+      ],
+      "solutions": [
+        [
+          -1,
+          1,
+          -1
+        ]
+      ],
+      "captureSeconds": 2.4,
+      "fixedSteps": 288
+    }
+  ],
+  "status": "passed",
+  "limitations": [
+    "No real Android device input/audio test in this browser harness; parent owns APK integration.",
+    "Fields are stylized radial approximations rather than a physical dipole model."
+  ]
+}

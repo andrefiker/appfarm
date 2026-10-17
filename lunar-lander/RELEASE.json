@@ -1,0 +1,43 @@
+{
+  "name": "Lunar Lander",
+  "version": "1.0.0",
+  "package": "com.andrefiker.lunarlander",
+  "versionCode": 1,
+  "craftian": {
+    "projectId": "lunar-lander-bb2qx0",
+    "deploymentId": "afb1712a_97eb_47fc_8f1f_2a717c2ea47c",
+    "deployedCommit": "129eb2fafef6563406e5d4c30e3a11922ada5049",
+    "liveUrl": "https://lunar-lander-bb2qx0.craftian.app",
+    "editorUrl": "https://craftian.ai/ide?app=lunar-lander-bb2qx0",
+    "servedPage": "website/index.html"
+  },
+  "browserChecksPassed": 30,
+  "apk": {
+    "name": "Lunar Lander",
+    "package": "com.andrefiker.lunarlander",
+    "version": "1.0.0",
+    "versionCode": 1,
+    "filename": "Lunar_Lander_v1.0.0.apk",
+    "bytes": 25284,
+    "sha256": "1f17bebad8c1138a64bf15e476db0941684ee5d8567c7c61c0059631ee14d4f3",
+    "certificateSha256": "0e14f7345b55edb9d9563a1581fa5f471ac1c4c021fa19857f8fa902de3b61e1",
+    "signatures": [
+      "v2",
+      "v3"
+    ],
+    "zipaligned": true,
+    "permissions": [],
+    "debuggable": false,
+    "bundledHtmlMatchesSource": true,
+    "htmlSha256": "4544e8aafc61bda734a071897d7d8ffba325953eb80a824f748044fc49530ad9",
+    "minSdk": 26,
+    "targetSdk": 35,
+    "orientation": "portrait",
+    "deviceInstallTested": false,
+    "releaseLintPerformed": false,
+    "lintNote": "Offline lint-gradle dependency unavailable; compilation, packaging and APK verification passed."
+  },
+  "sourceBranch": "codex/arcade-four-20261017",
+  "physicalAndroidTested": false,
+  "releaseLintPerformed": false
+}

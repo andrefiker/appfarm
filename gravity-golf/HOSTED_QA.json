@@ -1,0 +1,11 @@
+{
+  "url": "https://gravity-golf-7qfzof.craftian.app",
+  "testedAt": "2026-10-17T17:59:57.318Z",
+  "qaHookUsed": false,
+  "proxyCertificateNote": "UI check ignores local proxy CA; curl separately verifies TLS normally.",
+  "httpStatus": 200,
+  "pauseWorked": true,
+  "noHorizontalOverflow": true,
+  "errors": [],
+  "passed": true
+}

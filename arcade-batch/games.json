@@ -1,0 +1,26 @@
+[
+  {
+    "slug": "gravity-golf",
+    "name": "Gravity Golf",
+    "package": "com.andrefiker.gravitygolf",
+    "accent": "#b8f58b"
+  },
+  {
+    "slug": "ricochet",
+    "name": "Ricochet",
+    "package": "com.andrefiker.ricochet",
+    "accent": "#ffb27d"
+  },
+  {
+    "slug": "lunar-lander",
+    "name": "Lunar Lander",
+    "package": "com.andrefiker.lunarlander",
+    "accent": "#8cdff6"
+  },
+  {
+    "slug": "magnet-lab",
+    "name": "Magnet Lab",
+    "package": "com.andrefiker.magnetlab",
+    "accent": "#d5a0f5"
+  }
+]

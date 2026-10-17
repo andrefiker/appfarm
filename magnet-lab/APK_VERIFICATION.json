@@ -1,0 +1,25 @@
+{
+  "name": "Magnet Lab",
+  "package": "com.andrefiker.magnetlab",
+  "version": "1.0.0",
+  "versionCode": 1,
+  "filename": "Magnet_Lab_v1.0.0.apk",
+  "bytes": 25284,
+  "sha256": "778b2251c5f760d9f523e53fe8b466ba5f5096f5f6462cad924f9243b772b14c",
+  "certificateSha256": "a02c216161d6248ca82ffc2ce7c6999bca8d1b94ab7a2baa7a84f9819a41da8d",
+  "signatures": [
+    "v2",
+    "v3"
+  ],
+  "zipaligned": true,
+  "permissions": [],
+  "debuggable": false,
+  "bundledHtmlMatchesSource": true,
+  "htmlSha256": "83b6e924ffa8a587905d811c1d5b8a07d905581d8d9633686d6c7811c3863d56",
+  "minSdk": 26,
+  "targetSdk": 35,
+  "orientation": "portrait",
+  "deviceInstallTested": false,
+  "releaseLintPerformed": false,
+  "lintNote": "Offline lint-gradle dependency unavailable; compilation, packaging and APK verification passed."
+}

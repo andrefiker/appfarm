@@ -1,0 +1,25 @@
+{
+  "name": "Ricochet",
+  "package": "com.andrefiker.ricochet",
+  "version": "1.0.0",
+  "versionCode": 1,
+  "filename": "Ricochet_v1.0.0.apk",
+  "bytes": 25284,
+  "sha256": "db1ec59405d3aab292699c1f430300ad0b5a3ded7e0acfb171229f06bd757664",
+  "certificateSha256": "75635c64ed466db0ab7197e6efce612c9cf3b474c7de74aeeffb4ae4ef7f866c",
+  "signatures": [
+    "v2",
+    "v3"
+  ],
+  "zipaligned": true,
+  "permissions": [],
+  "debuggable": false,
+  "bundledHtmlMatchesSource": true,
+  "htmlSha256": "4e49812bdbff28098b92609e5499bcd61267c05bf03bdeaf4ae2416ec377201b",
+  "minSdk": 26,
+  "targetSdk": 35,
+  "orientation": "portrait",
+  "deviceInstallTested": false,
+  "releaseLintPerformed": false,
+  "lintNote": "Offline lint-gradle dependency unavailable; compilation, packaging and APK verification passed."
+}

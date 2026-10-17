@@ -1,0 +1,11 @@
+{
+  "url": "https://magnet-lab-2v4qbb.craftian.app",
+  "testedAt": "2026-10-17T18:01:33.320Z",
+  "qaHookUsed": false,
+  "proxyCertificateNote": "UI check ignores local proxy CA; curl separately verifies TLS normally.",
+  "httpStatus": 200,
+  "pauseWorked": true,
+  "noHorizontalOverflow": true,
+  "errors": [],
+  "passed": true
+}

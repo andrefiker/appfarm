@@ -1,0 +1,11 @@
+{
+  "url": "https://ricochet-w95k4k.craftian.app",
+  "testedAt": "2026-10-17T18:00:23.711Z",
+  "qaHookUsed": false,
+  "proxyCertificateNote": "UI check ignores local proxy CA; curl separately verifies TLS normally.",
+  "httpStatus": 200,
+  "pauseWorked": true,
+  "noHorizontalOverflow": true,
+  "errors": [],
+  "passed": true
+}

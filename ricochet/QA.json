@@ -1,0 +1,549 @@
+{
+  "game": "RICOCHET",
+  "timestamp": "2026-10-17T17:55:46.913Z",
+  "checks": [
+    {
+      "name": "Start screen and explicit launch",
+      "passed": true
+    },
+    {
+      "name": "Start enters ready state",
+      "passed": true
+    },
+    {
+      "name": "Accessible angle slider changes aim",
+      "passed": true
+    },
+    {
+      "name": "Pointer gesture changes aim",
+      "passed": true
+    },
+    {
+      "name": "Launch spends one shot",
+      "passed": true
+    },
+    {
+      "name": "Circle target hit and completion",
+      "passed": true
+    },
+    {
+      "name": "Next level unlocks and best saved",
+      "passed": true
+    },
+    {
+      "name": "Next range navigation",
+      "passed": true
+    },
+    {
+      "name": "Wall reflection increments bounce counter",
+      "passed": true
+    },
+    {
+      "name": "Pause freezes live physics",
+      "passed": true
+    },
+    {
+      "name": "Shot exhaustion shows retry",
+      "passed": true
+    },
+    {
+      "name": "Retry resets shots and targets",
+      "passed": true
+    },
+    {
+      "name": "Every handcrafted level has a verified solution",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "Bank shots are necessary on several ranges",
+      "passed": true,
+      "details": [
+        {
+          "level": 1,
+          "directOnlyMinimumShots": 1,
+          "bankRequired": false
+        },
+        {
+          "level": 2,
+          "directOnlyMinimumShots": 2,
+          "bankRequired": true
+        },
+        {
+          "level": 3,
+          "directOnlyMinimumShots": 4,
+          "bankRequired": true
+        },
+        {
+          "level": 4,
+          "directOnlyMinimumShots": 3,
+          "bankRequired": true
+        },
+        {
+          "level": 5,
+          "directOnlyMinimumShots": 2,
+          "bankRequired": true
+        },
+        {
+          "level": 6,
+          "directOnlyMinimumShots": 3,
+          "bankRequired": true
+        },
+        {
+          "level": 7,
+          "directOnlyMinimumShots": 4,
+          "bankRequired": true
+        },
+        {
+          "level": 8,
+          "directOnlyMinimumShots": 3,
+          "bankRequired": true
+        },
+        {
+          "level": 9,
+          "directOnlyMinimumShots": "unreachable",
+          "bankRequired": true
+        },
+        {
+          "level": 10,
+          "directOnlyMinimumShots": 2,
+          "bankRequired": false
+        },
+        {
+          "level": 11,
+          "directOnlyMinimumShots": "unreachable",
+          "bankRequired": true
+        },
+        {
+          "level": 12,
+          "directOnlyMinimumShots": 4,
+          "bankRequired": true
+        }
+      ]
+    },
+    {
+      "name": "Playable solution completes range 1",
+      "passed": true,
+      "details": {
+        "phase": "won",
+        "used": 1,
+        "remaining": 0
+      }
+    },
+    {
+      "name": "Playable solution completes range 2",
+      "passed": true,
+      "details": {
+        "phase": "won",
+        "used": 1,
+        "remaining": 0
+      }
+    },
+    {
+      "name": "Playable solution completes range 3",
+      "passed": true,
+      "details": {
+        "phase": "won",
+        "used": 2,
+        "remaining": 0
+      }
+    },
+    {
+      "name": "Playable solution completes range 4",
+      "passed": true,
+      "details": {
+        "phase": "won",
+        "used": 2,
+        "remaining": 0
+      }
+    },
+    {
+      "name": "Playable solution completes range 5",
+      "passed": true,
+      "details": {
+        "phase": "won",
+        "used": 1,
+        "remaining": 0
+      }
+    },
+    {
+      "name": "Playable solution completes range 6",
+      "passed": true,
+      "details": {
+        "phase": "won",
+        "used": 2,
+        "remaining": 0
+      }
+    },
+    {
+      "name": "Playable solution completes range 7",
+      "passed": true,
+      "details": {
+        "phase": "won",
+        "used": 2,
+        "remaining": 0
+      }
+    },
+    {
+      "name": "Playable solution completes range 8",
+      "passed": true,
+      "details": {
+        "phase": "won",
+        "used": 2,
+        "remaining": 0
+      }
+    },
+    {
+      "name": "Playable solution completes range 9",
+      "passed": true,
+      "details": {
+        "phase": "won",
+        "used": 2,
+        "remaining": 0
+      }
+    },
+    {
+      "name": "Playable solution completes range 10",
+      "passed": true,
+      "details": {
+        "phase": "won",
+        "used": 2,
+        "remaining": 0
+      }
+    },
+    {
+      "name": "Playable solution completes range 11",
+      "passed": true,
+      "details": {
+        "phase": "won",
+        "used": 3,
+        "remaining": 0
+      }
+    },
+    {
+      "name": "Playable solution completes range 12",
+      "passed": true,
+      "details": {
+        "phase": "won",
+        "used": 2,
+        "remaining": 0
+      }
+    },
+    {
+      "name": "Progress persists across reload",
+      "passed": true
+    },
+    {
+      "name": "Preview contains obstacle reflection",
+      "passed": true
+    },
+    {
+      "name": "Obstacle collision reflects the ball",
+      "passed": true
+    },
+    {
+      "name": "Trajectory preview matches live reflection physics",
+      "passed": true,
+      "details": {
+        "expected": {
+          "x": 180,
+          "y": 376.0001
+        },
+        "actual": {
+          "x": 180,
+          "y": 376.0000999999985
+        }
+      }
+    },
+    {
+      "name": "No horizontal overflow at 320px",
+      "passed": true,
+      "details": {
+        "width": 320,
+        "scroll": 320,
+        "height": 852,
+        "bottom": 852,
+        "shoot": 816
+      }
+    },
+    {
+      "name": "Controls fit portrait viewport at 320px",
+      "passed": true,
+      "details": {
+        "width": 320,
+        "scroll": 320,
+        "height": 852,
+        "bottom": 852,
+        "shoot": 816
+      }
+    },
+    {
+      "name": "No horizontal overflow at 393px",
+      "passed": true,
+      "details": {
+        "width": 393,
+        "scroll": 393,
+        "height": 852,
+        "bottom": 852,
+        "shoot": 814
+      }
+    },
+    {
+      "name": "Controls fit portrait viewport at 393px",
+      "passed": true,
+      "details": {
+        "width": 393,
+        "scroll": 393,
+        "height": 852,
+        "bottom": 852,
+        "shoot": 814
+      }
+    },
+    {
+      "name": "No horizontal overflow at 430px",
+      "passed": true,
+      "details": {
+        "width": 430,
+        "scroll": 430,
+        "height": 852,
+        "bottom": 852,
+        "shoot": 814
+      }
+    },
+    {
+      "name": "Controls fit portrait viewport at 430px",
+      "passed": true,
+      "details": {
+        "width": 430,
+        "scroll": 430,
+        "height": 852,
+        "bottom": 852,
+        "shoot": 814
+      }
+    },
+    {
+      "name": "Visible page remains active",
+      "passed": true
+    },
+    {
+      "name": "Visibility loss pauses the game",
+      "passed": true
+    },
+    {
+      "name": "No browser runtime errors",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "QA hook is opt-in",
+      "passed": true
+    }
+  ],
+  "levels": [
+    {
+      "level": 1,
+      "name": "FIRST LIGHT",
+      "targets": 1,
+      "shotBudget": 1,
+      "solution": [
+        -90
+      ],
+      "result": {
+        "solved": true,
+        "remaining": [],
+        "bounces": 7
+      },
+      "directOnlyMinimumShots": 1,
+      "bankRequired": false
+    },
+    {
+      "level": 2,
+      "name": "SIDE EFFECT",
+      "targets": 2,
+      "shotBudget": 1,
+      "solution": [
+        -42
+      ],
+      "result": {
+        "solved": true,
+        "remaining": [],
+        "bounces": 8
+      },
+      "directOnlyMinimumShots": 2,
+      "bankRequired": true
+    },
+    {
+      "level": 3,
+      "name": "DOUBLE TAKE",
+      "targets": 4,
+      "shotBudget": 2,
+      "solution": [
+        -135,
+        -45
+      ],
+      "result": {
+        "solved": true,
+        "remaining": [],
+        "bounces": 16
+      },
+      "directOnlyMinimumShots": 4,
+      "bankRequired": true
+    },
+    {
+      "level": 4,
+      "name": "THE DIVIDE",
+      "targets": 4,
+      "shotBudget": 2,
+      "solution": [
+        -116,
+        -64
+      ],
+      "result": {
+        "solved": true,
+        "remaining": [],
+        "bounces": 16
+      },
+      "directOnlyMinimumShots": 3,
+      "bankRequired": true
+    },
+    {
+      "level": 5,
+      "name": "LOW CEILING",
+      "targets": 3,
+      "shotBudget": 1,
+      "solution": [
+        -30
+      ],
+      "result": {
+        "solved": true,
+        "remaining": [],
+        "bounces": 8
+      },
+      "directOnlyMinimumShots": 2,
+      "bankRequired": true
+    },
+    {
+      "level": 6,
+      "name": "OFFSET",
+      "targets": 3,
+      "shotBudget": 2,
+      "solution": [
+        -111,
+        -52
+      ],
+      "result": {
+        "solved": true,
+        "remaining": [],
+        "bounces": 16
+      },
+      "directOnlyMinimumShots": 3,
+      "bankRequired": true
+    },
+    {
+      "level": 7,
+      "name": "SWITCHBACK",
+      "targets": 4,
+      "shotBudget": 2,
+      "solution": [
+        -78,
+        -147
+      ],
+      "result": {
+        "solved": true,
+        "remaining": [],
+        "bounces": 16
+      },
+      "directOnlyMinimumShots": 4,
+      "bankRequired": true
+    },
+    {
+      "level": 8,
+      "name": "NARROW PASS",
+      "targets": 4,
+      "shotBudget": 2,
+      "solution": [
+        -90,
+        -35
+      ],
+      "result": {
+        "solved": true,
+        "remaining": [],
+        "bounces": 15
+      },
+      "directOnlyMinimumShots": 3,
+      "bankRequired": true
+    },
+    {
+      "level": 9,
+      "name": "CROSS CURRENT",
+      "targets": 4,
+      "shotBudget": 2,
+      "solution": [
+        -124,
+        -57
+      ],
+      "result": {
+        "solved": true,
+        "remaining": [],
+        "bounces": 16
+      },
+      "directOnlyMinimumShots": "unreachable",
+      "bankRequired": true
+    },
+    {
+      "level": 10,
+      "name": "THE GATE",
+      "targets": 3,
+      "shotBudget": 2,
+      "solution": [
+        -90,
+        -25
+      ],
+      "result": {
+        "solved": true,
+        "remaining": [],
+        "bounces": 15
+      },
+      "directOnlyMinimumShots": 2,
+      "bankRequired": false
+    },
+    {
+      "level": 11,
+      "name": "THREE NOTES",
+      "targets": 4,
+      "shotBudget": 3,
+      "solution": [
+        -90,
+        -142,
+        -38
+      ],
+      "result": {
+        "solved": true,
+        "remaining": [],
+        "bounces": 24
+      },
+      "directOnlyMinimumShots": "unreachable",
+      "bankRequired": true
+    },
+    {
+      "level": 12,
+      "name": "AFTERGLOW",
+      "targets": 6,
+      "shotBudget": 3,
+      "solution": [
+        -109,
+        -71,
+        -34
+      ],
+      "result": {
+        "solved": true,
+        "remaining": [],
+        "bounces": 24
+      },
+      "directOnlyMinimumShots": 4,
+      "bankRequired": true
+    }
+  ],
+  "errors": [],
+  "passed": true
+}

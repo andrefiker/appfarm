@@ -1,0 +1,284 @@
+{
+  "game": "Gravity Golf",
+  "passed": true,
+  "testCount": 46,
+  "checks": [
+    {
+      "name": "Eight distinct handcrafted holes",
+      "passed": true
+    },
+    {
+      "name": "Hole 1: finite physics, terminates, solvable",
+      "passed": true
+    },
+    {
+      "name": "Hole 2: finite physics, terminates, solvable",
+      "passed": true
+    },
+    {
+      "name": "Hole 2 needs player aiming",
+      "passed": true
+    },
+    {
+      "name": "Hole 3: finite physics, terminates, solvable",
+      "passed": true
+    },
+    {
+      "name": "Hole 3 needs player aiming",
+      "passed": true
+    },
+    {
+      "name": "Hole 4: finite physics, terminates, solvable",
+      "passed": true
+    },
+    {
+      "name": "Hole 4 needs player aiming",
+      "passed": true
+    },
+    {
+      "name": "Hole 5: finite physics, terminates, solvable",
+      "passed": true
+    },
+    {
+      "name": "Hole 5 needs player aiming",
+      "passed": true
+    },
+    {
+      "name": "Hole 6: finite physics, terminates, solvable",
+      "passed": true
+    },
+    {
+      "name": "Hole 6 needs player aiming",
+      "passed": true
+    },
+    {
+      "name": "Hole 7: finite physics, terminates, solvable",
+      "passed": true
+    },
+    {
+      "name": "Hole 7 needs player aiming",
+      "passed": true
+    },
+    {
+      "name": "Hole 8: finite physics, terminates, solvable",
+      "passed": true
+    },
+    {
+      "name": "Hole 8 needs player aiming",
+      "passed": true
+    },
+    {
+      "name": "Simulation is deterministic",
+      "passed": true
+    },
+    {
+      "name": "Gravity changes the velocity",
+      "passed": true
+    },
+    {
+      "name": "Collision and escape both occur",
+      "passed": true
+    },
+    {
+      "name": "Page identity and nonblank first render",
+      "passed": true
+    },
+    {
+      "name": "Start course control",
+      "passed": true
+    },
+    {
+      "name": "No horizontal overflow at 393×852",
+      "passed": true
+    },
+    {
+      "name": "No horizontal overflow at 320×740",
+      "passed": true
+    },
+    {
+      "name": "No horizontal overflow at 1280×900",
+      "passed": true
+    },
+    {
+      "name": "Accessible angle and power controls update",
+      "passed": true
+    },
+    {
+      "name": "Pause and resume preserve live flight",
+      "passed": true
+    },
+    {
+      "name": "Launch, portal capture, best score",
+      "passed": true
+    },
+    {
+      "name": "Next-hole progression",
+      "passed": true
+    },
+    {
+      "name": "Progress and best persist; sound defaults off",
+      "passed": true
+    },
+    {
+      "name": "Failed shot recovers and reset clears strokes",
+      "passed": true
+    },
+    {
+      "name": "Help opens and returns to aiming",
+      "passed": true
+    },
+    {
+      "name": "Sound toggle responds",
+      "passed": true
+    },
+    {
+      "name": "Pointer slingshot launches",
+      "passed": true
+    },
+    {
+      "name": "Browser core-loop success hole 1",
+      "passed": true
+    },
+    {
+      "name": "Browser core-loop success hole 2",
+      "passed": true
+    },
+    {
+      "name": "Browser core-loop success hole 3",
+      "passed": true
+    },
+    {
+      "name": "Browser core-loop success hole 4",
+      "passed": true
+    },
+    {
+      "name": "Browser core-loop success hole 5",
+      "passed": true
+    },
+    {
+      "name": "Browser core-loop success hole 6",
+      "passed": true
+    },
+    {
+      "name": "Browser core-loop success hole 7",
+      "passed": true
+    },
+    {
+      "name": "Browser core-loop success hole 8",
+      "passed": true
+    },
+    {
+      "name": "Course completion restarts correctly",
+      "passed": true
+    },
+    {
+      "name": "Document visibility pauses automatically",
+      "passed": true
+    },
+    {
+      "name": "No runtime/console errors",
+      "passed": true
+    },
+    {
+      "name": "QA control hook absent from normal play",
+      "passed": true
+    },
+    {
+      "name": "Normal real-time animation reaches portal without QA stepping",
+      "passed": true
+    }
+  ],
+  "solutions": [
+    {
+      "hole": 1,
+      "name": "First light",
+      "solution": {
+        "angle": 58,
+        "power": 54,
+        "seconds": 2.233
+      },
+      "winningSamples": 73
+    },
+    {
+      "hole": 2,
+      "name": "The gentle bend",
+      "solution": {
+        "angle": 28,
+        "power": 46,
+        "seconds": 2.292
+      },
+      "winningSamples": 89
+    },
+    {
+      "hole": 3,
+      "name": "Two moons",
+      "solution": {
+        "angle": 41,
+        "power": 54,
+        "seconds": 2.267
+      },
+      "winningSamples": 89
+    },
+    {
+      "hole": 4,
+      "name": "Wide awake",
+      "solution": {
+        "angle": 58,
+        "power": 54,
+        "seconds": 2.075
+      },
+      "winningSamples": 80
+    },
+    {
+      "hole": 5,
+      "name": "The crossing",
+      "solution": {
+        "angle": 29,
+        "power": 54,
+        "seconds": 2.317
+      },
+      "winningSamples": 85
+    },
+    {
+      "hole": 6,
+      "name": "Mint condition",
+      "solution": {
+        "angle": 55,
+        "power": 54,
+        "seconds": 2.167
+      },
+      "winningSamples": 150
+    },
+    {
+      "hole": 7,
+      "name": "Three body problem",
+      "solution": {
+        "angle": 78,
+        "power": 26,
+        "seconds": 3.258
+      },
+      "winningSamples": 30
+    },
+    {
+      "hole": 8,
+      "name": "Homeward",
+      "solution": {
+        "angle": 63,
+        "power": 54,
+        "seconds": 2.242
+      },
+      "winningSamples": 96
+    }
+  ],
+  "viewports": [
+    "393×852",
+    "320×740",
+    "1280×900"
+  ],
+  "physics": "120 Hz fixed step; 181 angles × 46 powers × 8 holes swept; segment collision detection",
+  "browser": "Chromium via Playwright; parent explicitly authorized this local browser harness",
+  "limitations": [
+    "Offline local progress is per browser/device; clearing app data erases it.",
+    "Android device install and native wrapper validation handled by parent."
+  ]
+}

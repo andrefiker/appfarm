@@ -1,0 +1,9 @@
+{
+  "game": "magnet-lab",
+  "url": "https://magnet-lab-2v4qbb.craftian.app",
+  "tlsVerified": true,
+  "servedGameSourceMatches": true,
+  "normalization": "Removed only Craftian app metadata, SDK import map, app-menu injection and leading head whitespace.",
+  "sourceSha256": "83b6e924ffa8a587905d811c1d5b8a07d905581d8d9633686d6c7811c3863d56",
+  "passed": true
+}

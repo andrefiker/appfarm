@@ -1,0 +1,25 @@
+{
+  "name": "Gravity Golf",
+  "package": "com.andrefiker.gravitygolf",
+  "version": "1.0.0",
+  "versionCode": 1,
+  "filename": "Gravity_Golf_v1.0.0.apk",
+  "bytes": 25284,
+  "sha256": "7cd586a03d73fef654822589ddbf422dce2df0daf3abb937c5f3559d5ed245a2",
+  "certificateSha256": "dfb7d43169641ea6b259b48fc2597b4f26b022fe2f2b0e10e9bf6b0b3da020d0",
+  "signatures": [
+    "v2",
+    "v3"
+  ],
+  "zipaligned": true,
+  "permissions": [],
+  "debuggable": false,
+  "bundledHtmlMatchesSource": true,
+  "htmlSha256": "a5894be717fbc14ea051834db9fc71c51c0a3c3f066b863d763e8e8ff5dd26ad",
+  "minSdk": 26,
+  "targetSdk": 35,
+  "orientation": "portrait",
+  "deviceInstallTested": false,
+  "releaseLintPerformed": false,
+  "lintNote": "Offline lint-gradle dependency unavailable; compilation, packaging and APK verification passed."
+}

@@ -1,0 +1,9 @@
+{
+  "game": "lunar-lander",
+  "url": "https://lunar-lander-bb2qx0.craftian.app",
+  "tlsVerified": true,
+  "servedGameSourceMatches": true,
+  "normalization": "Removed only Craftian app metadata, SDK import map, app-menu injection and leading head whitespace.",
+  "sourceSha256": "4544e8aafc61bda734a071897d7d8ffba325953eb80a824f748044fc49530ad9",
+  "passed": true
+}

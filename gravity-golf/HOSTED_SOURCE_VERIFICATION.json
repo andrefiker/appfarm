@@ -1,0 +1,9 @@
+{
+  "game": "gravity-golf",
+  "url": "https://gravity-golf-7qfzof.craftian.app",
+  "tlsVerified": true,
+  "servedGameSourceMatches": true,
+  "normalization": "Removed only Craftian app metadata, SDK import map, app-menu injection and leading head whitespace.",
+  "sourceSha256": "a5894be717fbc14ea051834db9fc71c51c0a3c3f066b863d763e8e8ff5dd26ad",
+  "passed": true
+}

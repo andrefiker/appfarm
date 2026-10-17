@@ -1,0 +1,34 @@
+{
+  "gravity-golf": {
+    "projectId": "gravity-golf-7qfzof",
+    "deploymentId": "948a3af5_47dc_4ac0_b5c4_fcdd4f0aea22",
+    "deployedCommit": "76c18dc556ec7553d4d156beca4e72abbbd2e81b",
+    "liveUrl": "https://gravity-golf-7qfzof.craftian.app",
+    "editorUrl": "https://craftian.ai/ide?app=gravity-golf-7qfzof",
+    "servedPage": "website/index.html"
+  },
+  "ricochet": {
+    "projectId": "ricochet-w95k4k",
+    "deploymentId": "6e3e9e16_2300_4a85_986d_71f6f5e69aa8",
+    "deployedCommit": "5252cf0e90c0f6170d4d30da5dd195122dc03a1a",
+    "liveUrl": "https://ricochet-w95k4k.craftian.app",
+    "editorUrl": "https://craftian.ai/ide?app=ricochet-w95k4k",
+    "servedPage": "website/index.html"
+  },
+  "lunar-lander": {
+    "projectId": "lunar-lander-bb2qx0",
+    "deploymentId": "afb1712a_97eb_47fc_8f1f_2a717c2ea47c",
+    "deployedCommit": "129eb2fafef6563406e5d4c30e3a11922ada5049",
+    "liveUrl": "https://lunar-lander-bb2qx0.craftian.app",
+    "editorUrl": "https://craftian.ai/ide?app=lunar-lander-bb2qx0",
+    "servedPage": "website/index.html"
+  },
+  "magnet-lab": {
+    "projectId": "magnet-lab-2v4qbb",
+    "deploymentId": "02581703_d422_4db6_a406_a56a42017e63",
+    "deployedCommit": "b13e3f5da4d8129aeda4d0ab9931850be1be322d",
+    "liveUrl": "https://magnet-lab-2v4qbb.craftian.app",
+    "editorUrl": "https://craftian.ai/ide?app=magnet-lab-2v4qbb",
+    "servedPage": "website/index.html"
+  }
+}

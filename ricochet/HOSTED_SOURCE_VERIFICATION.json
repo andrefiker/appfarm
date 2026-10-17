@@ -1,0 +1,9 @@
+{
+  "game": "ricochet",
+  "url": "https://ricochet-w95k4k.craftian.app",
+  "tlsVerified": true,
+  "servedGameSourceMatches": true,
+  "normalization": "Removed only Craftian app metadata, SDK import map, app-menu injection and leading head whitespace.",
+  "sourceSha256": "4e49812bdbff28098b92609e5499bcd61267c05bf03bdeaf4ae2416ec377201b",
+  "passed": true
+}

@@ -1,0 +1,21 @@
+{
+  "package": "com.andrefiker.brickbreaker",
+  "version": "1.0.0",
+  "versionCode": 1,
+  "minSdk": 26,
+  "targetSdk": 35,
+  "orientation": "portrait",
+  "permissions": [],
+  "signatures": [
+    "v2",
+    "v3"
+  ],
+  "zipaligned": true,
+  "debuggable": false,
+  "bundledHtmlMatchesSource": true,
+  "apkBytes": 25286,
+  "sha256": "4c91f70d37b684ad30e3f3b78cc1d3d587a4b416848e995a904d87dce2b3a4f1",
+  "certificateSha256": "ae481cc4e8c5a346c894ea518695c91831a38c7fa7f5336aa05c4f45de03beb2",
+  "deviceInstallTested": false,
+  "releaseLintPerformed": false
+}

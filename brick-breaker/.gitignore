@@ -1,0 +1,12 @@
+android/.gradle/
+android/**/build/
+android/local.properties
+private-signing/
+dist/
+*.apk
+*.idsig
+*.p12
+*.jks
+hosted-response.html
+menu.png
+gameplay.png

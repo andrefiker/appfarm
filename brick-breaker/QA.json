@@ -1,0 +1,41 @@
+{
+  "testedAt": "2026-10-17T17:08:45.702Z",
+  "browser": "Chromium 153, headless",
+  "viewports": [
+    "393\u00d7852",
+    "320\u00d7700"
+  ],
+  "tests": [
+    "Start screen renders at 393px without horizontal overflow",
+    "New run: 54 bricks, 3 lives, launch enabled",
+    "Launch produces a moving upward ball",
+    "Wall reflects the ball into the playfield",
+    "Paddle edge steers ball upward at an angle",
+    "Brick collision destroys brick and persists score",
+    "Power-ups widen, slow and split the ball",
+    "Losing one multiball preserves the life",
+    "Losing final ball consumes one life and waits for serve",
+    "Pause freezes physics and resume restores state",
+    "Last lost life reaches game over and restart resets run",
+    "Cleared board advances to a fresh next level",
+    "Touch strip moves and clamps paddle",
+    "Best score survives reload",
+    "Keyboard movement and launch work",
+    "Narrow 320px layout fits and keeps controls reachable",
+    "Sustained deterministic gameplay remains stable and breaks bricks",
+    "Timed power-ups expire and restore the paddle",
+    "No JavaScript runtime errors"
+  ],
+  "errors": [],
+  "limits": [
+    "Synthetic browser tests; no physical Android playtest",
+    "Android package and signatures verified; device installation and release lint not performed"
+  ],
+  "hostedSmoke": {
+    "url": "https://brick-breaker-zl4y7d.craftian.app",
+    "httpStatus": 200,
+    "startLaunchPausePassed": true,
+    "pageErrors": [],
+    "note": "Browser used the environment proxy; local proxy certificate was ignored for UI testing. Separate curl fetch verified TLS normally."
+  }
+}

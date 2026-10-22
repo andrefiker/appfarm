@@ -1,0 +1,438 @@
+{
+  "browser": "131.0.6778.204",
+  "checks": [
+    {
+      "name": "bundled board starts with 32 rendered SVG pieces",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 1 fixture 0 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 1 fixture 1 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 1 fixture 2 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 1 fixture 3 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 1 fixture 4 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 1 fixture 5 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 2 fixture 0 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 2 fixture 1 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 2 fixture 2 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 2 fixture 3 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 2 fixture 4 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 2 fixture 5 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 3 fixture 0 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 3 fixture 1 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 3 fixture 2 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 3 fixture 3 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 3 fixture 4 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 3 fixture 5 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 4 fixture 0 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 4 fixture 1 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 4 fixture 2 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 4 fixture 3 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 4 fixture 4 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 4 fixture 5 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 5 fixture 0 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 5 fixture 1 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 5 fixture 2 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 5 fixture 3 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 5 fixture 4 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "offline engine level 5 fixture 5 returns a legal move",
+      "pass": true
+    },
+    {
+      "name": "Master finds mate in one",
+      "pass": true
+    },
+    {
+      "name": "tap move e2-e4",
+      "pass": true
+    },
+    {
+      "name": "drag move e7-e5",
+      "pass": true
+    },
+    {
+      "name": "saved position survives reload",
+      "pass": true
+    },
+    {
+      "name": "simulated native pause/resume preserves game",
+      "pass": true
+    },
+    {
+      "name": "tactical vision enabled",
+      "pass": true
+    },
+    {
+      "name": "reduced motion applied",
+      "pass": true
+    },
+    {
+      "name": "board fits 320px",
+      "pass": true
+    },
+    {
+      "name": "board fits 360px",
+      "pass": true
+    },
+    {
+      "name": "board fits 393px",
+      "pass": true
+    },
+    {
+      "name": "board fits 430px",
+      "pass": true
+    },
+    {
+      "name": "promotion dialog remains visible",
+      "pass": true
+    },
+    {
+      "name": "promotion offers four choices",
+      "pass": true
+    },
+    {
+      "name": "underpromotion commits",
+      "pass": true
+    },
+    {
+      "name": "no JavaScript errors",
+      "pass": true
+    },
+    {
+      "name": "no external requests",
+      "pass": true
+    }
+  ],
+  "engineSearches": [
+    {
+      "level": 1,
+      "position": 0,
+      "move": "e3",
+      "elapsed": 834.3999999985099,
+      "mate": false,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 1,
+      "position": 1,
+      "move": "Nb5",
+      "elapsed": 1300.4000000059605,
+      "mate": false,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 1,
+      "position": 2,
+      "move": "Kf1",
+      "elapsed": 1013.9000000059605,
+      "mate": false,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 1,
+      "position": 3,
+      "move": "a8=Q+",
+      "elapsed": 809.3000000044703,
+      "mate": false,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 1,
+      "position": 4,
+      "move": "Rxe8+",
+      "elapsed": 692.8999999985099,
+      "mate": false,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 1,
+      "position": 5,
+      "move": "Qf8#",
+      "elapsed": 482.8999999985099,
+      "mate": true,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 2,
+      "position": 0,
+      "move": "e4",
+      "elapsed": 563.9000000059605,
+      "mate": false,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 2,
+      "position": 1,
+      "move": "Bxa6",
+      "elapsed": 619.6999999955297,
+      "mate": false,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 2,
+      "position": 2,
+      "move": "exd6",
+      "elapsed": 631.1000000014901,
+      "mate": false,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 2,
+      "position": 3,
+      "move": "Kg2",
+      "elapsed": 434.8999999985099,
+      "mate": false,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 2,
+      "position": 4,
+      "move": "Rxe8+",
+      "elapsed": 431.3999999985099,
+      "mate": false,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 2,
+      "position": 5,
+      "move": "Qf8#",
+      "elapsed": 418.40000000596046,
+      "mate": true,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 3,
+      "position": 0,
+      "move": "e4",
+      "elapsed": 477.79999999701977,
+      "mate": false,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 3,
+      "position": 1,
+      "move": "Bxa6",
+      "elapsed": 501.29999999701977,
+      "mate": false,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 3,
+      "position": 2,
+      "move": "Kf1",
+      "elapsed": 554.2999999970198,
+      "mate": false,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 3,
+      "position": 3,
+      "move": "a8=Q+",
+      "elapsed": 499.80000000447035,
+      "mate": false,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 3,
+      "position": 4,
+      "move": "Rxe8+",
+      "elapsed": 399.6000000014901,
+      "mate": false,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 3,
+      "position": 5,
+      "move": "Qf8#",
+      "elapsed": 408.5,
+      "mate": true,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 4,
+      "position": 0,
+      "move": "e4",
+      "elapsed": 810.8999999985099,
+      "mate": false,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 4,
+      "position": 1,
+      "move": "Bxa6",
+      "elapsed": 1008.8000000044703,
+      "mate": false,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 4,
+      "position": 2,
+      "move": "Kd2",
+      "elapsed": 460,
+      "mate": false,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 4,
+      "position": 3,
+      "move": "Kg2",
+      "elapsed": 525.7000000029802,
+      "mate": false,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 4,
+      "position": 4,
+      "move": "Rxe8+",
+      "elapsed": 488.6000000014901,
+      "mate": false,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 4,
+      "position": 5,
+      "move": "Qf8#",
+      "elapsed": 447.59999999403954,
+      "mate": true,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 5,
+      "position": 0,
+      "move": "e4",
+      "elapsed": 1019.2000000029802,
+      "mate": false,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 5,
+      "position": 1,
+      "move": "Bxa6",
+      "elapsed": 2015.0999999940395,
+      "mate": false,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 5,
+      "position": 2,
+      "move": "Kd2",
+      "elapsed": 498.20000000298023,
+      "mate": false,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 5,
+      "position": 3,
+      "move": "a8=Q+",
+      "elapsed": 492.19999999552965,
+      "mate": false,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 5,
+      "position": 4,
+      "move": "Rxe8+",
+      "elapsed": 866.7999999970198,
+      "mate": false,
+      "engine": "Stockfish 17.1 Lite"
+    },
+    {
+      "level": 5,
+      "position": 5,
+      "move": "Qg7#",
+      "elapsed": 466,
+      "mate": true,
+      "engine": "Stockfish 17.1 Lite"
+    }
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "completed": true
+}

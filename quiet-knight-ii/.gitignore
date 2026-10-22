@@ -1,0 +1,7 @@
+build/
+.toolchain/
+node_modules/
+*.p12
+*.jks
+*.keystore
+password.txt

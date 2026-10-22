@@ -1,0 +1,29 @@
+{"seed":37,"games":32,"plies":5977,"terminal":6,"cap":200}
+✔ Perft start (328.985301ms)
+✔ Perft Kiwipete (180.244401ms)
+✔ Perft rook ending (68.132941ms)
+✔ Perft promotion and castling (19.310704ms)
+✔ Perft promotion tactics (120.934827ms)
+✔ Perft middlegame (137.015937ms)
+✔ castling through check is illegal (3.440148ms)
+✔ en passant and king exposure (1.699616ms)
+✔ all four promotions (1.858984ms)
+✔ pinned geometric attacks differ from legal moves (2.483494ms)
+✔ checkmate, stalemate and mate precedence (2.161201ms)
+✔ standard dead material (0.897433ms)
+✔ claimable 50 moves versus automatic 75 moves (1.130659ms)
+✔ threefold is claimable and fivefold automatic (7.345968ms)
+✔ declared-move draw claim leaves board unchanged (10.271482ms)
+✔ save restore and undo (3.081896ms)
+✔ FEN and PGN round trips (8.04601ms)
+✔ invalid FEN, castling rights and saves rejected (1.898138ms)
+✔ terminal positions reject moves (1.789134ms)
+✔ 32 seeded legal games preserve kings and history (23690.954824ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 24723.149007

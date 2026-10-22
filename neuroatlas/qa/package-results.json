@@ -1,10 +1,10 @@
 {
-  "apk": "NEUROATLAS-v1.1.0.apk",
-  "sha256": "23653e5296671e572d81cb6c392d289ed3fa34d38d5d97a3218687453fd31dd5",
-  "bytes": 78798,
+  "apk": "NEUROATLAS-v1.2.0.apk",
+  "sha256": "18b5f0f17196b4ee12e6b09931124b872eaee0208c9a1f60398f289b17a1ac64",
+  "bytes": 95311,
   "package": "com.andrefiker.neuroatlas",
-  "versionName": "1.1.0",
-  "versionCode": 3,
+  "versionName": "1.2.0",
+  "versionCode": 4,
   "minSdk": 26,
   "targetSdk": 35,
   "certificateSha256": "d68626fa70e1de06bdc47dbcb969e8f00f7d0ce7923614ef715eb0797b58e54a",
@@ -18,19 +18,19 @@
     "entry": "resources.arsc",
     "compressionMethod": 0,
     "uncompressed": true,
-    "dataOffset": 66140,
+    "dataOffset": 85520,
     "aligned4Bytes": true
   },
   "assets": [
     {
       "path": "assets/anatomy.js",
-      "bytes": 10563,
-      "sha256": "bdb56e1456d0afeb3d28fd530907f01da86d10f022828a4437d54a9327423a99"
+      "bytes": 14128,
+      "sha256": "b433509d6eef8610224b9d1eab8b2f54190482678072bb2182e25a18094b5641"
     },
     {
       "path": "assets/app.js",
-      "bytes": 44705,
-      "sha256": "941ff5a348f250d4a78ca91cb08cf73985a3eb30c26d2cdf88434ab2ddbd539c"
+      "bytes": 48449,
+      "sha256": "3b43136f0c19376215aabe0f3dc9689e3d8c4997f9db3690d34872b7d50b5ef1"
     },
     {
       "path": "assets/circuits.css",
@@ -39,23 +39,33 @@
     },
     {
       "path": "assets/circuits.js",
-      "bytes": 10826,
-      "sha256": "d007fd48ec5fe8b9ea390ebcf08ec4b8bdd06ae903eaf4962b2601e97679ad10"
+      "bytes": 13951,
+      "sha256": "c75129b60f7b38d3000f53606ede704a3ad58d8ea4d2cde335c476acd947ab61"
     },
     {
       "path": "assets/data.js",
-      "bytes": 152298,
-      "sha256": "1c1c6c55bb63abb76e3c9fdeda9d8faca79951716fd5f024470c4d8a23410abc"
+      "bytes": 303521,
+      "sha256": "ea6691e8b16a825654385bd96d40c79ebf933ce8a405db9881f11b5e3fe5257a"
+    },
+    {
+      "path": "assets/explorer.css",
+      "bytes": 11552,
+      "sha256": "958389c8a55081ad8aee55ff8c66559e19cdf416df3eddd09940a6328d9bdc68"
+    },
+    {
+      "path": "assets/explorer.js",
+      "bytes": 11579,
+      "sha256": "4771305511450b3846f9d675e86be9b92e496ede7175bc6750a3e8df0b5a78cb"
     },
     {
       "path": "assets/index.html",
-      "bytes": 1192,
-      "sha256": "6027bff9dfe9aee06eda4f3ac4d92523b8f92d0d96fa3be7596633371de7d704"
+      "bytes": 1270,
+      "sha256": "c3971b81b2a3fae5b548cd5a17a6a3b98ed3397a27d3943af821222fe09f4025"
     },
     {
       "path": "assets/model.js",
-      "bytes": 1594,
-      "sha256": "74d9ea599639c07e29623622170a37c94dec0e94ab40a60d48a04ba61c34ee26"
+      "bytes": 1671,
+      "sha256": "5c1fedd9d4ff659f5832bedf8d3aa986e1e98e942ef05769409676269e842656"
     },
     {
       "path": "assets/style.css",
@@ -73,6 +83,6 @@
     "No signing secrets in APK"
   ],
   "emulatorInstall": "NOT RUN — no emulator available",
-  "physicalPhone": "1.1.0: NOT RUN on a connected phone. Earlier v1.0.0 installation failure was corrected in v1.0.1; no owner confirmation recorded.",
+  "physicalPhone": "1.2.0: NOT RUN on a connected phone. Earlier v1.0.0 installation failure was corrected in v1.0.1; no owner confirmation recorded.",
   "note": "Package checks pass, including the Android API 30+ resource-table installation rule missed in v1.0.0. This is not an emulator or physical-phone installation result."
 }

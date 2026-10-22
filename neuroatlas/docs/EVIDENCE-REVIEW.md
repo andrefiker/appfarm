@@ -29,8 +29,8 @@ Referências topográficas principais: Dafny/UTHealth, Purves (superfície later
 - **Lateral:** hemisfério esquerdo, anterior à esquerda. Motor anterior ao somatossensorial; temporal inferior ao sulco lateral; occipital posterior; cerebelo posterior ao tronco. Ínsula, hipocampo e amígdala não aparecem como estruturas da superfície lateral.
 - **Medial:** esquema sagital com estruturas expostas. Corpo caloso superior à cavidade ventricular ilustrada; tálamo superior ao hipotálamo; cíngulo ao redor do caloso; vmPFC medial inferior. Não é um corte mediano radiológico exato e combina exposição didática de estruturas.
 - **Inferior:** anterior no alto; lado direito do indivíduo à esquerda da figura. Orbitofrontal anterior, polos temporais laterais, tronco central, cerebelo caudal. Hipocampo não foi desenhado como estrutura superficial visível. Cerebelo oculta parcialmente a face occipital.
-- **Coronais:** dois níveis didáticos separados, amígdala anterior e hipocampo mais posterior. Ínsula lateral aos núcleos profundos; tálamo no corte posterior. O manto cortical é cinza e não é rotulado falsamente como um lobo frontal inteiro. Branco/cinzento, cápsulas, todas as subdivisões dos núcleos da base e todos os ventrículos não são representados.
-- **Redes:** projeção de regiões de planos distintos sobre silhueta lateral. Coordenadas não são um mapa de superfície dos núcleos profundos. Cada circuito informa suas omissões.
+- **Coronais:** dois níveis didáticos separados, amígdala anterior e hipocampo mais posterior. Ínsula lateral aos núcleos profundos; tálamo no corte posterior. O manto cortical é cinza e não é rotulado falsamente como um lobo frontal inteiro. Um fundo esquemático de substância branca foi acrescentado na versão 1.2.0; espessuras, cápsulas, todas as subdivisões dos núcleos da base e todos os ventrículos não são reproduzidos.
+- **Redes:** na versão 1.2.0, usam vistas anatômicas reais do esquema. Estruturas de outros planos são listadas e podem ser localizadas; a projeção antiga sobre uma única silhueta foi removida. Cada circuito informa suas omissões.
 
 Revisão visual das cinco figuras mais testes de relações geométricas e de centro do marcador dentro do caminho SVG correspondente. Foram corrigidos o marcador frontal inferior e o hipocampal posterior, e retirado o rótulo lobar indevido do manto coronal. Os 40 marcadores passam o teste geométrico final. Esse teste detecta desalinhamento da interface, não demonstra a validade biológica dos caminhos desenhados.
 
@@ -59,3 +59,11 @@ Foram incluídos 20 mapas, com 53 recortes, e preservados os temas neurológicos
 - **Paciente:** textos curtos específicos de cada recorte; painel técnico de evidências recolhíveis não aparece nesse modo. Fontes continuam acessíveis como referência educacional.
 
 Foram conferidos títulos, autores, anos, identificadores e escopos das referências novas; o nível real de acesso aparece em cada ficha. Para vários estudos, apenas metadados e trechos indexados estavam disponíveis. A revisão não teve especialista independente nem conferência dos dados primários.
+
+## Revisão 1.2.0
+
+Os marcos central/lateral, cíngulo, fissura longitudinal e relações coronais foram reconferidos no texto UTHealth. Desenhos permanecem esquemáticos: limites externos, giros, campo branco, grupos nucleares e espessuras não constituem atlas de precisão. Os 40 marcadores são testados sobre a geometria atual.
+
+As 132 inclusões de regiões e 79 linhas agora têm fichas explícitas. Funções gerais e referência do recorte ficam separadas; uma fonte do recorte não valida automaticamente cada região, linha, desenho ou narrativa. Todas as linhas foram mantidas como ensino, sem nova afirmação de medição direta.
+
+Oito funções e seis exemplos fictícios usam o mesmo corpus e seu nível de síntese. As histórias não atribuem diagnóstico nem inferem saúde. A comparação trata de conjuntos selecionados para ensino: compartilhar um destaque não demonstra etiologia comum, e não compartilhar não demonstra independência. A nova apresentação mantém limites visíveis e evita escore, cronômetro terapêutico ou instrução individual. Sem consulta a pacientes ou revisão independente; ver `EXPLORER-V1.2.md`.

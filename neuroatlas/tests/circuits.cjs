@@ -46,7 +46,7 @@ check('Uncertainty is visible for agoraphobia, ADHD, insomnia and dissociation',
  assert.ok(insomnia.includes('insomnia-null')&&insomnia.includes('insomnia-update'));
  assert.match(get('dissociation-topic').map.limitation,/pequenas/);
  const code=fs.readFileSync(path.join(root,'web/circuits.js'),'utf8');
- for(const phrase of ['não lesão, hiperatividade','Não mede o seu cérebro','sem direção, força ou trajeto','não estão “desligadas”'])assert.ok(code.includes(phrase),phrase);
+ for(const phrase of ['Não indicam atividade medida, lesão ou gravidade','Não mede o seu cérebro','Linhas de ensino, não fibras medidas','não estão “desligadas”'])assert.ok(code.includes(phrase),phrase);
 });
 check('New conditions remain searchable and existing bookmark IDs stay valid',()=>{
  for(const id of ['gad-topic','binge-topic','borderline-topic','insomnia-topic'])assert.ok(D.conditions.find(c=>c.id===id));

@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "engine": "131.0.6778.204",
   "renderedMapViews": 365,
   "checks": [
@@ -45,10 +45,12 @@
     "http://127.0.0.1:8776/",
     "http://127.0.0.1:8776/style.css",
     "http://127.0.0.1:8776/circuits.css",
+    "http://127.0.0.1:8776/explorer.css",
     "http://127.0.0.1:8776/data.js",
     "http://127.0.0.1:8776/model.js",
     "http://127.0.0.1:8776/anatomy.js",
     "http://127.0.0.1:8776/circuits.js",
+    "http://127.0.0.1:8776/explorer.js",
     "http://127.0.0.1:8776/app.js"
   ],
   "note": "Desktop browser touch emulation; not an Android device install or independent clinical validation."

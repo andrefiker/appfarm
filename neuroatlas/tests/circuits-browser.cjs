@@ -37,7 +37,7 @@ const root=path.resolve(__dirname,'..'),shots=path.join(root,'qa/screenshots');
      await p.locator(`.circuit-views [data-action="circuit-view"][data-id="${view}"]`).click();
      const result=await p.evaluate(()=>{
       const s=Neuro.state.stack.at(-1),topic=ATLAS_DATA.conditions.find(x=>x.id===s.id),sel=NeuroCircuits.selection(topic,s.aspect);
-      return {expected:sel.nodes.filter(id=>Object.prototype.hasOwnProperty.call(Anatomy.marks[s.view],id)).sort(),actual:[...document.querySelectorAll('#circuit-viewport path.circuit-on')].map(e=>e.dataset.region).sort(),edges:[...document.querySelectorAll('.circuit-link')].map(e=>e.getAttribute('d')),inactiveFocusable:document.querySelectorAll('#circuit-viewport .circuit-off[tabindex="0"]').length,overflow:document.documentElement.scrollWidth>innerWidth,svgWidth:document.querySelector('#circuit-viewport svg').getBoundingClientRect().width};
+      return {expected:sel.nodes.filter(id=>Object.prototype.hasOwnProperty.call(Anatomy.marks[s.view],id)).sort(),actual:[...document.querySelectorAll('#circuit-viewport path.circuit-on')].map(e=>e.dataset.region).sort(),edges:[...document.querySelectorAll('.circuit-link')].map(e=>e.getAttribute('d')),inactiveFocusable:document.querySelectorAll('#circuit-viewport .circuit-off[tabindex="0"]').length,overflow:document.documentElement.scrollWidth>document.documentElement.clientWidth,svgWidth:document.querySelector('#circuit-viewport svg').getBoundingClientRect().width};
      });
      assert.deepEqual(result.actual,result.expected,profile.id+'/'+aspect+'/'+view);
      assert.ok(result.svgWidth>200);assert.equal(result.overflow,false);assert.equal(result.inactiveFocusable,0);assert.ok(result.edges.every(x=>!x.includes('NaN')));
@@ -54,13 +54,13 @@ const root=path.resolve(__dirname,'..'),shots=path.join(root,'qa/screenshots');
   assert.match(await p.locator('.circuit-region h3').innerText(),/Núcleos da base/);
   await p.locator('.circuit-region [data-action="region-detail"]').click();await p.getByLabel('Voltar',{exact:true}).click();
   assert.equal((await getState()).node,'basal');assert.equal((await getState()).aspect,'loops');
-  await p.locator('.source-button[data-id="ocd-circuits"]:visible').first().click();assert.match(await p.locator('.source-url').last().innerText(),/PMC8091795/);
+  await p.getByText('Referências deste recorte',{exact:true}).click();await p.locator('.source-button[data-id="ocd-circuits"]:visible').first().click();assert.match(await p.locator('.source-url').last().innerText(),/PMC8091795/);
   await p.getByLabel('Voltar',{exact:true}).click();assert.equal((await getState()).aspect,'loops');
   await p.locator('.circuit-views [data-id="inferior"]').click();
   await shot('psychiatry-ocd-inferior-390-dark.png','.circuit-anatomy');
  });
  await check('Touch, pinch, drag and reset work in the highlighted anatomy',async()=>{
-  await open('panic-topic');await p.locator('.circuit-views [data-id="coronalA"]').click();
+  await open('panic-topic');await p.locator('[data-action="circuit-aspect"][data-id="all"]').click();await p.locator('.circuit-views [data-id="coronalA"]').click();
   await p.locator('.circuit-anatomy').scrollIntoViewIfNeeded();
   const marker=p.locator('#circuit-viewport .brain-label[data-region="amygdala"] circle'),rect=await marker.boundingBox();
   await p.touchscreen.tap(rect.x+rect.width/2,rect.y+rect.height/2);assert.equal((await getState()).node,'amygdala');
@@ -92,7 +92,7 @@ const root=path.resolve(__dirname,'..'),shots=path.join(root,'qa/screenshots');
  await check('All maps retain operation after networking is disabled',async()=>{
   await c.setOffline(true);await open('borderline-topic');await p.locator('[data-action="circuit-aspect"][data-id="emotion"]').click();
   await p.locator('.circuit-diagram [data-id="amygdala"]').click();assert.equal((await getState()).node,'amygdala');
-  await p.locator('.source-button[data-id="borderline-meta"]').click();assert.match(await p.locator('.source-url').last().innerText(),/25935068/);await p.getByLabel('Voltar',{exact:true}).click();await c.setOffline(false);
+  await p.getByText('Referências deste recorte',{exact:true}).click();await p.locator('.source-button[data-id="borderline-meta"]:visible').first().click();assert.match(await p.locator('.source-url').last().innerText(),/25935068/);await p.getByLabel('Voltar',{exact:true}).click();await c.setOffline(false);
  });
  await check('320–430 px, light/dark, large text, alternate handedness and 44 px controls fit',async()=>{
   for(const theme of ['dark','light']){
@@ -111,6 +111,6 @@ const root=path.resolve(__dirname,'..'),shots=path.join(root,'qa/screenshots');
  });
  await check('No JavaScript exceptions or external network requests',async()=>{assert.deepEqual(errors,[]);assert.ok(requests.every(u=>u.startsWith('http://127.0.0.1:8776/')));});
  }finally{
-  fs.writeFileSync(path.join(root,'qa/circuit-browser-results.json'),JSON.stringify({version:'1.1.0',engine:await b.version(),renderedMapViews:rendered,checks,errors,requests:[...new Set(requests)],note:'Desktop browser touch emulation; not an Android device install or independent clinical validation.'},null,2));await b.close();server.close();
+  fs.writeFileSync(path.join(root,'qa/circuit-browser-results.json'),JSON.stringify({version:'1.2.0',engine:await b.version(),renderedMapViews:rendered,checks,errors,requests:[...new Set(requests)],note:'Desktop browser touch emulation; not an Android device install or independent clinical validation.'},null,2));await b.close();server.close();
  }
 })().catch(e=>{console.error(e);process.exit(1)});

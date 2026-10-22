@@ -1,7 +1,8 @@
 {
-  "version": "1.1.0",
-  "sameToolchainRebuildByteIdentical": true,
-  "firstSha256": "23653e5296671e572d81cb6c392d289ed3fa34d38d5d97a3218687453fd31dd5",
-  "secondSha256": "23653e5296671e572d81cb6c392d289ed3fa34d38d5d97a3218687453fd31dd5",
-  "scope": "Two clean sequential builds; ECJ 3.38.0, D8 release single thread, fixed ZIP metadata and same dedicated key. Different compiler or toolchain may differ."
+  "version": "1.2.0",
+  "byteIdentical": true,
+  "sha256": "18b5f0f17196b4ee12e6b09931124b872eaee0208c9a1f60398f289b17a1ac64",
+  "bytes": 95311,
+  "method": "Two clean consecutive builds from identical source, fixed Android35/ECJ3.38 toolchain, same dedicated signing key",
+  "scope": "Reproducibility with this toolchain; does not prove installation or clinical validity"
 }

@@ -1,0 +1,64 @@
+{
+  "version": "1.2.0",
+  "engine": "131.0.6778.204",
+  "comparisons": 40,
+  "presentationFrames": 93,
+  "storyFrames": 30,
+  "responsiveScreens": 96,
+  "checks": [
+    {
+      "name": "Refined anatomy exposes internal planes and toggles named landmarks",
+      "pass": true
+    },
+    {
+      "name": "Function browsing and global accent-insensitive search lead to eight functional catalogs",
+      "pass": true
+    },
+    {
+      "name": "All functions compare different conditions with correct highlights in five planes",
+      "pass": true
+    },
+    {
+      "name": "Region and connection evidence open their actual sources and preserve map state",
+      "pass": true
+    },
+    {
+      "name": "Recut stepping, anatomical emphasis and sticky context stay synchronized",
+      "pass": true
+    },
+    {
+      "name": "All twenty presentations have short and extended slides without changing saved reading mode",
+      "pass": true
+    },
+    {
+      "name": "Six fictional stories advance through all thirty steps with accessible regions and no user inputs",
+      "pass": true
+    },
+    {
+      "name": "320–430 px and dark/light themes fit all new flows at normal and 200 percent text",
+      "pass": true
+    },
+    {
+      "name": "New routes work offline and only settings, bookmarks and recent IDs survive reload",
+      "pass": true
+    },
+    {
+      "name": "No JavaScript exceptions, remote requests, or hidden patient record forms",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "requests": [
+    "http://127.0.0.1:8777/",
+    "http://127.0.0.1:8777/style.css",
+    "http://127.0.0.1:8777/circuits.css",
+    "http://127.0.0.1:8777/explorer.css",
+    "http://127.0.0.1:8777/data.js",
+    "http://127.0.0.1:8777/model.js",
+    "http://127.0.0.1:8777/anatomy.js",
+    "http://127.0.0.1:8777/circuits.js",
+    "http://127.0.0.1:8777/explorer.js",
+    "http://127.0.0.1:8777/app.js"
+  ],
+  "note": "Desktop Chromium with simulated touch. 200% is CSS text scaling, not Android nonlinear system font scaling. No emulator or physical-phone installation."
+}

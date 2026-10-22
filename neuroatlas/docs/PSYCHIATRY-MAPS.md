@@ -1,4 +1,4 @@
-# Transtornos e mapas — NEUROATLAS 1.1.0
+# Transtornos e mapas — NEUROATLAS 1.2.0
 
 20 transtornos ou grupos, 53 recortes funcionais. Lista seletiva, não taxonomia diagnóstica completa. Neurodesenvolvimento, sono e grupos de condições aparecem com categorias explícitas. Não há um mapa exaustivo e individualmente válido de ‘todos os caminhos envolvidos’.
 

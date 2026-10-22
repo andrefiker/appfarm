@@ -1,6 +1,6 @@
 /* Original PT-BR educational synthesis. Bibliography is bundled. */
 window.ATLAS_DATA = {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "reviewed": "2026-10-22",
   "sources": [
     {
@@ -1422,7 +1422,73 @@ window.ATLAS_DATA = {
             ],
             "basis": "research",
             "level": "Em desenvolvimento",
-            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual."
+            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual.",
+            "highlights": {
+              "amygdala": {
+                "basis": "teaching-selection",
+                "why": "Participa de aprendizagem de relevância e de respostas defensivas.",
+                "sources": [
+                  "fear",
+                  "fear-debate",
+                  "extinction"
+                ],
+                "contextSources": [
+                  "anxiety-circuits"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "acc": {
+                "basis": "teaching-selection",
+                "why": "Participa de saliência, controle e integração autonômica.",
+                "sources": [
+                  "seeley",
+                  "autonomic",
+                  "transdiag"
+                ],
+                "contextSources": [
+                  "anxiety-circuits"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "vmpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa de avaliação contextual e aprendizagem de segurança.",
+                "sources": [
+                  "extinction",
+                  "fear"
+                ],
+                "contextSources": [
+                  "anxiety-circuits"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "amygdala",
+                  "acc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Amígdala e Cíngulo anterior para acompanhar o recorte «Antecipação e ameaça».",
+                "sources": [
+                  "anxiety-circuits"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "amygdala",
+                  "vmpfc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Amígdala e CPF medial para acompanhar o recorte «Antecipação e ameaça».",
+                "sources": [
+                  "anxiety-circuits"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "attention",
@@ -1448,7 +1514,49 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "dlpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa da manutenção de metas e do controle de tarefas.",
+                "sources": [
+                  "control"
+                ],
+                "contextSources": [
+                  "control",
+                  "gad-clinical"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "parietal": {
+                "basis": "teaching-selection",
+                "why": "Integra informação sensorial e espacial.",
+                "sources": [
+                  "lateral",
+                  "control"
+                ],
+                "contextSources": [
+                  "control",
+                  "gad-clinical"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "dlpfc",
+                  "parietal"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre CPF lateral e Parietal para acompanhar o recorte «Atenção e preocupação».",
+                "sources": [
+                  "control",
+                  "gad-clinical"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "body",
@@ -1480,7 +1588,78 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "insula": {
+                "basis": "teaching-selection",
+                "why": "Integra sinais corporais e informações relevantes em redes.",
+                "sources": [
+                  "anatomy",
+                  "intero",
+                  "seeley"
+                ],
+                "contextSources": [
+                  "autonomic",
+                  "intero"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "acc": {
+                "basis": "teaching-selection",
+                "why": "Participa de saliência, controle e integração autonômica.",
+                "sources": [
+                  "seeley",
+                  "autonomic",
+                  "transdiag"
+                ],
+                "contextSources": [
+                  "autonomic",
+                  "intero"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "brainstem": {
+                "basis": "teaching-selection",
+                "why": "Abriga vias e núcleos importantes para vigília e regulação corporal.",
+                "sources": [
+                  "anatomy",
+                  "autonomic"
+                ],
+                "contextSources": [
+                  "autonomic",
+                  "intero"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "insula",
+                  "acc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Ínsula e Cíngulo anterior para acompanhar o recorte «Corpo e regulação».",
+                "sources": [
+                  "autonomic",
+                  "intero"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "acc",
+                  "brainstem"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Cíngulo anterior e Tronco para acompanhar o recorte «Corpo e regulação».",
+                "sources": [
+                  "autonomic",
+                  "intero"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           }
         ],
         "limitation": "O TAG não tem um mapa único. Estas funções também participam da vida cotidiana e de outros quadros.",
@@ -1545,7 +1724,73 @@ window.ATLAS_DATA = {
             ],
             "basis": "research",
             "level": "Em desenvolvimento",
-            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual."
+            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual.",
+            "highlights": {
+              "insula": {
+                "basis": "teaching-selection",
+                "why": "Integra sinais corporais e informações relevantes em redes.",
+                "sources": [
+                  "anatomy",
+                  "intero",
+                  "seeley"
+                ],
+                "contextSources": [
+                  "panic-circuits"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "acc": {
+                "basis": "teaching-selection",
+                "why": "Participa de saliência, controle e integração autonômica.",
+                "sources": [
+                  "seeley",
+                  "autonomic",
+                  "transdiag"
+                ],
+                "contextSources": [
+                  "panic-circuits"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "brainstem": {
+                "basis": "teaching-selection",
+                "why": "Abriga vias e núcleos importantes para vigília e regulação corporal.",
+                "sources": [
+                  "anatomy",
+                  "autonomic"
+                ],
+                "contextSources": [
+                  "panic-circuits"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "insula",
+                  "acc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Ínsula e Cíngulo anterior para acompanhar o recorte «Sensações e alarme».",
+                "sources": [
+                  "panic-circuits"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "acc",
+                  "brainstem"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Cíngulo anterior e Tronco para acompanhar o recorte «Sensações e alarme».",
+                "sources": [
+                  "panic-circuits"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "threat",
@@ -1570,7 +1815,48 @@ window.ATLAS_DATA = {
             ],
             "basis": "research",
             "level": "Em desenvolvimento",
-            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual."
+            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual.",
+            "highlights": {
+              "amygdala": {
+                "basis": "teaching-selection",
+                "why": "Participa de aprendizagem de relevância e de respostas defensivas.",
+                "sources": [
+                  "fear",
+                  "fear-debate",
+                  "extinction"
+                ],
+                "contextSources": [
+                  "panic-circuits"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "vmpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa de avaliação contextual e aprendizagem de segurança.",
+                "sources": [
+                  "extinction",
+                  "fear"
+                ],
+                "contextSources": [
+                  "panic-circuits"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "amygdala",
+                  "vmpfc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Amígdala e CPF medial para acompanhar o recorte «Antecipação de ameaça».",
+                "sources": [
+                  "panic-circuits"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "context",
@@ -1602,7 +1888,78 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "hippocampus": {
+                "basis": "teaching-selection",
+                "why": "Importante para formar memórias declarativas em redes.",
+                "sources": [
+                  "memory",
+                  "ventral",
+                  "sleep-memory"
+                ],
+                "contextSources": [
+                  "extinction",
+                  "memory"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "vmpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa de avaliação contextual e aprendizagem de segurança.",
+                "sources": [
+                  "extinction",
+                  "fear"
+                ],
+                "contextSources": [
+                  "extinction",
+                  "memory"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "amygdala": {
+                "basis": "teaching-selection",
+                "why": "Participa de aprendizagem de relevância e de respostas defensivas.",
+                "sources": [
+                  "fear",
+                  "fear-debate",
+                  "extinction"
+                ],
+                "contextSources": [
+                  "extinction",
+                  "memory"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "hippocampus",
+                  "amygdala"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Hipocampo e Amígdala para acompanhar o recorte «Contexto e aprendizagem».",
+                "sources": [
+                  "extinction",
+                  "memory"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "hippocampus",
+                  "vmpfc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Hipocampo e CPF medial para acompanhar o recorte «Contexto e aprendizagem».",
+                "sources": [
+                  "extinction",
+                  "memory"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           }
         ],
         "limitation": "O mapa não distingue pânico de problemas cardíacos, respiratórios ou outras causas. Não reduz a crise à amígdala.",
@@ -1662,7 +2019,49 @@ window.ATLAS_DATA = {
             ],
             "basis": "research",
             "level": "Em desenvolvimento",
-            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual."
+            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual.",
+            "highlights": {
+              "amygdala": {
+                "basis": "teaching-selection",
+                "why": "Participa de aprendizagem de relevância e de respostas defensivas.",
+                "sources": [
+                  "fear",
+                  "fear-debate",
+                  "extinction"
+                ],
+                "contextSources": [
+                  "anxiety-meta"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "insula": {
+                "basis": "teaching-selection",
+                "why": "Integra sinais corporais e informações relevantes em redes.",
+                "sources": [
+                  "anatomy",
+                  "intero",
+                  "seeley"
+                ],
+                "contextSources": [
+                  "anxiety-meta"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "amygdala",
+                  "insula"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Amígdala e Ínsula para acompanhar o recorte «Ameaça social».",
+                "sources": [
+                  "anxiety-meta"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "self",
@@ -1687,7 +2086,47 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "vmpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa de avaliação contextual e aprendizagem de segurança.",
+                "sources": [
+                  "extinction",
+                  "fear"
+                ],
+                "contextSources": [
+                  "dmn"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "pcc": {
+                "basis": "teaching-selection",
+                "why": "Participa de redes associadas ao processamento interno.",
+                "sources": [
+                  "dmn",
+                  "yeo"
+                ],
+                "contextSources": [
+                  "dmn"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "vmpfc",
+                  "pcc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre CPF medial e Cíngulo posterior para acompanhar o recorte «Pensar sobre si».",
+                "sources": [
+                  "dmn"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "focus",
@@ -1714,7 +2153,49 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "dlpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa da manutenção de metas e do controle de tarefas.",
+                "sources": [
+                  "control"
+                ],
+                "contextSources": [
+                  "control",
+                  "social-clinical"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "parietal": {
+                "basis": "teaching-selection",
+                "why": "Integra informação sensorial e espacial.",
+                "sources": [
+                  "lateral",
+                  "control"
+                ],
+                "contextSources": [
+                  "control",
+                  "social-clinical"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "dlpfc",
+                  "parietal"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre CPF lateral e Parietal para acompanhar o recorte «Foco e contexto».",
+                "sources": [
+                  "control",
+                  "social-clinical"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           }
         ],
         "limitation": "O estudo de 2007 não representa todas as situações sociais. Atividade dessas áreas não revela o que alguém pensa.",
@@ -1772,7 +2253,49 @@ window.ATLAS_DATA = {
             ],
             "basis": "research",
             "level": "Em desenvolvimento",
-            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual."
+            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual.",
+            "highlights": {
+              "amygdala": {
+                "basis": "teaching-selection",
+                "why": "Participa de aprendizagem de relevância e de respostas defensivas.",
+                "sources": [
+                  "fear",
+                  "fear-debate",
+                  "extinction"
+                ],
+                "contextSources": [
+                  "anxiety-meta"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "insula": {
+                "basis": "teaching-selection",
+                "why": "Integra sinais corporais e informações relevantes em redes.",
+                "sources": [
+                  "anatomy",
+                  "intero",
+                  "seeley"
+                ],
+                "contextSources": [
+                  "anxiety-meta"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "amygdala",
+                  "insula"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Amígdala e Ínsula para acompanhar o recorte «Pistas de ameaça».",
+                "sources": [
+                  "anxiety-meta"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "learning",
@@ -1804,7 +2327,78 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "amygdala": {
+                "basis": "teaching-selection",
+                "why": "Participa de aprendizagem de relevância e de respostas defensivas.",
+                "sources": [
+                  "fear",
+                  "fear-debate",
+                  "extinction"
+                ],
+                "contextSources": [
+                  "extinction",
+                  "memory"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "hippocampus": {
+                "basis": "teaching-selection",
+                "why": "Importante para formar memórias declarativas em redes.",
+                "sources": [
+                  "memory",
+                  "ventral",
+                  "sleep-memory"
+                ],
+                "contextSources": [
+                  "extinction",
+                  "memory"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "vmpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa de avaliação contextual e aprendizagem de segurança.",
+                "sources": [
+                  "extinction",
+                  "fear"
+                ],
+                "contextSources": [
+                  "extinction",
+                  "memory"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "amygdala",
+                  "hippocampus"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Amígdala e Hipocampo para acompanhar o recorte «Aprendizagem e contexto».",
+                "sources": [
+                  "extinction",
+                  "memory"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "amygdala",
+                  "vmpfc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Amígdala e CPF medial para acompanhar o recorte «Aprendizagem e contexto».",
+                "sources": [
+                  "extinction",
+                  "memory"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           }
         ],
         "limitation": "Não há um circuito cerebral exclusivo de cada objeto temido. As linhas não simulam exposição ou tratamento.",
@@ -1872,7 +2466,83 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "amygdala": {
+                "basis": "teaching-selection",
+                "why": "Participa de aprendizagem de relevância e de respostas defensivas.",
+                "sources": [
+                  "fear",
+                  "fear-debate",
+                  "extinction"
+                ],
+                "contextSources": [
+                  "agora-clinical",
+                  "extinction",
+                  "memory"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "hippocampus": {
+                "basis": "teaching-selection",
+                "why": "Importante para formar memórias declarativas em redes.",
+                "sources": [
+                  "memory",
+                  "ventral",
+                  "sleep-memory"
+                ],
+                "contextSources": [
+                  "agora-clinical",
+                  "extinction",
+                  "memory"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "vmpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa de avaliação contextual e aprendizagem de segurança.",
+                "sources": [
+                  "extinction",
+                  "fear"
+                ],
+                "contextSources": [
+                  "agora-clinical",
+                  "extinction",
+                  "memory"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "amygdala",
+                  "hippocampus"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Amígdala e Hipocampo para acompanhar o recorte «Segurança e contexto».",
+                "sources": [
+                  "agora-clinical",
+                  "extinction",
+                  "memory"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "hippocampus",
+                  "vmpfc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Hipocampo e CPF medial para acompanhar o recorte «Segurança e contexto».",
+                "sources": [
+                  "agora-clinical",
+                  "extinction",
+                  "memory"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "body",
@@ -1905,7 +2575,83 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "insula": {
+                "basis": "teaching-selection",
+                "why": "Integra sinais corporais e informações relevantes em redes.",
+                "sources": [
+                  "anatomy",
+                  "intero",
+                  "seeley"
+                ],
+                "contextSources": [
+                  "intero",
+                  "autonomic",
+                  "agora-clinical"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "acc": {
+                "basis": "teaching-selection",
+                "why": "Participa de saliência, controle e integração autonômica.",
+                "sources": [
+                  "seeley",
+                  "autonomic",
+                  "transdiag"
+                ],
+                "contextSources": [
+                  "intero",
+                  "autonomic",
+                  "agora-clinical"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "brainstem": {
+                "basis": "teaching-selection",
+                "why": "Abriga vias e núcleos importantes para vigília e regulação corporal.",
+                "sources": [
+                  "anatomy",
+                  "autonomic"
+                ],
+                "contextSources": [
+                  "intero",
+                  "autonomic",
+                  "agora-clinical"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "insula",
+                  "acc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Ínsula e Cíngulo anterior para acompanhar o recorte «Sensações e antecipação».",
+                "sources": [
+                  "intero",
+                  "autonomic",
+                  "agora-clinical"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "acc",
+                  "brainstem"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Cíngulo anterior e Tronco para acompanhar o recorte «Sensações e antecipação».",
+                "sources": [
+                  "intero",
+                  "autonomic",
+                  "agora-clinical"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           }
         ],
         "limitation": "Nesta edição não se apresenta uma assinatura neural específica de agorafobia. O destaque é exclusivamente didático.",
@@ -1969,7 +2715,71 @@ window.ATLAS_DATA = {
             ],
             "basis": "research",
             "level": "Em desenvolvimento",
-            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual."
+            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual.",
+            "highlights": {
+              "vmpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa de avaliação contextual e aprendizagem de segurança.",
+                "sources": [
+                  "extinction",
+                  "fear"
+                ],
+                "contextSources": [
+                  "depression-net"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "pcc": {
+                "basis": "teaching-selection",
+                "why": "Participa de redes associadas ao processamento interno.",
+                "sources": [
+                  "dmn",
+                  "yeo"
+                ],
+                "contextSources": [
+                  "depression-net"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "parietal": {
+                "basis": "teaching-selection",
+                "why": "Integra informação sensorial e espacial.",
+                "sources": [
+                  "lateral",
+                  "control"
+                ],
+                "contextSources": [
+                  "depression-net"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "vmpfc",
+                  "pcc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre CPF medial e Cíngulo posterior para acompanhar o recorte «Pensamento interno».",
+                "sources": [
+                  "depression-net"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "pcc",
+                  "parietal"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Cíngulo posterior e Parietal para acompanhar o recorte «Pensamento interno».",
+                "sources": [
+                  "depression-net"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "control",
@@ -1994,7 +2804,46 @@ window.ATLAS_DATA = {
             ],
             "basis": "research",
             "level": "Em desenvolvimento",
-            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual."
+            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual.",
+            "highlights": {
+              "dlpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa da manutenção de metas e do controle de tarefas.",
+                "sources": [
+                  "control"
+                ],
+                "contextSources": [
+                  "depression-net"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "parietal": {
+                "basis": "teaching-selection",
+                "why": "Integra informação sensorial e espacial.",
+                "sources": [
+                  "lateral",
+                  "control"
+                ],
+                "contextSources": [
+                  "depression-net"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "dlpfc",
+                  "parietal"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre CPF lateral e Parietal para acompanhar o recorte «Atenção e controle».",
+                "sources": [
+                  "depression-net"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "reward",
@@ -2025,7 +2874,77 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "basal": {
+                "basis": "teaching-selection",
+                "why": "Participam da seleção de ações e aprendizagem.",
+                "sources": [
+                  "anatomy",
+                  "reward",
+                  "parkinson"
+                ],
+                "contextSources": [
+                  "reward",
+                  "addiction"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "ofc": {
+                "basis": "teaching-selection",
+                "why": "Participa da avaliação de resultados e ajuste de escolhas.",
+                "sources": [
+                  "anatomy",
+                  "reward"
+                ],
+                "contextSources": [
+                  "reward",
+                  "addiction"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "brainstem": {
+                "basis": "teaching-selection",
+                "why": "Abriga vias e núcleos importantes para vigília e regulação corporal.",
+                "sources": [
+                  "anatomy",
+                  "autonomic"
+                ],
+                "contextSources": [
+                  "reward",
+                  "addiction"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "brainstem",
+                  "basal"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Tronco e Núcleos da base para acompanhar o recorte «Interesse e ação».",
+                "sources": [
+                  "reward",
+                  "addiction"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "basal",
+                  "ofc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Núcleos da base e Orbitofrontal para acompanhar o recorte «Interesse e ação».",
+                "sources": [
+                  "reward",
+                  "addiction"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           }
         ],
         "limitation": "Ruminação não é sinônimo de atividade de modo padrão. Estado clínico e métodos alteram os resultados.",
@@ -2087,7 +3006,49 @@ window.ATLAS_DATA = {
             ],
             "basis": "research",
             "level": "Em desenvolvimento",
-            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual."
+            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual.",
+            "highlights": {
+              "amygdala": {
+                "basis": "teaching-selection",
+                "why": "Participa de aprendizagem de relevância e de respostas defensivas.",
+                "sources": [
+                  "fear",
+                  "fear-debate",
+                  "extinction"
+                ],
+                "contextSources": [
+                  "bipolar-net"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "hippocampus": {
+                "basis": "teaching-selection",
+                "why": "Importante para formar memórias declarativas em redes.",
+                "sources": [
+                  "memory",
+                  "ventral",
+                  "sleep-memory"
+                ],
+                "contextSources": [
+                  "bipolar-net"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "amygdala",
+                  "hippocampus"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Amígdala e Hipocampo para acompanhar o recorte «Processamento emocional».",
+                "sources": [
+                  "bipolar-net"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "cognition",
@@ -2113,7 +3074,47 @@ window.ATLAS_DATA = {
             ],
             "basis": "research",
             "level": "Em desenvolvimento",
-            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual."
+            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual.",
+            "highlights": {
+              "ofc": {
+                "basis": "teaching-selection",
+                "why": "Participa da avaliação de resultados e ajuste de escolhas.",
+                "sources": [
+                  "anatomy",
+                  "reward"
+                ],
+                "contextSources": [
+                  "bipolar-net"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "parietal": {
+                "basis": "teaching-selection",
+                "why": "Integra informação sensorial e espacial.",
+                "sources": [
+                  "lateral",
+                  "control"
+                ],
+                "contextSources": [
+                  "bipolar-net"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "ofc",
+                  "parietal"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Orbitofrontal e Parietal para acompanhar o recorte «Cognição e tarefas».",
+                "sources": [
+                  "bipolar-net"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "drive",
@@ -2146,7 +3147,82 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "basal": {
+                "basis": "teaching-selection",
+                "why": "Participam da seleção de ações e aprendizagem.",
+                "sources": [
+                  "anatomy",
+                  "reward",
+                  "parkinson"
+                ],
+                "contextSources": [
+                  "reward",
+                  "stress",
+                  "bipolar"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "ofc": {
+                "basis": "teaching-selection",
+                "why": "Participa da avaliação de resultados e ajuste de escolhas.",
+                "sources": [
+                  "anatomy",
+                  "reward"
+                ],
+                "contextSources": [
+                  "reward",
+                  "stress",
+                  "bipolar"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "hypothalamus": {
+                "basis": "teaching-selection",
+                "why": "Participa de regulação homeostática, autonômica e hormonal.",
+                "sources": [
+                  "anatomy",
+                  "stress"
+                ],
+                "contextSources": [
+                  "reward",
+                  "stress",
+                  "bipolar"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "basal",
+                  "ofc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Núcleos da base e Orbitofrontal para acompanhar o recorte «Motivação e ritmos».",
+                "sources": [
+                  "reward",
+                  "stress",
+                  "bipolar"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "ofc",
+                  "hypothalamus"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Orbitofrontal e Hipotálamo para acompanhar o recorte «Motivação e ritmos».",
+                "sources": [
+                  "reward",
+                  "stress",
+                  "bipolar"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           }
         ],
         "limitation": "Mania, depressão e períodos estáveis não têm um mesmo padrão fixo; o mapa não separa bipolar I e II.",
@@ -2213,7 +3289,84 @@ window.ATLAS_DATA = {
             ],
             "basis": "anatomy",
             "level": "Anatomia geral estabelecida; aplicação clínica em desenvolvimento",
-            "limit": "A via inclui relés não desenhados. Núcleos da base são mostrados em conjunto; não é um trajeto completo nem uma única alça."
+            "limit": "A via inclui relés não desenhados. Núcleos da base são mostrados em conjunto; não é um trajeto completo nem uma única alça.",
+            "highlights": {
+              "ofc": {
+                "basis": "teaching-selection",
+                "why": "Participa da avaliação de resultados e ajuste de escolhas.",
+                "sources": [
+                  "anatomy",
+                  "reward"
+                ],
+                "contextSources": [
+                  "ocd-circuits"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "basal": {
+                "basis": "teaching-selection",
+                "why": "Participam da seleção de ações e aprendizagem.",
+                "sources": [
+                  "anatomy",
+                  "reward",
+                  "parkinson"
+                ],
+                "contextSources": [
+                  "ocd-circuits"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "thalamus": {
+                "basis": "teaching-selection",
+                "why": "Integra circuitos corticais, sensoriais e de controle.",
+                "sources": [
+                  "anatomy",
+                  "control"
+                ],
+                "contextSources": [
+                  "ocd-circuits"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "ofc",
+                  "basal"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Orbitofrontal e Núcleos da base para acompanhar o recorte «Ações e repetição».",
+                "sources": [
+                  "ocd-circuits"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "basal",
+                  "thalamus"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Núcleos da base e Tálamo para acompanhar o recorte «Ações e repetição».",
+                "sources": [
+                  "ocd-circuits"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "thalamus",
+                  "ofc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Tálamo e Orbitofrontal para acompanhar o recorte «Ações e repetição».",
+                "sources": [
+                  "ocd-circuits"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "control",
@@ -2238,7 +3391,46 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "dlpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa da manutenção de metas e do controle de tarefas.",
+                "sources": [
+                  "control"
+                ],
+                "contextSources": [
+                  "control"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "parietal": {
+                "basis": "teaching-selection",
+                "why": "Integra informação sensorial e espacial.",
+                "sources": [
+                  "lateral",
+                  "control"
+                ],
+                "contextSources": [
+                  "control"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "dlpfc",
+                  "parietal"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre CPF lateral e Parietal para acompanhar o recorte «Metas e flexibilidade».",
+                "sources": [
+                  "control"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "salience",
@@ -2263,7 +3455,49 @@ window.ATLAS_DATA = {
             ],
             "basis": "research",
             "level": "Em desenvolvimento",
-            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual."
+            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual.",
+            "highlights": {
+              "insula": {
+                "basis": "teaching-selection",
+                "why": "Integra sinais corporais e informações relevantes em redes.",
+                "sources": [
+                  "anatomy",
+                  "intero",
+                  "seeley"
+                ],
+                "contextSources": [
+                  "cross-network"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "acc": {
+                "basis": "teaching-selection",
+                "why": "Participa de saliência, controle e integração autonômica.",
+                "sources": [
+                  "seeley",
+                  "autonomic",
+                  "transdiag"
+                ],
+                "contextSources": [
+                  "cross-network"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "insula",
+                  "acc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Ínsula e Cíngulo anterior para acompanhar o recorte «Relevância e desconforto».",
+                "sources": [
+                  "cross-network"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           }
         ],
         "limitation": "O modelo das alças é incompleto. Imagens não distinguem obsessão, intenção ou caráter.",
@@ -2335,7 +3569,98 @@ window.ATLAS_DATA = {
             ],
             "basis": "research",
             "level": "Em desenvolvimento",
-            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual."
+            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual.",
+            "highlights": {
+              "amygdala": {
+                "basis": "teaching-selection",
+                "why": "Participa de aprendizagem de relevância e de respostas defensivas.",
+                "sources": [
+                  "fear",
+                  "fear-debate",
+                  "extinction"
+                ],
+                "contextSources": [
+                  "anxiety-meta"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "insula": {
+                "basis": "teaching-selection",
+                "why": "Integra sinais corporais e informações relevantes em redes.",
+                "sources": [
+                  "anatomy",
+                  "intero",
+                  "seeley"
+                ],
+                "contextSources": [
+                  "anxiety-meta"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "acc": {
+                "basis": "teaching-selection",
+                "why": "Participa de saliência, controle e integração autonômica.",
+                "sources": [
+                  "seeley",
+                  "autonomic",
+                  "transdiag"
+                ],
+                "contextSources": [
+                  "anxiety-meta"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "vmpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa de avaliação contextual e aprendizagem de segurança.",
+                "sources": [
+                  "extinction",
+                  "fear"
+                ],
+                "contextSources": [
+                  "anxiety-meta"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "amygdala",
+                  "insula"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Amígdala e Ínsula para acompanhar o recorte «Ameaça e regulação».",
+                "sources": [
+                  "anxiety-meta"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "amygdala",
+                  "acc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Amígdala e Cíngulo anterior para acompanhar o recorte «Ameaça e regulação».",
+                "sources": [
+                  "anxiety-meta"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "amygdala",
+                  "vmpfc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Amígdala e CPF medial para acompanhar o recorte «Ameaça e regulação».",
+                "sources": [
+                  "anxiety-meta"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "memory",
@@ -2362,7 +3687,51 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "hippocampus": {
+                "basis": "teaching-selection",
+                "why": "Importante para formar memórias declarativas em redes.",
+                "sources": [
+                  "memory",
+                  "ventral",
+                  "sleep-memory"
+                ],
+                "contextSources": [
+                  "memory",
+                  "extinction"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "vmpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa de avaliação contextual e aprendizagem de segurança.",
+                "sources": [
+                  "extinction",
+                  "fear"
+                ],
+                "contextSources": [
+                  "memory",
+                  "extinction"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "hippocampus",
+                  "vmpfc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Hipocampo e CPF medial para acompanhar o recorte «Memória e contexto».",
+                "sources": [
+                  "memory",
+                  "extinction"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "stress",
@@ -2389,7 +3758,50 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "hypothalamus": {
+                "basis": "teaching-selection",
+                "why": "Participa de regulação homeostática, autonômica e hormonal.",
+                "sources": [
+                  "anatomy",
+                  "stress"
+                ],
+                "contextSources": [
+                  "stress",
+                  "autonomic"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "brainstem": {
+                "basis": "teaching-selection",
+                "why": "Abriga vias e núcleos importantes para vigília e regulação corporal.",
+                "sources": [
+                  "anatomy",
+                  "autonomic"
+                ],
+                "contextSources": [
+                  "stress",
+                  "autonomic"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "hypothalamus",
+                  "brainstem"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Hipotálamo e Tronco para acompanhar o recorte «Corpo e estresse».",
+                "sources": [
+                  "stress",
+                  "autonomic"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           }
         ],
         "limitation": "Estes achados não comprovam que um trauma ocorreu nem explicam toda reação após trauma.",
@@ -2450,7 +3862,46 @@ window.ATLAS_DATA = {
             ],
             "basis": "research",
             "level": "Em desenvolvimento",
-            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual."
+            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual.",
+            "highlights": {
+              "dlpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa da manutenção de metas e do controle de tarefas.",
+                "sources": [
+                  "control"
+                ],
+                "contextSources": [
+                  "adhd-task"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "parietal": {
+                "basis": "teaching-selection",
+                "why": "Integra informação sensorial e espacial.",
+                "sources": [
+                  "lateral",
+                  "control"
+                ],
+                "contextSources": [
+                  "adhd-task"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "dlpfc",
+                  "parietal"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre CPF lateral e Parietal para acompanhar o recorte «Atenção e controle».",
+                "sources": [
+                  "adhd-task"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "reward",
@@ -2475,7 +3926,48 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "basal": {
+                "basis": "teaching-selection",
+                "why": "Participam da seleção de ações e aprendizagem.",
+                "sources": [
+                  "anatomy",
+                  "reward",
+                  "parkinson"
+                ],
+                "contextSources": [
+                  "reward"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "ofc": {
+                "basis": "teaching-selection",
+                "why": "Participa da avaliação de resultados e ajuste de escolhas.",
+                "sources": [
+                  "anatomy",
+                  "reward"
+                ],
+                "contextSources": [
+                  "reward"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "basal",
+                  "ofc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Núcleos da base e Orbitofrontal para acompanhar o recorte «Motivação e resultados».",
+                "sources": [
+                  "reward"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "internal",
@@ -2507,7 +3999,75 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "pcc": {
+                "basis": "teaching-selection",
+                "why": "Participa de redes associadas ao processamento interno.",
+                "sources": [
+                  "dmn",
+                  "yeo"
+                ],
+                "contextSources": [
+                  "adhd-null",
+                  "dmn"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "vmpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa de avaliação contextual e aprendizagem de segurança.",
+                "sources": [
+                  "extinction",
+                  "fear"
+                ],
+                "contextSources": [
+                  "adhd-null",
+                  "dmn"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "dlpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa da manutenção de metas e do controle de tarefas.",
+                "sources": [
+                  "control"
+                ],
+                "contextSources": [
+                  "adhd-null",
+                  "dmn"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "pcc",
+                  "vmpfc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Cíngulo posterior e CPF medial para acompanhar o recorte «Foco interno e externo».",
+                "sources": [
+                  "adhd-null",
+                  "dmn"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "vmpfc",
+                  "dlpfc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre CPF medial e CPF lateral para acompanhar o recorte «Foco interno e externo».",
+                "sources": [
+                  "adhd-null",
+                  "dmn"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           }
         ],
         "limitation": "A ausência de convergência em repouso é explícita. Nenhuma combinação de regiões diagnostica TDAH.",
@@ -2569,7 +4129,71 @@ window.ATLAS_DATA = {
             ],
             "basis": "research",
             "level": "Em desenvolvimento",
-            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual."
+            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual.",
+            "highlights": {
+              "vmpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa de avaliação contextual e aprendizagem de segurança.",
+                "sources": [
+                  "extinction",
+                  "fear"
+                ],
+                "contextSources": [
+                  "autism-net"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "pcc": {
+                "basis": "teaching-selection",
+                "why": "Participa de redes associadas ao processamento interno.",
+                "sources": [
+                  "dmn",
+                  "yeo"
+                ],
+                "contextSources": [
+                  "autism-net"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "parietal": {
+                "basis": "teaching-selection",
+                "why": "Integra informação sensorial e espacial.",
+                "sources": [
+                  "lateral",
+                  "control"
+                ],
+                "contextSources": [
+                  "autism-net"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "vmpfc",
+                  "pcc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre CPF medial e Cíngulo posterior para acompanhar o recorte «Coordenação de redes».",
+                "sources": [
+                  "autism-net"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "pcc",
+                  "parietal"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Cíngulo posterior e Parietal para acompanhar o recorte «Coordenação de redes».",
+                "sources": [
+                  "autism-net"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "sensory",
@@ -2600,7 +4224,76 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "temporal": {
+                "basis": "teaching-selection",
+                "why": "Participa de audição, linguagem e memória por circuitos distintos.",
+                "sources": [
+                  "lateral",
+                  "memory",
+                  "aphasia"
+                ],
+                "contextSources": [
+                  "yeo",
+                  "autism"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "occipital": {
+                "basis": "teaching-selection",
+                "why": "Processamento visual em parceria com outras áreas.",
+                "sources": [
+                  "lateral"
+                ],
+                "contextSources": [
+                  "yeo",
+                  "autism"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "parietal": {
+                "basis": "teaching-selection",
+                "why": "Integra informação sensorial e espacial.",
+                "sources": [
+                  "lateral",
+                  "control"
+                ],
+                "contextSources": [
+                  "yeo",
+                  "autism"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "temporal",
+                  "parietal"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Temporal e Parietal para acompanhar o recorte «Percepção e atenção».",
+                "sources": [
+                  "yeo",
+                  "autism"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "occipital",
+                  "parietal"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Occipital e Parietal para acompanhar o recorte «Percepção e atenção».",
+                "sources": [
+                  "yeo",
+                  "autism"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "body",
@@ -2626,7 +4319,52 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "insula": {
+                "basis": "teaching-selection",
+                "why": "Integra sinais corporais e informações relevantes em redes.",
+                "sources": [
+                  "anatomy",
+                  "intero",
+                  "seeley"
+                ],
+                "contextSources": [
+                  "intero",
+                  "autism"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "acc": {
+                "basis": "teaching-selection",
+                "why": "Participa de saliência, controle e integração autonômica.",
+                "sources": [
+                  "seeley",
+                  "autonomic",
+                  "transdiag"
+                ],
+                "contextSources": [
+                  "intero",
+                  "autism"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "insula",
+                  "acc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Ínsula e Cíngulo anterior para acompanhar o recorte «Sinais do corpo».",
+                "sources": [
+                  "intero",
+                  "autism"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           }
         ],
         "limitation": "Diferença não equivale a lesão. O atlas não representa um cérebro autista padrão nem estabelece necessidades individuais.",
@@ -2683,7 +4421,49 @@ window.ATLAS_DATA = {
             ],
             "basis": "research",
             "level": "Em desenvolvimento",
-            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual."
+            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual.",
+            "highlights": {
+              "insula": {
+                "basis": "teaching-selection",
+                "why": "Integra sinais corporais e informações relevantes em redes.",
+                "sources": [
+                  "anatomy",
+                  "intero",
+                  "seeley"
+                ],
+                "contextSources": [
+                  "cross-network"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "acc": {
+                "basis": "teaching-selection",
+                "why": "Participa de saliência, controle e integração autonômica.",
+                "sources": [
+                  "seeley",
+                  "autonomic",
+                  "transdiag"
+                ],
+                "contextSources": [
+                  "cross-network"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "insula",
+                  "acc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Ínsula e Cíngulo anterior para acompanhar o recorte «Relevância e interpretação».",
+                "sources": [
+                  "cross-network"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "control",
@@ -2715,7 +4495,82 @@ window.ATLAS_DATA = {
             ],
             "basis": "research",
             "level": "Em desenvolvimento",
-            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual."
+            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual.",
+            "highlights": {
+              "dlpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa da manutenção de metas e do controle de tarefas.",
+                "sources": [
+                  "control"
+                ],
+                "contextSources": [
+                  "cross-network"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "parietal": {
+                "basis": "teaching-selection",
+                "why": "Integra informação sensorial e espacial.",
+                "sources": [
+                  "lateral",
+                  "control"
+                ],
+                "contextSources": [
+                  "cross-network"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "pcc": {
+                "basis": "teaching-selection",
+                "why": "Participa de redes associadas ao processamento interno.",
+                "sources": [
+                  "dmn",
+                  "yeo"
+                ],
+                "contextSources": [
+                  "cross-network"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "vmpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa de avaliação contextual e aprendizagem de segurança.",
+                "sources": [
+                  "extinction",
+                  "fear"
+                ],
+                "contextSources": [
+                  "cross-network"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "dlpfc",
+                  "parietal"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre CPF lateral e Parietal para acompanhar o recorte «Controle e coordenação».",
+                "sources": [
+                  "cross-network"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "pcc",
+                  "vmpfc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Cíngulo posterior e CPF medial para acompanhar o recorte «Controle e coordenação».",
+                "sources": [
+                  "cross-network"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           }
         ],
         "limitation": "Psicose é uma síndrome com várias causas. O mesmo desenho não explica cada alucinação ou crença.",
@@ -2777,7 +4632,72 @@ window.ATLAS_DATA = {
             ],
             "basis": "research",
             "level": "Em desenvolvimento",
-            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual."
+            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual.",
+            "highlights": {
+              "brainstem": {
+                "basis": "teaching-selection",
+                "why": "Abriga vias e núcleos importantes para vigília e regulação corporal.",
+                "sources": [
+                  "anatomy",
+                  "autonomic"
+                ],
+                "contextSources": [
+                  "addiction"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "basal": {
+                "basis": "teaching-selection",
+                "why": "Participam da seleção de ações e aprendizagem.",
+                "sources": [
+                  "anatomy",
+                  "reward",
+                  "parkinson"
+                ],
+                "contextSources": [
+                  "addiction"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "ofc": {
+                "basis": "teaching-selection",
+                "why": "Participa da avaliação de resultados e ajuste de escolhas.",
+                "sources": [
+                  "anatomy",
+                  "reward"
+                ],
+                "contextSources": [
+                  "addiction"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "brainstem",
+                  "basal"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Tronco e Núcleos da base para acompanhar o recorte «Reforçamento e pistas».",
+                "sources": [
+                  "addiction"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "basal",
+                  "ofc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Núcleos da base e Orbitofrontal para acompanhar o recorte «Reforçamento e pistas».",
+                "sources": [
+                  "addiction"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "stress",
@@ -2808,7 +4728,72 @@ window.ATLAS_DATA = {
             ],
             "basis": "research",
             "level": "Em desenvolvimento",
-            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual."
+            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual.",
+            "highlights": {
+              "amygdala": {
+                "basis": "teaching-selection",
+                "why": "Participa de aprendizagem de relevância e de respostas defensivas.",
+                "sources": [
+                  "fear",
+                  "fear-debate",
+                  "extinction"
+                ],
+                "contextSources": [
+                  "addiction"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "hypothalamus": {
+                "basis": "teaching-selection",
+                "why": "Participa de regulação homeostática, autonômica e hormonal.",
+                "sources": [
+                  "anatomy",
+                  "stress"
+                ],
+                "contextSources": [
+                  "addiction"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "brainstem": {
+                "basis": "teaching-selection",
+                "why": "Abriga vias e núcleos importantes para vigília e regulação corporal.",
+                "sources": [
+                  "anatomy",
+                  "autonomic"
+                ],
+                "contextSources": [
+                  "addiction"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "amygdala",
+                  "hypothalamus"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Amígdala e Hipotálamo para acompanhar o recorte «Estresse e alívio».",
+                "sources": [
+                  "addiction"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "hypothalamus",
+                  "brainstem"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Hipotálamo e Tronco para acompanhar o recorte «Estresse e alívio».",
+                "sources": [
+                  "addiction"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "control",
@@ -2833,7 +4818,47 @@ window.ATLAS_DATA = {
             ],
             "basis": "research",
             "level": "Em desenvolvimento",
-            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual."
+            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual.",
+            "highlights": {
+              "dlpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa da manutenção de metas e do controle de tarefas.",
+                "sources": [
+                  "control"
+                ],
+                "contextSources": [
+                  "addiction"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "acc": {
+                "basis": "teaching-selection",
+                "why": "Participa de saliência, controle e integração autonômica.",
+                "sources": [
+                  "seeley",
+                  "autonomic",
+                  "transdiag"
+                ],
+                "contextSources": [
+                  "addiction"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "dlpfc",
+                  "acc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre CPF lateral e Cíngulo anterior para acompanhar o recorte «Metas e escolhas».",
+                "sources": [
+                  "addiction"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           }
         ],
         "limitation": "Substâncias, fases e trajetórias diferem. Estriado ventral e núcleos do mesencéfalo não estão separados no desenho.",
@@ -2896,7 +4921,72 @@ window.ATLAS_DATA = {
             ],
             "basis": "research",
             "level": "Em desenvolvimento",
-            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual."
+            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual.",
+            "highlights": {
+              "basal": {
+                "basis": "teaching-selection",
+                "why": "Participam da seleção de ações e aprendizagem.",
+                "sources": [
+                  "anatomy",
+                  "reward",
+                  "parkinson"
+                ],
+                "contextSources": [
+                  "gambling-meta"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "ofc": {
+                "basis": "teaching-selection",
+                "why": "Participa da avaliação de resultados e ajuste de escolhas.",
+                "sources": [
+                  "anatomy",
+                  "reward"
+                ],
+                "contextSources": [
+                  "gambling-meta"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "vmpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa de avaliação contextual e aprendizagem de segurança.",
+                "sources": [
+                  "extinction",
+                  "fear"
+                ],
+                "contextSources": [
+                  "gambling-meta"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "basal",
+                  "ofc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Núcleos da base e Orbitofrontal para acompanhar o recorte «Expectativa e resultados».",
+                "sources": [
+                  "gambling-meta"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "basal",
+                  "vmpfc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Núcleos da base e CPF medial para acompanhar o recorte «Expectativa e resultados».",
+                "sources": [
+                  "gambling-meta"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "control",
@@ -2929,7 +5019,82 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "dlpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa da manutenção de metas e do controle de tarefas.",
+                "sources": [
+                  "control"
+                ],
+                "contextSources": [
+                  "control",
+                  "seeley",
+                  "gambling-clinical"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "acc": {
+                "basis": "teaching-selection",
+                "why": "Participa de saliência, controle e integração autonômica.",
+                "sources": [
+                  "seeley",
+                  "autonomic",
+                  "transdiag"
+                ],
+                "contextSources": [
+                  "control",
+                  "seeley",
+                  "gambling-clinical"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "insula": {
+                "basis": "teaching-selection",
+                "why": "Integra sinais corporais e informações relevantes em redes.",
+                "sources": [
+                  "anatomy",
+                  "intero",
+                  "seeley"
+                ],
+                "contextSources": [
+                  "control",
+                  "seeley",
+                  "gambling-clinical"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "dlpfc",
+                  "acc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre CPF lateral e Cíngulo anterior para acompanhar o recorte «Escolhas e contexto».",
+                "sources": [
+                  "control",
+                  "seeley",
+                  "gambling-clinical"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "acc",
+                  "insula"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Cíngulo anterior e Ínsula para acompanhar o recorte «Escolhas e contexto».",
+                "sources": [
+                  "control",
+                  "seeley",
+                  "gambling-clinical"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           }
         ],
         "limitation": "As linhas não calculam risco de dependência. Diferenças de grupo não determinam a próxima decisão.",
@@ -2987,7 +5152,48 @@ window.ATLAS_DATA = {
             ],
             "basis": "research",
             "level": "Em desenvolvimento",
-            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual."
+            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual.",
+            "highlights": {
+              "ofc": {
+                "basis": "teaching-selection",
+                "why": "Participa da avaliação de resultados e ajuste de escolhas.",
+                "sources": [
+                  "anatomy",
+                  "reward"
+                ],
+                "contextSources": [
+                  "eating-net"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "basal": {
+                "basis": "teaching-selection",
+                "why": "Participam da seleção de ações e aprendizagem.",
+                "sources": [
+                  "anatomy",
+                  "reward",
+                  "parkinson"
+                ],
+                "contextSources": [
+                  "eating-net"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "ofc",
+                  "basal"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Orbitofrontal e Núcleos da base para acompanhar o recorte «Valor e alimentação».",
+                "sources": [
+                  "eating-net"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "body",
@@ -3013,7 +5219,48 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "insula": {
+                "basis": "teaching-selection",
+                "why": "Integra sinais corporais e informações relevantes em redes.",
+                "sources": [
+                  "anatomy",
+                  "intero",
+                  "seeley"
+                ],
+                "contextSources": [
+                  "intero"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "parietal": {
+                "basis": "teaching-selection",
+                "why": "Integra informação sensorial e espacial.",
+                "sources": [
+                  "lateral",
+                  "control"
+                ],
+                "contextSources": [
+                  "intero"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "insula",
+                  "parietal"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Ínsula e Parietal para acompanhar o recorte «Corpo e percepção».",
+                "sources": [
+                  "intero"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "rules",
@@ -3038,7 +5285,46 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "dlpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa da manutenção de metas e do controle de tarefas.",
+                "sources": [
+                  "control"
+                ],
+                "contextSources": [
+                  "control"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "parietal": {
+                "basis": "teaching-selection",
+                "why": "Integra informação sensorial e espacial.",
+                "sources": [
+                  "lateral",
+                  "control"
+                ],
+                "contextSources": [
+                  "control"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "dlpfc",
+                  "parietal"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre CPF lateral e Parietal para acompanhar o recorte «Regras e flexibilidade».",
+                "sources": [
+                  "control"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           }
         ],
         "limitation": "Desnutrição pode afetar resultados cerebrais. Não se pode separar causa, consequência e compensação por este mapa.",
@@ -3098,7 +5384,48 @@ window.ATLAS_DATA = {
             ],
             "basis": "research",
             "level": "Em desenvolvimento",
-            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual."
+            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual.",
+            "highlights": {
+              "ofc": {
+                "basis": "teaching-selection",
+                "why": "Participa da avaliação de resultados e ajuste de escolhas.",
+                "sources": [
+                  "anatomy",
+                  "reward"
+                ],
+                "contextSources": [
+                  "eating-net"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "basal": {
+                "basis": "teaching-selection",
+                "why": "Participam da seleção de ações e aprendizagem.",
+                "sources": [
+                  "anatomy",
+                  "reward",
+                  "parkinson"
+                ],
+                "contextSources": [
+                  "eating-net"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "ofc",
+                  "basal"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Orbitofrontal e Núcleos da base para acompanhar o recorte «Resultados e impulso».",
+                "sources": [
+                  "eating-net"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "body",
@@ -3125,7 +5452,52 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "insula": {
+                "basis": "teaching-selection",
+                "why": "Integra sinais corporais e informações relevantes em redes.",
+                "sources": [
+                  "anatomy",
+                  "intero",
+                  "seeley"
+                ],
+                "contextSources": [
+                  "intero",
+                  "seeley"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "acc": {
+                "basis": "teaching-selection",
+                "why": "Participa de saliência, controle e integração autonômica.",
+                "sources": [
+                  "seeley",
+                  "autonomic",
+                  "transdiag"
+                ],
+                "contextSources": [
+                  "intero",
+                  "seeley"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "insula",
+                  "acc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Ínsula e Cíngulo anterior para acompanhar o recorte «Sinais e desconforto».",
+                "sources": [
+                  "intero",
+                  "seeley"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "control",
@@ -3150,7 +5522,46 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "dlpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa da manutenção de metas e do controle de tarefas.",
+                "sources": [
+                  "control"
+                ],
+                "contextSources": [
+                  "control"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "parietal": {
+                "basis": "teaching-selection",
+                "why": "Integra informação sensorial e espacial.",
+                "sources": [
+                  "lateral",
+                  "control"
+                ],
+                "contextSources": [
+                  "control"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "dlpfc",
+                  "parietal"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre CPF lateral e Parietal para acompanhar o recorte «Metas e ação».",
+                "sources": [
+                  "control"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           }
         ],
         "limitation": "Estudos variam conforme estado nutricional e tarefas. O brilho não mostra gravidade ou risco médico.",
@@ -3207,7 +5618,48 @@ window.ATLAS_DATA = {
             ],
             "basis": "research",
             "level": "Em desenvolvimento",
-            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual."
+            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual.",
+            "highlights": {
+              "basal": {
+                "basis": "teaching-selection",
+                "why": "Participam da seleção de ações e aprendizagem.",
+                "sources": [
+                  "anatomy",
+                  "reward",
+                  "parkinson"
+                ],
+                "contextSources": [
+                  "eating-net"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "ofc": {
+                "basis": "teaching-selection",
+                "why": "Participa da avaliação de resultados e ajuste de escolhas.",
+                "sources": [
+                  "anatomy",
+                  "reward"
+                ],
+                "contextSources": [
+                  "eating-net"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "basal",
+                  "ofc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Núcleos da base e Orbitofrontal para acompanhar o recorte «Pistas e recompensa».",
+                "sources": [
+                  "eating-net"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "control",
@@ -3239,7 +5691,77 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "dlpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa da manutenção de metas e do controle de tarefas.",
+                "sources": [
+                  "control"
+                ],
+                "contextSources": [
+                  "control",
+                  "intero"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "insula": {
+                "basis": "teaching-selection",
+                "why": "Integra sinais corporais e informações relevantes em redes.",
+                "sources": [
+                  "anatomy",
+                  "intero",
+                  "seeley"
+                ],
+                "contextSources": [
+                  "control",
+                  "intero"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "acc": {
+                "basis": "teaching-selection",
+                "why": "Participa de saliência, controle e integração autonômica.",
+                "sources": [
+                  "seeley",
+                  "autonomic",
+                  "transdiag"
+                ],
+                "contextSources": [
+                  "control",
+                  "intero"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "dlpfc",
+                  "acc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre CPF lateral e Cíngulo anterior para acompanhar o recorte «Contexto e controle».",
+                "sources": [
+                  "control",
+                  "intero"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "insula",
+                  "acc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Ínsula e Cíngulo anterior para acompanhar o recorte «Contexto e controle».",
+                "sources": [
+                  "control",
+                  "intero"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           }
         ],
         "limitation": "Compulsão alimentar não é inferida do peso. Sem estimativa de fome, impulsividade ou quantidade a comer.",
@@ -3303,7 +5825,71 @@ window.ATLAS_DATA = {
             ],
             "basis": "research",
             "level": "Em desenvolvimento",
-            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual."
+            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual.",
+            "highlights": {
+              "amygdala": {
+                "basis": "teaching-selection",
+                "why": "Participa de aprendizagem de relevância e de respostas defensivas.",
+                "sources": [
+                  "fear",
+                  "fear-debate",
+                  "extinction"
+                ],
+                "contextSources": [
+                  "borderline-meta"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "pcc": {
+                "basis": "teaching-selection",
+                "why": "Participa de redes associadas ao processamento interno.",
+                "sources": [
+                  "dmn",
+                  "yeo"
+                ],
+                "contextSources": [
+                  "borderline-meta"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "dlpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa da manutenção de metas e do controle de tarefas.",
+                "sources": [
+                  "control"
+                ],
+                "contextSources": [
+                  "borderline-meta"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "amygdala",
+                  "dlpfc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Amígdala e CPF lateral para acompanhar o recorte «Emoção e contexto».",
+                "sources": [
+                  "borderline-meta"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "amygdala",
+                  "pcc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Amígdala e Cíngulo posterior para acompanhar o recorte «Emoção e contexto».",
+                "sources": [
+                  "borderline-meta"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "regulation",
@@ -3335,7 +5921,77 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "dlpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa da manutenção de metas e do controle de tarefas.",
+                "sources": [
+                  "control"
+                ],
+                "contextSources": [
+                  "control",
+                  "seeley"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "acc": {
+                "basis": "teaching-selection",
+                "why": "Participa de saliência, controle e integração autonômica.",
+                "sources": [
+                  "seeley",
+                  "autonomic",
+                  "transdiag"
+                ],
+                "contextSources": [
+                  "control",
+                  "seeley"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "insula": {
+                "basis": "teaching-selection",
+                "why": "Integra sinais corporais e informações relevantes em redes.",
+                "sources": [
+                  "anatomy",
+                  "intero",
+                  "seeley"
+                ],
+                "contextSources": [
+                  "control",
+                  "seeley"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "dlpfc",
+                  "acc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre CPF lateral e Cíngulo anterior para acompanhar o recorte «Regulação e metas».",
+                "sources": [
+                  "control",
+                  "seeley"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "acc",
+                  "insula"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Cíngulo anterior e Ínsula para acompanhar o recorte «Regulação e metas».",
+                "sources": [
+                  "control",
+                  "seeley"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           }
         ],
         "limitation": "Os resultados de grupo não definem personalidade, intenção ou prognóstico de uma pessoa.",
@@ -3400,7 +6056,72 @@ window.ATLAS_DATA = {
             ],
             "basis": "research",
             "level": "Em desenvolvimento",
-            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual."
+            "limit": "Achados variam entre tarefas, amostras e pessoas; não mostram causa ou intensidade individual.",
+            "highlights": {
+              "dlpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa da manutenção de metas e do controle de tarefas.",
+                "sources": [
+                  "control"
+                ],
+                "contextSources": [
+                  "dissociation-net"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "acc": {
+                "basis": "teaching-selection",
+                "why": "Participa de saliência, controle e integração autonômica.",
+                "sources": [
+                  "seeley",
+                  "autonomic",
+                  "transdiag"
+                ],
+                "contextSources": [
+                  "dissociation-net"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "insula": {
+                "basis": "teaching-selection",
+                "why": "Integra sinais corporais e informações relevantes em redes.",
+                "sources": [
+                  "anatomy",
+                  "intero",
+                  "seeley"
+                ],
+                "contextSources": [
+                  "dissociation-net"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "dlpfc",
+                  "acc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre CPF lateral e Cíngulo anterior para acompanhar o recorte «Integração da experiência».",
+                "sources": [
+                  "dissociation-net"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              },
+              {
+                "pair": [
+                  "acc",
+                  "insula"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Cíngulo anterior e Ínsula para acompanhar o recorte «Integração da experiência».",
+                "sources": [
+                  "dissociation-net"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "memory",
@@ -3426,7 +6147,52 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "hippocampus": {
+                "basis": "teaching-selection",
+                "why": "Importante para formar memórias declarativas em redes.",
+                "sources": [
+                  "memory",
+                  "ventral",
+                  "sleep-memory"
+                ],
+                "contextSources": [
+                  "memory",
+                  "dissociation"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "temporal": {
+                "basis": "teaching-selection",
+                "why": "Participa de audição, linguagem e memória por circuitos distintos.",
+                "sources": [
+                  "lateral",
+                  "memory",
+                  "aphasia"
+                ],
+                "contextSources": [
+                  "memory",
+                  "dissociation"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "hippocampus",
+                  "temporal"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Hipocampo e Temporal para acompanhar o recorte «Memória e contexto».",
+                "sources": [
+                  "memory",
+                  "dissociation"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           }
         ],
         "limitation": "A revisão reúne diagnósticos e tarefas diferentes, com amostras pequenas. Nenhuma imagem comprova trauma ou identidades.",
@@ -3488,7 +6254,51 @@ window.ATLAS_DATA = {
             ],
             "basis": "research",
             "level": "Em desenvolvimento",
-            "limit": "A subdivisão subgenual não está delimitada. Cíngulo e pré-frontal medial são localizações amplas; conectividade adicional não significa alteração de toda área destacada."
+            "limit": "A subdivisão subgenual não está delimitada. Cíngulo e pré-frontal medial são localizações amplas; conectividade adicional não significa alteração de toda área destacada.",
+            "highlights": {
+              "acc": {
+                "basis": "teaching-selection",
+                "why": "Participa de saliência, controle e integração autonômica.",
+                "sources": [
+                  "seeley",
+                  "autonomic",
+                  "transdiag"
+                ],
+                "contextSources": [
+                  "insomnia-null",
+                  "insomnia-update"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "vmpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa de avaliação contextual e aprendizagem de segurança.",
+                "sources": [
+                  "extinction",
+                  "fear"
+                ],
+                "contextSources": [
+                  "insomnia-null",
+                  "insomnia-update"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "acc",
+                  "vmpfc"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Cíngulo anterior e CPF medial para acompanhar o recorte «Sono e processamento afetivo».",
+                "sources": [
+                  "insomnia-null",
+                  "insomnia-update"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "arousal",
@@ -3515,7 +6325,50 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "hypothalamus": {
+                "basis": "teaching-selection",
+                "why": "Participa de regulação homeostática, autonômica e hormonal.",
+                "sources": [
+                  "anatomy",
+                  "stress"
+                ],
+                "contextSources": [
+                  "autonomic",
+                  "stress"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "brainstem": {
+                "basis": "teaching-selection",
+                "why": "Abriga vias e núcleos importantes para vigília e regulação corporal.",
+                "sources": [
+                  "anatomy",
+                  "autonomic"
+                ],
+                "contextSources": [
+                  "autonomic",
+                  "stress"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "hypothalamus",
+                  "brainstem"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre Hipotálamo e Tronco para acompanhar o recorte «Regulação e vigilância».",
+                "sources": [
+                  "autonomic",
+                  "stress"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           },
           {
             "id": "daytime",
@@ -3541,7 +6394,49 @@ window.ATLAS_DATA = {
             ],
             "basis": "model",
             "level": "Modelo de função",
-            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho."
+            "limit": "Função geral usada para ensino. Não há uma alteração específica demonstrada por este desenho.",
+            "highlights": {
+              "dlpfc": {
+                "basis": "teaching-selection",
+                "why": "Participa da manutenção de metas e do controle de tarefas.",
+                "sources": [
+                  "control"
+                ],
+                "contextSources": [
+                  "control",
+                  "insomnia-clinical"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              },
+              "parietal": {
+                "basis": "teaching-selection",
+                "why": "Integra informação sensorial e espacial.",
+                "sources": [
+                  "lateral",
+                  "control"
+                ],
+                "contextSources": [
+                  "control",
+                  "insomnia-clinical"
+                ],
+                "limit": "Função geral e seleção editorial para este recorte. A área ampla não identifica um foco alterado em cada pessoa nem prova um mecanismo específico deste diagnóstico."
+              }
+            },
+            "connections": [
+              {
+                "pair": [
+                  "dlpfc",
+                  "parietal"
+                ],
+                "basis": "teaching",
+                "why": "Relação de ensino entre CPF lateral e Parietal para acompanhar o recorte «Atenção durante o dia».",
+                "sources": [
+                  "control",
+                  "insomnia-clinical"
+                ],
+                "limit": "A fonte contextualiza o recorte; não valida esta linha como conexão direta medida. O traço não é fibra, direção causal, força de conexão ou hiperatividade. Relés e subdivisões foram omitidos."
+              }
+            ]
           }
         ],
         "limitation": "Sínteses diferem. O mapa não estima qualidade do sono nem demonstra dano cerebral.",
@@ -3797,6 +6692,690 @@ window.ATLAS_DATA = {
     {
       "name": "Neurodiversidade",
       "text": "Variação no funcionamento e desenvolvimento neurológico; não elimina necessidades individuais de suporte."
+    }
+  ],
+  "functions": [
+    {
+      "id": "attention",
+      "name": "Atenção e metas",
+      "summary": "Manter uma tarefa, selecionar informação e lidar com distrações.",
+      "patient": "A atenção varia com a tarefa, o ambiente e o momento. Isso não revela sozinho um diagnóstico.",
+      "nodes": [
+        "dlpfc",
+        "parietal"
+      ],
+      "networks": [
+        "executive",
+        "attention"
+      ],
+      "sources": [
+        "control"
+      ],
+      "members": [
+        {
+          "condition": "adhd-topic",
+          "aspect": "attention"
+        },
+        {
+          "condition": "depression-topic",
+          "aspect": "control"
+        },
+        {
+          "condition": "gad-topic",
+          "aspect": "attention"
+        },
+        {
+          "condition": "social-topic",
+          "aspect": "focus"
+        },
+        {
+          "condition": "insomnia-topic",
+          "aspect": "daytime"
+        },
+        {
+          "condition": "psychosis-topic",
+          "aspect": "control"
+        }
+      ]
+    },
+    {
+      "id": "threat",
+      "name": "Ameaça e segurança",
+      "summary": "Relevância, aprendizagem e contexto das respostas defensivas.",
+      "patient": "Experiências podem mudar o que parece seguro ou ameaçador. Nenhuma região explica sozinha o medo.",
+      "nodes": [
+        "amygdala",
+        "hippocampus",
+        "vmpfc"
+      ],
+      "networks": [
+        "threat",
+        "memory"
+      ],
+      "sources": [
+        "fear",
+        "fear-debate",
+        "extinction"
+      ],
+      "members": [
+        {
+          "condition": "panic-topic",
+          "aspect": "threat"
+        },
+        {
+          "condition": "phobia-topic",
+          "aspect": "learning"
+        },
+        {
+          "condition": "ptsd-topic",
+          "aspect": "threat"
+        },
+        {
+          "condition": "gad-topic",
+          "aspect": "anticipation"
+        },
+        {
+          "condition": "social-topic",
+          "aspect": "evaluation"
+        },
+        {
+          "condition": "agoraphobia-topic",
+          "aspect": "safety"
+        }
+      ]
+    },
+    {
+      "id": "body",
+      "name": "Corpo e regulação",
+      "summary": "Sinais internos e ajustes autonômicos em redes distribuídas.",
+      "patient": "Perceber o corpo depende de vários sistemas e do contexto. Uma sensação não identifica, por si só, sua causa.",
+      "nodes": [
+        "insula",
+        "acc",
+        "brainstem",
+        "hypothalamus"
+      ],
+      "networks": [
+        "interoception",
+        "autonomic"
+      ],
+      "sources": [
+        "intero",
+        "autonomic",
+        "stress"
+      ],
+      "members": [
+        {
+          "condition": "panic-topic",
+          "aspect": "body"
+        },
+        {
+          "condition": "gad-topic",
+          "aspect": "body"
+        },
+        {
+          "condition": "agoraphobia-topic",
+          "aspect": "body"
+        },
+        {
+          "condition": "autism-topic",
+          "aspect": "body"
+        },
+        {
+          "condition": "bulimia-topic",
+          "aspect": "body"
+        },
+        {
+          "condition": "ptsd-topic",
+          "aspect": "stress"
+        }
+      ]
+    },
+    {
+      "id": "reward",
+      "name": "Recompensa e motivação",
+      "summary": "Expectativas, resultados e seleção de ações.",
+      "patient": "Aprendemos com resultados e expectativas. Motivação não é uma quantidade de dopamina.",
+      "nodes": [
+        "basal",
+        "ofc",
+        "brainstem"
+      ],
+      "networks": [
+        "reward"
+      ],
+      "sources": [
+        "reward"
+      ],
+      "members": [
+        {
+          "condition": "depression-topic",
+          "aspect": "reward"
+        },
+        {
+          "condition": "adhd-topic",
+          "aspect": "reward"
+        },
+        {
+          "condition": "substance-topic",
+          "aspect": "reward"
+        },
+        {
+          "condition": "gambling-topic",
+          "aspect": "reward"
+        },
+        {
+          "condition": "anorexia-topic",
+          "aspect": "value"
+        },
+        {
+          "condition": "bulimia-topic",
+          "aspect": "reward"
+        },
+        {
+          "condition": "binge-topic",
+          "aspect": "reward"
+        },
+        {
+          "condition": "bipolar-topic",
+          "aspect": "drive"
+        }
+      ]
+    },
+    {
+      "id": "memory",
+      "name": "Memória e contexto",
+      "summary": "Codificar, recuperar e relacionar experiências.",
+      "patient": "Lembrar envolve vários sistemas e pode mudar com o contexto. Uma dificuldade de memória tem muitas explicações possíveis.",
+      "nodes": [
+        "hippocampus",
+        "temporal",
+        "vmpfc"
+      ],
+      "networks": [
+        "memory"
+      ],
+      "sources": [
+        "memory",
+        "sleep-memory",
+        "extinction"
+      ],
+      "members": [
+        {
+          "condition": "panic-topic",
+          "aspect": "context"
+        },
+        {
+          "condition": "phobia-topic",
+          "aspect": "learning"
+        },
+        {
+          "condition": "agoraphobia-topic",
+          "aspect": "safety"
+        },
+        {
+          "condition": "ptsd-topic",
+          "aspect": "memory"
+        },
+        {
+          "condition": "dissociation-topic",
+          "aspect": "memory"
+        },
+        {
+          "condition": "bipolar-topic",
+          "aspect": "emotion"
+        }
+      ]
+    },
+    {
+      "id": "flexibility",
+      "name": "Repetição e flexibilidade",
+      "summary": "Hábitos, regras e ajustes de ações diante de mudanças.",
+      "patient": "Repetir e mudar ações dependem da situação e da aprendizagem. Comportamentos parecidos podem ter sentidos muito diferentes.",
+      "nodes": [
+        "ofc",
+        "basal",
+        "thalamus",
+        "dlpfc",
+        "parietal"
+      ],
+      "networks": [
+        "cstc",
+        "executive"
+      ],
+      "sources": [
+        "ocd-circuits",
+        "control"
+      ],
+      "members": [
+        {
+          "condition": "ocd-topic",
+          "aspect": "loops"
+        },
+        {
+          "condition": "ocd-topic",
+          "aspect": "control"
+        },
+        {
+          "condition": "anorexia-topic",
+          "aspect": "rules"
+        },
+        {
+          "condition": "substance-topic",
+          "aspect": "control"
+        },
+        {
+          "condition": "gambling-topic",
+          "aspect": "control"
+        },
+        {
+          "condition": "binge-topic",
+          "aspect": "control"
+        }
+      ]
+    },
+    {
+      "id": "sleep",
+      "name": "Sono e vigília",
+      "summary": "Regulação do estado de alerta e suas relações com a atenção.",
+      "patient": "Sono e estado de alerta interagem com nossas experiências. Este desenho não mede o sono nem explica sozinho a insônia.",
+      "nodes": [
+        "hypothalamus",
+        "brainstem",
+        "dlpfc",
+        "parietal"
+      ],
+      "networks": [
+        "autonomic",
+        "executive"
+      ],
+      "sources": [
+        "anatomy",
+        "sleep-memory",
+        "control"
+      ],
+      "members": [
+        {
+          "condition": "insomnia-topic",
+          "aspect": "arousal"
+        },
+        {
+          "condition": "insomnia-topic",
+          "aspect": "daytime"
+        },
+        {
+          "condition": "bipolar-topic",
+          "aspect": "drive"
+        }
+      ]
+    },
+    {
+      "id": "internal",
+      "name": "Experiência interna",
+      "summary": "Pensar sobre si, lembrar e coordenar foco interno e externo.",
+      "patient": "Pensamentos internos fazem parte da vida. O significado deles depende da pessoa, da história e do contexto.",
+      "nodes": [
+        "vmpfc",
+        "pcc",
+        "parietal"
+      ],
+      "networks": [
+        "default"
+      ],
+      "sources": [
+        "dmn",
+        "yeo"
+      ],
+      "members": [
+        {
+          "condition": "depression-topic",
+          "aspect": "internal"
+        },
+        {
+          "condition": "social-topic",
+          "aspect": "self"
+        },
+        {
+          "condition": "adhd-topic",
+          "aspect": "internal"
+        },
+        {
+          "condition": "autism-topic",
+          "aspect": "internal"
+        },
+        {
+          "condition": "psychosis-topic",
+          "aspect": "control"
+        },
+        {
+          "condition": "borderline-topic",
+          "aspect": "emotion"
+        },
+        {
+          "condition": "dissociation-topic",
+          "aspect": "integration"
+        }
+      ]
+    }
+  ],
+  "stories": [
+    {
+      "id": "attention",
+      "title": "Uma leitura interrompida",
+      "intro": "Uma pessoa fictícia tenta ler enquanto chegam avisos.",
+      "function": "attention",
+      "steps": [
+        {
+          "label": "Situação",
+          "text": "Ao abrir um texto, uma notificação aparece. A cena inventada não representa uma avaliação de atenção.",
+          "nodes": [
+            "dlpfc",
+            "parietal"
+          ]
+        },
+        {
+          "label": "Corpo",
+          "text": "A pessoa percebe cansaço e tensão nos ombros. Esses sinais não revelam uma causa única.",
+          "nodes": [
+            "insula",
+            "acc"
+          ]
+        },
+        {
+          "label": "Atenção",
+          "text": "A leitura e a notificação competem pelo foco. As regiões destacadas são exemplos de sistemas participantes.",
+          "nodes": [
+            "dlpfc",
+            "parietal"
+          ]
+        },
+        {
+          "label": "Ação",
+          "text": "Na história, a pessoa alterna entre o texto e o aviso. Isso descreve uma escolha fictícia, não uma recomendação.",
+          "nodes": [
+            "dlpfc",
+            "parietal"
+          ]
+        },
+        {
+          "label": "Consequência",
+          "text": "Ao voltar ao texto, precisa reencontrar o ponto da leitura. Contexto, experiência e sono também influenciam esse processo.",
+          "nodes": [
+            "hippocampus",
+            "dlpfc"
+          ]
+        }
+      ],
+      "sources": [
+        "control"
+      ],
+      "limitation": "A ordem organiza a narrativa; não é uma cadeia causal entre regiões, um fluxo de impulsos nem uma explicação individual. Os sistemas atuam de modo sobreposto."
+    },
+    {
+      "id": "threat",
+      "title": "Um som inesperado",
+      "intro": "Uma cena cotidiana sobre surpresa e contexto.",
+      "function": "threat",
+      "steps": [
+        {
+          "label": "Situação",
+          "text": "Um objeto cai na sala ao lado. Esta é uma cena inventada, sem associação a um diagnóstico.",
+          "nodes": [
+            "amygdala",
+            "hippocampus"
+          ]
+        },
+        {
+          "label": "Corpo",
+          "text": "A pessoa nota o coração acelerar por um instante. A sensação não permite medir o que ocorreu em cada região.",
+          "nodes": [
+            "insula",
+            "brainstem"
+          ]
+        },
+        {
+          "label": "Atenção",
+          "text": "O som chama a atenção. Respostas defensivas e experiência consciente não são a mesma coisa.",
+          "nodes": [
+            "amygdala",
+            "acc"
+          ]
+        },
+        {
+          "label": "Ação",
+          "text": "Na história, a pessoa olha em direção ao som. O desenho não mostra a sequência de disparos neurais.",
+          "nodes": [
+            "parietal",
+            "frontal"
+          ]
+        },
+        {
+          "label": "Consequência",
+          "text": "Ao ver o objeto, o contexto ganha outro significado. Novas aprendizagens podem coexistir com as anteriores.",
+          "nodes": [
+            "hippocampus",
+            "vmpfc"
+          ]
+        }
+      ],
+      "sources": [
+        "fear",
+        "fear-debate",
+        "extinction"
+      ],
+      "limitation": "A ordem organiza a narrativa; não é uma cadeia causal entre regiões, um fluxo de impulsos nem uma explicação individual. Os sistemas atuam de modo sobreposto."
+    },
+    {
+      "id": "reward",
+      "title": "Uma nova receita",
+      "intro": "Expectativa e resultado em uma atividade comum.",
+      "function": "reward",
+      "steps": [
+        {
+          "label": "Situação",
+          "text": "Uma pessoa fictícia testa uma receita pela primeira vez. Ela espera um resultado parecido com a fotografia.",
+          "nodes": [
+            "ofc",
+            "basal"
+          ]
+        },
+        {
+          "label": "Corpo",
+          "text": "Ao sentir o aroma, percebe sinais do corpo. Fome, cultura e experiência também importam.",
+          "nodes": [
+            "insula",
+            "hypothalamus"
+          ]
+        },
+        {
+          "label": "Atenção",
+          "text": "A pessoa observa o aspecto e o aroma do prato. O destaque resume funções, não atividade medida.",
+          "nodes": [
+            "parietal",
+            "ofc"
+          ]
+        },
+        {
+          "label": "Ação",
+          "text": "Ela experimenta o resultado na cena inventada. Uma ação cotidiana envolve muitos sistemas além dos mostrados.",
+          "nodes": [
+            "basal",
+            "frontal"
+          ]
+        },
+        {
+          "label": "Consequência",
+          "text": "O resultado é diferente do esperado e informa expectativas futuras. Isso não equivale a medir prazer ou dopamina.",
+          "nodes": [
+            "ofc",
+            "basal"
+          ]
+        }
+      ],
+      "sources": [
+        "reward"
+      ],
+      "limitation": "A ordem organiza a narrativa; não é uma cadeia causal entre regiões, um fluxo de impulsos nem uma explicação individual. Os sistemas atuam de modo sobreposto."
+    },
+    {
+      "id": "memory",
+      "title": "Um encontro em novo lugar",
+      "intro": "Como contexto e atenção participam da memória.",
+      "function": "memory",
+      "steps": [
+        {
+          "label": "Situação",
+          "text": "Uma personagem conhece um lugar pela primeira vez. Não há nome, registro ou dado de pessoa real.",
+          "nodes": [
+            "hippocampus",
+            "temporal"
+          ]
+        },
+        {
+          "label": "Corpo",
+          "text": "Ela percebe o calor do ambiente. Sinais corporais são parte da experiência, não um teste de memória.",
+          "nodes": [
+            "insula"
+          ]
+        },
+        {
+          "label": "Atenção",
+          "text": "Uma pintura chama a atenção durante a conversa. Nem todos os detalhes recebem o mesmo foco.",
+          "nodes": [
+            "parietal",
+            "dlpfc"
+          ]
+        },
+        {
+          "label": "Ação",
+          "text": "Na história, ela relaciona a pintura a algo já conhecido. A lembrança depende de sistemas distribuídos.",
+          "nodes": [
+            "hippocampus",
+            "temporal"
+          ]
+        },
+        {
+          "label": "Consequência",
+          "text": "Mais tarde, a pintura ajuda a recordar o local. Lembrar é reconstruir, e não reproduzir uma gravação perfeita.",
+          "nodes": [
+            "hippocampus",
+            "temporal"
+          ]
+        }
+      ],
+      "sources": [
+        "memory",
+        "sleep-memory",
+        "extinction"
+      ],
+      "limitation": "A ordem organiza a narrativa; não é uma cadeia causal entre regiões, um fluxo de impulsos nem uma explicação individual. Os sistemas atuam de modo sobreposto."
+    },
+    {
+      "id": "flexibility",
+      "title": "Um caminho que mudou",
+      "intro": "Repetição e ajuste em um exemplo cotidiano.",
+      "function": "flexibility",
+      "steps": [
+        {
+          "label": "Situação",
+          "text": "Uma pessoa fictícia chega a um corredor que costuma usar. Hoje há uma placa indicando outro caminho.",
+          "nodes": [
+            "hippocampus",
+            "basal"
+          ]
+        },
+        {
+          "label": "Corpo",
+          "text": "Ela percebe uma breve tensão diante da mudança. Isso não é sinal específico de qualquer transtorno.",
+          "nodes": [
+            "insula",
+            "acc"
+          ]
+        },
+        {
+          "label": "Atenção",
+          "text": "A placa passa a ser relevante para a tarefa. O destaque não mede o desconforto da personagem.",
+          "nodes": [
+            "acc",
+            "parietal"
+          ]
+        },
+        {
+          "label": "Ação",
+          "text": "Ela escolhe uma rota diferente nesta história. Ajustar ações envolve contexto, metas e aprendizagem.",
+          "nodes": [
+            "dlpfc",
+            "basal"
+          ]
+        },
+        {
+          "label": "Consequência",
+          "text": "A nova rota passa a fazer parte da experiência. Repetição, por si só, não demonstra compulsão ou diagnóstico.",
+          "nodes": [
+            "hippocampus",
+            "ofc"
+          ]
+        }
+      ],
+      "sources": [
+        "ocd-circuits",
+        "control"
+      ],
+      "limitation": "A ordem organiza a narrativa; não é uma cadeia causal entre regiões, um fluxo de impulsos nem uma explicação individual. Os sistemas atuam de modo sobreposto."
+    },
+    {
+      "id": "sleep",
+      "title": "Uma manhã após pouco sono",
+      "intro": "Relações entre vigília e atenção, sem prever desempenho.",
+      "function": "sleep",
+      "steps": [
+        {
+          "label": "Situação",
+          "text": "Uma personagem dormiu menos que o habitual. A duração exata não é usada como medida ou recomendação.",
+          "nodes": [
+            "hypothalamus",
+            "brainstem"
+          ]
+        },
+        {
+          "label": "Corpo",
+          "text": "Ela percebe sonolência ao iniciar a manhã. A sensação pode variar entre pessoas e situações.",
+          "nodes": [
+            "brainstem",
+            "insula"
+          ]
+        },
+        {
+          "label": "Atenção",
+          "text": "Uma tarefa parece exigir mais esforço naquela cena. Isso não estima capacidade nem identifica insônia.",
+          "nodes": [
+            "dlpfc",
+            "parietal"
+          ]
+        },
+        {
+          "label": "Ação",
+          "text": "Na história, ela relê uma instrução. O exemplo não é uma orientação de tratamento.",
+          "nodes": [
+            "dlpfc",
+            "parietal"
+          ]
+        },
+        {
+          "label": "Consequência",
+          "text": "Ela se lembra de parte do que leu, mas perde um detalhe. O exemplo não prevê o efeito de uma noite sobre outra pessoa.",
+          "nodes": [
+            "hippocampus",
+            "temporal"
+          ]
+        }
+      ],
+      "sources": [
+        "anatomy",
+        "sleep-memory",
+        "control"
+      ],
+      "limitation": "A ordem organiza a narrativa; não é uma cadeia causal entre regiões, um fluxo de impulsos nem uma explicação individual. Os sistemas atuam de modo sobreposto."
     }
   ]
 };

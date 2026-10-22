@@ -1,32 +1,37 @@
-# NEUROATLAS 1.1.0
+# NEUROATLAS 1.2.0
 
 Referência educacional offline, em PT-BR, para psicólogos e explicações gerais a adultos. Proprietário: André Fiker. Não é instrumento diagnóstico, exame, orientador de tratamento ou dispositivo médico. Não há certificação clínica nem revisão independente por especialista.
 
 ## Entrega
 
-| Recurso | Versão 1.1.0 |
+| Recurso | Versão 1.2.0 |
 |---|---|
 | Atlas original | 21 regiões; lateral, medial, inferior e dois cortes coronais |
-| Redes | 11 projeções conceituais, com distinção entre via, conectividade e modelo |
+| Redes | 11 redes exploráveis em planos anatômicos, com distinção entre via, conectividade e modelo |
 | Biblioteca | 28 temas clínicos; 20 transtornos/grupos com 53 recortes que iluminam regiões e relações; mecanismos, incertezas, mitos e contexto de encaminhamento |
 | Ensinar | 6 módulos: estresse, ameaça/extinção, atenção, recompensa, memória e três sistemas |
-| Evidências | 64 referências offline com autoria, ano, DOI/URL, escopo e extensão da consulta |
+| Funções e histórias | 8 funções, comparação entre condições e 6 histórias fictícias de 5 etapas |
+| Apresentação | Uma figura por etapa; explicações de 30 s ou 2 min, tempos sugeridos |
+| Evidências | Fichas para 132 destaques regionais e 79 relações editoriais; 64 referências offline com autoria, ano, DOI/URL, escopo e extensão da consulta |
 | Leitura | Modo clínico e vista para paciente; temas claro/escuro; texto ampliado |
 | Navegação | Busca sem acentos, zoom/pinça/arraste, glossário, favoritos e recentes |
 | Privacidade | Zero permissões Android; sem rede, conta, anúncios, métricas ou registros clínicos |
 
 O armazenamento contém apenas preferências e IDs de favoritos/recentes. Consultas de busca e controles das demonstrações não são persistidos. Não insira informações pessoais ou de pacientes na busca. O aplicativo não possui campos para casos, diagnósticos pessoais, imagens ou notas.
 
-## Novo na versão 1.1.0
+## Novo na versão 1.2.0
 
-A aba **Clínica** apresenta 20 transtornos ou grupos. **Iluminar redes** abre mapas por aspectos, com anatomia em cinco vistas e diagrama de relações clicável. A lista completa e a ligação entre cada recorte e suas fontes estão em `docs/PSYCHIATRY-MAPS.md`. Os mapas distinguem achados de grupo, funções gerais e vias anatômicas simplificadas. Não representam todos os mecanismos nem um cérebro típico de cada diagnóstico.
+As seis melhorias foram implementadas: anatomia refinada com marcos e foco interno; explorador que sincroniza regiões e relações com contexto fixo e navegação entre recortes; fichas de evidência por destaque; apresentação ao paciente; seis histórias fictícias; funções transdiagnósticas com comparação entre dois contextos. A antiga projeção de núcleos profundos na silhueta lateral da aba Redes foi substituída por vistas anatômicas adequadas.
+
+Na **Clínica**, alterne **Transtornos / Por função**. Em um mapa, **Apresentar ao paciente** inicia as explicações. Em **Ensinar**, **Seis histórias para acompanhar** abre os exemplos. Nenhuma informação da sessão é persistida. Veja `docs/EXPLORER-V1.2.md`.
 
 ## Estrutura e arquitetura
 
 - `android/`: Activity nativa mínima e WebView; sem Gradle, dependências de interface ou SDK de terceiros.
 - `web/`: interface, conteúdo e SVG originais, todos incluídos no APK.
-- `tools/make-content.py` e `tools/psychiatry_content.py`: fontes editoriais; geram `web/data.js`, bibliografia e documentação de rastreabilidade.
+- `tools/make-content.py`, `tools/psychiatry_content.py` e `tools/explorer_content.py`: fontes editoriais; geram `web/data.js`, bibliografia e documentação de rastreabilidade.
 - `web/circuits.js` e `web/circuits.css`: seleção de aspectos, localização em planos anatômicos, relações didáticas e gestos dos mapas.
+- `web/explorer.js` e `web/explorer.css`: funções, comparação, apresentação e narrativas fictícias.
 - `tools/build.sh`: compilação, empacotamento, alinhamento e assinatura.
 - `tests/`: integridade de conteúdo, interações de navegador, anatomia/geometria, toque e auditoria do APK.
 - `docs/` e `qa/`: escopo, licenças, fontes e resultados separados por tipo de teste.
@@ -35,9 +40,9 @@ A aba **Clínica** apresenta 20 transtornos ou grupos. **Iluminar redes** abre m
 
 ## Compatibilidade e instalação
 
-**Correção 1.0.1:** o APK 1.0.0 entregue continha `resources.arsc` comprimido e desalinhado, o que impede sua instalação em Android 11+ com este target SDK. A correção permanece em 1.1.0; detalhes e regressão em `docs/INSTALLATION-FIX.md`. A assinatura original foi preservada.
+**Correção 1.0.1:** o APK 1.0.0 entregue continha `resources.arsc` comprimido e desalinhado, o que impede sua instalação em Android 11+ com este target SDK. A correção permanece em 1.2.0; detalhes e regressão em `docs/INSTALLATION-FIX.md`. A assinatura original foi preservada.
 
-Pacote `com.andrefiker.neuroatlas`, versionName `1.1.0`, versionCode `3`. Android 8.0/API 26 ou superior; target/compile API 35. Requer Android System WebView 92+ para os recursos web usados; somente Chromium 131 foi executado nesta entrega. Não contém código nativo por arquitetura, portanto não depende de ABI de CPU.
+Pacote `com.andrefiker.neuroatlas`, versionName `1.2.0`, versionCode `4`. Android 8.0/API 26 ou superior; target/compile API 35. Requer Android System WebView 92+ para os recursos web usados; somente Chromium 131 foi executado nesta entrega. Não contém código nativo por arquitetura, portanto não depende de ABI de CPU.
 
 Transfira o APK ao aparelho, abra-o e permita a instalação apenas para o aplicativo usado para abrir o arquivo, se o Android solicitar. A primeira abertura não precisa de rede. Confira o SHA-256 e o certificado no relatório antes de instalar. Instalação em emulador ou telefone não foi executada neste ambiente: ver `docs/QA.md`.
 
@@ -50,6 +55,7 @@ cd neuroatlas
 python3 tools/make-content.py
 node tests/content.cjs
 node tests/circuits.cjs
+node tests/explorer.cjs
 python3 tests/apk-layout.py
 export BT=/caminho/android-sdk/build-tools/35.0.0
 export ANDROID_JAR=/caminho/android-sdk/platforms/android-35/android.jar
@@ -60,7 +66,7 @@ bash tools/build.sh
 python3 tests/package.py
 ```
 
-Saída: `build/NEUROATLAS-v1.1.0.apk`. Alias `neuroatlas`, PKCS12 com a mesma senha para chave e repositório. O script limpa somente diretórios de classes/dex gerados, usa D8 release com uma thread e normaliza ordem e metadados do ZIP antes de assinar. Mantém `resources.arsc` sem compressão e verifica seu deslocamento real de dados em múltiplo de 4 antes e depois da assinatura. A saída deriva de `versionName` no manifesto. Não copie a chave nem sua senha para este repositório.
+Saída: `build/NEUROATLAS-v1.2.0.apk`. Alias `neuroatlas`, PKCS12 com a mesma senha para chave e repositório. O script limpa somente diretórios de classes/dex gerados, usa D8 release com uma thread e normaliza ordem e metadados do ZIP antes de assinar. Mantém `resources.arsc` sem compressão e verifica seu deslocamento real de dados em múltiplo de 4 antes e depois da assinatura. A saída deriva de `versionName` no manifesto. Não copie a chave nem sua senha para este repositório.
 
 ## Testes de interface
 
@@ -72,6 +78,7 @@ export CHROME_PATH=/caminho/chrome
 node tests/browser.cjs
 node tests/anatomy-touch.cjs
 node tests/circuits-browser.cjs
+node tests/explorer-browser.cjs
 ```
 
 Esta execução usou `--headless=old --single-process --no-zygote` porque o lançamento normal do navegador não pôde criar IPC Unix no ambiente. Em uma máquina convencional, esses parâmetros podem ser substituídos pelo headless padrão. Os testes não simulam uma instalação Android nem constituem validação clínica.
@@ -83,7 +90,7 @@ Esta execução usou `--headless=old --single-process --no-zygote` porque o lan�
 3. Instale sobre a versão anterior para manter preferências/favoritos. Se a chave for perdida, uma atualização compatível não poderá ser assinada; será necessário outro pacote ou reinstalação, perdendo os dados locais.
 4. A base de rollback do repositório é `0db2815c14b727031d63e7c14ef0a75255690e90`. A branch `feat/neuroatlas-v1-20261022` adiciona somente `neuroatlas/`; nenhum merge em `main` é necessário para usar os arquivos.
 5. Para reverter uma futura atualização Android, reconstrua o conteúdo da versão conhecida com versionCode **maior** que o instalado, usando a mesma chave. O Android normalmente bloqueia downgrades. Desinstalar/reinstalar apaga as preferências, favoritos e recentes.
-6. Rollback específico desta ampliação: commit `10ec3470973aeb48432b8f51ef274628b46b77ed` (1.0.1). Guarde esse APK e seu SHA-256 como ponto de retorno verificável. Não volte ao APK 1.0.0 defeituoso; para recuperar seu conteúdo, mantenha a correção de empacotamento e incremente versionCode. Não publique o backup de assinatura.
+6. Rollback específico desta ampliação: commit `bc7f1663f1ccdec1b1b89c17026218cc5f51b4de` (1.1.0). Guarde esse APK e seu SHA-256 como ponto de retorno verificável. Não volte ao APK 1.0.0 defeituoso; para recuperar seu conteúdo, mantenha a correção de empacotamento e incremente versionCode. Não publique o backup de assinatura.
 
 ## Omissões deliberadas
 

@@ -1,4 +1,4 @@
-# Verificação de fontes — NEUROATLAS 1.1.0
+# Verificação de fontes — NEUROATLAS 1.2.0
 
 Conferência editorial em 22/10/2026. Os metadados e os escopos abaixo também estão no APK. Sínteses autorais; artigos completos e figuras de terceiros não são redistribuídos. A extensão real da consulta está indicada em cada item. Não se afirma revisão sistemática própria nem validação clínica independente.
 

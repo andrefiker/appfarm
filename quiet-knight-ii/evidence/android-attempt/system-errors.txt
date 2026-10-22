@@ -1,0 +1,109 @@
+--------- beginning of main
+10-22 14:44:25.240   335   335 D AndroidRuntime: >>>>>> START com.android.internal.os.ZygoteInit uid 0 <<<<<<
+10-22 14:44:27.388   335   335 I AndroidRuntime: Using default boot image
+10-22 14:44:27.395   335   335 I AndroidRuntime: Leaving lock profiling enabled
+--------- beginning of system
+10-22 14:45:35.864   603   603 I SystemServer: Entered the Android system server!
+10-22 14:45:39.546   603   603 I SystemServer: Reading configuration...
+10-22 14:45:45.688   603   603 I Watchdog: Pausing HandlerChecker: main thread for reason: packagemanagermain. Pause count: 1
+10-22 14:46:08.058   603   603 I Watchdog: Resuming HandlerChecker: main thread for reason: packagemanagermain. Pause count: 0
+10-22 14:46:08.094   603   603 I Watchdog: Pausing HandlerChecker: main thread for reason: moveab. Pause count: 1
+10-22 14:46:08.135   603   603 I Watchdog: Resuming HandlerChecker: main thread for reason: moveab. Pause count: 0
+10-22 14:46:12.229   603   733 I SystemServer: SecondaryZygotePreload
+10-22 14:46:24.227   603   603 I Watchdog: Pausing HandlerChecker: main thread for reason: dexopt. Pause count: 1
+10-22 14:46:24.265   603   603 I Watchdog: Resuming HandlerChecker: main thread for reason: dexopt. Pause count: 0
+10-22 14:46:25.765   603   603 D SystemServer: MusicRecognitionManagerService not defined by OEM or disabled by flag
+10-22 14:46:25.773   603   603 D SystemServer: ContentCaptureService disabled because resource is not overlaid
+10-22 14:46:25.778   603   603 D SystemServer: AttentionService is not configured on this device
+10-22 14:46:25.793   603   603 D SystemServer: RotationResolverService is not configured on this device
+10-22 14:46:25.794   603   603 D SystemServer: SystemCaptionsManagerService disabled because resource is not overlaid
+10-22 14:46:25.964   603   603 D SystemServer: AmbientContextManagerService not defined by OEM or disabled by flag
+10-22 14:46:25.983   603   603 D SystemServer: AppPredictionService not defined by OEM
+10-22 14:46:25.984   603   603 D SystemServer: ContentSuggestionsService not defined by OEM
+10-22 14:46:25.984   603   603 D SystemServer: SmartspaceManagerService not defined by OEM or disabled by flag
+10-22 14:46:25.984   603   603 D SystemServer: ContextualSearchManagerService not defined or disabled by flag
+10-22 14:46:39.603   603   652 I Watchdog: WAITED_UNTIL_PRE_WATCHDOG
+10-22 14:46:41.109   603   603 D SystemServer: TranslationService not defined by OEM
+10-22 14:47:02.963   937   937 D AndroidRuntime: >>>>>> START com.android.internal.os.RuntimeInit uid 0 <<<<<<
+10-22 14:47:03.637   937   937 I AndroidRuntime: Using default boot image
+10-22 14:47:03.638   937   937 I AndroidRuntime: Leaving lock profiling enabled
+10-22 14:47:04.652   603   652 E ActivityManager: Aborting stack trace dump (current native pid=402); deadline exceeded.
+10-22 14:47:05.928   603   603 I SystemServer: Making services ready
+10-22 14:47:11.736   937   937 D AndroidRuntime: Calling main entry com.android.commands.uiautomator.Launcher
+10-22 14:47:13.740   603   654 I SystemServer: WebViewFactoryPreparation
+10-22 14:47:17.149   937   937 D AndroidRuntime: Shutting down VM
+--------- beginning of crash
+10-22 14:47:17.170   937   937 E AndroidRuntime: FATAL EXCEPTION: main
+10-22 14:47:17.170   937   937 E AndroidRuntime: PID: 937
+10-22 14:47:17.170   937   937 E AndroidRuntime: java.lang.RuntimeException: java.util.concurrent.TimeoutException: Timeout while connecting UiAutomation@17665fe[id=-1, displayId=0, flags=0]
+10-22 14:47:17.170   937   937 E AndroidRuntime: 	at android.app.UiAutomation.connect(UiAutomation.java:332)
+10-22 14:47:17.170   937   937 E AndroidRuntime: 	at com.android.uiautomator.core.UiAutomationShellWrapper.connect(UiAutomationShellWrapper.java:36)
+10-22 14:47:17.170   937   937 E AndroidRuntime: 	at com.android.commands.uiautomator.DumpCommand.run(DumpCommand.java:78)
+10-22 14:47:17.170   937   937 E AndroidRuntime: 	at com.android.commands.uiautomator.Launcher.main(Launcher.java:83)
+10-22 14:47:17.170   937   937 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit.nativeFinishInit(Native Method)
+10-22 14:47:17.170   937   937 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit.main(RuntimeInit.java:369)
+10-22 14:47:17.170   937   937 E AndroidRuntime: Caused by: java.util.concurrent.TimeoutException: Timeout while connecting UiAutomation@17665fe[id=-1, displayId=0, flags=0]
+10-22 14:47:17.170   937   937 E AndroidRuntime: 	at android.app.UiAutomation.connectWithTimeout(UiAutomation.java:409)
+10-22 14:47:17.170   937   937 E AndroidRuntime: 	at android.app.UiAutomation.connect(UiAutomation.java:330)
+10-22 14:47:17.170   937   937 E AndroidRuntime: 	... 5 more
+10-22 14:47:17.210   937   937 E AndroidRuntime: Error reporting crash
+10-22 14:47:17.210   937   937 E AndroidRuntime: java.lang.RuntimeException: Bad file descriptor
+10-22 14:47:17.210   937   937 E AndroidRuntime: 	at android.os.BinderProxy.transactNative(Native Method)
+10-22 14:47:17.210   937   937 E AndroidRuntime: 	at android.os.BinderProxy.transact(BinderProxy.java:586)
+10-22 14:47:17.210   937   937 E AndroidRuntime: 	at android.os.IServiceManager$Stub$Proxy.checkService(IServiceManager.java:441)
+10-22 14:47:17.210   937   937 E AndroidRuntime: 	at android.os.ServiceManagerProxy.getService(ServiceManagerNative.java:63)
+10-22 14:47:17.210   937   937 E AndroidRuntime: 	at android.os.ServiceManager.rawGetService(ServiceManager.java:428)
+10-22 14:47:17.210   937   937 E AndroidRuntime: 	at android.os.ServiceManager.getService(ServiceManager.java:175)
+10-22 14:47:17.210   937   937 E AndroidRuntime: 	at android.app.ActivityManager$3.create(ActivityManager.java:5692)
+10-22 14:47:17.210   937   937 E AndroidRuntime: 	at android.app.ActivityManager$3.create(ActivityManager.java:5689)
+10-22 14:47:17.210   937   937 E AndroidRuntime: 	at android.util.Singleton.get(Singleton.java:44)
+10-22 14:47:17.210   937   937 E AndroidRuntime: 	at android.app.ActivityManager.getService(ActivityManager.java:5680)
+10-22 14:47:17.210   937   937 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$KillApplicationHandler.uncaughtException(RuntimeInit.java:170)
+10-22 14:47:17.210   937   937 E AndroidRuntime: 	at java.lang.ThreadGroup.uncaughtException(ThreadGroup.java:1071)
+10-22 14:47:17.210   937   937 E AndroidRuntime: 	at java.lang.ThreadGroup.uncaughtException(ThreadGroup.java:1066)
+10-22 14:47:17.210   937   937 E AndroidRuntime: 	at java.lang.Thread.dispatchUncaughtException(Thread.java:2306)
+10-22 14:47:21.918  1022  1022 I AndroidRuntime: VM exiting with result code 0, cleanup skipped.
+--------- beginning of events
+10-22 14:47:38.949   603  1113 I am_anr  : [0,983,com.android.systemui,818462221,Process ProcessRecord{4ed432 983:com.android.systemui/u0a120} failed to complete startup]
+10-22 14:48:00.332   603   662 I Watchdog: Interesting Java process com.android.phone started. Pid 1193
+10-22 14:48:01.477   603   652 E ActivityManager: Aborting stack trace dump (current native pid=143); deadline exceeded.
+10-22 14:48:03.362   603   603 I Watchdog: Watchdog timeout updated to 60000 millis
+10-22 14:48:10.245   603   652 W Watchdog: *** WATCHDOG KILLING SYSTEM PROCESS: Blocked in handler on main thread (main) for 62s
+10-22 14:48:11.276   603   652 W Watchdog: main annotated stack trace:
+10-22 14:48:11.277   603   652 W Watchdog:     at android.os.SystemProperties.native_set(Native Method)
+10-22 14:48:11.829   603   652 W Watchdog:     at android.os.SystemProperties.set(SystemProperties.java:267)
+10-22 14:48:11.830   603   652 W Watchdog:     at android.app.PropertyInvalidatedCache.setNonce(PropertyInvalidatedCache.java:711)
+10-22 14:48:11.830   603   652 W Watchdog:     at android.app.PropertyInvalidatedCache.invalidateCacheLocked(PropertyInvalidatedCache.java:1127)
+10-22 14:48:11.835   603   652 W Watchdog:     at android.app.PropertyInvalidatedCache.invalidateCache(PropertyInvalidatedCache.java:1100)
+10-22 14:48:11.836   603   652 W Watchdog:     - locked <0x0d522e3c> (a java.lang.Object)
+10-22 14:48:11.837   603   652 W Watchdog:     at android.accounts.AccountManager.invalidateLocalAccountsDataCaches(AccountManager.java:3453)
+10-22 14:48:11.838   603   652 W Watchdog:     at com.android.server.accounts.AccountManagerService.lambda$new$0(AccountManagerService.java:423)
+10-22 14:48:11.839   603   652 W Watchdog:     at com.android.server.accounts.AccountManagerService.$r8$lambda$PbCIP9VOudHwNT8i87vpmiAelk4(AccountManagerService.java:0)
+10-22 14:48:11.840   603   652 W Watchdog:     at com.android.server.accounts.AccountManagerService$$ExternalSyntheticLambda5.onPermissionsChanged(R8$$SyntheticClass:0)
+10-22 14:48:11.844   603   652 W Watchdog:     at android.content.pm.PackageManager$OnPermissionsChangedListener.onPermissionsChanged(PackageManager.java:767)
+10-22 14:48:11.845   603   652 W Watchdog:     at android.permission.PermissionManager$OnPermissionsChangeListenerDelegate.handleMessage(PermissionManager.java:2040)
+10-22 14:48:11.845   603   652 W Watchdog:     at android.os.Handler.dispatchMessage(Handler.java:103)
+10-22 14:48:11.846   603   652 W Watchdog:     at android.os.Looper.loopOnce(Looper.java:232)
+10-22 14:48:11.846   603   652 W Watchdog:     at android.os.Looper.loop(Looper.java:317)
+10-22 14:48:11.847   603   652 W Watchdog:     at com.android.server.SystemServer.run(SystemServer.java:973)
+10-22 14:48:11.852   603   652 W Watchdog:     at com.android.server.SystemServer.main(SystemServer.java:657)
+10-22 14:48:11.852   603   652 W Watchdog:     at java.lang.reflect.Method.invoke(Native Method)
+10-22 14:48:11.853   603   652 W Watchdog:     at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:580)
+10-22 14:48:11.853   603   652 W Watchdog:     at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:864)
+10-22 14:48:11.854   603   652 W Watchdog: *** GOODBYE!
+10-22 14:48:14.743  1150  1150 E AndroidRuntime: FATAL EXCEPTION: main
+10-22 14:48:14.743  1150  1150 E AndroidRuntime: Process: com.android.bluetooth, PID: 1150
+10-22 14:48:14.743  1150  1150 E AndroidRuntime: DeadSystemException: The system died; earlier logs will point to the root cause
+10-22 14:48:15.290  1208  1208 D AndroidRuntime: Shutting down VM
+10-22 14:48:15.296  1208  1208 E AndroidRuntime: FATAL EXCEPTION: main
+10-22 14:48:15.296  1208  1208 E AndroidRuntime: Process: com.android.settings, PID: 1208
+10-22 14:48:15.296  1208  1208 E AndroidRuntime: DeadSystemException: The system died; earlier logs will point to the root cause
+10-22 14:48:15.401  1193  1193 D AndroidRuntime: Shutting down VM
+10-22 14:48:15.410  1193  1193 E AndroidRuntime: FATAL EXCEPTION: main
+10-22 14:48:15.410  1193  1193 E AndroidRuntime: Process: com.android.phone, PID: 1193
+10-22 14:48:15.410  1193  1193 E AndroidRuntime: DeadSystemException: The system died; earlier logs will point to the root cause
+10-22 14:48:26.688  1254  1254 D AndroidRuntime: >>>>>> START com.android.internal.os.ZygoteInit uid 0 <<<<<<
+10-22 14:48:27.228  1254  1254 I AndroidRuntime: Using default boot image
+10-22 14:48:27.231  1254  1254 I AndroidRuntime: Leaving lock profiling enabled
+10-22 14:48:51.123  1346  1346 I SystemServer: Entered the Android system server!
+10-22 14:48:52.423  1346  1346 I SystemServer: Reading configuration...

@@ -18,8 +18,10 @@ Date: 22 October 2026. This is the current release report. `QA.md` and `QA-1.0.1
 | Engine | Vendor engine and adapter unchanged; prior 30 real searches across all five levels remain recorded; a fresh bundled offline search passed | `evidence/browser-tests.json`, current browser report |
 | Packaging | Android source compilation, resources, D8, zipalign and signing passed | `evidence/build-1.0.2.txt` |
 | APK | Correct package/version/code, valid v2/v3 signatures with the existing certificate, zero permissions, all 48 bundled assets byte-identical to source | `evidence/apk-1.0.2.json` |
+| Android emulator | **Blocked before app execution.** API 35 software emulation did not complete boot; baseline install failed because Android storage services were not ready, then the system watchdog restarted Android. No native installation, gameplay or resume pass is claimed for either APK. | `evidence/android-attempt/result.json`, `evidence/android-attempt/system-errors.txt` |
+| Physical device | Not run; no device connected. | Outstanding |
 
-Android emulator qualification is pending the bounded warm-start diagnostic. No physical device has been tested.
+The bounded emulator attempts are documented in [Android attempt evidence](evidence/android-attempt/README.md). APK static verification and browser results do not substitute for a successful Android run.
 
 ## Exact release
 

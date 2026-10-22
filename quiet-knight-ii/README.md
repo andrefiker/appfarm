@@ -21,7 +21,7 @@ An offline, portrait-first Android chess table for André Fiker / AppFarm.
 
 Dead-position detection is conservative: exotic blocked positions involving other pieces are not completely solved. Local players can agree to a draw. This is a remaining gap against the complete flagship brief, not a claim of full FIDE dead-position coverage.
 
-Curated tactics packs and automatic move-by-move review are not included. No emulator or physical device was available. Real airplane-mode installation, force-stop/reopen, native clipboard/haptics, gesture navigation and long battery sessions still need on-device verification. Android 9 with an obsolete WebView is not qualified.
+Curated tactics packs and automatic move-by-move review are not included. An API 35 emulator was provisioned, but software emulation failed to complete Android boot; installation was blocked by Android services and the system watchdog restarted Android. [The failed attempt is recorded](evidence/android-attempt/README.md). No physical device was connected. Airplane-mode installation, update continuity, force-stop/reopen, native clipboard/haptics, gesture navigation and long battery sessions still need on-device verification. Android 9 with an obsolete WebView is not qualified.
 
 ## Architecture and isolation
 

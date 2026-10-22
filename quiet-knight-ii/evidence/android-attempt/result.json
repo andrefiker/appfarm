@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-22",
+  "status": "BLOCKED: Android OS failed before application execution",
+  "emulator": "37.2.12 (16428233)",
+  "systemImage": "Android 15 API 35 default x86_64 revision 2",
+  "webviewBundled": "124.0.6367.219; provider never became ready",
+  "hardwareAcceleration": false,
+  "kvmDevicePresent": false,
+  "coldBootTimeoutSeconds": 480,
+  "warmStartPackageServiceObservedSeconds": 209,
+  "bootCompleted": false,
+  "baselineApkAttempted": "Quiet-Knight-II-1.0.0.apk",
+  "baselineInstall": {
+    "returncode": 1,
+    "stdout": "Performing Streamed Install\n",
+    "stderr": "adb: failed to install /workspace/scratch/ad074272428e/recovered/Quiet-Knight-II-1.0.0.apk: \nException occurred while executing 'install':\njava.lang.NullPointerException: Attempt to invoke virtual method 'java.util.List android.os.storage.StorageManager.getVolumes()' on a null object reference\n\tat com.android.internal.content.InstallLocationUtils.resolveInstallVolume(InstallLocationUtils.java:203)\n\tat com.android.internal.content.InstallLocationUtils.resolveInstallVolume(InstallLocationUtils.java:153)\n\tat com.android.internal.content.InstallLocationUtils.resolveInstallVolume(InstallLocationUtils.java:168)\n\tat com.android.server.pm.PackageInstallerService.createSessionInternal(PackageInstallerService.java:950)\n\tat com.android.server.pm.PackageInstallerService.createSession(PackageInstallerService.java:656)\n\tat com.android.server.pm.PackageManagerShellCommand.doCreateSession(PackageManagerShellCommand.java:3960)\n\tat com.android.server.pm.PackageManagerShellCommand.doRunInstall(PackageManagerShellCommand.java:1619)\n\tat com.android.server.pm.PackageManagerShellCommand.runInstall(PackageManagerShellCommand.java:1561)\n\tat com.android.server.pm.PackageManagerShellCommand.onCommand(PackageManagerShellCommand.java:245)\n\tat com.android.modules.utils.BasicShellCommandHandler.exec(BasicShellCommandHandler.java:97)\n\tat android.os.ShellCommand.exec(ShellCommand.java:38)\n\tat com.android.server.pm.PackageManagerService$IPackageManagerImpl.onShellCommand(PackageManagerService.java:6561)\n\tat android.os.Binder.shellCommand(Binder.java:1230)\n\tat android.os.Binder.onTransact(Binder.java:1043)\n\tat android.content.pm.IPackageManager$Stub.onTransact(IPackageManager.java:4620)\n\tat com.android.server.pm.PackageManagerService$IPackageManagerImpl.onTransact(PackageManagerService.java:6545)\n\tat android.os.Binder.execTransactInternal(Binder.java:1505)\n\tat android.os.Binder.execTransact(Binder.java:1444)\n\n"
+  },
+  "nativeAppLaunchPassed": false,
+  "nativeGameplayPassed": false,
+  "nativeResumePassed": false,
+  "latestApkNativeTested": false,
+  "physicalDeviceTested": false,
+  "systemFailure": "Watchdog killed Android system process after main handler blocked for 62 seconds; SystemUI startup ANR and DeadSystemException followed.",
+  "emulatorStopped": true,
+  "notes": [
+    "Package-service availability is not boot completion. A provisional runner readiness label was corrected in this report.",
+    "The captured black screen is an OS failure screenshot, not gameplay.",
+    "No changes to production gameplay were made to accommodate this emulator failure."
+  ]
+}

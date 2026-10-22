@@ -26,7 +26,7 @@
       "pass": true
     },
     {
-      "name": "All ten networks render valid nodes",
+      "name": "All eleven networks render valid nodes",
       "pass": true
     },
     {
@@ -53,9 +53,11 @@
   "requests": [
     "http://127.0.0.1:8774/",
     "http://127.0.0.1:8774/style.css",
+    "http://127.0.0.1:8774/circuits.css",
     "http://127.0.0.1:8774/data.js",
     "http://127.0.0.1:8774/model.js",
     "http://127.0.0.1:8774/anatomy.js",
+    "http://127.0.0.1:8774/circuits.js",
     "http://127.0.0.1:8774/app.js"
   ],
   "errors": []

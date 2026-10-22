@@ -5,6 +5,7 @@
 | Material | Origem | Condição |
 |---|---|---|
 | `web/anatomy.js` | Desenhos vetoriais originais a partir de relações anatômicas gerais | Não são cópias, traçados de atlas, MRI ou imagens licenciadas de terceiros |
+| Diagramas dos transtornos | `web/circuits.js`: geometria e relações editoriais originais | Sem cópia de figuras ou datasets de neuroimagem; biblioteca científica apenas referenciada |
 | Ícones e gráficos das demonstrações | Caminhos e formas originais em `app.js` e drawable Android | Incluídos offline; nenhum pacote de ícones |
 | Texto clínico e para paciente | Síntese original em PT-BR | Não reproduz critérios proprietários do DSM nem textos integrais de artigos |
 | Bibliografia | Metadados bibliográficos e endereços públicos | Direitos das publicações permanecem com seus titulares; nenhum PDF/artigo completo é distribuído |

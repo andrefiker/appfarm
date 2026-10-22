@@ -305,9 +305,9 @@
     }
   ],
   "performance": {
-    "search1000Ms": 432.69999999552965,
-    "domContentLoadedMs": 35.100000001490116,
-    "webDataBytes": 54340,
+    "search1000Ms": 941.7000000029802,
+    "domContentLoadedMs": 38,
+    "webDataBytes": 109901,
     "note": "Desktop headless browser timing; not Android startup or frame-rate evidence."
   },
   "contrast": [

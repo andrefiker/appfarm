@@ -1,0 +1,55 @@
+{
+  "version": "1.1.0",
+  "engine": "131.0.6778.204",
+  "renderedMapViews": 365,
+  "checks": [
+    {
+      "name": "Twenty disorder maps are discoverable and search tolerates accents",
+      "pass": true
+    },
+    {
+      "name": "Every disorder, aspect and anatomical view renders the intended highlights",
+      "pass": true
+    },
+    {
+      "name": "A diagram node locates its own anatomical plane; nested navigation restores selection",
+      "pass": true
+    },
+    {
+      "name": "Touch, pinch, drag and reset work in the highlighted anatomy",
+      "pass": true
+    },
+    {
+      "name": "Patient reading is concise and preserves boundaries without technical evidence panels",
+      "pass": true
+    },
+    {
+      "name": "Map bookmarks reuse stable topic IDs and no query or map state is persisted",
+      "pass": true
+    },
+    {
+      "name": "All maps retain operation after networking is disabled",
+      "pass": true
+    },
+    {
+      "name": "320–430 px, light/dark, large text, alternate handedness and 44 px controls fit",
+      "pass": true
+    },
+    {
+      "name": "No JavaScript exceptions or external network requests",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "requests": [
+    "http://127.0.0.1:8776/",
+    "http://127.0.0.1:8776/style.css",
+    "http://127.0.0.1:8776/circuits.css",
+    "http://127.0.0.1:8776/data.js",
+    "http://127.0.0.1:8776/model.js",
+    "http://127.0.0.1:8776/anatomy.js",
+    "http://127.0.0.1:8776/circuits.js",
+    "http://127.0.0.1:8776/app.js"
+  ],
+  "note": "Desktop browser touch emulation; not an Android device install or independent clinical validation."
+}

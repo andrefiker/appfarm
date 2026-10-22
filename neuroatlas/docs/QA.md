@@ -1,4 +1,4 @@
-# QA — NEUROATLAS 1.0.1
+# QA — NEUROATLAS 1.1.0
 
 Data: 22/10/2026. Resultado: APK assinado, conteúdo e interface verificados nas condições abaixo. Não equivale a instalação confirmada em Android nem a validação clínica independente.
 
@@ -6,23 +6,33 @@ Data: 22/10/2026. Resultado: APK assinado, conteúdo e interface verificados nas
 
 O proprietário forneceu uma captura com “App not installed” para 1.0.0. A inspeção encontrou `resources.arsc` comprimido e desalinhado; a tabela abaixo substitui a conclusão anterior de QA de pacote. O teste `zipalign -c` e a assinatura, isoladamente, não cobriam essa regra de instalação. Em 1.0.1, quatro testes de regressão passam e o APK assinado passa na nova verificação de compressão/deslocamento. O arquivo 1.0.0 real é rejeitado pelo mesmo verificador. Ver `INSTALLATION-FIX.md` e `qa/install-fix-results.json`.
 
-Conteúdo clínico, desenhos, estilos e código Android não mudaram. Os nove grupos de conteúdo foram reexecutados em 1.0.1. Os resultados completos de navegador/geometria abaixo são a linha de base 1.0.0; não foram apresentados como novos testes de aparelho.
+Na versão 1.1.0, o conteúdo, a biblioteca e os mapas foram ampliados. O empacotamento corrigido permanece. Todos os testes abaixo foram executados novamente sobre a versão atual; não são testes de aparelho. As coordenadas dos desenhos originais permanecem iguais à base corrigida.
 
 ## Matriz de evidências
 
 | Categoria | Resultado | Evidência / limite |
 |---|---|---|
 | Unidade e conteúdo | 9 grupos de verificações aprovados | IDs, campos, links, bibliografia, relações topográficas, busca, preferências, modelo numérico e fronteiras de privacidade; `qa/content-results.json` |
-| Navegador | 12 grupos aprovados em 1.0.0 | 21 regiões, 10 redes, 18 temas, 39 fontes, 6 módulos, favoritos, modos, configurações e ausência de erros/requisições externas; `qa/browser-results.json` |
-| Geometria, toque e acessibilidade | 5 grupos aprovados em 1.0.0 | 40 centros de marcadores dentro de suas formas; toque real via protocolo do navegador, pinça, arraste, modo offline, contraste e foco; `qa/anatomy-touch-results.json` |
+| Navegador | 12 grupos aprovados em 1.1.0 | 21 regiões, 11 redes, 28 temas, 64 fontes, 6 módulos, favoritos, modos, configurações e ausência de erros/requisições externas; `qa/browser-results.json` |
+| Geometria, toque e acessibilidade | 5 grupos aprovados em 1.1.0 | 40 centros de marcadores dentro de suas formas; toque real via protocolo do navegador, pinça, arraste, modo offline, contraste e foco; `qa/anatomy-touch-results.json` |
+| Mapas: conteúdo | 5 grupos aprovados | 20 mapas, 53 recortes; referências, regiões, redes e pares resolvidos, contagens e destaques em todas as vistas; `qa/circuit-content-results.json` |
+| Mapas: navegador | 9 grupos aprovados | 365 combinações renderizadas (20 conjuntos + 53 recortes, cada um em cinco vistas), toque/pinça/arraste, retorno, fontes, paciente, persistência, offline e telas pequenas; `qa/circuit-browser-results.json` |
 | Telas pequenas | Aprovado no navegador | 320, 360, 390 e 430 CSS px; claro/escuro e texto ampliado; sem overflow horizontal nas cinco abas |
-| Pacote Android | Verificações estáticas aprovadas em 1.0.1 | Manifesto, versão, zero permissões, assets idênticos, ZIP íntegro, tabela sem compressão com deslocamento alinhado, assinatura v2/v3 e certificado original; `qa/package-results.json` |
+| Pacote Android | Verificações estáticas aprovadas em 1.1.0 | Manifesto, versão, zero permissões, assets idênticos, ZIP íntegro, tabela sem compressão com deslocamento alinhado, assinatura v2/v3 e certificado original; `qa/package-results.json` |
 | Regressão de instalação | 4 testes aprovados; APK antigo rejeitado | Tabela comprimida, tabela desalinhada, tabela válida e normalização; `tests/apk-layout.py`, `qa/install-fix-results.json` |
 | Reprodutibilidade | Aprovado com toolchain fixo | Dois builds limpos consecutivos byte a byte idênticos; `qa/reproducibility.json` |
 | Anatomia e linguagem | Revisão editorial realizada | Cinco desenhos revisados visualmente e confrontados com relações de fontes públicas; não houve neuroanatomista independente |
 | Validação clínica | **Não realizada** | A revisão assistida por IA e os testes de conteúdo não substituem especialistas nem estudo de uso |
 | Emulador Android | **Não executado** | Não há emulador/ADB/imagem de sistema disponíveis neste ambiente |
-| Telefone real | **1.0.0 falhou; 1.0.1 pendente** | Captura fornecida pelo proprietário confirma falha do APK anterior. Sem ADB/log do instalador; a nova instalação ainda não foi observada |
+| Telefone real | **1.0.0 falhou; 1.1.0 pendente** | Captura fornecida pelo proprietário confirma falha do APK anterior. Sem ADB/log do instalador; a nova instalação ainda não foi observada |
+
+## Novos mapas: revisão visual e fluxo
+
+Lista → Iluminar redes → recorte → vista → região → fonte → Voltar foi exercitado. Todos os 20 mapas e os 53 recortes renderizaram as regiões esperadas nas cinco vistas. As regiões profundas só são iluminadas nos planos onde estão desenhadas. Selecionar um nome no diagrama localiza a estrutura, e o retorno de uma fonte mantém o recorte. Favoritos usam os mesmos IDs de temas da versão anterior. Não há migração de dados nem persistência de pesquisa/seleção de mapas.
+
+Foram inspecionadas capturas reais da lista, TOC em vista inferior, conjunto do TOC em modo claro com texto ampliado a 320 px, diagrama de relações em escuro e pânico na vista para paciente. Controles alternativos têm pelo menos 44 CSS px; rótulos anatômicos menores continuam acessíveis pelo zoom e pelos botões textuais. A geometria dos 40 marcadores e os principais contrastes também foram reexecutados.
+
+O primeiro teste novo encontrou uma ambiguidade no seletor de teste: fichas com DOI têm duas linhas `.source-url`. O teste passou a selecionar a URL final; a interface já mostrava ambas corretamente. A suite completa foi reexecutada e passou. Nenhuma falha conhecida desses testes ficou aberta.
 
 ## O que foi exercitado
 
@@ -58,9 +68,19 @@ Screenshots são capturas da interface implementada com os mesmos arquivos incor
 2. Verificar barras claras/escuras, navegação por gestos e três botões, recorte de tela, teclado de busca, rotação e escala de texto do sistema.
 3. Testar Back em fonte → tema → aba → saída; reabrir após encerrar processo; favoritos e preferências devem permanecer.
 4. Verificar pinça/arraste, TalkBack, alvos e leitura com usuários reais; testar aparelho com pouca memória.
-5. Atualizar de um build assinado pelo mesmo certificado com versionCode maior; verificar preservação dos dados locais.
+5. Instalar 1.1.0 (code 3) sobre 1.0.1 (code 2), ambas com o mesmo certificado; verificar preservação dos dados locais.
 6. Solicitar revisão independente de neuroanatomia, conteúdo clínico e compreensão das explicações. Não chamar a versão de certificada ou clinicamente validada.
 
 ## Limites do produto
 
 Figuras esquemáticas sem escala, conexões representativas e conteúdo resumido. Biblioteca não exaustiva, sem diagnóstico individual ou tratamentos. Farmacologia, exportação e inglês omitidos. Fontes do sistema podem alterar a aparência tipográfica entre aparelhos. A chave foi criada especificamente para este aplicativo e fornecida em backup privado separado; continuidade depende da preservação desse backup pelo proprietário.
+
+## Registro de liberação 1.1.0
+
+- Pacote: `com.andrefiker.neuroatlas`; versionName `1.1.0`; versionCode `3`.
+- APK: `NEUROATLAS-v1.1.0.apk`; tamanho e SHA-256 definitivos em `qa/package-results.json`.
+- Assinatura RSA verificada em v2/v3; certificado SHA-256 `d68626fa70e1de06bdc47dbcb969e8f00f7d0ce7923614ef715eb0797b58e54a`.
+- `resources.arsc` sem compressão e deslocamento real de dados alinhado em 4 bytes. Zero permissões; todos os assets offline são idênticos à fonte.
+- Ferramentas Android recuperadas conferidas contra os sete hashes de `qa/toolchain.json`. Chrome131 conferido contra o MD5 de distribuição `e3af9bc48045009efd7f84e801106aba`.
+- Compilação em Java17/ECJ teve avisos de APIs Android obsoletas já presentes no código de compatibilidade; nenhum erro de compilação.
+- Rollback de código: `10ec3470973aeb48432b8f51ef274628b46b77ed`, mantendo a assinatura e incrementando o versionCode em uma versão de retorno. Não usar o APK1.0.0 defeituoso.

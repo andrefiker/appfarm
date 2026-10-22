@@ -36,7 +36,7 @@ Revisão visual das cinco figuras mais testes de relações geométricas e de ce
 
 ## Conteúdo clínico e linguagem
 
-Cada um dos 18 temas separa descrição geral estabelecida, limites neurais em desenvolvimento, mecanismos, considerações gerais de diferenciação, alertas, mito e explicação breve. São contextos de estudo, não critérios diagnósticos, algoritmo ou lista exaustiva. Conexões com redes são pedagógicas e não afirmam alteração em toda pessoa com aquele diagnóstico.
+Cada um dos 28 temas separa descrição geral estabelecida, limites neurais em desenvolvimento, mecanismos, considerações gerais de diferenciação, alertas, mito e explicação breve. São contextos de estudo, não critérios diagnósticos, algoritmo ou lista exaustiva. Conexões com redes são pedagógicas e não afirmam alteração em toda pessoa com aquele diagnóstico.
 
 Os alertas são sínteses prudenciais de encaminhamento, não protocolos validados: mudanças súbitas, risco, alteração de consciência ou sinais de AVC não devem ser atribuídos automaticamente a quadros psicológicos. Referências oficiais brasileiras sustentam SAMU 192. Situações que requerem atendimento não são convertidas em perguntas, escores ou decisões automáticas. No modo paciente, o texto é breve e não mostra a seção técnica de diferenciação.
 
@@ -44,4 +44,18 @@ PT-BR foi revisto editorialmente em toda a base e nas telas: acentos, termos loc
 
 ## Limitações que permanecem
 
-Os 39 itens não constituem cobertura bibliográfica completa de todos os mecanismos/diferenciais. Nem toda recomendação prudencial geral foi vinculada a uma diretriz específica de especialidade. As fontes sustentam o nível de síntese declarado; não validam as equações, sliders, desenhos, UX ou o aplicativo. Não há mapas probabilísticos, tractografia, prognóstico, orientação terapêutica ou biologia medicamentosa. Revisão independente de anatomia, linguagem clínica e usabilidade é necessária antes de afirmar adequação clínica validada.
+Os 64 itens não constituem cobertura bibliográfica completa de todos os mecanismos/diferenciais. Nem toda recomendação prudencial geral foi vinculada a uma diretriz específica de especialidade. As fontes sustentam o nível de síntese declarado; não validam as equações, sliders, desenhos, UX ou o aplicativo. Não há mapas probabilísticos, tractografia, prognóstico, orientação terapêutica ou biologia medicamentosa. Revisão independente de anatomia, linguagem clínica e usabilidade é necessária antes de afirmar adequação clínica validada.
+
+## Ampliação 1.1.0: transtornos e recortes
+
+Foram incluídos 20 mapas, com 53 recortes, e preservados os temas neurológicos existentes. Rastreamento de cada recorte: `PSYCHIATRY-MAPS.md`. O destaque usa a geometria original, sem inserir estruturas profundas na superfície lateral. Nomes no diagrama conduzem à vista onde a estrutura realmente é representada.
+
+- **Limite do conhecimento:** não há promessa de todos os mecanismos. Agorafobia usa modelos de função geral; os estudos selecionados não sustentam um mapa específico. TDAH inclui o resultado negativo de convergência em repouso, além dos achados em tarefas.
+- **Divergência temporal:** insônia contrapõe a síntese de 2018 à de 2023. O destaque de cíngulo/pré-frontal é amplo; a subdivisão subgenual não foi desenhada e a análise de conectividade não implica alteração de toda a área.
+- **Bipolaridade:** após leitura dos resultados do PDF, substituídos os destaques pré-frontais genéricos por amígdala/hipocampo no recorte emocional e orbitofrontal/parietal no cognitivo. Isso resume resultados condicionais, sem classificar episódios ou afirmar causalidade.
+- **TOC:** alças córtico-estriado-talâmicas são representadas com relés omitidos e núcleos da base agrupados. Nenhuma linha é um trajeto completo.
+- **Dissociação, autismo e alimentação:** tamanho/heterogeneidade de estudos, diversidade de perfis e possível efeito nutricional ficam explícitos. Nenhum mapa confirma trauma, estima suporte, peso, fome ou gravidade.
+- **Arestas do diagrama:** pares são escolhas editoriais de ensino; nem todo par é uma conexão medida no artigo. Não representam forças, direções, tractografia ou fluxo neural observado. Cor seleciona conteúdo; regiões apagadas não estão inativas.
+- **Paciente:** textos curtos específicos de cada recorte; painel técnico de evidências recolhíveis não aparece nesse modo. Fontes continuam acessíveis como referência educacional.
+
+Foram conferidos títulos, autores, anos, identificadores e escopos das referências novas; o nível real de acesso aparece em cada ficha. Para vários estudos, apenas metadados e trechos indexados estavam disponíveis. A revisão não teve especialista independente nem conferência dos dados primários.

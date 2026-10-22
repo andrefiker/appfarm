@@ -1,0 +1,28 @@
+{
+  "version": "1.1.0",
+  "maps": 20,
+  "aspects": 53,
+  "checks": [
+    {
+      "name": "Twenty named disorder/group maps with explicit scope and review date",
+      "pass": true
+    },
+    {
+      "name": "Every aspect has verified references, a basis, limits and resolvable regions",
+      "pass": true
+    },
+    {
+      "name": "All-view counts and illuminated shapes exactly match selected editorial nodes",
+      "pass": true
+    },
+    {
+      "name": "Uncertainty is visible for agoraphobia, ADHD, insomnia and dissociation",
+      "pass": true
+    },
+    {
+      "name": "New conditions remain searchable and existing bookmark IDs stay valid",
+      "pass": true
+    }
+  ],
+  "note": "Editorial structure and deterministic mapping verified; not clinical certification."
+}

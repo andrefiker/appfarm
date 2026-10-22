@@ -12,7 +12,7 @@ assert 'Verified using v2 scheme (APK Signature Scheme v2): true' in cert
 assert 'Verified using v3 scheme (APK Signature Scheme v3): true' in cert
 assert '7eb3b3247c42e8ade034263b1bbfcce2e5e54baab7d5c82aa958e58ff55f8017' in cert
 badging=run('aapt','dump','badging',apk)
-assert "package: name='com.andrefiker.quietknightii' versionCode='1' versionName='1.0.0'" in badging
+assert "package: name='com.andrefiker.quietknightii' versionCode='2' versionName='1.0.1'" in badging
 permissions=run('aapt','dump','permissions',apk)
 assert 'uses-permission' not in permissions
 run('zipalign','-c','-p','4',apk)

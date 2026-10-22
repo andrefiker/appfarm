@@ -19,9 +19,11 @@ with zipfile.ZipFile('build/unsigned.apk','a',compression=zipfile.ZIP_DEFLATED) 
 PY
 "$QK_BUILD_TOOLS/zipalign" -f -p 4 build/unsigned.apk build/aligned.apk
 if [[ -n "${QK_KEYSTORE:-}" && -n "${QK_STOREPASS_FILE:-}" ]]; then
- "$QK_BUILD_TOOLS/apksigner" sign --ks "$QK_KEYSTORE" --ks-key-alias quiet-knight-ii --ks-pass "file:$QK_STOREPASS_FILE" --key-pass "file:$QK_STOREPASS_FILE" --out build/Quiet-Knight-II-1.0.0.apk build/aligned.apk
- "$QK_BUILD_TOOLS/apksigner" verify --min-sdk-version 24 --verbose --print-certs build/Quiet-Knight-II-1.0.0.apk
- sha256sum build/Quiet-Knight-II-1.0.0.apk
+ # PKCS12 uses the keystore password for its key. Supplying the same password
+ # file twice makes apksigner consume a second (missing) line from that file.
+ "$QK_BUILD_TOOLS/apksigner" sign --ks "$QK_KEYSTORE" --ks-key-alias quiet-knight-ii --ks-pass "file:$QK_STOREPASS_FILE" --out build/Quiet-Knight-II-1.0.1.apk build/aligned.apk
+ "$QK_BUILD_TOOLS/apksigner" verify --min-sdk-version 24 --verbose --print-certs build/Quiet-Knight-II-1.0.1.apk
+ sha256sum build/Quiet-Knight-II-1.0.1.apk
 else
  echo 'Unsigned compilation complete: build/aligned.apk. Set the two signing environment variables for an installable release.'
 fi

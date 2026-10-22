@@ -25,7 +25,9 @@ export function lockedPawnDead(c){
   if(!pawns.length||pieces.some(p=>!['p','k'].includes(p.type))||c.inCheck())return false;
   const xy=s=>[s.charCodeAt(0)-97,Number(s[1])-1], sq=(x,y)=>'abcdefgh'[x]+(y+1);
   for(const p of pawns){const [x,y]=xy(p.square),d=p.color==='w'?1:-1;
-    if(y+d<0||y+d>7||!c.get(sq(x,y+d)))return false;
+    // Only another pawn is a permanent blocker. A king can move away and
+    // release this pawn, which may later break an otherwise closed barrier.
+    if(y+d<0||y+d>7||c.get(sq(x,y+d))?.type!=='p')return false;
     for(const dx of [-1,1])if(x+dx>=0&&x+dx<8){const q=c.get(sq(x+dx,y+d));if(q?.type==='p'&&q.color!==p.color)return false;}
   }
   const attacked=(s,color)=>pawns.some(p=>{const [x,y]=xy(p.square),[a,b]=xy(s);return p.color===color&&Math.abs(x-a)===1&&b-y===(color==='w'?1:-1);});
@@ -61,7 +63,14 @@ export class Game{
     return out;
   }
   claim(move=null){const found=this.claimOptions().find(x=>x.move===move);if(!found)throw Error('No valid draw claim.');this.result={score:'1/2-1/2',reason:found.reason+(move?' (declared '+found.san+')':'')};}
-  resign(color){if(!this.status().over)this.result={score:color==='w'?'0-1':'1-0',reason:(color==='w'?'White':'Black')+' resigned'};}
+  resign(color){
+    if(!['w','b'].includes(color))throw Error('Invalid resigning side.');
+    if(this.status().over)return;
+    // FIDE 5.1.2: resignation is a draw if the opponent cannot possibly mate.
+    // A bare king can never give a legal check, regardless of the other army.
+    const opponent=opposite(color),hasPiece=this.chess.board().flat().some(p=>p?.color===opponent&&p.type!=='k');
+    this.result=hasPiece?{score:color==='w'?'0-1':'1-0',reason:(color==='w'?'White':'Black')+' resigned'}:{score:'1/2-1/2',reason:'Resignation · opponent has only a king'};
+  }
   exportPgn(){this.chess.header('Event','Quiet Knight II','Site','Offline','Result',this.status().score||'*');return this.chess.pgn({maxWidth:80});}
   static fromPgn(text){if(text.length>100000)throw Error('PGN is too large.');const c=new Chess();c.loadPgn(text,{strict:true});const h=c.getHeaders();if(h.Result&&!['*','1-0','0-1','1/2-1/2'].includes(h.Result))throw Error('Invalid PGN result.');const g=new Game(h.FEN||DEFAULT_POSITION);for(const m of c.history({verbose:true}))g.move({from:m.from,to:m.to,promotion:m.promotion});if(h.Result&&h.Result!=='*'&&!g.status().over)g.result={score:h.Result,reason:'Imported result'};return g;}
 }

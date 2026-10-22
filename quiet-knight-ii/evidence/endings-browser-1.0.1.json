@@ -1,0 +1,73 @@
+{
+  "checks": [
+    {
+      "name": "temporary king blocker is playable",
+      "pass": true
+    },
+    {
+      "name": "four real tap moves break the barrier",
+      "pass": true
+    },
+    {
+      "name": "capture correctly exposes check",
+      "pass": true
+    },
+    {
+      "name": "repaired position survives reload",
+      "pass": true
+    },
+    {
+      "name": "genuine fixed fortress shows draw",
+      "pass": true
+    },
+    {
+      "name": "resignation against bare king renders a draw",
+      "pass": true
+    },
+    {
+      "name": "completed game stores draw score",
+      "pass": true
+    },
+    {
+      "name": "resignation result survives reload",
+      "pass": true
+    },
+    {
+      "name": "undo stays disabled when there is no move history",
+      "pass": true
+    },
+    {
+      "name": "theme still renders wood",
+      "pass": true
+    },
+    {
+      "name": "theme still renders graphite",
+      "pass": true
+    },
+    {
+      "name": "theme still renders felt",
+      "pass": true
+    },
+    {
+      "name": "320px board fits",
+      "pass": true
+    },
+    {
+      "name": "bundled offline engine smoke test",
+      "pass": true
+    },
+    {
+      "name": "no JavaScript errors",
+      "pass": true
+    },
+    {
+      "name": "no external requests",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "requests": [],
+  "browser": "131.0.6778.204",
+  "engineMove": "e3",
+  "completed": true
+}

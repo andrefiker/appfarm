@@ -2,9 +2,9 @@
 
 An offline, portrait-first Android chess table for André Fiker / AppFarm.
 
-**Release:** 1.0.0 (versionCode 1), `com.andrefiker.quietknightii`, Android 9/API 28 or later with a modern Android System WebView. Target/compile SDK 35. Physical-device qualification remains outstanding.
+**Release:** 1.0.1 (versionCode 2), `com.andrefiker.quietknightii`, Android 9/API 28 or later with a modern Android System WebView. Target/compile SDK 35. Physical-device qualification remains outstanding.
 
-[Signed APK](https://chatgpt.com/api/library/files/libfile_a64ff3266ed4819181afa59bede5abd2/download) · [QA report](QA.md) · [Actual gameplay screenshots](evidence/three-tables.png)
+[Signed APK](https://chatgpt.com/api/library/files/libfile_1e5f6dc47ddc8191a50e6897d9aee458/download) · [Current QA report](QA-1.0.1.md) · [Actual gameplay screenshots](evidence/three-tables.png)
 
 ## What works
 
@@ -48,16 +48,17 @@ export QK_STOREPASS_FILE=/private/path/password.txt
 bash tools/build.sh
 ```
 
-The alias is `quiet-knight-ii`. Never commit or publish the keystore or password. The original identity and password were backed up privately for the owner. Their contents are not in this repository. The signed output is `build/Quiet-Knight-II-1.0.0.apk`.
+The alias is `quiet-knight-ii`. Never commit or publish the keystore or password. The original identity and password were backed up privately for the owner. Their contents are not in this repository. The signed output is `build/Quiet-Knight-II-1.0.1.apk`.
 
 For already-installed tools, override `QK_BUILD_TOOLS`, `QK_ANDROID_JAR` and `QK_ECJ_JAR`. Before an update, increase `android:versionCode` and retain the same identity. Rebuilding is source-reproducible; byte-identical ZIP/DEX/signature reproduction is not claimed.
 
 ## Tests
 
 ```sh
-node --test tests/rules.test.mjs
+node --test tests/*.test.mjs
 npm install --no-save playwright@1.62.1
 QK_CHROME=/absolute/path/to/chrome-headless-shell node tools/browser-qa.cjs
+QK_CHROME=/absolute/path/to/chrome-headless-shell node tools/endings-browser.cjs
 ```
 
 Browser QA used Chrome Headless Shell 131.0.6778.204 with Playwright 1.62.1. The harness intercepts local asset requests, disables browser networking, and needs no HTTP server. It runs all five actual engine profiles on six positions, touch/drag, promotion, reload, overlays and four phone widths. `?qa` exposes local, opt-in test hooks; normal app navigation never enables them.
@@ -66,7 +67,7 @@ Browser QA used Chrome Headless Shell 131.0.6778.204 with Playwright 1.62.1. The
 
 Automated workspace maintenance deleted the first local checkout after the signed APK and private signing backup were durably saved, but before the source branch upload finished. All 48 runtime assets were recovered **byte for byte** from that exact APK. Original screenshots and engine corresponding-source binaries were recovered from already-uploaded Git objects. The native wrapper/resources were recovered using JADX 1.5.3; synthetic captured references were repaired and method names clarified, then compilation, resource packaging and DEX generation were rerun successfully.
 
-Build/test scripts and documentation were recreated. Fresh raw rule, browser, asset, aapt and apksigner evidence is committed here. Earlier local commit identities and raw soak-test logs were not recovered; [QA.md](QA.md) distinguishes the earlier observations from current reviewable evidence. The downloadable APK was not rebuilt or changed during recovery.
+Build/test scripts and documentation were recreated. Fresh raw rule, browser, asset, aapt and apksigner evidence is committed here. Earlier local commit identities and raw soak-test logs were not recovered; [QA.md](QA.md) distinguishes the earlier observations from current reviewable evidence. The original v1.0.0 APK was not rebuilt or changed during recovery. Version 1.0.1 is a new signed build from the recovered source, with the ending-rule and build-script corrections documented in QA-1.0.1.md.
 
 ## Licensing
 

@@ -23,6 +23,9 @@ export function repetitionKey(c){return c.fen().split(' ').slice(0,4).join(' ');
 export function lockedPawnDead(c){
   const pieces=c.board().flat().filter(Boolean), pawns=pieces.filter(p=>p.type==='p');
   if(!pawns.length||pieces.some(p=>!['p','k'].includes(p.type))||c.inCheck())return false;
+  // An available en-passant capture can remove a blocker despite every pawn
+  // having an occupied forward square. chess.js emits only effective EP rights.
+  if(c.fen().split(' ')[3]!=='-')return false;
   const xy=s=>[s.charCodeAt(0)-97,Number(s[1])-1], sq=(x,y)=>'abcdefgh'[x]+(y+1);
   for(const p of pawns){const [x,y]=xy(p.square),d=p.color==='w'?1:-1;
     // Only another pawn is a permanent blocker. A king can move away and

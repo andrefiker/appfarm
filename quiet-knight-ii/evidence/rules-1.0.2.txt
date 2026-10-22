@@ -1,0 +1,35 @@
+✔ a king temporarily blocking a pawn is not a dead fortress (8.502157ms)
+✔ a genuinely fixed pawn barrier still ends automatically (5.101576ms)
+✔ en passant can break an otherwise fixed pawn barrier (3.360569ms)
+✔ resigning against a bare king is a draw for either color (7.077186ms)
+✔ a knight may mate with help from the opposing army; do not overdeclare draws (0.912231ms)
+✔ resignation does not replace a completed result and rejects invalid sides (7.428645ms)
+{"seed":37,"games":32,"plies":5977,"terminal":6,"cap":200}
+✔ Perft start (331.048658ms)
+✔ Perft Kiwipete (228.301211ms)
+✔ Perft rook ending (92.625694ms)
+✔ Perft promotion and castling (23.161569ms)
+✔ Perft promotion tactics (112.248988ms)
+✔ Perft middlegame (140.612148ms)
+✔ castling through check is illegal (2.567453ms)
+✔ en passant and king exposure (1.74427ms)
+✔ all four promotions (2.397946ms)
+✔ pinned geometric attacks differ from legal moves (1.649382ms)
+✔ checkmate, stalemate and mate precedence (1.561367ms)
+✔ standard dead material (0.78962ms)
+✔ claimable 50 moves versus automatic 75 moves (1.034058ms)
+✔ threefold is claimable and fivefold automatic (5.877067ms)
+✔ declared-move draw claim leaves board unchanged (11.892684ms)
+✔ save restore and undo (2.69924ms)
+✔ FEN and PGN round trips (7.301738ms)
+✔ invalid FEN, castling rights and saves rejected (1.572959ms)
+✔ terminal positions reject moves (1.555175ms)
+✔ 32 seeded legal games preserve kings and history (25592.917297ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 26728.534616

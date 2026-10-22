@@ -1,0 +1,201 @@
+{
+  "apk": "Quiet-Knight-II-1.0.2.apk",
+  "bytes": 5750526,
+  "sha256": "449c80fbdef1e05793a14468eee06aca7421a417f61c433a47f1f8e1c3bb2bb1",
+  "permissions": [],
+  "assetsVerified": 48,
+  "assets": [
+    {
+      "path": "assets/app.js",
+      "sha256": "a436207348a071cdf23e0c70307114c4768dcb737d753884c7cd91cb359784f6"
+    },
+    {
+      "path": "assets/art/felt/bb.svg",
+      "sha256": "4dccaeeaf78179a0b11036a68193c870236ea331bd4ac9b620e2e42beb5213bb"
+    },
+    {
+      "path": "assets/art/felt/bk.svg",
+      "sha256": "70a070ddbde9f47359f5aeeea5f3768890461f5ad19cfe0effeb92b445ca15c1"
+    },
+    {
+      "path": "assets/art/felt/bn.svg",
+      "sha256": "949f3aeaa75ce589d7031bfe70c2b6ff843df767a14198e1a014d3ef647c7ce4"
+    },
+    {
+      "path": "assets/art/felt/bp.svg",
+      "sha256": "c0ff66da26fdb77f330085279f00ebec7927c1da19e0302da43188021fd8ccf3"
+    },
+    {
+      "path": "assets/art/felt/bq.svg",
+      "sha256": "85045227dd3b63f065d67e43acbc2a57509b23d04c8b162fce92e9759a5e3b60"
+    },
+    {
+      "path": "assets/art/felt/br.svg",
+      "sha256": "5bcddc06f069cf00bab291ef22ad7ac0e7f7c7b5d09e0fb833d5049a9aa3c647"
+    },
+    {
+      "path": "assets/art/felt/wb.svg",
+      "sha256": "a62e3f276f1ceb52ae494258ab911a97b7070117e62c439cddd24c4b1337cb48"
+    },
+    {
+      "path": "assets/art/felt/wk.svg",
+      "sha256": "c9c0625bd86888a2ce7d58411a59ed49f2afd248d42af005c842e1cc3823a7d1"
+    },
+    {
+      "path": "assets/art/felt/wn.svg",
+      "sha256": "d21d058285edf7b1f401d6f562c1a5bb74909ea9c21ca9929f80d1869f5d66b1"
+    },
+    {
+      "path": "assets/art/felt/wp.svg",
+      "sha256": "55736cb61066c404369feae541fac01c0619d4688ae1a3a0f080bf3099bd00ef"
+    },
+    {
+      "path": "assets/art/felt/wq.svg",
+      "sha256": "ace71c37c3ff4598e5da3be2fde24f789fd2ec91c69c4235a52fa41e59a4c46f"
+    },
+    {
+      "path": "assets/art/felt/wr.svg",
+      "sha256": "2d80428d2a9d9f886d43790d36e1aed6e24cd0b9a482c47607183865a8ffd515"
+    },
+    {
+      "path": "assets/art/graphite/bb.svg",
+      "sha256": "3dd5222e4bf027bbaebf45aa426684231c4ab7a2dc4ae413c8a1d213dfc44cfd"
+    },
+    {
+      "path": "assets/art/graphite/bk.svg",
+      "sha256": "c171c448e3cfca031fd060d0df4d5e98a682d1d4dec27ace7cc30d7bb6c1339e"
+    },
+    {
+      "path": "assets/art/graphite/bn.svg",
+      "sha256": "a10783458f54be5b4ee3705ba331f96451ea35b98e38f64504f0eee31076d07b"
+    },
+    {
+      "path": "assets/art/graphite/bp.svg",
+      "sha256": "2a96338f4961dabab66636ec7e86b09fd45f825915c924b7fc7beda9f9200fdf"
+    },
+    {
+      "path": "assets/art/graphite/bq.svg",
+      "sha256": "2b6e5e960cb4f8322fb8e94d852ee7e8433a59ec10fe306a760cb7dae82cafa5"
+    },
+    {
+      "path": "assets/art/graphite/br.svg",
+      "sha256": "5be7251beae5b095e14e3efc39541971b8e9db438253839d87c009f50fb35fa5"
+    },
+    {
+      "path": "assets/art/graphite/wb.svg",
+      "sha256": "b56bf4e8cb5e2be55c59a0bc88d9c3d770e0458ffe6d051c32c56f7b04100f99"
+    },
+    {
+      "path": "assets/art/graphite/wk.svg",
+      "sha256": "7afcb242314012bf2ffbc3b4852fa9665081f7cfc29ad63121152101d6b425c1"
+    },
+    {
+      "path": "assets/art/graphite/wn.svg",
+      "sha256": "544969a51a08509ad28d4efa1b2c2d98676fc76cd09964f68a4bc42a6f30f22d"
+    },
+    {
+      "path": "assets/art/graphite/wp.svg",
+      "sha256": "738af9dc63765f6522f5d69334ba56393a4402f1cce19a95764bd8b78512d641"
+    },
+    {
+      "path": "assets/art/graphite/wq.svg",
+      "sha256": "7a82b2c2e35491cb1a64a241b4aa6f1e5a673ac6e5a59a949758f722f939c00f"
+    },
+    {
+      "path": "assets/art/graphite/wr.svg",
+      "sha256": "d40611cd6e0889bbb89080c4d639b6d0da984771f52689c6eeaf39fd33206107"
+    },
+    {
+      "path": "assets/art/wood/bb.svg",
+      "sha256": "92e5758569de0637ed40be18a4e96102bf8a9749a0011b76647390579e2a0ba7"
+    },
+    {
+      "path": "assets/art/wood/bk.svg",
+      "sha256": "8ce366f20f2b0f69ee724da634d0434e8e5105669eeb8d5a1cd6a1aec0a79257"
+    },
+    {
+      "path": "assets/art/wood/bn.svg",
+      "sha256": "d4545e7e5df227c970cc6092074049190f2889afb002f3e1d31a9c490c2617a6"
+    },
+    {
+      "path": "assets/art/wood/bp.svg",
+      "sha256": "7888e3e1624970e6943f3cc804b814060f5cc3c8912c644c241847d11ef121a1"
+    },
+    {
+      "path": "assets/art/wood/bq.svg",
+      "sha256": "5992deb18150300b03b9ef4d1e38d6dcc9dee9b94e8de74d315c777a87103283"
+    },
+    {
+      "path": "assets/art/wood/br.svg",
+      "sha256": "6fe90a02e82088963eb39c3eb5ded14c299f2600b98772e3246b9cef263cc5dd"
+    },
+    {
+      "path": "assets/art/wood/wb.svg",
+      "sha256": "ab0e05974d7d30dfee03e5677ecf25cbebc1979fe3617c82496eb2ff47df94c6"
+    },
+    {
+      "path": "assets/art/wood/wk.svg",
+      "sha256": "ca03838751789ac807cda07b66b5368728dabe2ce3d8489b3609bdab35a48a06"
+    },
+    {
+      "path": "assets/art/wood/wn.svg",
+      "sha256": "b1c93ab9baef9617da7e5a0961b38257bebd1fa5733d85b8ce9b35c1b7ff0afb"
+    },
+    {
+      "path": "assets/art/wood/wp.svg",
+      "sha256": "5174c45e91e958c5d1de961ff36930bf1d2ead72d9b3b155a75f44c3769239e0"
+    },
+    {
+      "path": "assets/art/wood/wq.svg",
+      "sha256": "9fdc3d83c4a63f8356b560a4ca7728fad640f9b7c017bb26dba1d12783f7ac65"
+    },
+    {
+      "path": "assets/art/wood/wr.svg",
+      "sha256": "0a32593df28c744c53f0c277b9600c52c0b7d7b043ae3fdc0eca5cf64a15cdf2"
+    },
+    {
+      "path": "assets/boot.js",
+      "sha256": "ee036a94400c70f4fa2874325013cdcc8833dd4ac994417400340a67eb12adc6"
+    },
+    {
+      "path": "assets/engine.js",
+      "sha256": "5123c1b2e15c08a6bb778716f4fc594cdc1c7606a7a65f3bf64aafdf528487cf"
+    },
+    {
+      "path": "assets/index.html",
+      "sha256": "52f370c223a4712592073316fc8750a4972a75035655fed8d5c10f2f72271104"
+    },
+    {
+      "path": "assets/legal/GPL-3.0.txt",
+      "sha256": "0b383d5a63da644f628d99c33976ea6487ed89aaa59f0b3257992deac1171e6b"
+    },
+    {
+      "path": "assets/legal/Stockfish-AUTHORS.txt",
+      "sha256": "78687a8ad17a5b94127b94501c83a5698c5f16e1d995b3b752838bc589763c10"
+    },
+    {
+      "path": "assets/legal/chess.js-BSD-2-Clause.txt",
+      "sha256": "0b3a3c2b4432a26bb18f9d06f5bba4de015bcc980306b7db28b06025495e2186"
+    },
+    {
+      "path": "assets/rules.js",
+      "sha256": "e2318024b2f1ab97a745d8c9996315452c3ed2cdc421deb642fc418ff58a13d3"
+    },
+    {
+      "path": "assets/style.css",
+      "sha256": "4aabbad0ffcc6a49017421fcd9ca7ff556843a8d2165eb639c78acbc7e00fe6c"
+    },
+    {
+      "path": "assets/vendor/chess.js",
+      "sha256": "76c7c34f0e2e9ab076521a5d6fe786a9cce537bb1b6f29d32a9c9970b5b232d2"
+    },
+    {
+      "path": "assets/vendor/stockfish-17.1-lite-single-03e3232.js",
+      "sha256": "1c8265e52fdaef797684b4979b42c5dcfe0350df3e11a87e48e4ec5f86e0ca5c"
+    },
+    {
+      "path": "assets/vendor/stockfish-17.1-lite-single-03e3232.wasm",
+      "sha256": "7ca31bedd166148931a1cc84dbd8dd9cf001744e9994caf23a3c6ff4988d7086"
+    }
+  ]
+}

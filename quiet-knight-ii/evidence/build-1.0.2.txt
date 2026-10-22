@@ -1,0 +1,120 @@
+----------
+1. WARNING in /workspace/scratch/ad074272428e/appfarm-continued/quiet-knight-ii/android/src/com/andrefiker/quietknightii/MainActivity.java (at line 38)
+	return new WebResourceResponse("text/plain", "UTF-8", 403, "Blocked", new HashMap(), new ByteArrayInputStream(new byte[0]));
+	                                                                      ^^^^^^^^^^^^^
+Type safety: The expression of type HashMap needs unchecked conversion to conform to Map<String,String>
+----------
+2. WARNING in /workspace/scratch/ad074272428e/appfarm-continued/quiet-knight-ii/android/src/com/andrefiker/quietknightii/MainActivity.java (at line 38)
+	return new WebResourceResponse("text/plain", "UTF-8", 403, "Blocked", new HashMap(), new ByteArrayInputStream(new byte[0]));
+	                                                                          ^^^^^^^
+HashMap is a raw type. References to generic type HashMap<K,V> should be parameterized
+----------
+3. WARNING in /workspace/scratch/ad074272428e/appfarm-continued/quiet-knight-ii/android/src/com/andrefiker/quietknightii/MainActivity.java (at line 54)
+	HashMap map = new HashMap();
+	^^^^^^^
+HashMap is a raw type. References to generic type HashMap<K,V> should be parameterized
+----------
+4. WARNING in /workspace/scratch/ad074272428e/appfarm-continued/quiet-knight-ii/android/src/com/andrefiker/quietknightii/MainActivity.java (at line 54)
+	HashMap map = new HashMap();
+	                  ^^^^^^^
+HashMap is a raw type. References to generic type HashMap<K,V> should be parameterized
+----------
+5. WARNING in /workspace/scratch/ad074272428e/appfarm-continued/quiet-knight-ii/android/src/com/andrefiker/quietknightii/MainActivity.java (at line 55)
+	map.put("X-Content-Type-Options", "nosniff");
+	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Type safety: The method put(Object, Object) belongs to the raw type HashMap. References to generic type HashMap<K,V> should be parameterized
+----------
+6. WARNING in /workspace/scratch/ad074272428e/appfarm-continued/quiet-knight-ii/android/src/com/andrefiker/quietknightii/MainActivity.java (at line 56)
+	map.put("Cache-Control", "no-cache");
+	^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Type safety: The method put(Object, Object) belongs to the raw type HashMap. References to generic type HashMap<K,V> should be parameterized
+----------
+7. WARNING in /workspace/scratch/ad074272428e/appfarm-continued/quiet-knight-ii/android/src/com/andrefiker/quietknightii/MainActivity.java (at line 57)
+	return new WebResourceResponse(str, "UTF-8", 200, "OK", map, getAssets().open(path.substring(1)));
+	                                                        ^^^
+Type safety: The expression of type HashMap needs unchecked conversion to conform to Map<String,String>
+----------
+8. WARNING in /workspace/scratch/ad074272428e/appfarm-continued/quiet-knight-ii/android/src/com/andrefiker/quietknightii/MainActivity.java (at line 59)
+	return new WebResourceResponse("text/plain", "UTF-8", 404, "Not found", new HashMap(), new ByteArrayInputStream(new byte[0]));
+	                                                                        ^^^^^^^^^^^^^
+Type safety: The expression of type HashMap needs unchecked conversion to conform to Map<String,String>
+----------
+9. WARNING in /workspace/scratch/ad074272428e/appfarm-continued/quiet-knight-ii/android/src/com/andrefiker/quietknightii/MainActivity.java (at line 59)
+	return new WebResourceResponse("text/plain", "UTF-8", 404, "Not found", new HashMap(), new ByteArrayInputStream(new byte[0]));
+	                                                                            ^^^^^^^
+HashMap is a raw type. References to generic type HashMap<K,V> should be parameterized
+----------
+10. WARNING in /workspace/scratch/ad074272428e/appfarm-continued/quiet-knight-ii/android/src/com/andrefiker/quietknightii/MainActivity.java (at line 138)
+	settings.setAllowFileAccessFromFileURLs(false);
+	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The method setAllowFileAccessFromFileURLs(boolean) from the type WebSettings is deprecated
+----------
+11. WARNING in /workspace/scratch/ad074272428e/appfarm-continued/quiet-knight-ii/android/src/com/andrefiker/quietknightii/MainActivity.java (at line 139)
+	settings.setAllowUniversalAccessFromFileURLs(false);
+	         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The method setAllowUniversalAccessFromFileURLs(boolean) from the type WebSettings is deprecated
+----------
+12. WARNING in /workspace/scratch/ad074272428e/appfarm-continued/quiet-knight-ii/android/src/com/andrefiker/quietknightii/MainActivity.java (at line 177)
+	view.setPadding(windowInsets.getSystemWindowInsetLeft(), windowInsets.getSystemWindowInsetTop(), windowInsets.getSystemWindowInsetRight(), windowInsets.getSystemWindowInsetBottom());
+	                             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+The method getSystemWindowInsetLeft() from the type WindowInsets is deprecated
+----------
+13. WARNING in /workspace/scratch/ad074272428e/appfarm-continued/quiet-knight-ii/android/src/com/andrefiker/quietknightii/MainActivity.java (at line 177)
+	view.setPadding(windowInsets.getSystemWindowInsetLeft(), windowInsets.getSystemWindowInsetTop(), windowInsets.getSystemWindowInsetRight(), windowInsets.getSystemWindowInsetBottom());
+	                                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+The method getSystemWindowInsetTop() from the type WindowInsets is deprecated
+----------
+14. WARNING in /workspace/scratch/ad074272428e/appfarm-continued/quiet-knight-ii/android/src/com/andrefiker/quietknightii/MainActivity.java (at line 177)
+	view.setPadding(windowInsets.getSystemWindowInsetLeft(), windowInsets.getSystemWindowInsetTop(), windowInsets.getSystemWindowInsetRight(), windowInsets.getSystemWindowInsetBottom());
+	                                                                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The method getSystemWindowInsetRight() from the type WindowInsets is deprecated
+----------
+15. WARNING in /workspace/scratch/ad074272428e/appfarm-continued/quiet-knight-ii/android/src/com/andrefiker/quietknightii/MainActivity.java (at line 177)
+	view.setPadding(windowInsets.getSystemWindowInsetLeft(), windowInsets.getSystemWindowInsetTop(), windowInsets.getSystemWindowInsetRight(), windowInsets.getSystemWindowInsetBottom());
+	                                                                                                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The method getSystemWindowInsetBottom() from the type WindowInsets is deprecated
+----------
+16. WARNING in /workspace/scratch/ad074272428e/appfarm-continued/quiet-knight-ii/android/src/com/andrefiker/quietknightii/MainActivity.java (at line 178)
+	return windowInsets.consumeSystemWindowInsets();
+	                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The method consumeSystemWindowInsets() from the type WindowInsets is deprecated
+----------
+17. WARNING in /workspace/scratch/ad074272428e/appfarm-continued/quiet-knight-ii/android/src/com/andrefiker/quietknightii/MainActivity.java (at line 223)
+	super.onBackPressed();
+	      ^^^^^^^^^^^^^^^
+The method onBackPressed() from the type Activity is deprecated
+----------
+18. WARNING in /workspace/scratch/ad074272428e/appfarm-continued/quiet-knight-ii/android/src/com/andrefiker/quietknightii/MainActivity.java (at line 225)
+	this.game.evaluateJavascript("window.onNativeBack&&window.onNativeBack()", new ValueCallback() {
+                @Override // android.webkit.ValueCallback
+                public final void onReceiveValue(Object obj) {
+                    MainActivity.this.confirmExit((String) obj);
+                }
+            });
+	                                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Type safety: The expression of type new ValueCallback(){} needs unchecked conversion to conform to ValueCallback<String>
+----------
+19. WARNING in /workspace/scratch/ad074272428e/appfarm-continued/quiet-knight-ii/android/src/com/andrefiker/quietknightii/MainActivity.java (at line 225)
+	this.game.evaluateJavascript("window.onNativeBack&&window.onNativeBack()", new ValueCallback() {
+	                                                                               ^^^^^^^^^^^^^
+ValueCallback is a raw type. References to generic type ValueCallback<T> should be parameterized
+----------
+19 problems (19 warnings)
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): true
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+Signer #1 certificate DN: CN=Quiet Knight II, OU=AppFarm, O=Andre Fiker, C=BR
+Signer #1 certificate SHA-256 digest: 7eb3b3247c42e8ade034263b1bbfcce2e5e54baab7d5c82aa958e58ff55f8017
+Signer #1 certificate SHA-1 digest: 8c1d729f431c064e54a36274940de4e244842e6a
+Signer #1 certificate MD5 digest: 0edcf00d01c080464c69c0eb5a4d64f7
+Signer #1 key algorithm: RSA
+Signer #1 key size (bits): 4096
+Signer #1 public key SHA-256 digest: c5080cb62e310185a8417b88734fda8ac64f2dc9bcbb007f2f406108e3473cd5
+Signer #1 public key SHA-1 digest: 1c09c304ac49d8997ddd99558fd65e20a5056ea6
+Signer #1 public key MD5 digest: 3a952a7ac6cb1a694fe2ae8767ee12c8
+449c80fbdef1e05793a14468eee06aca7421a417f61c433a47f1f8e1c3bb2bb1  build/Quiet-Knight-II-1.0.2.apk

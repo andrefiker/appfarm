@@ -18,7 +18,7 @@ Date: 22 October 2026. This report supersedes the current-release portions of `Q
 | APK inspection | Correct package/code/version; zero permissions; valid v2/v3 signatures; all 48 assets match source | `evidence/apk-1.0.1.json`, `tools/verify-apk.py` |
 | Previous engine coverage | The vendor engine files and engine adapter are unchanged from v1.0.0, whose five levels × six FENs passed | `evidence/browser-tests.json` from v1.0.0 |
 
-Android emulator qualification is in progress and will be recorded here before handoff. No physical-device testing has been performed.
+This is the intermediate v1.0.1 checkpoint. The later en-passant regression, final release and emulator outcome are recorded in QA-1.0.2.md. No physical-device testing has been performed.
 
 ## Release identity
 

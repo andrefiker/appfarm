@@ -18,6 +18,15 @@ test('a genuinely fixed pawn barrier still ends automatically',()=>{
  assert.equal(lockedPawnDead(g.chess),true);
  assert.equal(g.status().reason,'Dead position');
 });
+test('en passant can break an otherwise fixed pawn barrier',()=>{
+ const fen='k7/8/2p1p3/p1PpP1p1/P2P2P1/8/1K6/8 w - d6 0 20';
+ const g=new Game(fen);assert.equal(g.status().over,false);
+ assert.equal(lockedPawnDead(g.chess),false);
+ assert(g.move('exd6').isEnPassant());assert.equal(g.chess.get('d5'),undefined);
+ assert.equal(g.status().over,false);
+ // Without the immediate capture right, the same geometry really is frozen.
+ assert.equal(new Game(fen.replace(' d6 ',' - ')).status().reason,'Dead position');
+});
 test('resigning against a bare king is a draw for either color',()=>{
  for(const [fen,color] of [['7k/8/8/8/8/8/8/KQ6 w - - 0 1','w'],['kq6/8/8/8/8/8/8/7K b - - 0 1','b']]){
   const g=new Game(fen);g.resign(color);assert.equal(g.status().score,'1/2-1/2');assert.match(g.status().reason,/only a king/);

@@ -1,6 +1,7 @@
 {
+  "version": "1.0.1",
   "sameToolchainRebuildByteIdentical": true,
-  "firstSha256": "a36ed502697fd958ace4571a60ebee8d08ccac6dfc508fae5948e99830470c0e",
-  "secondSha256": "a36ed502697fd958ace4571a60ebee8d08ccac6dfc508fae5948e99830470c0e",
+  "firstSha256": "d0e2d1df762672f9ca94519bf6e6cb153296315abdc8684a92c77b2165acb11a",
+  "secondSha256": "d0e2d1df762672f9ca94519bf6e6cb153296315abdc8684a92c77b2165acb11a",
   "scope": "Two clean sequential builds; ECJ 3.38.0, D8 release single thread, fixed ZIP metadata and same dedicated key. Different compiler or toolchain may differ."
 }

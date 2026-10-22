@@ -1,21 +1,28 @@
-# QA — NEUROATLAS 1.0.0
+# QA — NEUROATLAS 1.0.1
 
 Data: 22/10/2026. Resultado: APK assinado, conteúdo e interface verificados nas condições abaixo. Não equivale a instalação confirmada em Android nem a validação clínica independente.
+
+## Correção após relato de instalação
+
+O proprietário forneceu uma captura com “App not installed” para 1.0.0. A inspeção encontrou `resources.arsc` comprimido e desalinhado; a tabela abaixo substitui a conclusão anterior de QA de pacote. O teste `zipalign -c` e a assinatura, isoladamente, não cobriam essa regra de instalação. Em 1.0.1, quatro testes de regressão passam e o APK assinado passa na nova verificação de compressão/deslocamento. O arquivo 1.0.0 real é rejeitado pelo mesmo verificador. Ver `INSTALLATION-FIX.md` e `qa/install-fix-results.json`.
+
+Conteúdo clínico, desenhos, estilos e código Android não mudaram. Os nove grupos de conteúdo foram reexecutados em 1.0.1. Os resultados completos de navegador/geometria abaixo são a linha de base 1.0.0; não foram apresentados como novos testes de aparelho.
 
 ## Matriz de evidências
 
 | Categoria | Resultado | Evidência / limite |
 |---|---|---|
 | Unidade e conteúdo | 9 grupos de verificações aprovados | IDs, campos, links, bibliografia, relações topográficas, busca, preferências, modelo numérico e fronteiras de privacidade; `qa/content-results.json` |
-| Navegador | 12 grupos aprovados | 21 regiões, 10 redes, 18 temas, 39 fontes, 6 módulos, favoritos, modos, configurações e ausência de erros/requisições externas; `qa/browser-results.json` |
-| Geometria, toque e acessibilidade | 5 grupos aprovados | 40 centros de marcadores dentro de suas formas; toque real via protocolo do navegador, pinça, arraste, modo offline, contraste e foco; `qa/anatomy-touch-results.json` |
+| Navegador | 12 grupos aprovados em 1.0.0 | 21 regiões, 10 redes, 18 temas, 39 fontes, 6 módulos, favoritos, modos, configurações e ausência de erros/requisições externas; `qa/browser-results.json` |
+| Geometria, toque e acessibilidade | 5 grupos aprovados em 1.0.0 | 40 centros de marcadores dentro de suas formas; toque real via protocolo do navegador, pinça, arraste, modo offline, contraste e foco; `qa/anatomy-touch-results.json` |
 | Telas pequenas | Aprovado no navegador | 320, 360, 390 e 430 CSS px; claro/escuro e texto ampliado; sem overflow horizontal nas cinco abas |
-| Pacote Android | Aprovado | Manifesto compilado, versão, zero permissões, assets idênticos, ZIP íntegro, alinhamento 4 bytes, assinatura v2/v3; `qa/package-results.json` |
+| Pacote Android | Verificações estáticas aprovadas em 1.0.1 | Manifesto, versão, zero permissões, assets idênticos, ZIP íntegro, tabela sem compressão com deslocamento alinhado, assinatura v2/v3 e certificado original; `qa/package-results.json` |
+| Regressão de instalação | 4 testes aprovados; APK antigo rejeitado | Tabela comprimida, tabela desalinhada, tabela válida e normalização; `tests/apk-layout.py`, `qa/install-fix-results.json` |
 | Reprodutibilidade | Aprovado com toolchain fixo | Dois builds limpos consecutivos byte a byte idênticos; `qa/reproducibility.json` |
 | Anatomia e linguagem | Revisão editorial realizada | Cinco desenhos revisados visualmente e confrontados com relações de fontes públicas; não houve neuroanatomista independente |
 | Validação clínica | **Não realizada** | A revisão assistida por IA e os testes de conteúdo não substituem especialistas nem estudo de uso |
 | Emulador Android | **Não executado** | Não há emulador/ADB/imagem de sistema disponíveis neste ambiente |
-| Telefone real | **Não executado** | Nenhum aparelho conectado; instalação, barras, teclado, ciclo de vida e desempenho Android não foram observados |
+| Telefone real | **1.0.0 falhou; 1.0.1 pendente** | Captura fornecida pelo proprietário confirma falha do APK anterior. Sem ADB/log do instalador; a nova instalação ainda não foi observada |
 
 ## O que foi exercitado
 
@@ -47,7 +54,7 @@ Screenshots são capturas da interface implementada com os mesmos arquivos incor
 
 ## Verificações pendentes em aparelho
 
-1. Instalar o APK assinado em Android 8+ com WebView 92+ e em Android 15; abrir pela primeira vez em modo avião.
+1. Instalar o APK assinado em Android 8+ com WebView 92+ e em Android 15/16; abrir pela primeira vez em modo avião.
 2. Verificar barras claras/escuras, navegação por gestos e três botões, recorte de tela, teclado de busca, rotação e escala de texto do sistema.
 3. Testar Back em fonte → tema → aba → saída; reabrir após encerrar processo; favoritos e preferências devem permanecer.
 4. Verificar pinça/arraste, TalkBack, alvos e leitura com usuários reais; testar aparelho com pouca memória.

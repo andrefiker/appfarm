@@ -1,6 +1,6 @@
 /* Original PT-BR educational synthesis. Bibliography is bundled. */
 window.ATLAS_DATA = {
-  "version": "1.0.0",
+  "version": "1.0.1",
   "reviewed": "2026-10-22",
   "sources": [
     {

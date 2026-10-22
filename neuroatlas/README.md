@@ -1,10 +1,10 @@
-# NEUROATLAS 1.0.0
+# NEUROATLAS 1.0.1
 
 Referência educacional offline, em PT-BR, para psicólogos e explicações gerais a adultos. Proprietário: André Fiker. Não é instrumento diagnóstico, exame, orientador de tratamento ou dispositivo médico. Não há certificação clínica nem revisão independente por especialista.
 
 ## Entrega
 
-| Recurso | Versão 1.0.0 |
+| Recurso | Versão 1.0.1 |
 |---|---|
 | Atlas original | 21 regiões; lateral, medial, inferior e dois cortes coronais |
 | Redes | 10 projeções conceituais, com distinção entre via, conectividade e modelo |
@@ -30,7 +30,9 @@ O armazenamento contém apenas preferências e IDs de favoritos/recentes. Consul
 
 ## Compatibilidade e instalação
 
-Pacote `com.andrefiker.neuroatlas`, versionName `1.0.0`, versionCode `1`. Android 8.0/API 26 ou superior; target/compile API 35. Requer Android System WebView 92+ para os recursos web usados; somente Chromium 131 foi executado nesta entrega. Não contém código nativo por arquitetura, portanto não depende de ABI de CPU.
+**Correção 1.0.1:** o APK 1.0.0 entregue continha `resources.arsc` comprimido e desalinhado, o que impede sua instalação em Android 11+ com este target SDK. Use 1.0.1; detalhes e regressão em `docs/INSTALLATION-FIX.md`. A assinatura original foi preservada.
+
+Pacote `com.andrefiker.neuroatlas`, versionName `1.0.1`, versionCode `2`. Android 8.0/API 26 ou superior; target/compile API 35. Requer Android System WebView 92+ para os recursos web usados; somente Chromium 131 foi executado nesta entrega. Não contém código nativo por arquitetura, portanto não depende de ABI de CPU.
 
 Transfira o APK ao aparelho, abra-o e permita a instalação apenas para o aplicativo usado para abrir o arquivo, se o Android solicitar. A primeira abertura não precisa de rede. Confira o SHA-256 e o certificado no relatório antes de instalar. Instalação em emulador ou telefone não foi executada neste ambiente: ver `docs/QA.md`.
 
@@ -42,6 +44,7 @@ Ferramentas: Android Build Tools 35.0.0, platform `android-35/android.jar`, Open
 cd neuroatlas
 python3 tools/make-content.py
 node tests/content.cjs
+python3 tests/apk-layout.py
 export BT=/caminho/android-sdk/build-tools/35.0.0
 export ANDROID_JAR=/caminho/android-sdk/platforms/android-35/android.jar
 export ECJ_JAR=/caminho/ecj-3.38.0.jar
@@ -51,7 +54,7 @@ bash tools/build.sh
 python3 tests/package.py
 ```
 
-Saída: `build/NEUROATLAS-v1.0.0.apk`. Alias `neuroatlas`, PKCS12 com a mesma senha para chave e repositório. O script limpa somente diretórios de classes/dex gerados, usa D8 release com uma thread e normaliza ordem e metadados do ZIP antes de assinar. Não copie a chave nem sua senha para este repositório.
+Saída: `build/NEUROATLAS-v1.0.1.apk`. Alias `neuroatlas`, PKCS12 com a mesma senha para chave e repositório. O script limpa somente diretórios de classes/dex gerados, usa D8 release com uma thread e normaliza ordem e metadados do ZIP antes de assinar. Mantém `resources.arsc` sem compressão e verifica seu deslocamento real de dados em múltiplo de 4 antes e depois da assinatura. A saída deriva de `versionName` no manifesto. Não copie a chave nem sua senha para este repositório.
 
 ## Testes de interface
 
@@ -69,11 +72,11 @@ Esta execução usou `--headless=old --single-process --no-zygote` porque o lan�
 ## Atualizações e rollback
 
 1. Preserve o pacote e a chave privada dedicada. Há backup privado separado; o código e o APK não contêm a chave.
-2. Para atualizar, incremente `android:versionCode`, ajuste `versionName`, nome da saída no script e teste de pacote. Refaça a revisão das fontes e os testes. Assine com o mesmo certificado.
+2. Para atualizar, incremente `android:versionCode`, ajuste `versionName` no manifesto e `version` em `tools/make-content.py`; gere novamente o conteúdo. O nome da saída e a auditoria de pacote seguem o manifesto. Refaça a revisão das fontes e os testes. Assine com o mesmo certificado.
 3. Instale sobre a versão anterior para manter preferências/favoritos. Se a chave for perdida, uma atualização compatível não poderá ser assinada; será necessário outro pacote ou reinstalação, perdendo os dados locais.
 4. A base de rollback do repositório é `0db2815c14b727031d63e7c14ef0a75255690e90`. A branch `feat/neuroatlas-v1-20261022` adiciona somente `neuroatlas/`; nenhum merge em `main` é necessário para usar os arquivos.
 5. Para reverter uma futura atualização Android, reconstrua o conteúdo da versão conhecida com versionCode **maior** que o instalado, usando a mesma chave. O Android normalmente bloqueia downgrades. Desinstalar/reinstalar apaga as preferências, favoritos e recentes.
-6. Guarde o APK entregue e seu SHA-256 como ponto de retorno verificável. Não publique o backup de assinatura.
+6. Guarde o APK 1.0.1 e seu SHA-256 como ponto de retorno verificável. Não volte ao APK 1.0.0 defeituoso; para recuperar seu conteúdo, mantenha a correção de empacotamento e incremente versionCode. Não publique o backup de assinatura.
 
 ## Omissões deliberadas
 

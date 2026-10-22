@@ -1,0 +1,34 @@
+{
+  "oldApk": {
+    "version": "1.0.0",
+    "sha256": "a36ed502697fd958ace4571a60ebee8d08ccac6dfc508fae5948e99830470c0e",
+    "resourceTable": {
+      "entry": "resources.arsc",
+      "compressionMethod": 8,
+      "uncompressed": false,
+      "dataOffset": 47146,
+      "aligned4Bytes": false
+    },
+    "gateExitStatus": 1,
+    "rejection": "Android API 30+ installation rule: resources.arsc is compressed; resources.arsc is not 4-byte aligned"
+  },
+  "newApk": {
+    "version": "1.0.1",
+    "sha256": "d0e2d1df762672f9ca94519bf6e6cb153296315abdc8684a92c77b2165acb11a",
+    "resourceTable": {
+      "entry": "resources.arsc",
+      "compressionMethod": 0,
+      "uncompressed": true,
+      "dataOffset": 47156,
+      "aligned4Bytes": true
+    },
+    "gateExitStatus": 0
+  },
+  "regressionTests": {
+    "total": 4,
+    "pass": 4,
+    "beforeFix": "normalizer regression failed: expected ZIP_STORED (0), got ZIP_DEFLATED (8)"
+  },
+  "reference": "https://developer.android.com/about/versions/11/behavior-changes-11#compressed-resource-files",
+  "scope": "Static checks against the actual signed APK files; no Android runtime installation performed."
+}

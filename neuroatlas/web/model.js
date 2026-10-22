@@ -1,0 +1,8 @@
+(function(root){
+const clean=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const clamp=(n,a,b)=>Math.min(b,Math.max(a,Number(n)||0));
+const prediction=(expected,actual,alpha=.25)=>{expected=clamp(expected,0,10);actual=clamp(actual,0,10);return {error:actual-expected,next:expected+clamp(alpha,0,1)*(actual-expected)}};
+function search(data,q){const terms=clean(q).trim().split(/\s+/).filter(Boolean);return [...data.regions.map(x=>({...x,type:'region',category:'Região'})),...data.networks.map(x=>({...x,type:'network',category:'Rede'})),...data.conditions.map(x=>({...x,type:'condition',category:'Tema clínico'})),...data.glossary.map((x,i)=>({...x,id:String(i),type:'glossary',category:'Glossário'}))].filter(x=>terms.every(t=>clean(JSON.stringify(x)).includes(t))).slice(0,80);}
+function settings(value){const d={mode:'clinician',theme:'dark',hand:'left',font:'normal',motion:false,bookmarks:[],recent:[]};if(!value||typeof value!=='object')return d;for(const [key,choices] of Object.entries({mode:['clinician','patient'],theme:['dark','light'],hand:['left','right'],font:['normal','large']}))if(choices.includes(value[key]))d[key]=value[key];d.motion=value.motion===true;for(const k of ['bookmarks','recent'])d[k]=Array.isArray(value[k])?[...new Set(value[k].filter(v=>typeof v==='string'&&/^(region|condition|network):[a-z-]+$/.test(v)))].slice(0,k==='recent'?12:80):[];return d;}
+root.NeuroModel={clean,clamp,prediction,search,settings};if(typeof module!=='undefined')module.exports=root.NeuroModel;
+})(typeof window!=='undefined'?window:globalThis);

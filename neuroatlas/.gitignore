@@ -1,0 +1,10 @@
+/build/
+/qa/screenshots/
+/qa/*-run.log
+/release/
+*.p12
+*.jks
+*.keystore
+*password*
+*.idsig
+__pycache__/

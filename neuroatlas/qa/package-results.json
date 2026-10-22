@@ -1,0 +1,60 @@
+{
+  "apk": "NEUROATLAS-v1.0.0.apk",
+  "sha256": "a36ed502697fd958ace4571a60ebee8d08ccac6dfc508fae5948e99830470c0e",
+  "bytes": 58189,
+  "package": "com.andrefiker.neuroatlas",
+  "versionName": "1.0.0",
+  "versionCode": 1,
+  "minSdk": 26,
+  "targetSdk": 35,
+  "certificateSha256": "d68626fa70e1de06bdc47dbcb969e8f00f7d0ce7923614ef715eb0797b58e54a",
+  "signatureSchemesVerified": [
+    "v2",
+    "v3"
+  ],
+  "permissionCount": 0,
+  "zipAlignment": "4-byte verified",
+  "assets": [
+    {
+      "path": "assets/anatomy.js",
+      "bytes": 10202,
+      "sha256": "6530e5663ac1b0d78f70f2574afab859189c8bdd51a94ec747295adb66f8bb78"
+    },
+    {
+      "path": "assets/app.js",
+      "bytes": 41316,
+      "sha256": "e006539bc006729c0a18909a6acbc15559e1ce63a8ce3cac1b6541fe8eeba861"
+    },
+    {
+      "path": "assets/data.js",
+      "bytes": 67833,
+      "sha256": "455dd87667712e7148a22fa5b5ab419141f736710eaed936fe74a0eac1ac36dc"
+    },
+    {
+      "path": "assets/index.html",
+      "bytes": 1114,
+      "sha256": "f3075174e2baa133cf5076b83ba85e77f65d702dbbf689838c4e6c657bddefcc"
+    },
+    {
+      "path": "assets/model.js",
+      "bytes": 1594,
+      "sha256": "74d9ea599639c07e29623622170a37c94dec0e94ab40a60d48a04ba61c34ee26"
+    },
+    {
+      "path": "assets/style.css",
+      "bytes": 13944,
+      "sha256": "8ab36ebe304f558d042f174b3b0ff2b97f82bc816c21666babdd0656fea7581d"
+    }
+  ],
+  "checks": [
+    "Package/version checked from compiled manifest",
+    "No requested permissions",
+    "RSA signing verified",
+    "ZIP integrity verified",
+    "Every offline web asset matches source bytes",
+    "No signing secrets in APK"
+  ],
+  "emulatorInstall": "NOT RUN — no emulator available",
+  "physicalPhone": "NOT RUN — no attached phone",
+  "note": "Package integrity is verified. Installation and native WebView behavior have not been exercised on Android hardware."
+}

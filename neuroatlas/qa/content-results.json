@@ -1,0 +1,41 @@
+{
+  "checks": [
+    {
+      "name": "Unique catalog IDs and complete PT-BR fields",
+      "pass": true
+    },
+    {
+      "name": "All source, network, node and location links resolve",
+      "pass": true
+    },
+    {
+      "name": "Bibliography metadata and offline copy match",
+      "pass": true
+    },
+    {
+      "name": "Critical anatomical relationships and view selection",
+      "pass": true
+    },
+    {
+      "name": "Search tolerates accents and conjunctive words",
+      "pass": true
+    },
+    {
+      "name": "Preferences reject invalid values, free text and unbounded history",
+      "pass": true
+    },
+    {
+      "name": "Prediction model bounds and direction across its full control domain",
+      "pass": true
+    },
+    {
+      "name": "Teaching models carry limits and no clinical input pathways",
+      "pass": true
+    },
+    {
+      "name": "Package boundary excludes network permissions, backup and remote scripts",
+      "pass": true
+    }
+  ],
+  "note": "Structural and boundary checks only. Clinical and anatomical interpretation require independent expert review."
+}

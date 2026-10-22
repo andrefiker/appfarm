@@ -1,0 +1,6 @@
+{
+  "sameToolchainRebuildByteIdentical": true,
+  "firstSha256": "a36ed502697fd958ace4571a60ebee8d08ccac6dfc508fae5948e99830470c0e",
+  "secondSha256": "a36ed502697fd958ace4571a60ebee8d08ccac6dfc508fae5948e99830470c0e",
+  "scope": "Two clean sequential builds; ECJ 3.38.0, D8 release single thread, fixed ZIP metadata and same dedicated key. Different compiler or toolchain may differ."
+}

@@ -1,0 +1,423 @@
+{
+  "engine": "131.0.6778.204",
+  "markers": [
+    {
+      "view": "lateral",
+      "id": "frontal",
+      "x": 150,
+      "y": 219,
+      "inside": true
+    },
+    {
+      "view": "lateral",
+      "id": "parietal",
+      "x": 374,
+      "y": 139,
+      "inside": true
+    },
+    {
+      "view": "lateral",
+      "id": "temporal",
+      "x": 294,
+      "y": 294,
+      "inside": true
+    },
+    {
+      "view": "lateral",
+      "id": "occipital",
+      "x": 509,
+      "y": 215,
+      "inside": true
+    },
+    {
+      "view": "lateral",
+      "id": "motor",
+      "x": 265,
+      "y": 147,
+      "inside": true
+    },
+    {
+      "view": "lateral",
+      "id": "sensory",
+      "x": 298,
+      "y": 150,
+      "inside": true
+    },
+    {
+      "view": "lateral",
+      "id": "dlpfc",
+      "x": 162,
+      "y": 152,
+      "inside": true
+    },
+    {
+      "view": "lateral",
+      "id": "cerebellum",
+      "x": 463,
+      "y": 354,
+      "inside": true
+    },
+    {
+      "view": "lateral",
+      "id": "brainstem",
+      "x": 360,
+      "y": 382,
+      "inside": true
+    },
+    {
+      "view": "medial",
+      "id": "frontal",
+      "x": 114,
+      "y": 151,
+      "inside": true
+    },
+    {
+      "view": "medial",
+      "id": "parietal",
+      "x": 375,
+      "y": 98,
+      "inside": true
+    },
+    {
+      "view": "medial",
+      "id": "occipital",
+      "x": 504,
+      "y": 218,
+      "inside": true
+    },
+    {
+      "view": "medial",
+      "id": "temporal",
+      "x": 233,
+      "y": 305,
+      "inside": true
+    },
+    {
+      "view": "medial",
+      "id": "acc",
+      "x": 198,
+      "y": 142,
+      "inside": true
+    },
+    {
+      "view": "medial",
+      "id": "pcc",
+      "x": 350,
+      "y": 154,
+      "inside": true
+    },
+    {
+      "view": "medial",
+      "id": "callosum",
+      "x": 245,
+      "y": 152,
+      "inside": true
+    },
+    {
+      "view": "medial",
+      "id": "ventricles",
+      "x": 268,
+      "y": 184,
+      "inside": true
+    },
+    {
+      "view": "medial",
+      "id": "thalamus",
+      "x": 278,
+      "y": 229,
+      "inside": true
+    },
+    {
+      "view": "medial",
+      "id": "hypothalamus",
+      "x": 259,
+      "y": 274,
+      "inside": true
+    },
+    {
+      "view": "medial",
+      "id": "vmpfc",
+      "x": 131,
+      "y": 240,
+      "inside": true
+    },
+    {
+      "view": "medial",
+      "id": "cerebellum",
+      "x": 454,
+      "y": 351,
+      "inside": true
+    },
+    {
+      "view": "medial",
+      "id": "brainstem",
+      "x": 353,
+      "y": 344,
+      "inside": true
+    },
+    {
+      "view": "inferior",
+      "id": "frontal",
+      "x": 248,
+      "y": 80,
+      "inside": true
+    },
+    {
+      "view": "inferior",
+      "id": "temporal",
+      "x": 160,
+      "y": 279,
+      "inside": true
+    },
+    {
+      "view": "inferior",
+      "id": "occipital",
+      "x": 265,
+      "y": 397,
+      "inside": true
+    },
+    {
+      "view": "inferior",
+      "id": "ofc",
+      "x": 221,
+      "y": 140,
+      "inside": true
+    },
+    {
+      "view": "inferior",
+      "id": "brainstem",
+      "x": 306,
+      "y": 289,
+      "inside": true
+    },
+    {
+      "view": "inferior",
+      "id": "cerebellum",
+      "x": 372,
+      "y": 347,
+      "inside": true
+    },
+    {
+      "view": "coronalA",
+      "id": "temporal",
+      "x": 168,
+      "y": 329,
+      "inside": true
+    },
+    {
+      "view": "coronalA",
+      "id": "callosum",
+      "x": 305,
+      "y": 128,
+      "inside": true
+    },
+    {
+      "view": "coronalA",
+      "id": "ventricles",
+      "x": 273,
+      "y": 169,
+      "inside": true
+    },
+    {
+      "view": "coronalA",
+      "id": "basal",
+      "x": 221,
+      "y": 218,
+      "inside": true
+    },
+    {
+      "view": "coronalA",
+      "id": "insula",
+      "x": 163,
+      "y": 216,
+      "inside": true
+    },
+    {
+      "view": "coronalA",
+      "id": "amygdala",
+      "x": 222,
+      "y": 302,
+      "inside": true
+    },
+    {
+      "view": "coronalP",
+      "id": "temporal",
+      "x": 168,
+      "y": 329,
+      "inside": true
+    },
+    {
+      "view": "coronalP",
+      "id": "callosum",
+      "x": 305,
+      "y": 128,
+      "inside": true
+    },
+    {
+      "view": "coronalP",
+      "id": "ventricles",
+      "x": 273,
+      "y": 169,
+      "inside": true
+    },
+    {
+      "view": "coronalP",
+      "id": "insula",
+      "x": 163,
+      "y": 216,
+      "inside": true
+    },
+    {
+      "view": "coronalP",
+      "id": "thalamus",
+      "x": 277,
+      "y": 232,
+      "inside": true
+    },
+    {
+      "view": "coronalP",
+      "id": "hippocampus",
+      "x": 220,
+      "y": 327,
+      "inside": true
+    }
+  ],
+  "checks": [
+    {
+      "name": "Every numbered anatomical marker is inside its own structure",
+      "pass": true
+    },
+    {
+      "name": "Real touch taps select a structure and pinch/drag changes transform",
+      "pass": true
+    },
+    {
+      "name": "All runtime content works with browser networking disabled after initial load",
+      "pass": true
+    },
+    {
+      "name": "Main text and secondary text meet 4.5:1 contrast in both themes",
+      "pass": true
+    },
+    {
+      "name": "Primary controls have 44 px targets and modal keyboard focus is bounded",
+      "pass": true
+    }
+  ],
+  "performance": {
+    "search1000Ms": 432.69999999552965,
+    "domContentLoadedMs": 35.100000001490116,
+    "webDataBytes": 54340,
+    "note": "Desktop headless browser timing; not Android startup or frame-rate evidence."
+  },
+  "contrast": [
+    {
+      "theme": "dark",
+      "text": "--text",
+      "bg": "--bg",
+      "ratio": 16.47085351267624
+    },
+    {
+      "theme": "dark",
+      "text": "--text",
+      "bg": "--surface",
+      "ratio": 14.393968206717119
+    },
+    {
+      "theme": "dark",
+      "text": "--text",
+      "bg": "--surface2",
+      "ratio": 12.626707175705624
+    },
+    {
+      "theme": "dark",
+      "text": "--muted",
+      "bg": "--bg",
+      "ratio": 9.748307294640302
+    },
+    {
+      "theme": "dark",
+      "text": "--muted",
+      "bg": "--surface",
+      "ratio": 8.519098610182581
+    },
+    {
+      "theme": "dark",
+      "text": "--muted",
+      "bg": "--surface2",
+      "ratio": 7.47314166648904
+    },
+    {
+      "theme": "dark",
+      "text": "--accent",
+      "bg": "--bg",
+      "ratio": 11.91311282514739
+    },
+    {
+      "theme": "dark",
+      "text": "--accent",
+      "bg": "--surface",
+      "ratio": 10.410933903105507
+    },
+    {
+      "theme": "dark",
+      "text": "--accent",
+      "bg": "--surface2",
+      "ratio": 9.132701415777328
+    },
+    {
+      "theme": "light",
+      "text": "--text",
+      "bg": "--bg",
+      "ratio": 13.773946511116261
+    },
+    {
+      "theme": "light",
+      "text": "--text",
+      "bg": "--surface",
+      "ratio": 14.829653474141743
+    },
+    {
+      "theme": "light",
+      "text": "--text",
+      "bg": "--surface2",
+      "ratio": 12.973211336577295
+    },
+    {
+      "theme": "light",
+      "text": "--muted",
+      "bg": "--bg",
+      "ratio": 5.640293465541468
+    },
+    {
+      "theme": "light",
+      "text": "--muted",
+      "bg": "--surface",
+      "ratio": 6.072594918162449
+    },
+    {
+      "theme": "light",
+      "text": "--muted",
+      "bg": "--surface2",
+      "ratio": 5.312400412600077
+    },
+    {
+      "theme": "light",
+      "text": "--accent",
+      "bg": "--bg",
+      "ratio": 5.9518575395366415
+    },
+    {
+      "theme": "light",
+      "text": "--accent",
+      "bg": "--surface",
+      "ratio": 6.408038884683693
+    },
+    {
+      "theme": "light",
+      "text": "--accent",
+      "bg": "--surface2",
+      "ratio": 5.605852007868166
+    }
+  ]
+}

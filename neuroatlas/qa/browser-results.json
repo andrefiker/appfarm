@@ -1,0 +1,62 @@
+{
+  "engine": "131.0.6778.204",
+  "checks": [
+    {
+      "name": "Initial anatomy and safe viewport",
+      "pass": true
+    },
+    {
+      "name": "All anatomical views and direct region links",
+      "pass": true
+    },
+    {
+      "name": "Zoom controls and reset",
+      "pass": true
+    },
+    {
+      "name": "Accent insensitive search and source navigation",
+      "pass": true
+    },
+    {
+      "name": "Bookmarks persist after reload",
+      "pass": true
+    },
+    {
+      "name": "Patient mode hides differential and referral detail",
+      "pass": true
+    },
+    {
+      "name": "All ten networks render valid nodes",
+      "pass": true
+    },
+    {
+      "name": "Every topic and reference opens",
+      "pass": true
+    },
+    {
+      "name": "Six teaching modules update and reset",
+      "pass": true
+    },
+    {
+      "name": "Settings persist and light/large pages fit 320–430 px",
+      "pass": true
+    },
+    {
+      "name": "Reopen retains only whitelisted local data",
+      "pass": true
+    },
+    {
+      "name": "No remote app requests or JS errors",
+      "pass": true
+    }
+  ],
+  "requests": [
+    "http://127.0.0.1:8774/",
+    "http://127.0.0.1:8774/style.css",
+    "http://127.0.0.1:8774/data.js",
+    "http://127.0.0.1:8774/model.js",
+    "http://127.0.0.1:8774/anatomy.js",
+    "http://127.0.0.1:8774/app.js"
+  ],
+  "errors": []
+}

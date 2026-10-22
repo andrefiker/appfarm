@@ -1,6 +1,6 @@
 {
   "apk": "NEUROATLAS-v1.2.0.apk",
-  "sha256": "18b5f0f17196b4ee12e6b09931124b872eaee0208c9a1f60398f289b17a1ac64",
+  "sha256": "a41bfdab2cb8da88432234b8e2cc664d9784303f8e26f6eede8c5eac152befb5",
   "bytes": 95311,
   "package": "com.andrefiker.neuroatlas",
   "versionName": "1.2.0",
@@ -18,7 +18,7 @@
     "entry": "resources.arsc",
     "compressionMethod": 0,
     "uncompressed": true,
-    "dataOffset": 85520,
+    "dataOffset": 85716,
     "aligned4Bytes": true
   },
   "assets": [
@@ -49,13 +49,13 @@
     },
     {
       "path": "assets/explorer.css",
-      "bytes": 11552,
-      "sha256": "958389c8a55081ad8aee55ff8c66559e19cdf416df3eddd09940a6328d9bdc68"
+      "bytes": 11882,
+      "sha256": "72068708edd878a15ca751381e47880201c3424a9331fc47cb7c02a8d82ac433"
     },
     {
       "path": "assets/explorer.js",
-      "bytes": 11579,
-      "sha256": "4771305511450b3846f9d675e86be9b92e496ede7175bc6750a3e8df0b5a78cb"
+      "bytes": 11783,
+      "sha256": "900a375c0a78e00a4d21dbbd32d815742d42a3e539d031ca3169ad57cd7b7215"
     },
     {
       "path": "assets/index.html",

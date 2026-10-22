@@ -1,7 +1,7 @@
 {
   "version": "1.2.0",
   "byteIdentical": true,
-  "sha256": "18b5f0f17196b4ee12e6b09931124b872eaee0208c9a1f60398f289b17a1ac64",
+  "sha256": "a41bfdab2cb8da88432234b8e2cc664d9784303f8e26f6eede8c5eac152befb5",
   "bytes": 95311,
   "method": "Two clean consecutive builds from identical source, fixed Android35/ECJ3.38 toolchain, same dedicated signing key",
   "scope": "Reproducibility with this toolchain; does not prove installation or clinical validity"

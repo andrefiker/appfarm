@@ -1,0 +1,15 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1"><meta name="theme-color" content="#132820"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; worker-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"><title>Quiet Knight II</title><link rel="stylesheet" href="style.css"></head>
+<body data-theme="wood"><main id="app">
+<header><div class="brand"><span class="eyebrow">A TABLE OF YOUR OWN</span><h1>QUIET KNIGHT <i>II</i></h1></div><button id="settings" class="icon-button" aria-label="Table settings">⚙</button></header>
+<div class="table-heading"><div><span class="small-label" id="modeLabel">PRIVATE MATCH</span><p id="tableTitle">A little room to think.</p></div><span class="offline"><b></b> OFFLINE</span></div>
+<section class="player opponent"><img id="topAvatar" alt="" src="art/wood/bk.svg"><div><strong id="topName">Stockfish</strong><span id="topDetail">Club · level 3</span></div><span class="side-chip" id="topChip">BLACK</span></section>
+<div class="board-frame"><div id="board" role="grid" aria-label="Chessboard"></div><svg id="arrows" viewBox="0 0 800 800" aria-hidden="true"></svg></div>
+<section class="player human"><img id="bottomAvatar" alt="" src="art/wood/wk.svg"><div><strong id="bottomName">You</strong><span id="bottomDetail">White pieces</span></div><span class="side-chip" id="bottomChip">WHITE</span></section>
+<div id="status" class="status" role="status" aria-live="polite"><b class="turn-dot"></b><span>Your move</span></div>
+<div id="moves" class="move-strip" aria-label="Recent moves">The board is yours. Tap a piece to begin.</div>
+<nav class="actions" aria-label="Game controls"><button id="vision" class="primary"><span class="control-icon">◎</span>Tactical vision</button><button id="undo"><span class="control-icon">↶</span>Undo</button><button id="table"><span class="control-icon">☷</span>Table</button></nav>
+<div id="visionLegend" hidden><span><b class="white-dot"></b>White attacks</span><span><b class="black-dot"></b>Black attacks</span><button id="layers">Layers</button></div>
+<p id="selectionInfo" class="selection-info">Untimed. Unhurried. Entirely yours.</p>
+<div id="analysisControls" hidden class="analysis-controls"><button id="rewind">← Rewind</button><button id="forward">Forward →</button><button id="analyze">Engine hint</button></div>
+<footer><span>QUIET KNIGHT II</span><span>THE ART OF ATTENTION</span></footer>
+</main><dialog id="sheet"><div class="sheet-top"><span id="sheetKicker" class="eyebrow">YOUR TABLE</span><button id="closeSheet" class="icon-button" aria-label="Close panel">×</button></div><div id="sheetBody"></div></dialog><div id="toast" role="status" hidden></div><script src="boot.js"></script><script type="module" src="app.js"></script></body></html>

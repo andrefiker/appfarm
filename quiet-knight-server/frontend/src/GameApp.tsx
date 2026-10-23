@@ -329,7 +329,9 @@ export default function GameApp() {
     setPromotion(null);
   }, [room?.code, room?.version]);
   useEffect(() => {
-    if (resumeStarted.current) return;
+    // Account restoration clears the previous room view. Join only after that
+    // reset has completed, so a fast invite response cannot be discarded.
+    if (!accountId || gameOwner !== accountId || resumeStarted.current) return;
     resumeStarted.current = true;
     const code = new URL(window.location.href).searchParams.get("room");
     if (code) {
@@ -340,7 +342,7 @@ export default function GameApp() {
       setJoinCode(normalized);
       void joinRoom(normalized, stored(`qk-seat-${normalized}`));
     }
-  }, []);
+  }, [accountId, gameOwner]);
   const previousMove = useRef<{ key: string; count: number } | null>(null);
   const gameKey = room
     ? `room-${room.code}-${room.game_number || 1}`

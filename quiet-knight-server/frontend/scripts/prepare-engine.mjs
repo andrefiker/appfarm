@@ -27,3 +27,5 @@ for(const [path,meta]of Object.entries(lock.packages)){
  notices.push({name,version:meta.version,license:meta.license,text:license||'See upstream package for full license text.'});
 }
 writeFileSync('public/licenses/dependency-notices.json',JSON.stringify(notices,null,2));
+
+writeFileSync('public/licenses/AndroidX-NOTICE.txt','AndroidX WebKit 1.12.1 — Android Open Source Project contributors. Apache License 2.0. Source: https://android.googlesource.com/platform/frameworks/support/\n\n'+readFileSync('node_modules/typescript/LICENSE.txt','utf8'));

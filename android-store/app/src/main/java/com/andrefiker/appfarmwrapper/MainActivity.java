@@ -62,6 +62,7 @@ public class MainActivity extends Activity {
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         if (quietKnight()) {
+            settings.setTextZoom(Math.max(100, Math.min(200, Math.round(100 * getResources().getConfiguration().fontScale))));
             settings.setAllowFileAccess(false);
             settings.setAllowContentAccess(false);
             settings.setAllowFileAccessFromFileURLs(false);

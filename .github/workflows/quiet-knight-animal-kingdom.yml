@@ -56,6 +56,17 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
 
+      - name: Retire this task's temporary raw debug-key artifacts and cache
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?name=quiet-knight-studio-private-debug-key" --jq '.artifacts[] | select(.name == "quiet-knight-studio-private-debug-key") | .id' | while read -r artifact_id; do
+            gh api --method DELETE "repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact_id"
+          done
+          gh api "repos/$GITHUB_REPOSITORY/actions/caches?key=quiet-knight-studio-debug-key-v1" --jq '.actions_caches[] | select(.key == "quiet-knight-studio-debug-key-v1" and .ref == "refs/heads/feature/quiet-knight-animal-kingdom") | .id' | while read -r cache_id; do
+            gh api --method DELETE "repos/$GITHUB_REPOSITORY/actions/caches/$cache_id"
+          done
+
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
@@ -150,17 +161,22 @@ jobs:
         with:
           gradle-version: '8.10.2'
 
-      - name: Restore the candidate debug signing identity
-        uses: actions/cache@v4
-        with:
-          path: ${{ runner.temp }}/qk-signing/candidate.keystore
-          key: quiet-knight-studio-debug-key-v1
-
       - name: Prepare the retained test signing key
+        env:
+          QK_STUDIO_SIGNING_STORE: ${{ secrets.QK_STUDIO_SIGNING_STORE }}
         run: |
           mkdir -p "$RUNNER_TEMP/qk-signing"
-          if [ ! -f "$RUNNER_TEMP/qk-signing/candidate.keystore" ]; then
+          if [ -n "$QK_STUDIO_SIGNING_STORE" ]; then
+            printf '%s' "$QK_STUDIO_SIGNING_STORE" | base64 --decode > "$RUNNER_TEMP/qk-signing/candidate.keystore"
+          elif [ -f quiet-knight-server/docs/candidate-signing.sha256 ]; then
+            echo 'The retained test signing identity must be supplied; refusing to replace it with a new key.' >&2
+            exit 1
+          else
             keytool -genkeypair -keystore "$RUNNER_TEMP/qk-signing/candidate.keystore" -storepass android -keypass android -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -dname 'CN=Quiet Knight Test, O=AppFarm, C=BR'
+          fi
+          if [ -f quiet-knight-server/docs/candidate-signing.sha256 ]; then
+            keytool -exportcert -keystore "$RUNNER_TEMP/qk-signing/candidate.keystore" -storepass android -alias androiddebugkey | sha256sum | cut -d' ' -f1 > "$RUNNER_TEMP/qk-signing/actual.sha256"
+            diff quiet-knight-server/docs/candidate-signing.sha256 "$RUNNER_TEMP/qk-signing/actual.sha256"
           fi
 
       - name: Assemble signed debug APK
@@ -190,12 +206,19 @@ jobs:
           fi
           sha256sum dist/QuietKnight-Animal-Kingdom-debug.apk
 
-      - name: Preserve candidate private debug signing identity
+      - name: Encrypt the retained test signing identity for the owner
+        run: |
+          openssl rand -hex 32 > "$RUNNER_TEMP/qk-signing/password"
+          openssl enc -aes-256-cbc -salt -pbkdf2 -in "$RUNNER_TEMP/qk-signing/candidate.keystore" -out "$RUNNER_TEMP/qk-signing/candidate.keystore.enc" -pass file:"$RUNNER_TEMP/qk-signing/password"
+          openssl pkeyutl -encrypt -pubin -inkey android-store/quiet-knight-studio-artifact-public.pem -in "$RUNNER_TEMP/qk-signing/password" -out "$RUNNER_TEMP/qk-signing/password.enc" -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256
+
+      - name: Preserve encrypted candidate signing identity
         uses: actions/upload-artifact@v4
         with:
-          name: quiet-knight-studio-private-debug-key
-          path: ${{ runner.temp }}/qk-signing/candidate.keystore
-          include-hidden-files: true
+          name: quiet-knight-studio-encrypted-debug-key
+          path: |
+            ${{ runner.temp }}/qk-signing/candidate.keystore.enc
+            ${{ runner.temp }}/qk-signing/password.enc
           if-no-files-found: error
           retention-days: 1
 

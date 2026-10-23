@@ -9,3 +9,8 @@ body[data-atmosphere=ivory]{--surface:#30352d;--light-a:#fff4d8;--light-b:#fff4d
 @media(max-width:650px){.home-shell .home-art{display:none}.home-layout{display:block!important}.home-intro{padding:0 24px 12px!important}.home-intro h1{font-size:28px!important;line-height:1.2!important;margin:6px 0!important}.home-intro h1 br{display:none}.home-intro .intro-description{display:none}.home-intro .intro-caption{font-size:10px}.home-play{padding-top:0!important;display:flex;flex-direction:column}.computer-section{order:1}.friend-section{order:2}.home-play>.studio-entry{order:3}.home-play>.knight-chip{align-self:flex-start;margin-bottom:8px}.home-section{padding-top:16px!important;padding-bottom:16px!important}.home-section h2{font-size:20px!important}.color-choice{gap:8px}.color-button{padding:10px!important;min-height:76px}.home-intro{animation:none!important}.home-header{margin-bottom:12px!important}.home-shell{padding-top:max(12px,env(safe-area-inset-top))!important}}
 
 .rematch-consent{max-width:680px;margin:12px auto;padding:16px;border:1px solid var(--accent);border-radius:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}.rematch-consent p{width:100%;margin:0 0 8px}
+
+/* Small coordinate text needs contrast on the lighter green/ivory squares. */
+body[data-atmosphere=forest] .square-dark .square-coordinate,body[data-atmosphere=animal-kingdom] .square-dark .square-coordinate,body[data-atmosphere=ivory] .square-dark .square-coordinate{color:#071810}
+.square-selected{box-shadow:inset 0 0 0 2px #fff,inset 0 0 0 5px #14221b!important}
+@media(prefers-contrast:more){.square-selected{outline:2px solid white;outline-offset:-2px}.target-dot{outline:2px solid white}.capture-ring{border-style:double!important}}

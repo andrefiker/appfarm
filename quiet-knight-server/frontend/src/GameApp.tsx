@@ -372,8 +372,8 @@ export default function GameApp() {
       );
   }, [gameKey, sans.length]);
   useEffect(() => {
-    if (room?.score_event?.id) void knight.refresh();
-  }, [room?.score_event?.id, knight.refresh]);
+    if (knight.player && room?.score_event?.id) void knight.refresh();
+  }, [room?.score_event?.id, knight.player?.id, knight.refresh]);
   const arrival = useRef<{ key: string; present: boolean; at: number } | null>(
     null,
   );

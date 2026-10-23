@@ -45,7 +45,7 @@ test('optional account creation, record panel and logout do not gate guest play'
  try{
   await a.page.goto(url);await noGate(a.page);
   await a.page.getByRole('button',{name:'Account (optional)',exact:true}).click();await a.page.getByRole('button',{name:'Create Account',exact:true}).click();
-  await a.page.getByLabel('Knight ID',{exact:true}).fill(handle);await a.page.getByLabel('Password',{exact:true}).fill('synthetic-account-pass');await a.page.getByRole('button',{name:'Create Account',exact:true}).click();
+  await a.page.getByRole('textbox',{name:'Knight ID',exact:true}).fill(handle);await a.page.getByLabel('Password',{exact:true}).fill('synthetic-account-pass');await a.page.getByRole('button',{name:'Create Account',exact:true}).click();
   await expect(a.page.getByRole('heading',{name:'Save your recovery code',exact:true})).toBeVisible();await a.page.getByRole('button',{name:'Continue to game',exact:true}).click();
   await a.page.getByRole('button',{name:new RegExp(handle+' ·')}).click();await expect(a.page.getByRole('heading',{name:'Human game history',exact:true})).toBeVisible();await expect(a.page.getByRole('heading',{name:'Computer game history',exact:true})).toBeVisible();
   await a.page.getByRole('button',{name:'Log Out',exact:true}).click();await a.page.getByRole('button',{name:'Close dialog',exact:true}).click();await noGate(a.page);

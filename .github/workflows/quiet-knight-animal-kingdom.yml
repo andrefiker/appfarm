@@ -11,10 +11,16 @@ on:
 
 permissions:
   contents: read
+  actions: write
+
+concurrency:
+  group: quiet-knight-animal-kingdom-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-quiet-knight:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     services:
       postgres:
         image: postgres:16
@@ -38,6 +44,15 @@ jobs:
           --health-timeout=5s
           --health-retries=10
     steps:
+      - name: Cancel superseded builds of this workflow and development branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/actions/workflows/quiet-knight-animal-kingdom.yml/runs?branch=feature%2Fquiet-knight-animal-kingdom&status=in_progress" \
+            --jq ".workflow_runs[] | select(.id < $GITHUB_RUN_ID) | .id" | while read -r old_run_id; do
+            gh api --method POST "repos/$GITHUB_REPOSITORY/actions/runs/$old_run_id/cancel"
+          done
+
       - name: Check out source
         uses: actions/checkout@v4
 
@@ -82,6 +97,7 @@ jobs:
           node predeploy.js
 
       - name: Rendered untimed and legacy-clock acceptance on isolated candidate
+        timeout-minutes: 5
         working-directory: quiet-knight-server/frontend-acceptance
         env:
           DATABASE_URL: postgresql://postgres:qk_test@127.0.0.1:5432/qk_test
@@ -100,7 +116,7 @@ jobs:
             if curl -fsS http://127.0.0.1:3000/health >/dev/null; then break; fi
             sleep 0.25
           done
-          npx playwright test clock.spec.js
+          timeout 240s npx playwright test clock.spec.js --global-timeout=180000
 
       - name: Upload synthetic rendered QA
         if: always()

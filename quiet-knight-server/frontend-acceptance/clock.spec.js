@@ -31,9 +31,10 @@ test('untimed new game, two clients, background/reconnect, rematch and preserved
     const invite=a.page.url(),code=new URL(invite).searchParams.get('room'),key='qk:room:'+code;
     await b.page.goto(invite);await live(b.page);await expect(b.page.getByRole('group',{name:'Chess board, Black at bottom',exact:true})).toBeVisible();
     await move(a.page,'e2','e4');await expect(b.page.locator('[data-square=e4]')).toHaveAttribute('data-piece','wp');
-    const cdp=await a.context.newCDPSession(a.page);await cdp.send('Page.setWebLifecycleState',{state:'frozen'});
-    await move(b.page,'e7','e5');await cdp.send('Page.setWebLifecycleState',{state:'active'});
-    await a.page.reload();await live(a.page);await expect(a.page.locator('[data-square=e5]')).toHaveAttribute('data-piece','bp');
+    // Detach A completely while B moves; reopening must restore the same seat.
+    // Freezing a headless page can hang Chromium teardown on this CI image.
+    await a.page.goto('about:blank');await move(b.page,'e7','e5');
+    await a.page.goto(invite);await live(a.page);await expect(a.page.locator('[data-square=e5]')).toHaveAttribute('data-piece','bp');
     await a.context.setOffline(true);await a.context.setOffline(false);await live(a.page);
     await expect(a.page.getByRole('timer')).toHaveCount(0);await expect(b.page.getByRole('timer')).toHaveCount(0);
     await expect(a.page.getByRole('button',{name:'Request pause',exact:true})).toHaveCount(0);

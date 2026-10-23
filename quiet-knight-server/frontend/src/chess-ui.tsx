@@ -731,7 +731,8 @@ export function GameSurface(p: GameSurfaceProps) {
             ) : null}
             {p.tableExtra}
             <MaterialScore position={p.board.position} />
-            <MoveHistory sans={p.sans}>{p.historyTools}</MoveHistory>
+            {p.historyTools}
+            <MoveHistory sans={p.sans} />
             {p.postGame}
             <GameSoFar
               position={p.board.position}

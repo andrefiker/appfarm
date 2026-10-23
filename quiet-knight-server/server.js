@@ -512,7 +512,7 @@ async function serveFrontend(req,res,url){
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
-  log('http.request',{method:req.method,path:url.pathname});
+  log('http.request',{method:req.method,path:url.pathname.replace(/[A-Za-z0-9_-]{24,}/g,'[redacted]')});
   const method=req.method||'GET';
   const task=(method==='GET'||method==='HEAD')&&!isApiPath(url.pathname)?serveFrontend(req,res,url):handleApi(req,res,url);
   task.catch(err => {
@@ -549,6 +549,7 @@ server.on('upgrade', async (req, socket, head) => {
       ws.send(JSON.stringify({type:'presence.update',...tablePresence(code)}));
       ws.on('message', async raw => {
         try {
+          const now=Date.now();if(now-(ws.messageWindow||0)>5000){ws.messageWindow=now;ws.messageCount=0;}ws.messageCount=(ws.messageCount||0)+1;if(ws.messageCount>20){ws.close(1008,'Too many messages');return;}
           const message=JSON.parse(String(raw));
           if(message.type==='presence.hello'){
             if(Date.now()-(ws.lastHello||0)<1000)return;ws.lastHello=Date.now();

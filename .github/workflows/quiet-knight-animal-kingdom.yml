@@ -85,7 +85,9 @@ jobs:
         working-directory: quiet-knight-server/frontend-acceptance
         env:
           DATABASE_URL: postgresql://postgres:qk_test@127.0.0.1:5432/qk_test
-          REDIS_URL: redis://127.0.0.1:6379
+          # Separate test DB: the preceding auth-abuse suite intentionally
+          # exhausts registration limits. Keep those protections enabled.
+          REDIS_URL: redis://127.0.0.1:6379/1
           FRONTEND_ORIGIN: http://127.0.0.1:3000
           QK_FRONTEND_URL: http://127.0.0.1:3000/
         run: |

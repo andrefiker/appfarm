@@ -108,7 +108,9 @@ jobs:
           QK_FRONTEND_URL: http://127.0.0.1:3000/
         run: |
           npm ci
-          npx playwright install --with-deps chromium
+          # Hosted Ubuntu already includes Chromium's shared libraries. Avoid
+          # unrelated OS/font upgrades, which can stall on package mirrors.
+          timeout --kill-after=10s 90s npx playwright install chromium --only-shell
           node ../server.js > "$RUNNER_TEMP/quiet-knight-browser-server.log" 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" || true' EXIT

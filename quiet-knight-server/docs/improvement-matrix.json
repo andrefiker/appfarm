@@ -1,0 +1,395 @@
+{
+  "baseline": "2ddb2e5f7c53ca0dcd2ed8df96fa426dc89157d4",
+  "features": [
+    {
+      "id": 1,
+      "requirement": "Make the game screen board-first: maximize playable board area on portrait Android, remove distracting chrome, maintain legible player and status information, and avoid touch obstruction or overflow at ~320 px width.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 2,
+      "requirement": "Retain all 12 existing Animal Kingdom PNGs unchanged and accessible. Add an alternative high-clarity Classic/Staunton piece set, visually distinct for each piece and side even at small sizes. Never replace or silently alter approved Animal Kingdom assets.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 3,
+      "requirement": "Open directly to a no-login play menu with obvious Play Computer, Play Friend and Continue Game actions. Optional Account panel retains registration, login, recovery and private history without blocking guest play.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 4,
+      "requirement": "Guarantee all NEW ordinary games and rematches are genuinely UNTIMED at the authoritative backend/game-state level. Preserve all existing stored 10+0 clocks and their server timeout behavior. Never implement the superseded 15+0 request; never merely hide clock UI. Detect legacy/incompatible production capabilities, explain limitations clearly, and prevent misleading claims. Untimed PGN TimeControl is \u201c-\u201d; historical timed PGN remains \u201c600+0\u201d.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 5,
+      "requirement": "Make shareable private friend invitations, ideally links plus room codes. Validate permissions, app-link handling and recipient flows, with a manual fallback if links cannot open the app.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 6,
+      "requirement": "Auto-save games and moves reliably across app kills, screen lock, network interruptions and device restarts. Distinguish local/computer state from server-authoritative multiplayer state; never overwrite a newer remote game with stale local data.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 7,
+      "requirement": "Add adjustable and meaningful engine difficulty presets (beginner, casual, club, strong, plus a suitable fine-grained control). Verify actual behavior at each difficulty rather than only changing labels.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 8,
+      "requirement": "Highlight selected squares, legal destinations, captures, last move and a checked king using clear, accessible contrast and restrained visuals.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 9,
+      "requirement": "Build a navigable post-game analysis mode with Stockfish-based evaluation, alternative moves, readable mistake categories and a way back to the original game. Keep analysis separate from actual multiplayer moves.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 10,
+      "requirement": "Deliver and verify a genuinely OFFLINE computer chess engine on-device, identifying its actual technology/version and license. The existing bundled fallback is NOT proof of offline native Stockfish 18. If native Stockfish 18 is infeasible within constraints, use a real locally bundled, licensed engine and truthfully label its version; do not claim unavailable strength or functionality.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 11,
+      "requirement": "Make reconnection resilient: reconnecting guest/account players recover authorized seats and authoritative board state; viewers never gain move rights; surface meaningful connection states and avoid double-submitted moves.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 12,
+      "requirement": "Qualify the APK for Poco X7 Pro / Android 16 where real-device access exists: installation, touch, portrait layout, screen lock/background/restore, audio, offline play and two-client multiplayer. If hardware is unavailable, use emulators/browser tests and explicitly list physical checks as unverified.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 13,
+      "requirement": "Support both tap-to-move and drag-to-move; configurable, touch friendly and usable without precision gestures.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 14,
+      "requirement": "Show clear legal-move previews and optional attack/capture distinctions, without revealing analysis when assistance is disabled.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 15,
+      "requirement": "Use subtle, optional capture/move animations; prioritize responsiveness, clarity and reduced-motion settings.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 16,
+      "requirement": "Implement a large, accessible four-piece promotion chooser with correct underpromotion behavior.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 17,
+      "requirement": "Display captured material and material balance without crowding the board.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 18,
+      "requirement": "Provide expandable algebraic move history, review navigation and current move highlighting; browsing history must not accidentally mutate the live game.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 19,
+      "requirement": "Support manual board flip, sensible automatic orientation for Black and correct coordinate labels.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 20,
+      "requirement": "Offer an optional confirmation-before-move setting; default off, especially for quick casual play.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 21,
+      "requirement": "Support undo/redo/takeback against the computer; multiplayer takebacks require explicit bilateral consent and server-checked authorization if offered. Never allow spectators or unauthorized clients to roll back moves.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 22,
+      "requirement": "Handle stalemate, checkmate, legal draws, offers/acceptance, repetition, insufficient material and applicable 50-/75-move conditions correctly; preserve PGN result and rules consistency.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 23,
+      "requirement": "Add fully local pass-and-play for two people on one phone, with turn-based board flipping, no login and no network requirement.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 24,
+      "requirement": "Add separately selectable Chess960/Fischer Random, with verified starting setup, legal Chess960 castling, FEN/PGN representation, replay and correct engine/backend support. Default remains standard untimed chess; gate unsupported online variants rather than fake support.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 25,
+      "requirement": "Provide a readable post-game evaluation graph and jump-to-position navigation; mark whether evaluation is engine-generated or provisional.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 26,
+      "requirement": "Detect major blunders, mistakes and missed tactical opportunities using declared scoring thresholds/search limits, and avoid pseudoscientific precision or \u201cbest move\u201d guarantees.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 27,
+      "requirement": "Add useful, understandable explanations of candidate best moves using deterministic chess features/variations (threats, material, king safety, tactics); no paid API or external generative AI. Distinguish explanation heuristics from engine evaluation.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 28,
+      "requirement": "Give offline AI opponents recognizable playing styles (e.g., Fox = tactical, Tortoise = defensive, Owl = positional, plus beginner), implemented through real, tested difficulty/selection parameters, not merely names or random illegal moves.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 29,
+      "requirement": "Optionally adapt computer difficulty based on local games with user consent/toggle and transparency; do not secretly modify rated or human games.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 30,
+      "requirement": "Add offline tactics exercises with solutions, hints, explanations, replay and a small properly licensed starter set; support forks, pins, skewers, discovered attacks, mate patterns and progressively harder puzzles.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 31,
+      "requirement": "Add a compact offline opening explorer with transparent source/license, name, move frequency or curated continuation data, and no fabricated statistics.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 32,
+      "requirement": "Add an offline endgame trainer (basic mates, king/pawn and elementary rook endings) with correct position setup, success criteria and hints.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 33,
+      "requirement": "Add a position editor and robust FEN import/export, turn/castling/en-passant validation and ability to start local engine analysis or a game from a legal position.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 34,
+      "requirement": "Permit analysis of locally saved positions without overwriting an ongoing match; \u201cContinue the Position\u201d should be one tap from the home screen where a saved session exists.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 35,
+      "requirement": "Add engine strength, thinking time, CPU/battery and responsiveness controls; cancel or suspend obsolete searches on navigation/backgrounding and profile performance on Android.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 36,
+      "requirement": "Generate shareable QR invitations without forcing a camera permission; provide link/code input and operating-system/external QR scanning alternatives. Only add in-app camera scanning after separate permission approval.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 37,
+      "requirement": "Allow local guest display nicknames without creating accounts. Sanitize display names, keep private seat credentials out of names, links, logs and screenshots.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 38,
+      "requirement": "Add a clear game lobby showing side selection, invitation state, untimed/variant rules and spectator count, without disclosing protected information.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 39,
+      "requirement": "Display actionable connectivity indicators: connected, reconnecting, peer disconnected, server unavailable and incompatible backend. Do not claim delivery of a move before server confirmation.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 40,
+      "requirement": "Make one-tap rematches with same/swapped colors; enforce guest/account ownership and untimed rematch creation. Support refusal/cancellation cleanly.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 41,
+      "requirement": "Add optional correspondence-style asynchronous play, with server-persisted turns and reopen/resume flows. Preserve the \u201cnew games untimed\u201d rule: NO countdowns, per-move forfeits or implicit time controls. Optional reminders must not become compulsory, spammy or paid; do not enable live notifications without necessary permission and release approval.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 42,
+      "requirement": "Add safe spectator mode: read-only board and legal public game status, no move, resign, pause, rematch, nudge or private token access.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 43,
+      "requirement": "Add a small opt-in, nonverbal, abuse-resistant reaction palette, including optional Animal Kingdom reactions. No free-form chat, uploads or unmoderated message service.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 44,
+      "requirement": "Design abandoned-room expiration/cleanup with explicit documentation and tests. Never delete active or historical games or accounts; live cleanup jobs/database writes require separate production approval.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 45,
+      "requirement": "Show server capabilities and live/unsupported game features clearly; avoid misleading \u201cuntimed multiplayer available\u201d claims while the production server still uses the old behavior.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 46,
+      "requirement": "Optimize immersive portrait Android UI with correct insets, keyboard behavior, navigation gestures, orientation safety and large tap targets; do not require a landscape layout.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 47,
+      "requirement": "Add a configurable left-handed control layout and ergonomic one-handed access without changing chess orientation unexpectedly.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 48,
+      "requirement": "Offer board/UI themes: Classic Wood, Midnight, Ivory, Forest and Animal Kingdom. Persist preferences locally; themes must not obscure the pieces or change rules.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 49,
+      "requirement": "Add accessibility: high contrast, non-color-only indicators, TalkBack/semantic labels where possible, scalable controls, reduced motion, readable text and tap alternatives to dragging. Validate against relevant WCAG 2.2 touch principles.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 50,
+      "requirement": "Add quiet, optional move/capture sounds and configurable haptics that respect mute/accessibility/system behavior. No surprise audio or permanent background playback.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 51,
+      "requirement": "Reduce polling, unnecessary WebView CPU/battery usage and stale engine work; test foreground/background recovery, thermal/battery impact and cancellation of computation.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 52,
+      "requirement": "Add a privacy-safe About / Diagnostics screen showing package/version/code, source commit, engine implementation/version, offline status, server compatibility and sanitized connection status. Do not expose tokens, private player records, credential-bearing URLs or secrets.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 53,
+      "requirement": "Add portable PGN game export/import and FEN sharing with strong input validation, clear save/restore boundaries, no compulsory registration and no accidental local-data overwrite.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 54,
+      "requirement": "Harden anonymous capability tokens, account-seat identity checks, WebSocket reauthorization, rate limiting, replay/idempotency, logging redaction, spectator boundaries, secure Android WebViewAssetLoader and restrictive file-access settings. Test attacks with synthetic users; do not loosen security to make guest access easier.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    },
+    {
+      "id": 55,
+      "requirement": "Create repeatable release artifacts with versioning, proven signing/package identity, checksum, commit hash, reproducible build instructions, relevant licenses, test reports, screenshots, rollback/migration guidance and upgrade compatibility notes. Preserve separately gated schema-v4 release process and do not claim an older differently signed APK can update in place.",
+      "status": "NOT TESTED",
+      "implementation": "Baseline audit pending",
+      "evidence": []
+    }
+  ],
+  "special_features": [
+    "Quiet Mode",
+    "Continue the Position",
+    "Animal Kingdom AI styles"
+  ]
+}

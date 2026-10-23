@@ -1,0 +1,156 @@
+QUIET KNIGHT — IMPLEMENT ALL 55 IMPROVEMENTS
+Owner: André Fiker
+Destination: ChatGPT Work / Codex implementation agent
+Project: ORIGINAL Quiet Knight / Animal Kingdom (NOT Quiet Knight II)
+Repository: https://github.com/andrefiker/appfarm
+Existing development branch: feature/quiet-knight-animal-kingdom
+Historical handoff HEAD (2026-10-23): 2ddb2e5f7c53ca0dcd2ed8df96fa426dc89157d4
+
+MISSION
+Continue the actual original Quiet Knight implementation and deliver a polished Android chess application incorporating ALL 55 improvements below, plus the specified Quiet Mode, Continue Position and Animal Kingdom opponent personalities. Perform the work, not just planning or producing mockups. Work incrementally and preserve verified source, tests, APKs, accounts, player records, guest local data, artwork, Stockfish, historical timed games and unrelated AppFarm apps. No artificial feature completion: a menu item, screenshot, stub or untested fallback is not a finished capability.
+
+IMPORTANT PROJECT BOUNDARY
+Original Quiet Knight / Animal Kingdom uses quiet-knight-server/, its packaged frontend at quiet-knight-server/frontend/, and android-store/. Quiet Knight II is a DIFFERENT app, with its own checkout, APKs and artwork; DO NOT modify, merge, replace or mix it with this task. Do not use the older quiet-knight-clock-frontend/ copy as the shipping frontend without first confirming the actual build pipeline.
+
+KNOWN BASELINE — VERIFY, DO NOT ASSUME STILL CURRENT
+- Handoff branch HEAD: 2ddb2e5f7c53ca0dcd2ed8df96fa426dc89157d4; working tree was clean at handoff.
+- Handoff APK: Quiet-Knight-Guest-1.0.3.apk; package com.andrefiker.quietknight.appfarm.guest; version 1.0.3/code 4; separate debug signing key; SHA-256 528600eff2452778a055d9b02d67ea71a15a0aa7f93d433b48a7616623a760ed.
+- Existing tests passed on that commit: https://github.com/andrefiker/appfarm/actions/runs/39976961983 and https://github.com/andrefiker/appfarm/actions/runs/39976961898.
+- Original app's new games/rematches are designed to be UNTIMED. Existing persisted 10+0 rooms preserve authoritative clocks. INITIAL_MS=600000 in clock.js is retained for historical compatibility, not the desired default.
+- Login/registration are optional; guest play is supported in the candidate backend. Account-owned seats still require account identity; guest seats require private capability tokens; spectators cannot mutate games.
+- The delivered frontend still points to the production Railway server hostname. Handoff confirms NO production backend deployment/schema-v4 migration/main merge. A screenshot showing 10:00 does not establish which build or room was running. An old backend may still create timed rooms.
+- APK was debug-signed, v2 verified; previous signing key is unavailable. It installs alongside older builds, not as an in-place update. INTERNET was the only declared permission.
+- Prior handoff deliverable Library pointers, if accessible: libfile_cfca985d078c819181496c31a6e2862d (APK), libfile_94019ddd555481918df82042f7641dcc (SHA), libfile_fc4e416d85f8819183c908c770c3467d (QA). Pointers are not download links.
+
+NON-NEGOTIABLE AUTHORIZATION AND SAFETY
+You MAY inspect source, run synthetic/local/CI tests, implement changes, create isolated branches/commits, push development branches if existing repo permissions allow, build test APKs, generate screenshots and produce release-candidate documentation. You MAY use read-only production diagnostics that cannot expose credentials, seat tokens or player-identifying records.
+You MAY NOT deploy to production, migrate or write to the live database, merge to main, publish an app, alter DNS/hosting, change production secrets, buy services, create paid resources, send live messages/invitations, delete user data or modify unrelated apps without my explicit separate approval. No blanket approval is implied by “apply all.” Preserve the existing schema-v4 production release gate; never bypass it.
+No advertising, analytics, trackers, paywalls, compulsory accounts, external AI services or new costs. Keep Android permissions minimal; do not silently add CAMERA or any sensitive permission. Never embed signing keys or secrets in Git or APK assets. Use synthetic identities and games for tests. Do not access clinical/patient information.
+Do not force a production backend feature into the frontend by disguising it. If a feature requires a compatible production server, implement/test it on an isolated backend, clearly mark it NOT LIVE and prepare a separately approvable release package.
+
+FIRST: RECOVER AND AUDIT
+1. Inspect AGENTS.md, repository/worktrees, origin branch HEAD, pending changes, workflows, CI results and release gates before editing. Preserve newer work; do not reset or overwrite without evidence.
+2. Recover the best available prior QA artifacts and manifest. Verify current package ID, version, signed APK behavior, asset hashes, app entrypoints, server API, storage namespaces, WebView settings and native/offline chess engine behavior.
+3. Investigate the reported 10:00 display using read-only installed-build/health/capability evidence and a fresh versus historical room distinction. Do not infer live backend version from source, APK or screenshots alone.
+4. Build a feature-to-code map for all 55 requirements and a small dependency graph. Establish baseline tests and measurable acceptance criteria. Then IMPLEMENT; do not stop at a proposal.
+5. Check legal obligations and licensing for Stockfish and any bundled opening databases, fonts, sounds, art or other dependencies. Document redistribution and source/license notices as applicable.
+
+IMPLEMENT THE FULL FEATURE SET
+
+A. FIRST-RUN EXPERIENCE, DESIGN AND TIMING
+01. Make the game screen board-first: maximize playable board area on portrait Android, remove distracting chrome, maintain legible player and status information, and avoid touch obstruction or overflow at ~320 px width.
+02. Retain all 12 existing Animal Kingdom PNGs unchanged and accessible. Add an alternative high-clarity Classic/Staunton piece set, visually distinct for each piece and side even at small sizes. Never replace or silently alter approved Animal Kingdom assets.
+03. Open directly to a no-login play menu with obvious Play Computer, Play Friend and Continue Game actions. Optional Account panel retains registration, login, recovery and private history without blocking guest play.
+04. Guarantee all NEW ordinary games and rematches are genuinely UNTIMED at the authoritative backend/game-state level. Preserve all existing stored 10+0 clocks and their server timeout behavior. Never implement the superseded 15+0 request; never merely hide clock UI. Detect legacy/incompatible production capabilities, explain limitations clearly, and prevent misleading claims. Untimed PGN TimeControl is “-”; historical timed PGN remains “600+0”.
+05. Make shareable private friend invitations, ideally links plus room codes. Validate permissions, app-link handling and recipient flows, with a manual fallback if links cannot open the app.
+06. Auto-save games and moves reliably across app kills, screen lock, network interruptions and device restarts. Distinguish local/computer state from server-authoritative multiplayer state; never overwrite a newer remote game with stale local data.
+07. Add adjustable and meaningful engine difficulty presets (beginner, casual, club, strong, plus a suitable fine-grained control). Verify actual behavior at each difficulty rather than only changing labels.
+08. Highlight selected squares, legal destinations, captures, last move and a checked king using clear, accessible contrast and restrained visuals.
+09. Build a navigable post-game analysis mode with Stockfish-based evaluation, alternative moves, readable mistake categories and a way back to the original game. Keep analysis separate from actual multiplayer moves.
+10. Deliver and verify a genuinely OFFLINE computer chess engine on-device, identifying its actual technology/version and license. The existing bundled fallback is NOT proof of offline native Stockfish 18. If native Stockfish 18 is infeasible within constraints, use a real locally bundled, licensed engine and truthfully label its version; do not claim unavailable strength or functionality.
+11. Make reconnection resilient: reconnecting guest/account players recover authorized seats and authoritative board state; viewers never gain move rights; surface meaningful connection states and avoid double-submitted moves.
+12. Qualify the APK for Poco X7 Pro / Android 16 where real-device access exists: installation, touch, portrait layout, screen lock/background/restore, audio, offline play and two-client multiplayer. If hardware is unavailable, use emulators/browser tests and explicitly list physical checks as unverified.
+
+B. BOARD INTERACTION AND CHESS RULES
+13. Support both tap-to-move and drag-to-move; configurable, touch friendly and usable without precision gestures.
+14. Show clear legal-move previews and optional attack/capture distinctions, without revealing analysis when assistance is disabled.
+15. Use subtle, optional capture/move animations; prioritize responsiveness, clarity and reduced-motion settings.
+16. Implement a large, accessible four-piece promotion chooser with correct underpromotion behavior.
+17. Display captured material and material balance without crowding the board.
+18. Provide expandable algebraic move history, review navigation and current move highlighting; browsing history must not accidentally mutate the live game.
+19. Support manual board flip, sensible automatic orientation for Black and correct coordinate labels.
+20. Offer an optional confirmation-before-move setting; default off, especially for quick casual play.
+21. Support undo/redo/takeback against the computer; multiplayer takebacks require explicit bilateral consent and server-checked authorization if offered. Never allow spectators or unauthorized clients to roll back moves.
+22. Handle stalemate, checkmate, legal draws, offers/acceptance, repetition, insufficient material and applicable 50-/75-move conditions correctly; preserve PGN result and rules consistency.
+23. Add fully local pass-and-play for two people on one phone, with turn-based board flipping, no login and no network requirement.
+24. Add separately selectable Chess960/Fischer Random, with verified starting setup, legal Chess960 castling, FEN/PGN representation, replay and correct engine/backend support. Default remains standard untimed chess; gate unsupported online variants rather than fake support.
+
+C. ENGINE, LEARNING AND LOCAL DEPTH
+25. Provide a readable post-game evaluation graph and jump-to-position navigation; mark whether evaluation is engine-generated or provisional.
+26. Detect major blunders, mistakes and missed tactical opportunities using declared scoring thresholds/search limits, and avoid pseudoscientific precision or “best move” guarantees.
+27. Add useful, understandable explanations of candidate best moves using deterministic chess features/variations (threats, material, king safety, tactics); no paid API or external generative AI. Distinguish explanation heuristics from engine evaluation.
+28. Give offline AI opponents recognizable playing styles (e.g., Fox = tactical, Tortoise = defensive, Owl = positional, plus beginner), implemented through real, tested difficulty/selection parameters, not merely names or random illegal moves.
+29. Optionally adapt computer difficulty based on local games with user consent/toggle and transparency; do not secretly modify rated or human games.
+30. Add offline tactics exercises with solutions, hints, explanations, replay and a small properly licensed starter set; support forks, pins, skewers, discovered attacks, mate patterns and progressively harder puzzles.
+31. Add a compact offline opening explorer with transparent source/license, name, move frequency or curated continuation data, and no fabricated statistics.
+32. Add an offline endgame trainer (basic mates, king/pawn and elementary rook endings) with correct position setup, success criteria and hints.
+33. Add a position editor and robust FEN import/export, turn/castling/en-passant validation and ability to start local engine analysis or a game from a legal position.
+34. Permit analysis of locally saved positions without overwriting an ongoing match; “Continue the Position” should be one tap from the home screen where a saved session exists.
+35. Add engine strength, thinking time, CPU/battery and responsiveness controls; cancel or suspend obsolete searches on navigation/backgrounding and profile performance on Android.
+
+D. FRIENDS, GUESTS AND SOCIAL
+36. Generate shareable QR invitations without forcing a camera permission; provide link/code input and operating-system/external QR scanning alternatives. Only add in-app camera scanning after separate permission approval.
+37. Allow local guest display nicknames without creating accounts. Sanitize display names, keep private seat credentials out of names, links, logs and screenshots.
+38. Add a clear game lobby showing side selection, invitation state, untimed/variant rules and spectator count, without disclosing protected information.
+39. Display actionable connectivity indicators: connected, reconnecting, peer disconnected, server unavailable and incompatible backend. Do not claim delivery of a move before server confirmation.
+40. Make one-tap rematches with same/swapped colors; enforce guest/account ownership and untimed rematch creation. Support refusal/cancellation cleanly.
+41. Add optional correspondence-style asynchronous play, with server-persisted turns and reopen/resume flows. Preserve the “new games untimed” rule: NO countdowns, per-move forfeits or implicit time controls. Optional reminders must not become compulsory, spammy or paid; do not enable live notifications without necessary permission and release approval.
+42. Add safe spectator mode: read-only board and legal public game status, no move, resign, pause, rematch, nudge or private token access.
+43. Add a small opt-in, nonverbal, abuse-resistant reaction palette, including optional Animal Kingdom reactions. No free-form chat, uploads or unmoderated message service.
+44. Design abandoned-room expiration/cleanup with explicit documentation and tests. Never delete active or historical games or accounts; live cleanup jobs/database writes require separate production approval.
+45. Show server capabilities and live/unsupported game features clearly; avoid misleading “untimed multiplayer available” claims while the production server still uses the old behavior.
+
+E. ANDROID UX, PRIVACY AND RELEASE
+46. Optimize immersive portrait Android UI with correct insets, keyboard behavior, navigation gestures, orientation safety and large tap targets; do not require a landscape layout.
+47. Add a configurable left-handed control layout and ergonomic one-handed access without changing chess orientation unexpectedly.
+48. Offer board/UI themes: Classic Wood, Midnight, Ivory, Forest and Animal Kingdom. Persist preferences locally; themes must not obscure the pieces or change rules.
+49. Add accessibility: high contrast, non-color-only indicators, TalkBack/semantic labels where possible, scalable controls, reduced motion, readable text and tap alternatives to dragging. Validate against relevant WCAG 2.2 touch principles.
+50. Add quiet, optional move/capture sounds and configurable haptics that respect mute/accessibility/system behavior. No surprise audio or permanent background playback.
+51. Reduce polling, unnecessary WebView CPU/battery usage and stale engine work; test foreground/background recovery, thermal/battery impact and cancellation of computation.
+52. Add a privacy-safe About / Diagnostics screen showing package/version/code, source commit, engine implementation/version, offline status, server compatibility and sanitized connection status. Do not expose tokens, private player records, credential-bearing URLs or secrets.
+53. Add portable PGN game export/import and FEN sharing with strong input validation, clear save/restore boundaries, no compulsory registration and no accidental local-data overwrite.
+54. Harden anonymous capability tokens, account-seat identity checks, WebSocket reauthorization, rate limiting, replay/idempotency, logging redaction, spectator boundaries, secure Android WebViewAssetLoader and restrictive file-access settings. Test attacks with synthetic users; do not loosen security to make guest access easier.
+55. Create repeatable release artifacts with versioning, proven signing/package identity, checksum, commit hash, reproducible build instructions, relevant licenses, test reports, screenshots, rollback/migration guidance and upgrade compatibility notes. Preserve separately gated schema-v4 release process and do not claim an older differently signed APK can update in place.
+
+SPECIAL PRODUCT IDENTITY
+- “Quiet Mode”: optional minimal UI with no clocks, ratings, popups, evaluation or unrelated prompts during ordinary untimed games; critical check/turn/network feedback remains visible. Provide access to analysis after the game.
+- “Continue the Position”: one-tap resume or analysis of last saved local board, with user control over saving/overwriting.
+- Characterful Animal Kingdom AI styles (Fox/Tortoise/Owl, etc.) with genuine distinct playing choices where practical, while retaining existing approved art and clear opponent difficulty.
+- Keep guest/local results and saves in a distinct namespace from each authenticated account; no hidden accounts, no Quiet Points for casual guest multiplayer, no tracking.
+
+IMPLEMENTATION ORDER AND CHECKPOINTS
+Phase 0 — Baseline audit, reproducible build, current production compatibility evidence (read-only), exact implementation map and smoke tests.
+Phase 1 — Authoritative untimed/new-versus-historical timing, optional guest entry, reconnection, autosave/identity security and backend capability negotiation. Repair any actual regressions first.
+Phase 2 — Board-first mobile UX, classic legible pieces as an option, gameplay controls, complete standard rules, themes, accessibility and Android lifecycle polish.
+Phase 3 — Verified bundled offline chess engine, styles/difficulty, analysis, tactics, openings, endgames, FEN/PGN, Chess960 and local pass-and-play.
+Phase 4 — Link/QR guest invites, lobby, safe spectators, rematches, correspondence without clocks, reactions and server/room lifecycle.
+Phase 5 — Performance, security audit, deterministic and Android qualification, screenshots, packaging, checksum and gated production release candidate.
+Within each phase implement, test, commit and report exact status. Use existing development branch or a scoped descendant if necessary; keep unrelated work intact. Preserve CI and signing practices. Do not ask me to approve each development step; do stop for any action in the forbidden production/spend/permission category.
+
+ARCHITECTURE REQUIREMENTS
+- Inspect existing architecture before selecting native Kotlin versus bundled frontend implementation. Reuse established TypeScript/Vite, Node/real server, Android wrapper and secure asset loader patterns instead of rewriting the product by default.
+- Maintain a strict state machine: local offline game vs server online game vs legacy timed room vs correspondence vs spectator vs analysis. Never allow an untrusted local cache to override server game authority.
+- Introduce storage versioning and migrations for local guest/account saves and preferences, with rollback-safe backups/compatibility where possible; no destructive resets.
+- Make unsupported backend capabilities explicit and test with an older server as well as candidate server. New offline features should work on the APK even if production backend is old; online-only changes should be honestly gated.
+- If any enhancement needs new SQL schema, create reviewed migrations and test them solely on isolated synthetic PostgreSQL with backup/restore and rollback. Leave production database unchanged.
+- Use bundled or otherwise properly licensed, audited dependencies. Prefer no network calls for puzzles/openings/engine/analysis. No fabricated chess evaluations, no unlicensed art/music/content.
+- Do not change existing 12 Animal Kingdom PNG hashes unless I later authorize replacement.
+
+TEST AND QUALITY GATES
+Read .github/workflows/quiet-knight-animal-kingdom.yml and .github/workflows/quiet-knight-v4-release-gate.yml before reproducing exact commands. Baseline documented toolchain: Node 22, Java 17, Gradle 8.10.2, Android 35 tools, PostgreSQL 16, Redis 7, Playwright Chromium and Docker. Use synthetic isolated services only. Existing useful test suites cover clocks, pause, identity, registration/recovery, guest seats/WebSockets, frontend assets, migrations, Animal Kingdom and engine behavior. Extend rather than bypass them.
+Required automated coverage includes:
+- Offline clean-install/no-network guest computer, pass-and-play, save/resume, puzzles/analysis and FEN/PGN import/export.
+- Online new untimed standard games, Chess960 only on supported backend, guest invite/join, account-owned seats, spectator denials, reconnect, duplicate move handling, resignation, rematch and correspondence resume.
+- Legacy persisted 10-minute games retaining countdown, pause, timeout and PGN; absolutely no default new 15-minute or 10-minute clocks.
+- Server restart/reconnect, stale local snapshots, storage migrations, corrupt local data, offline-to-online transitions and app lifecycle recovery.
+- Chess rules: promotion/underpromotion, castling (including Chess960), en passant, repetition, checkmate, stalemate, legal draws and PGN/FEN round-trips.
+- Token theft/replay/ownership attempts, cross-account guest isolation, spectator mutation denials, unauthorized WS broadcasts, private history protection and logging redaction.
+- 320 px mobile viewport, Android insets, large and left-handed controls, piece distinguishability, keyboard/TalkBack-friendly alternatives, sound off, reduced motion and all themes.
+- True engine version disclosure, strength presets, style distinctions, cancelled searches, analysis consistency, licensed content inventory and battery/CPU behavior.
+- APK signature/package/version, asset inclusion, SHA-256, INTERNET-only manifest unless separately approved, absence of localhost endpoints/secrets, and install-alongside versus in-place-upgrade limitations.
+Where a test cannot be run, mark it NOT TESTED with reason, never “passed.” Browser simulation is not physical-device verification.
+
+RELEASE AND DELIVERABLES
+1. Commit and push implementation to the development branch or explicitly named child branch, providing the exact remote commit SHA and diff summary. Do not merge main.
+2. Produce an installable Android test APK, preserved with a stable direct attachment if possible, exact filename, package name, version name/code, signing scheme, SHA-256 and explicit compatibility limitations. Do not uninstall older builds or claim in-place compatibility without matching key/package proof.
+3. Preserve full source in GitHub; also produce a source snapshot/manifest and durable QA report when the environment supports artifact preservation. Do not depend exclusively on short-lived GitHub CI artifacts.
+4. Provide screenshots of actual implemented UI and a short guided test checklist for Poco X7 Pro. UI previews are not proof of implemented functionality. Keep original Animal Kingdom artwork intact for comparison.
+5. Publish a numbered 01–55 feature completion matrix with each status DONE / PARTIAL / BLOCKED / NOT TESTED, exact implementation location and direct test evidence; also separately track Quiet Mode, Continue Position and styled AI opponents.
+6. Provide a clear candidate backend vs current production comparison, including why a live room might still show 10:00. Do not assert production release occurred without proof.
+7. Prepare, but DO NOT EXECUTE, the separately approved production release plan: schema-v4 prerequisites, backup integrity and restore test, migration steps, go/no-go criteria, reversible application deploy, postrelease acceptance, monitoring and rollback behavior. Never treat a source-code rollback as proof of reversible SQL migration.
+8. Finish with: verified code changes; passing and failed test links/results; APK/source locations; physical-device limitations; any features gated on production; licensing notices; precise remaining blockers; the smallest decision/approval needed next.
+
+DEFINITION OF DONE
+All 55 improvements and the three special product features are actually implemented and verified where feasible in the isolated candidate, with no regression in optional accounts, guest safety, old timed-game preservation, original Animal Kingdom assets, Stockfish and unrelated AppFarm projects. Candidate server and bundled frontend agree on untimed NEW games. Local games work without login or internet. No fabricated live status, no hidden timeouts, no silent data loss and no production changes. If a feature cannot be completed safely, report precisely what is blocked and preserve the functioning product rather than shipping a fake completion.
+
+START BY INSPECTING THE REPO AND EXISTING EVIDENCE, THEN EXECUTE DEVELOPMENT THROUGH ALL PHASES. DO NOT STOP AFTER WRITING A PLAN. DO NOT REQUEST PRODUCTION AUTHORIZATION UNTIL THERE IS A TESTED RELEASE CANDIDATE AND EXPLICIT RELEASE CHECKLIST.

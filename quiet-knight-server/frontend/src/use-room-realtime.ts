@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { MULTIPLAYER_WS } from "./network";
 import { idleDiagnostics } from "./diagnostics";
 import type { RealtimeDiagnostics } from "./diagnostics";
-export type TablePresence = { white: boolean; black: boolean };
+export type TablePresence = { white: boolean; black: boolean; spectators?:number };
 type Extras = {
   seatToken?: string | null;
   onPresence?: (presence: TablePresence) => void;
@@ -198,6 +198,7 @@ export function useRoomRealtime<T extends RoomVersion>(
           typeof message.black === "boolean"
         ) {
           extra.current.onPresence?.({
+            spectators:Number.isInteger(message.spectators)?Math.max(0,message.spectators):0,
             white: message.white,
             black: message.black,
           });

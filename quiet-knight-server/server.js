@@ -1,8 +1,10 @@
+import {CAPABILITIES,guestName} from './capabilities.js';
+import {consentTransition,ConsentError} from './consent.js';
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createHash, randomUUID } from 'node:crypto';
+import { createHash, randomUUID, randomInt } from 'node:crypto';
 import { Chess } from 'chess.js';
 import { createClient } from 'redis';
 import { WebSocketServer } from 'ws';
@@ -37,8 +39,8 @@ const sockets = new Map();
 const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const roomKey = code => `${keyPrefix}room:${code}`;
 const normalizeCode = value => String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
-const makeCode = () => Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-const hash = value => createHash('sha256').update(value).digest('hex');
+const makeCode = () => Array.from({ length: 6 }, () => chars[randomInt(chars.length)]).join('');
+const hash = value => createHash('sha256').update(value||'').digest('hex');
 const seatFromJoin = joinKey => hash(`qk-seat:${joinKey}`);
 const digestJoin = joinKey => hash(joinKey);
 
@@ -46,6 +48,8 @@ function publicRoom(room) {
   const last = room.moves.length ? room.moves[room.moves.length - 1] : null;
   return {
     code: room.code,
+    kind: room.kind||"live", variant:"standard", white_nickname:room.white_nickname||"", black_nickname:room.black_nickname||"",
+    proposal:room.proposal||null, reaction:room.reaction||null,
     fen: room.fen,
     turn: room.turn,
     status: room.status,
@@ -59,7 +63,7 @@ function publicRoom(room) {
     black_player:room.black_player||null,
     points_policy:room.points_policy||{eligible:false,remaining:0,reason:'Guests play casually'},
     score_event:room.score_event||null,
-    white_joined: true,
+    white_joined: Boolean(room.white_token),
     black_joined: Boolean(room.black_token),
     moves: room.moves.map(move => move.san),
     last_move: last ? { from: last.from, to: last.to, san: last.san } : null,
@@ -86,7 +90,7 @@ async function expireRoom(room, now=Date.now()) {
 async function loadRoom(code) {return await expireRoom(await rawRoom(code));}
 
 async function saveRoom(room) {
-  const saved = await redis.eval(`local current = redis.call('GET',KEYS[1]); if ARGV[1] == '0' then if current then return 0 end else if not current or cjson.decode(current).version ~= tonumber(ARGV[1]) then return 0 end end; redis.call('SET',KEYS[1],ARGV[2],'EX',ARGV[3]); if ARGV[5] == '' then redis.call('ZREM',KEYS[2],ARGV[6]) else redis.call('ZADD',KEYS[2],ARGV[5],ARGV[6]) end; redis.call('PUBLISH',KEYS[3],ARGV[4]); return 1`, { keys:[roomKey(room.code),clockIndex,updatesChannel], arguments:[String(room.version-1),JSON.stringify(room),String(ROOM_TTL),JSON.stringify(publicRoom(room)),deadline(room)===null?'':String(deadline(room)),room.code] });
+  const saved = await redis.eval(`local current = redis.call('GET',KEYS[1]); if ARGV[1] == '0' then if current then return 0 end else if not current or cjson.decode(current).version ~= tonumber(ARGV[1]) then return 0 end end; redis.call('SET',KEYS[1],ARGV[2]); local candidate=cjson.decode(ARGV[2]); if candidate.status=='waiting' and #candidate.moves==0 then redis.call('EXPIRE',KEYS[1],ARGV[3]) end; if ARGV[5] == '' then redis.call('ZREM',KEYS[2],ARGV[6]) else redis.call('ZADD',KEYS[2],ARGV[5],ARGV[6]) end; redis.call('PUBLISH',KEYS[3],ARGV[4]); return 1`, { keys:[roomKey(room.code),clockIndex,updatesChannel], arguments:[String(room.version-1),JSON.stringify(room),String(ROOM_TTL),JSON.stringify(publicRoom(room)),deadline(room)===null?'':String(deadline(room)),room.code] });
   if (!saved) { const error = new Error('Room changed; retry from the current position'); error.code = 'QK_CONFLICT'; throw error; }
   log('room.saved',{room:room.code,version:room.version,status:room.status});
 }
@@ -125,13 +129,13 @@ function broadcast(code, payload) {
     } else set.delete(ws);
   }
   if (!set.size) sockets.delete(code);
-  void loadRoom(code).then(room=>{if(room)resolveSeats(room);}).catch(()=>{});
+  void loadRoom(code).then(room=>{if(room)void resolveSeats(room);}).catch(()=>{});
 }
 
 function roleFor(room,digest,playerId){const role=digest&&digest===hash(room.white_token)?'white':digest&&room.black_token&&digest===hash(room.black_token)?'black':'spectator';const owner=role==='white'?room.white_player?.id:role==='black'?room.black_player?.id:null;return owner&&owner!==playerId?'spectator':role;}
-function tablePresence(code){const set=sockets.get(code)||[];return{white:[...set].some(ws=>ws.readyState===1&&ws.seatRole==='white'),black:[...set].some(ws=>ws.readyState===1&&ws.seatRole==='black')};}
+function tablePresence(code){const set=sockets.get(code)||[];return{spectators:[...set].filter(ws=>ws.readyState===1&&ws.seatRole==='spectator').length,white:[...set].some(ws=>ws.readyState===1&&ws.seatRole==='white'),black:[...set].some(ws=>ws.readyState===1&&ws.seatRole==='black')};}
 function publishPresence(code){const presence=tablePresence(code);const data=JSON.stringify({type:'presence.update',...presence});for(const ws of sockets.get(code)||[])if(ws.readyState===1)ws.send(data);}
-function resolveSeats(room){for(const ws of sockets.get(room.code)||[]){if(ws.readyState!==1||!ws.seatDigest)continue;ws.seatRole=roleFor(room,ws.seatDigest,ws.playerId);ws.send(JSON.stringify({type:'seat.role',role:ws.seatRole,game_number:room.game_number||1,room_version:room.version}));}publishPresence(room.code);}
+async function resolveSeats(room){for(const ws of sockets.get(room.code)||[]){if(ws.readyState!==1||!ws.seatDigest)continue;try{ws.playerId=(await ws.reauthenticate?.())?.id||null;}catch{ws.playerId=null;}if(ws.readyState!==1)continue;ws.seatRole=roleFor(room,ws.seatDigest,ws.playerId);ws.send(JSON.stringify({type:'seat.role',role:ws.seatRole,game_number:room.game_number||1,room_version:room.version}));}publishPresence(room.code);}
 function sendToRole(code,role,payload){let delivered=0;const message=JSON.stringify(payload);for(const ws of sockets.get(code)||[])if(ws.readyState===1&&ws.seatRole===role)try{ws.send(message);delivered++;}catch{}return delivered;}
 
 async function rateLimitNudge(room,seatToken){
@@ -180,12 +184,15 @@ async function bodyJson(req) {
   return JSON.parse(Buffer.concat(chunks).toString('utf8'));
 }
 
-async function createRoom(player=null) {
+async function createRoom(player=null,input={}) {
   for (let attempt = 0; attempt < 20; attempt += 1) {
     const code = makeCode();
     if (await redis.exists(roomKey(code))) continue;
     const game = new Chess();
     const room = { code, white_token: randomUUID(), black_token: null, white_join_digest:null, black_join_digest: null, white_player:publicPlayer(player),black_player:null,game_number:1, moves: [], fen: game.fen(), turn: 'w', status: 'waiting', winner: null, version: 1, created_at: Date.now() };
+    if(input.side==='black'){room.black_token=room.white_token;room.white_token=null;room.black_player=room.white_player;room.white_player=null;}
+    room.kind=input.kind==='correspondence'?'correspondence':'live';
+    room.white_nickname=input.side==='black'?'':guestName(input.nickname);room.black_nickname=input.side==='black'?guestName(input.nickname):'';
     resetClock(room);
     try { await saveRoom(room); return room; } catch(error) { if(error.code !== 'QK_CONFLICT') throw error; }
   }
@@ -195,6 +202,7 @@ async function createRoom(player=null) {
 async function handleApi(req, res, url) {
   const origin = req.headers.origin || '';
   if (req.method === 'OPTIONS') return send(res, 204, {}, origin);
+  if(req.method==='GET'&&url.pathname==='/capabilities')return send(res,200,CAPABILITIES,origin);
   if (req.method === 'GET' && url.pathname === '/health') { const identity=await identities.health(); const healthy=redis.isReady&&subscriber.isReady&&identity.available&&identity.migration>=4; return send(res,healthy?200:503,{ok:healthy,service:'quiet-knight-live',build:BUILD,commit:process.env.RAILWAY_GIT_COMMIT_SHA||null,identity,clock:'untimed'},origin); }
   if (req.method === 'GET' && url.pathname === '/computer/health') return send(res, computer.ready ? 200 : 503, computer.status(), origin);
   if(req.method==='GET'&&url.pathname==='/push/public-key')return send(res,pushes.available?200:503,{supported:pushes.available,public_key:pushes.available?pushes.publicKey:null},origin);
@@ -247,10 +255,16 @@ async function handleApi(req, res, url) {
   }
   if (req.method === 'POST' && url.pathname === '/rooms') {
     const player=await optionalPlayer(req);
-    const room = await createRoom(player);
-    return send(res, 200, { room: publicRoom(room), seat_token: room.white_token, role: 'white' }, origin);
+    const forwarded=String(req.headers['x-forwarded-for']||'').split(',').map(x=>x.trim()).filter(Boolean);
+    const peer=forwarded.at(-1)||req.socket.remoteAddress||'unknown';
+    const throttle=keyPrefix+'room-create:'+hash(peer),count=await redis.incr(throttle);if(count===1)await redis.expire(throttle,3600);
+    if(count>120)return send(res,429,{error:'Please wait before creating more rooms'},origin);
+    const input=await bodyJson(req);
+    if(input.variant&&input.variant!=='standard')return send(res,400,{error:'Online variant unsupported; use local Chess960'},origin);
+    const room = await createRoom(player,input);
+    return send(res, 200, { room: publicRoom(room), seat_token: input.side==='black'?room.black_token:room.white_token, role: input.side==='black'?'black':'white' }, origin);
   }
-  const match = url.pathname.match(/^\/rooms\/([A-Z0-9]{6})(?:\/(join|move|resign|rematch|nudge|pause))?$/i);
+  const match = url.pathname.match(/^\/rooms\/([A-Z0-9]{6})(?:\/(join|move|resign|rematch|nudge|pause|consent|reaction))?$/i);
   if (!match) return send(res, 404, { error: 'Not found' }, origin);
   const code = normalizeCode(match[1]);
   const action = match[2] || '';
@@ -271,19 +285,14 @@ async function handleApi(req, res, url) {
     if (seatToken && seatToken === room.white_token) return ownsRoomSeat(room,seatToken,joiningPlayer?.id)?send(res, 200, { room: publicRoom(room), seat_token: room.white_token, role: 'white' }, origin):send(res,403,{error:'This Knight ID does not own that seat'},origin);
     if (seatToken && room.black_token && seatToken === room.black_token) return ownsRoomSeat(room,seatToken,joiningPlayer?.id)?send(res, 200, { room: publicRoom(room), seat_token: room.black_token, role: 'black' }, origin):send(res,403,{error:'This Knight ID does not own that seat'},origin);
     if (joinDigest && room.black_token && room.black_join_digest === joinDigest) return ownsRoomSeat(room,room.black_token,joiningPlayer?.id)?send(res,200,{room:publicRoom(room),seat_token:room.black_token,role:'black'},origin):send(res,403,{error:'This Knight ID does not own that seat'},origin);
-    if (!room.black_token) {
-      const player=joiningPlayer;
-      room.black_token = joinKey ? seatFromJoin(joinKey) : randomUUID();
-      room.black_join_digest = joinDigest;
-      room.black_player=publicPlayer(player);
-      room.started_at=Date.now();
-      room.points_policy=await identities.pairStatus(room.white_player,room.black_player);
-      room.status = 'active';
+    if (!room.black_token || !room.white_token) {
+      const side=!room.white_token?'white':'black';
+      room[side+'_token']=joinKey?seatFromJoin(joinKey):randomUUID();room[side+'_join_digest']=joinDigest;
+      room[side+'_player']=publicPlayer(joiningPlayer);room[side+'_nickname']=guestName(input.nickname);
+      room.started_at=Date.now();room.points_policy=await identities.pairStatus(room.white_player,room.black_player);room.status='active';
       if(timed(room)){room.clock_running_color='w';room.turn_started_at=Date.now();}
-      room.version += 1;
-      await saveRoom(room);
-      const view = publicRoom(room);
-      return send(res, 200, { room: view, seat_token: room.black_token, role: 'black' }, origin);
+      room.version++;await saveRoom(room);
+      return send(res,200,{room:publicRoom(room),seat_token:room[side+'_token'],role:side},origin);
     }
     return send(res, 200, { room: publicRoom(room), seat_token: null, role: 'spectator' }, origin);
   }
@@ -295,6 +304,22 @@ async function handleApi(req, res, url) {
   if (!color) return send(res, 403, { error: 'You do not own a seat in this game' }, origin);
   if (!ownsRoomSeat(room,seatToken,player?.id)) return send(res,403,{error:'This Knight ID does not own that seat'},origin);
 
+  if(action==='consent'){
+    consentTransition(room,color,input);room.version++;await saveRoom(room);room=await settleRoom(room);
+    return send(res,200,{room:publicRoom(room)},origin);
+  }
+  if(action==='reaction'){
+    if(!['hello','well-played','thanks','fox','owl','tortoise'].includes(input.kind)||input.game_number!==(room.game_number||1))return send(res,400,{error:'Invalid reaction'},origin);
+    const allowed=await redis.set(keyPrefix+'reaction:'+code+':'+hash(seatToken),'1',{NX:true,EX:10});
+    if(!allowed)return send(res,429,{error:'Give the table a quiet moment'},origin);
+    room.reaction={id:randomUUID(),kind:input.kind,by:color,at:Date.now()};room.version++;await saveRoom(room);return send(res,200,{room:publicRoom(room)},origin);
+  }
+  if(action==='move'&&input.request_id){
+    if(typeof input.request_id!=='string'||!/^[-a-f0-9]{36}$/.test(input.request_id))return send(res,400,{error:'Invalid request ID'},origin);
+    const old=room.move_requests?.find(r=>r.id===input.request_id);
+    if(old){if(old.color!==color||old.game!==(room.game_number||1)||old.move!==input.from+input.to+(input.promotion||'q'))return send(res,409,{error:'Request ID already used'},origin);
+      return send(res,200,{room:publicRoom(room),duplicate:true},origin);}
+  }
   if (action === 'pause') {
     const now=Date.now();
     room=await expireRoom(room,now);
@@ -347,6 +372,8 @@ async function handleApi(req, res, url) {
     if (!move) return send(res, 400, { error: 'Illegal move' }, origin);
     const moveTime=Date.now();
     if(deadline(room)!==null&&moveTime>=deadline(room)){room=await expireRoom(room,moveTime);return send(res,409,{error:'Time expired',room:publicRoom(room)},origin);}
+    room.proposal=null;
+    if(input.request_id)room.move_requests=[...(room.move_requests||[]).slice(-31),{id:input.request_id,color,game:room.game_number||1,move:input.from+input.to+(input.promotion||'q')}];
     room.moves.push({ from: move.from, to: move.to, promotion: move.promotion, san: move.san });
     room.fen = game.fen();
     room.turn = game.turn();
@@ -387,8 +414,10 @@ async function handleApi(req, res, url) {
     if(input.colors==='swap'&&room.black_token){
       [room.white_token,room.black_token]=[room.black_token,room.white_token];
       [room.white_player,room.black_player]=[room.black_player||null,room.white_player||null];
+      [room.white_nickname,room.black_nickname]=[room.black_nickname||"",room.white_nickname||""];
       [room.white_join_digest,room.black_join_digest]=[room.black_join_digest||null,room.white_join_digest||null];
     }
+    room.proposal=null;room.reaction=null;room.draw_agreement=null;room.move_requests=[];
     room.game_number=previousNumber+1;room.started_at=Date.now();room.ended_at=null;room.score_event=null;
     room.points_policy=await identities.pairStatus(room.white_player,room.black_player);
     const game = new Chess();
@@ -418,9 +447,10 @@ const STATIC_TYPES = new Map([
   ['.png','image/png'],
   ['.ico','image/x-icon'],
   ['.txt','text/plain; charset=utf-8'],
+  ['.wasm','application/wasm'],
 ]);
 function isApiPath(pathname){
-  return /^(?:\/health$|\/computer(?:\/|$)|\/push(?:\/|$)|\/players(?:\/|$)|\/rooms(?:\/|$))/.test(pathname);
+  return /^(?:\/capabilities$|\/health$|\/computer(?:\/|$)|\/push(?:\/|$)|\/players(?:\/|$)|\/rooms(?:\/|$))/.test(pathname);
 }
 function staticHeaders(filePath,fallback=false){
   const name=path.basename(filePath);
@@ -470,6 +500,7 @@ const server = http.createServer((req, res) => {
   const method=req.method||'GET';
   const task=(method==='GET'||method==='HEAD')&&!isApiPath(url.pathname)?serveFrontend(req,res,url):handleApi(req,res,url);
   task.catch(err => {
+    if(err instanceof ConsentError)return send(res,err.status,{error:err.message},req.headers.origin||'');
     if(err instanceof IdentityError)return send(res,err.status,{error:err.message},req.headers.origin||'');
     if(err instanceof PushError)return send(res,err.status,{error:err.message},req.headers.origin||'');
     if (err?.code === 'QK_CONFLICT') return send(res,409,{error:'Room changed; retry from the current position'},req.headers.origin||'');
@@ -483,6 +514,8 @@ server.on('upgrade', async (req, socket, head) => {
   try {
     const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
     if (url.pathname !== '/ws') return socket.destroy();
+    const origin=req.headers.origin;
+    if(origin&&![FRONTEND_ORIGIN,RAILWAY_FRONTEND_ORIGIN,'http://127.0.0.1:3000','http://localhost:5173','http://127.0.0.1:5173'].includes(origin))return socket.destroy();
     const player=await optionalPlayer(req);
     const code = normalizeCode(url.searchParams.get('room'));
     const room = await loadRoom(code);
@@ -490,6 +523,7 @@ server.on('upgrade', async (req, socket, head) => {
     wss.handleUpgrade(req, socket, head, ws => {
       ws.roomCode = code;
       ws.playerId=player?.id||null;
+      ws.reauthenticate=()=>optionalPlayer(req);
       log('ws.connected',{room:code,version:room.version});
       const set = sockets.get(code) || new Set();
       set.add(ws);
@@ -508,7 +542,7 @@ server.on('upgrade', async (req, socket, head) => {
             ws.send(JSON.stringify({type:'seat.role',role:ws.seatRole,game_number:latest.game_number||1,room_version:latest.version}));publishPresence(code);return;
           }
           if(message.type!=='room.sync')return;
-          const latest=await loadRoom(code);if(latest&&ws.readyState===1){ws.send(JSON.stringify({type:'room.update',room:publicRoom(await settleRoom(latest))}));resolveSeats(latest);}
+          const latest=await loadRoom(code);if(latest&&ws.readyState===1){ws.send(JSON.stringify({type:'room.update',room:publicRoom(await settleRoom(latest))}));void resolveSeats(latest);}
         }catch{}
       });
       ws.on('close', () => {
@@ -543,7 +577,7 @@ const clockTimer=setInterval(async()=>{
 clockTimer.unref();
 // Recover a missing index after restart without creating a second clock authority.
 for await (const key of redis.scanIterator({MATCH:keyPrefix+'room:*',COUNT:100})) {
-  await redis.eval(`local raw=redis.call('GET',KEYS[1]); if not raw then return 0 end; local r=cjson.decode(raw); if r.status=='active' and r.time_control and (r.clock_running_color=='w' or r.clock_running_color=='b') and type(r.turn_started_at)=='number' then local ms=r.white_time_ms; if r.clock_running_color=='b' then ms=r.black_time_ms end; redis.call('ZADD',KEYS[2],r.turn_started_at+ms,r.code) end; return 1`,{keys:[key,clockIndex],arguments:[]});
+  await redis.eval(`local raw=redis.call('GET',KEYS[1]); if not raw then return 0 end; local r=cjson.decode(raw); if r.status~='waiting' or #r.moves>0 then redis.call('PERSIST',KEYS[1]) end; if r.status=='active' and r.time_control and (r.clock_running_color=='w' or r.clock_running_color=='b') and type(r.turn_started_at)=='number' then local ms=r.white_time_ms; if r.clock_running_color=='b' then ms=r.black_time_ms end; redis.call('ZADD',KEYS[2],r.turn_started_at+ms,r.code) end; return 1`,{keys:[key,clockIndex],arguments:[]});
 }
 
 server.listen(PORT, '0.0.0.0', () => log('server.listening',{port:PORT,build:BUILD,origin:FRONTEND_ORIGIN}));

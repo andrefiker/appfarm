@@ -11,6 +11,7 @@ android {
         targetSdk 35
         versionCode 1
         versionName '1.0.0'
+        buildConfigField 'String', 'SOURCE_COMMIT', '"local-unverified"'
     }
 
     flavorDimensions 'app'
@@ -19,10 +20,11 @@ android {
             dimension 'app'
             // The original CI debug signing key was not retained. Install this
             // candidate alongside it, preserving the original app and local saves.
-            applicationId 'com.andrefiker.quietknight.appfarm.guest'
-            versionCode 4
-            versionName '1.0.3'
+            applicationId 'com.andrefiker.quietknight.appfarm.studio'
+            versionCode 5
+            versionName '1.1.0'
             resValue 'string', 'app_name', 'Quiet Knight'
+            buildConfigField 'String', 'SOURCE_COMMIT', '"' + (System.getenv('GITHUB_SHA') ?: 'local-unverified') + '"'
             buildConfigField 'String', 'HOME_URL', '"https://quiet-knight-server-production.up.railway.app/assets/quiet-knight/index.html"'
         }
         performanceCourse {

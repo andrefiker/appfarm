@@ -22,7 +22,7 @@ export function gameRecord(room){
  try{for(const m of room.moves)game.move({from:m.from,to:m.to,promotion:m.promotion});}catch{throw new IdentityError(400,'Invalid game history');}
  if(game.fen()!==room.fen)throw new IdentityError(400,'Final position does not match history');
  if(room.status==='checkmate'&&(!game.isCheckmate()||room.winner===(game.turn())))throw new IdentityError(400,'Invalid checkmate result');
- if(room.status==='draw'&&!game.isDraw())throw new IdentityError(400,'Invalid draw result');
+ if(room.status==='draw'&&!game.isDraw()&&!(room.draw_agreement?.game_number===(room.game_number||1)&&['w','b'].includes(room.draw_agreement?.by)&&room.draw_agreement?.accepted_by===(room.draw_agreement.by==='w'?'b':'w')))throw new IdentityError(400,'Invalid draw result');
  if(room.status.startsWith('timeout')&&!validTimeout(room))throw new IdentityError(400,'Invalid timeout result');
  if(!['draw','timeout_draw'].includes(room.status)&&!['w','b'].includes(room.winner))throw new IdentityError(400,'Invalid winner');
  const result=['draw','timeout_draw'].includes(room.status)?'1/2-1/2':room.winner==='w'?'1-0':'0-1';

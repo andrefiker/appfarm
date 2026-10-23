@@ -69,6 +69,7 @@ jobs:
           npm ci
           npm run test:animal
           npm run test:account
+          npm run test:studio
           npx tsc --noEmit
           npm run build -- --base=./
 
@@ -118,7 +119,7 @@ jobs:
             if curl -fsS http://127.0.0.1:3000/health >/dev/null; then break; fi
             sleep 0.25
           done
-          timeout --kill-after=10s 150s npx playwright test clock.spec.js guest.spec.js --global-timeout=120000
+          timeout --kill-after=10s 210s npx playwright test clock.spec.js guest.spec.js studio.spec.js --global-timeout=180000
 
       - name: Upload synthetic rendered QA
         if: always()

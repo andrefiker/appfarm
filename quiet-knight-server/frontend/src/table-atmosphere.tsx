@@ -1,13 +1,13 @@
 import {useCallback,useEffect,useState} from 'react';import {materialTotals} from './chess-view-model';import type {Position} from './chess-ui';import type {Losses} from './chess-view-model';
-export const atmospheres=['Walnut','Library','Midnight','Rain','Royal Meadow'] as const;
+export const atmospheres=['Classic Wood','Midnight','Ivory','Forest','Animal Kingdom','Walnut','Library','Rain','Royal Meadow'] as const;
 export type Atmosphere=typeof atmospheres[number];
-export const pieceSets=['kawaii-faces','animal-kingdom'] as const;
+export const pieceSets=['classic','kawaii-faces','animal-kingdom'] as const;
 export type PieceSet=typeof pieceSets[number];
 function saved(key:string){try{return localStorage.getItem(key);}catch{return null;}}
 export function useTablePreferences(){
  const[zen,setZen]=useState(()=>saved('qk-zen-table-v1')==='true');
  const[atmosphere,setAtmosphereState]=useState<Atmosphere>(()=>{const value=saved('qk-atmosphere-v1');const initial=atmospheres.find(x=>x===value)||'Walnut';if(typeof document!=='undefined')document.body.dataset.atmosphere=initial.toLowerCase().replace(/ /g,'-');return initial;});
- const[pieceSet,setPieceSetState]=useState<PieceSet>(()=>{const initial=saved('qk-piece-set-v1')==='animal-kingdom'?'animal-kingdom':'kawaii-faces';if(typeof document!=='undefined')document.body.dataset.pieceSet=initial;return initial;});
+ const[pieceSet,setPieceSetState]=useState<PieceSet>(()=>{const initial=pieceSets.find(p=>p===saved('qk-piece-set-v1'))||'classic';if(typeof document!=='undefined')document.body.dataset.pieceSet=initial;return initial;});
  const setAtmosphere=(value:Atmosphere)=>{document.body.dataset.atmosphere=value.toLowerCase().replace(/ /g,'-');setAtmosphereState(value);};
  const setPieceSet=(value:PieceSet)=>{document.body.dataset.pieceSet=value;setPieceSetState(value);};
  useEffect(()=>{document.body.dataset.atmosphere=atmosphere.toLowerCase().replace(/ /g,'-');document.body.dataset.pieceSet=pieceSet;try{localStorage.setItem('qk-atmosphere-v1',atmosphere);localStorage.setItem('qk-piece-set-v1',pieceSet);localStorage.setItem('qk-zen-table-v1',String(zen));}catch{}},[atmosphere,pieceSet,zen]);

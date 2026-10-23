@@ -1,3 +1,9 @@
+import {InviteQR,parseInvitation} from './invitation';
+import {About} from './about';
+import {StudyRoom} from './StudyRoom';
+import type {StudySeed} from './StudyRoom';
+import {useServerCapabilities} from './server-capabilities';
+import {usePlayPreferences,PlaySettings} from './play-preferences';
 import { viewerLost } from "./post-game";
 import type {ClockState} from './chess-clock';
 import { ClockControls } from './clock-controls';
@@ -35,6 +41,9 @@ import type { LocalMove } from "./computer";
 type Role = "white" | "black" | "spectator";
 type RoomState = ClockState & {
   game_number?: number;
+  kind?:string;white_nickname?:string;black_nickname?:string;
+  proposal?:{id:string;kind:"draw"|"takeback";by:Color}|null;
+  reaction?:{kind:string;by:Color;at:number}|null;
   white_player?: { id: string; handle: string; quiet_points: number } | null;
   black_player?: { id: string; handle: string; quiet_points: number } | null;
   points_policy?: { eligible: boolean; reason: string; remaining: number };
@@ -68,7 +77,7 @@ type Modal =
   | "resign"
   | "invite"
   | null;
-const BUILD = "QK • Kawaii Faces + Animal Kingdom";
+const BUILD = "Quiet Knight 1.1.0 candidate · offline studio";
 function roleColor(role: Role | null): Color | null {
   return role === "white" ? "w" : role === "black" ? "b" : null;
 }
@@ -107,6 +116,13 @@ function failureText(err: unknown, fallback: string) {
 }
 export default function GameApp() {
   const knight = useKnightId();
+  const compatibility=useServerCapabilities();
+  const {prefs,update:updatePrefs}=usePlayPreferences();
+  const [studySeed,setStudySeed]=useState<StudySeed|undefined>();
+  const [flipped,setFlipped]=useState(false);
+  const [pendingMove,setPendingMove]=useState<{from:string;to:string;promotion:string}|null>(null);
+  const [enginePaused,setEnginePaused]=useState(false);
+  const [redoMoves,setRedoMoves]=useState<LocalMove[]>([]);
   const [memories, setMemories] = useState(() => recentTables("guest"));
   const [viewedGame, setViewedGame] = useState<GameRecord | null>(null);
   const [localTableId, setLocalTableId] = useState(() => {
@@ -121,17 +137,20 @@ export default function GameApp() {
   const [diagnostics, setDiagnostics] = useState("");
   const [diagnosing, setDiagnosing] = useState(false);
   const offlineStatus = useOfflineFiles();
-  const [screen, setScreen] = useState<"home" | "game">("home");
+  const [screen, setScreen] = useState<"home" | "game" | "study">("home");
   const [mode, setMode] = useState<"local" | "online">("local");
   const [room, setRoom] = useState<RoomState | null>(null);
   const [role, setRole] = useState<Role | null>(null);
   const [roleGame, setRoleGame] = useState(1);
   const [presence, setPresence] = useState<{
     white: boolean;
-    black: boolean;
+    black: boolean; spectators?:number;
   } | null>(null);
   const [seatToken, setSeatToken] = useState<string | null>(null);
   const notifications = useMoveNotifications(room?.code || null, seatToken);
+  const [friendSide,setFriendSide]=useState("white");
+  const [friendKind,setFriendKind]=useState("live");
+  const [inviteInput,setInviteInput]=useState("");
   const [joinCode, setJoinCode] = useState("");
   const [localMoves, setLocalMoves] = useState<LocalMove[]>(initialLocal.moves);
   const [humanColor, setHumanColor] = useState<Color>(initialLocal.color);
@@ -142,13 +161,13 @@ export default function GameApp() {
     to: string;
   } | null>(null);
   const [modal, setModal] = useState<Modal>(null);
-  const [sound, setSound] = useState(() => stored("qk-sound") !== "false");
+  const [sound, setSound] = useState(() => stored("qk-sound") === "true");
   const [unquiet, setUnquiet] = useState(() => stored("qk-unquiet-mode-v1") === "true");
   const [animalReaction, setAnimalReaction] = useState("");
   const lastAnimalReaction = useRef(0);
   const animalReactionTimer = useRef<number | null>(null);
   const [haptics, setHaptics] = useState(
-    () => stored("qk-haptics") !== "false",
+    () => stored("qk-haptics") === "true",
   );
   const [volume, setVolume] = useState(() => {
     const saved = Number(stored("qk-volume") || "80");
@@ -217,7 +236,7 @@ export default function GameApp() {
   }, [accountId]);
   useEffect(() => {
     if (mode === "local" && gameOwner === accountId)
-      saveLocal({ moves: localMoves, color: humanColor, level }, accountId);
+      if(!saveLocal({ moves: localMoves, color: humanColor, level }, accountId))setMessage("Your game could not be saved. Export it before closing; existing recovery data has been kept.");
   }, [localMoves, humanColor, level, mode, accountId, gameOwner]);
   useEffect(() => {
     const retry = () => setOnlineRetry(value => value + 1);
@@ -230,7 +249,7 @@ export default function GameApp() {
     [room?.fen, localGame],
   );
   const me = room ? roleColor(role) : humanColor;
-  const orientation = me || "w";
+  const orientation = flipped ? (me === "b" ? "w" : "b") : me || "w";
   const turn = room ? room.turn : localGame.turn();
   const ended = room
     ? !["waiting", "active"].includes(room.status)
@@ -394,12 +413,14 @@ export default function GameApp() {
   const computerEngine = useComputerOpponent(
     screen === "game" &&
       mode === "local" &&
+      !enginePaused &&
       !localGame.isGameOver() &&
       localGame.turn() !== humanColor,
     localMoves,
     level,
     setLocalMoves,
     setMessage,
+    {style:prefs.style,think:prefs.think},
   );
   useEffect(() => {
     if (!knight.player || gameOwner !== accountId || room || mode !== "local" || !localGame.isGameOver()) return;
@@ -436,6 +457,7 @@ export default function GameApp() {
     sans,
     date: new Date(room?.created_at || Date.now()).toISOString(),
     mode: room ? "human" : "computer",
+    timeControl:room?.time_control?"600+0":"-",
     points: room?.score_event?.scored
       ? `${room.white_player?.handle || "White"} +${room.score_event.white_points} · ${room.black_player?.handle || "Black"} +${room.score_event.black_points} Quiet Points`
       : room
@@ -498,6 +520,7 @@ export default function GameApp() {
     window.history.replaceState({}, "", url);
   }
   async function createRoom() {
+    if(compatibility.state!=="compatible"){setMessage(compatibility.message);return;}
     if (!navigator.onLine) {
       setMessage(
         "Connect to the internet to create a shared room. Computer play is available offline after loading.",
@@ -506,8 +529,8 @@ export default function GameApp() {
     }
     if (!beginRequest()) return;
     try {
-      const { data } = await api.post("/api/rooms");
-      useRoom(data.room as RoomState, data.seat_token as string, "white");
+      const { data } = await api.post("/api/rooms",{nickname:prefs.nickname,side:friendSide,kind:friendKind,variant:"standard",require_untimed:true});
+      useRoom(data.room as RoomState, data.seat_token as string, data.role as Role);
     } catch (err) {
       setMessage(
         failureText(err, "Could not create a room. Please try again."),
@@ -539,7 +562,7 @@ export default function GameApp() {
       const join = () =>
         api.post(`/api/rooms/${code}/join`, {
           ...(token ? { seat_token: token } : {}),
-          join_key,
+          join_key, nickname:prefs.nickname,
         });
       let result;
       try {
@@ -586,7 +609,10 @@ export default function GameApp() {
     remember(localGameIdKey(accountId), id);
   }
   function startComputer(color: Color) {
+    const adjusted=prefs.adaptive&&localGame.isCheckmate()?Math.max(1,Math.min(10,level+(localGame.turn()!==humanColor?1:-1))):level;
+    if(adjusted!==level)setLevel(adjusted);
     newLocalTable();
+    setEnginePaused(false);setRedoMoves([]);setFlipped(false);
     requestGeneration.current++;
     roomCodeRef.current = null;
     setRoom(null);
@@ -616,7 +642,7 @@ export default function GameApp() {
         from,
         to,
         promotion: promotionPiece,
-        expected_fen: room.fen,
+        expected_fen: room.fen, request_id:crypto.randomUUID(),
         connection_id: connectionId || undefined,
       });
       if (generation === requestGeneration.current) {
@@ -652,8 +678,10 @@ export default function GameApp() {
       endRequest();
     }
   }
+  function proposeMove(from:string,to:string,promotionPiece="q"){if(prefs.confirm)setPendingMove({from,to,promotion:promotionPiece});else performMove(from,to,promotionPiece);}
   function performMove(from: string, to: string, promotionPiece = "q") {
     closeModal();
+    setPendingMove(null);setEnginePaused(false);setRedoMoves([]);
     setSelected(null);
     setMessage("");
     if (mode === "online") {
@@ -698,7 +726,7 @@ export default function GameApp() {
       setPromotion({ from: selected, to: square });
       return;
     }
-    performMove(selected, square);
+    proposeMove(selected, square);
   }
   async function copyDiagnostics() {
     if (diagnosing) return;
@@ -747,6 +775,12 @@ export default function GameApp() {
       setModal("invite");
     }
   }
+  async function consent(action:string,kind?:string){
+    if(!room||!seatToken||!beginRequest())return;
+    try{const{data}=await api.post(`/api/rooms/${room.code}/consent`,{seat_token:seatToken,game_number:room.game_number||1,expected_version:room.version,action,kind,proposal_id:room.proposal?.id});acceptRoom(data.room as RoomState);}
+    catch{setMessage("The proposal changed or is unavailable. Reconnect and try again.");}finally{endRequest();}
+  }
+  async function reaction(kind:string){if(!prefs.reactions||!room||!seatToken||!beginRequest())return;try{const{data}=await api.post(`/api/rooms/${room.code}/reaction`,{seat_token:seatToken,game_number:room.game_number||1,kind});acceptRoom(data.room as RoomState);}catch{setMessage("Reaction unavailable. Give the table a quiet moment.");}finally{endRequest();}}
   async function nudge() {
     if (!room || !seatToken || !canNudge || !beginRequest()) return;
     try {
@@ -893,8 +927,12 @@ export default function GameApp() {
                 : room
                   ? "The other player is choosing a move."
                   : `${computerEngine} · Level ${level} is choosing a move.`;
+  function openStudy(seed?:StudySeed){setStudySeed(seed);setModal(null);setTableControls(false);setScreen("study");}
   const tableSettings = (
     <>
+      <PlaySettings prefs={prefs} update={updatePrefs}/>
+      <About compatibility={compatibility}/>
+      <p className="server-compatibility">{compatibility.message}</p>
       <button
         type="button"
         className="secondary wide"
@@ -982,7 +1020,8 @@ export default function GameApp() {
       </label>
       <label className="preference-row">
         <span>Chess pieces</span>
-        <select aria-label="Chess piece set" value={table.pieceSet} onChange={(e) => table.setPieceSet(e.target.value as "kawaii-faces" | "animal-kingdom")}>
+        <select aria-label="Chess piece set" value={table.pieceSet} onChange={(e) => table.setPieceSet(e.target.value as "classic" | "kawaii-faces" | "animal-kingdom")}>
+          <option value="classic">Classic / Staunton</option>
           <option value="kawaii-faces">Kawaii Faces</option>
           <option value="animal-kingdom">Animal Kingdom</option>
         </select>
@@ -1038,8 +1077,8 @@ export default function GameApp() {
         Motion follows your device’s reduced-motion preference.
       </p>
       <p className="settings-note">
-        Computer play uses Stockfish 18 online, with ten strength levels.
-        Offline play uses the lighter local engine; the active engine is shown
+        Computer play uses bundled Stockfish 18 Lite WebAssembly, with ten strength levels.
+        If it cannot load, the lighter local engine is explicitly identified; the active engine is shown
         at the table. Games and seats are saved on this device when storage is
         available.
       </p>
@@ -1117,6 +1156,8 @@ export default function GameApp() {
   if (gameOwner !== accountId) return <main className="account-gate"><section className="account-card" role="status"><p className="account-kicker">QUIET KNIGHT</p><h1>Loading your account</h1><p className="account-intro">Preparing your saved games.</p></section></main>;
   return (
     <>
+      {screen === "study" ? <StudyRoom key={accountId} owner={accountId} prefs={prefs} seed={studySeed} onBack={()=>setScreen(room?"game":"home")}/> : null}
+      {screen === "home" ? <section className="studio-entry"><h2>Continue the position</h2><button className="secondary" onClick={()=>openStudy(localMoves.length?{sans:localMoves.map(m=>m.san||"")}:undefined)}>Continue the position · analyse</button><button className="secondary" onClick={()=>openStudy({mode:"pass"})}>Pass and play · offline</button><button className="secondary" onClick={()=>openStudy()}>Study, puzzles & Chess960</button><p role="status" className="server-compatibility">{compatibility.message}</p><label>Friend-game side<select aria-label="Friend-game side" value={friendSide} onChange={e=>setFriendSide(e.target.value)}><option value="white">White</option><option value="black">Black</option></select></label><label>Friend-game style<select aria-label="Friend-game style" value={friendKind} onChange={e=>setFriendKind(e.target.value)}><option value="live">Live · untimed</option><option value="correspondence">Correspondence · no deadlines</option></select></label><label>Paste invite link<input aria-label="Paste invite link" value={inviteInput} maxLength={1000} onChange={e=>setInviteInput(e.target.value)}/></label><button className="secondary" onClick={()=>{const code=parseInvitation(inviteInput);if(code)void joinRoom(code);else setMessage("Paste a valid room link or six-character code.");}}>Open invitation</button></section>:null}
       {screen === "home" && localMoves.length > 0 ? (
         <div className="resume-local">
           <button
@@ -1191,7 +1232,7 @@ export default function GameApp() {
           }}
           onSettings={() => setModal("settings")}
         />
-      ) : (
+      ) : screen === "game" ? (
         <GameSurface
           clock={room||undefined}
           pauseControls={room && room.status === 'active' ? <ClockControls state={room} me={me} busy={busy || connection !== 'Live'} onAction={(action) => void changePause(action)} /> : null}
@@ -1207,7 +1248,7 @@ export default function GameApp() {
             ended,
             room ? room.black_joined : true,
           )}
-          historyTools={<GameExports key={record.id} record={record} />}
+          historyTools={<><GameExports key={record.id} record={record} /><button className="secondary" onClick={()=>openStudy({sans:[...sans]})}>Review / analyse game</button><button className="secondary" onClick={()=>setFlipped(v=>!v)}>Flip board</button>{!room?<div className="study-actions"><button disabled={!localMoves.length} onClick={()=>{setEnginePaused(true);const cut=localGame.turn()===humanColor?2:1;setRedoMoves(localMoves.slice(-cut));setLocalMoves(v=>v.slice(0,-cut));}}>Undo computer turn</button><button disabled={!redoMoves.length} onClick={()=>{setLocalMoves(v=>[...v,...redoMoves]);setRedoMoves([]);setEnginePaused(false);}}>Redo computer turn</button>{enginePaused?<button onClick={()=>setEnginePaused(false)}>Resume computer</button>:null}</div>:null}</>}
           postGame={
             ended ? <GamePostcard key={record.id} record={record} /> : null
           }
@@ -1231,10 +1272,12 @@ export default function GameApp() {
           canNudge={canNudge}
           onNudge={() => void nudge()}
           players={
-            room ? { w: room.white_player, b: room.black_player } : undefined
+            room ? { w: room.white_player||(room.white_nickname?{handle:room.white_nickname,quiet_points:0}:null), b:room.black_player||(room.black_nickname?{handle:room.black_nickname,quiet_points:0}:null) } : undefined
           }
           tableExtra={
-            room && (room.white_player || room.black_player) ? (
+            <>
+            {room?<section className="room-lobby" aria-label="Game lobby"><p>Room {room.code} · {room.kind==='correspondence'?'Correspondence · no deadlines':'Live'} · {room.time_control?'Historical 10+0':'Untimed'} · Standard · {presence?.spectators??0} spectators</p><button className="secondary" onClick={()=>{setTableControls(false);setModal('invite');}}>Show invitation QR</button>{role!=='spectator'&&room.status==='active'?<><div className="study-actions"><button disabled={busy||Boolean(room.proposal)} onClick={()=>void consent('request','draw')}>Offer draw</button>{!room.time_control&&!room.points_policy?.eligible?<button disabled={busy||Boolean(room.proposal)||!room.moves.length} onClick={()=>void consent('request','takeback')}>Request takeback</button>:null}</div>{room.proposal?<div role="status"><p>{room.proposal.kind} requested by {room.proposal.by==='w'?'White':'Black'}</p>{room.proposal.by===me?<button onClick={()=>void consent('cancel')}>Cancel proposal</button>:<><button onClick={()=>void consent('accept')}>Accept proposal</button><button onClick={()=>void consent('decline')}>Decline proposal</button></>}</div>:null}{prefs.reactions?<div className="study-actions" aria-label="Quiet reactions">{['hello','well-played','thanks','fox','owl','tortoise'].map(kind=><button key={kind} disabled={busy} onClick={()=>void reaction(kind)}>{kind}</button>)}</div>:null}</>:null}{prefs.reactions&&room.reaction&&Date.now()-room.reaction.at<15000?<p role="status">{room.reaction.by==='w'?'White':'Black'}: {room.reaction.kind}</p>:null}</section>:null}
+            {room && (room.white_player || room.black_player) ? (
               <div className="quiet-score" aria-label="Quiet Points">
                 {ended ? (
                   <>
@@ -1279,7 +1322,8 @@ export default function GameApp() {
                   />
                 ) : null}
               </div>
-            ) : null
+            ) : null}
+            </>
           }
           animalReaction={animalReaction}
           computerEngine={computerEngine}
@@ -1287,12 +1331,13 @@ export default function GameApp() {
             position,
             orientation,
             selected,
-            targets,
+            targets:prefs.hints?targets:[],
             last,
             check,
-            motion,
+            motion:prefs.animate?motion:null,
             locked,
-            onSquare,
+            onSquare, drag:prefs.drag,
+            onMove:(from,to)=>{if(locked||game.get(from as Square)?.color!==me)return;const moves=game.moves({square:from as Square,verbose:true}).filter(m=>m.to===to);if(!moves.length)return;if(moves.some(m=>m.promotion))setPromotion({from,to});else proposeMove(from,to);},
           }}
           online={mode === "online"}
           code={room?.code}
@@ -1330,7 +1375,8 @@ export default function GameApp() {
             else enableSound();
           }}
         />
-      )}
+      ) : null}
+      {pendingMove?<section className="move-confirmation" role="dialog" aria-label="Confirm move"><p>{pendingMove.from} → {pendingMove.to}</p><button onClick={()=>performMove(pendingMove.from,pendingMove.to,pendingMove.promotion)}>Confirm move</button><button onClick={()=>setPendingMove(null)}>Cancel move</button></section>:null}
       {screen === "home" ? (
         <p className="network-build">
           {BUILD}
@@ -1368,7 +1414,7 @@ export default function GameApp() {
                 <PromotionChoices
                   color={me || "w"}
                   onChoose={(kind) =>
-                    performMove(promotion.from, promotion.to, kind)
+                    proposeMove(promotion.from, promotion.to, kind)
                   }
                 />
               ) : modal === "memory" && viewedGame ? (
@@ -1427,6 +1473,7 @@ export default function GameApp() {
                 tableSettings
               ) : modal === "invite" && room ? (
                 <>
+                  <InviteQR url={roomLink(room.code)} code={room.code}/>
                   <p>Copy this link and send it to your friend.</p>
                   <input
                     className="invite-field"

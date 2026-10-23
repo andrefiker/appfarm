@@ -1,5 +1,5 @@
 import {spawn} from 'node:child_process';
-for(const file of ['verify-clock.js','verify-push.js','verify-identity.js','verify-server.js']){
+for(const file of ['tests/consent.test.mjs','verify-clock.js','verify-push.js','verify-identity.js','verify-server.js']){
  await new Promise((resolve,reject)=>{
   const child=spawn(process.execPath,[file],{stdio:['ignore','inherit','pipe'],env:process.env});
   // Assertion errors can contain credentials. Keep failures identifiable without dumping values.

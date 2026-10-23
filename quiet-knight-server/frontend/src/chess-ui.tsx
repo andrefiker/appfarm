@@ -29,6 +29,8 @@ export type BoardProps = {
   motion: Motion;
   locked: boolean;
   onSquare: (square: string) => void;
+  onMove?: (from:string,to:string) => void;
+  drag?: boolean;
 };
 export function Icon({
   name,
@@ -92,9 +94,11 @@ export function ChessBoard({
   check,
   motion,
   locked,
-  onSquare,
+  onSquare, onMove, drag=true,
 }: BoardProps) {
   const squares = boardSquares(orientation);
+  const gesture=React.useRef<{from:string;x:number;y:number}|null>(null);
+  const suppressClick=React.useRef(false);
   function moveOrigin(square: string): string | null {
     if (!motion) return null;
     if (motion.to === square) return motion.from;
@@ -139,7 +143,10 @@ export function ChessBoard({
               aria-label={`${square}, ${piece ? `${piece.color === "w" ? "White" : "Black"} ${pieceNames[piece.type]}` : "empty"}${target ? ", legal destination" : ""}${check === square ? ", in check" : ""}`}
               aria-pressed={selected === square}
               aria-disabled={locked}
-              onClick={() => onSquare(square)}
+              onPointerDown={e=>{if(drag && onMove && !locked && piece){gesture.current={from:square,x:e.clientX,y:e.clientY};e.currentTarget.setPointerCapture(e.pointerId);}}}
+              onPointerUp={e=>{const start=gesture.current;gesture.current=null;if(!start||Math.hypot(e.clientX-start.x,e.clientY-start.y)<12)return;suppressClick.current=true;setTimeout(()=>{suppressClick.current=false;},0);const dest=document.elementFromPoint(e.clientX,e.clientY)?.closest<HTMLElement>('[data-square]')?.dataset.square;if(dest&&dest!==start.from&&!locked)onMove?.(start.from,dest);}}
+              onPointerCancel={()=>{gesture.current=null;}}
+              onClick={() => {if(!suppressClick.current)onSquare(square);}}
               onKeyDown={(e) => {
                 const delta = (
                   {
@@ -172,6 +179,8 @@ export function ChessBoard({
                   />
                 </span>
               ) : null}
+              {index%8===0?<span className="square-coordinate rank-coordinate" aria-hidden="true">{square[1]}</span>:null}
+              {index>=56?<span className="square-coordinate file-coordinate" aria-hidden="true">{square[0]}</span>:null}
               {target ? (
                 <span
                   className={piece ? "capture-ring" : "target-dot"}
@@ -837,10 +846,10 @@ export function HomeSurface({
               <h2>Play a friend</h2>
               <span className="mode-mark">
                 <i />
-                Untimed
+                Friend game
               </span>
             </div>
-            <p>No time limit. Share a room and make your move.</p>
+            <p>Untimed friend play requires a compatible server. Existing timed tables keep their clocks.</p>
             <button
               type="button"
               className="primary wide"
@@ -892,7 +901,8 @@ export function HomeSurface({
               <h2>Play the computer</h2>
               <span className="mode-mark">Computer</span>
             </div>
-            <p>Stockfish online. Choose your strength and side.</p>
+            <p>Stockfish 18 Lite, bundled for offline play. Choose your strength and side.</p>
+            <div className="study-actions" aria-label="Difficulty presets">{([['Beginner',1],['Casual',3],['Club',5],['Strong',9]] as const).map(([name,n])=><button className="secondary" type="button" key={n} aria-pressed={level===n} onClick={()=>onLevel(n)}>{name}</button>)}</div>
             <div className="level-heading">
               <label htmlFor="qk-level">Difficulty</label>
               <span>
@@ -935,7 +945,7 @@ export function HomeSurface({
               ))}
             </div>
             <p className="computer-footnote">
-              Lighter local engine offline · Saved on this device
+              Offline Stockfish · Saved on this device
             </p>
           </section>
         </div>

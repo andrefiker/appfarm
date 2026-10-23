@@ -9,6 +9,7 @@ import { WebSocket } from 'ws';
 import { createClient } from 'redis';
 import { IdentityStore } from './identity.js';
 import { verifyClockServer } from './verify-clock-server.js';
+import {verifyStudioServer} from './verify-studio-server.js';
 import { verifyGuestServer } from './verify-guest-server.js';
 
 if (!process.env.DATABASE_URL || !process.env.REDIS_URL) throw new Error('DATABASE_URL and REDIS_URL are required');
@@ -156,6 +157,7 @@ try {
 
   await verifyClockServer({request,post,makeRoom,socket,waitFor,redis,pool,prefix,cookies:[a,b],restart:async()=>{await stop();await start();}});
   await verifyGuestServer({request,post,socket,waitFor,pool,accountCookie:a,restart:async()=>{await stop();await start();}});
+  await verifyStudioServer({request,post,redis,prefix,restart:async()=>{await stop();await start();}});
   console.log(JSON.stringify({ event: 'server.acceptance', passed: true, migration: 4, checks: ['canonical Android frontend and PWA manifest', 'optional accounts with protected records', 'registration and duplicate ID', 'room create/join and ownership', 'legal/illegal moves', 'authenticated WebSocket seats', 'reconnect/resume', 'untimed default and legacy clock preservation', 'nudge rate limit', 'resignation', 'checkmate', 'exactly-once results', 'server restart persistence'] }));
 } finally {
   for (const ws of sockets) ws.terminate();

@@ -7,8 +7,8 @@ const SHELL = new URL("offline-shell.html", ROOT).href;
 const absolute = (path) => new URL(path, ROOT).href;
 const isAsset = (url) =>
   url.origin === self.location.origin &&
-  url.pathname.startsWith(new URL("assets/", ROOT).pathname) &&
-  /\.(js|css|svg|png|webp|woff2?)$/.test(url.pathname);
+  (url.pathname.startsWith(new URL("assets/", ROOT).pathname) || url.pathname.startsWith(new URL("engine/", ROOT).pathname)) &&
+  /\.(js|wasm|css|svg|png|webp|woff2?)$/.test(url.pathname);
 function valid(response, url) {
   if (!response.ok) return false;
   const type = response.headers.get("Content-Type") || "";
@@ -71,7 +71,7 @@ async function previousAssets(cache) {
     const item = queue.shift();
     const text = await item.response.text();
     for (const match of text.matchAll(
-      /['"(]([^'"\s()<>]+?\.(?:js|css|svg|png|webp|woff2?)(?:\?[^'"()\s<>]*)?)['")]/g,
+      /['"(]([^'"\s()<>]+?\.(?:js|wasm|css|svg|png|webp|woff2?)(?:\?[^'"()\s<>]*)?)['")]/g,
     )) {
       let url;
       try {

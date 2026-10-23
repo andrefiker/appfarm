@@ -2,6 +2,7 @@ package com.andrefiker.appfarmwrapper;
 
 import android.app.Activity;
 import android.content.Intent;
+import org.json.JSONObject;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -17,6 +18,17 @@ import androidx.webkit.WebViewAssetLoader;
 public class MainActivity extends Activity {
     private WebView webView;
     private WebViewAssetLoader assetLoader;
+    private boolean quietKnight() { return "quietKnight".equals(BuildConfig.FLAVOR); }
+    private String launchUrl(Intent intent) {
+        if (!quietKnight() || intent == null || intent.getData() == null) return BuildConfig.HOME_URL;
+        Uri uri = intent.getData();
+        if (!"quietknight".equals(uri.getScheme()) || !"join".equals(uri.getHost())) return BuildConfig.HOME_URL;
+        String code = uri.getLastPathSegment();
+        return code != null && code.matches("[A-Za-z0-9]{6}") ? BuildConfig.HOME_URL + "?room=" + code.toUpperCase(java.util.Locale.ROOT) : BuildConfig.HOME_URL;
+    }
+    @Override protected void onNewIntent(Intent intent) { super.onNewIntent(intent); setIntent(intent); if (quietKnight()) webView.loadUrl(launchUrl(intent)); }
+    @Override protected void onResume() { super.onResume(); if (webView != null && quietKnight()) { webView.onResume(); webView.evaluateJavascript("window.dispatchEvent(new Event('qk-resume'))", null); } }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +48,13 @@ public class MainActivity extends Activity {
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
+        if (quietKnight()) {
+            settings.setAllowFileAccess(false);
+            settings.setAllowContentAccess(false);
+            settings.setAllowFileAccessFromFileURLs(false);
+            settings.setAllowUniversalAccessFromFileURLs(false);
+            WebView.setWebContentsDebuggingEnabled(false);
+        }
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
         settings.setMediaPlaybackRequiresUserGesture(false);
@@ -49,6 +68,10 @@ public class MainActivity extends Activity {
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
         webView.setWebChromeClient(new WebChromeClient());
         webView.setWebViewClient(new WebViewClient() {
+            @Override public void onPageFinished(WebView view, String url) {
+                if (!quietKnight() || !url.startsWith(BuildConfig.HOME_URL)) return;
+                try { JSONObject metadata = new JSONObject(); metadata.put("package", BuildConfig.APPLICATION_ID); metadata.put("version", BuildConfig.VERSION_NAME); metadata.put("code", BuildConfig.VERSION_CODE); metadata.put("commit", BuildConfig.SOURCE_COMMIT); view.evaluateJavascript("window.__QK_ANDROID=" + metadata.toString(), null); } catch (Exception ignored) { }
+            }
             @Override
             public android.webkit.WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 return assetLoader.shouldInterceptRequest(request.getUrl());
@@ -71,7 +94,7 @@ public class MainActivity extends Activity {
         });
 
         if (savedInstanceState == null) {
-            webView.loadUrl(BuildConfig.HOME_URL);
+            webView.loadUrl(launchUrl(getIntent()));
         } else {
             webView.restoreState(savedInstanceState);
         }
@@ -79,6 +102,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onPause() {
+        if (quietKnight()) { webView.evaluateJavascript("window.dispatchEvent(new Event('qk-background'))", null); webView.onPause(); }
         CookieManager.getInstance().flush();
         super.onPause();
     }

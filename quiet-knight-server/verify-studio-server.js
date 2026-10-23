@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
-export async function verifyStudioServer({request,post,redis,prefix,restart}){
+export async function verifyStudioServer({request,post,redis,prefix,restart,socket,waitFor,accountCookie}){
  const caps=await request('/capabilities');assert.equal(caps.status,200);assert.equal(caps.data.new_games,'untimed');assert.equal(caps.data.guest_play,true);
  const a=await post('/rooms',{side:'black',kind:'correspondence',nickname:'<Fox>'});assert.equal(a.status,200);assert.equal(a.data.role,'black');assert.equal(a.data.room.black_nickname,'Fox');assert.equal(a.data.room.white_joined,false);assert.equal(a.data.room.kind,'correspondence');
  const route='/rooms/'+a.data.room.code,black=a.data.seat_token,b=await post(route+'/join',{nickname:'Owl'}),white=b.data.seat_token;assert.equal(b.data.role,'white');assert.equal(b.data.room.time_control,undefined);
@@ -28,5 +28,15 @@ export async function verifyStudioServer({request,post,redis,prefix,restart}){
  await restart();assert.equal((await request(route)).data.room.status,'draw');
  assert.equal((await post('/rooms',{variant:'chess960'})).status,400);
  const waiting=await post('/rooms',{});const ttl=await redis.ttl(prefix+'room:'+waiting.data.room.code);assert(ttl>0&&ttl<=7*86400);
- console.log(JSON.stringify({event:'studio.server.acceptance',passed:true,checks:['capabilities','Black creator and White joiner','sanitized nicknames','untimed correspondence','active/history TTL preservation','idempotent moves and conflict','bilateral takeback/draw/decline','spectator reaction denial','reaction cooldown','draw record and restart','unsupported online Chess960','empty lobby TTL']}));
+ const owned=await post('/rooms',{},accountCookie),ownedRoute='/rooms/'+owned.data.room.code;
+ const liveOwner=await socket(owned.data.room.code,accountCookie,owned.data.seat_token);
+ await waitFor(liveOwner,e=>e.type==='seat.role'&&e.role==='white');
+ assert.equal((await post('/players/logout',{},accountCookie)).status,200);
+ await post(ownedRoute+'/join',{});
+ await waitFor(liveOwner,e=>e.type==='seat.role'&&e.role==='spectator'&&e.room_version>=2);
+ assert.equal((await post(ownedRoute+'/move',{seat_token:owned.data.seat_token,from:'e2',to:'e4'},accountCookie)).status,403);
+ for(let i=0;i<30;i++)liveOwner.send({type:'room.sync'});
+ await waitFor(liveOwner,e=>e.type==='test.close'&&e.code===1008);
+ console.log(JSON.stringify({event:'studio.ws-security',passed:true,checks:['revoked account session downgrades an open WebSocket','revoked cookie and stolen owner token cannot move','sync flood closes the socket with 1008']}));
+ console.log(JSON.stringify({event:'studio.server.acceptance' ,passed:true,checks:['capabilities','Black creator and White joiner','sanitized nicknames','untimed correspondence','active/history TTL preservation','idempotent moves and conflict','bilateral takeback/draw/decline','spectator reaction denial','reaction cooldown','draw record and restart','unsupported online Chess960','empty lobby TTL']}));
 }

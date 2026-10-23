@@ -62,6 +62,8 @@ const socket = async (code, cookie, seatToken) => {
   const messages = [];
   ws.on('message', raw => { try { messages.push(JSON.parse(String(raw))); } catch {} });
   ws.on('error', () => {});
+  ws.on('close', code => messages.push({type:'test.close',code}));
+  Object.defineProperty(messages,'send',{value:message=>ws.send(JSON.stringify(message))});
   sockets.push(ws);
   await once(ws, 'open');
   ws.send(JSON.stringify({ type: 'presence.hello', seat_token: seatToken }));
@@ -157,7 +159,7 @@ try {
 
   await verifyClockServer({request,post,makeRoom,socket,waitFor,redis,pool,prefix,cookies:[a,b],restart:async()=>{await stop();await start();}});
   await verifyGuestServer({request,post,socket,waitFor,pool,accountCookie:a,restart:async()=>{await stop();await start();}});
-  await verifyStudioServer({request,post,redis,prefix,restart:async()=>{await stop();await start();}});
+  await verifyStudioServer({request,post,redis,prefix,socket,waitFor,accountCookie:a,restart:async()=>{await stop();await start();}});
   console.log(JSON.stringify({ event: 'server.acceptance', passed: true, migration: 4, checks: ['canonical Android frontend and PWA manifest', 'optional accounts with protected records', 'registration and duplicate ID', 'room create/join and ownership', 'legal/illegal moves', 'authenticated WebSocket seats', 'reconnect/resume', 'untimed default and legacy clock preservation', 'nudge rate limit', 'resignation', 'checkmate', 'exactly-once results', 'server restart persistence'] }));
 } finally {
   for (const ws of sockets) ws.terminate();

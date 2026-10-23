@@ -4,7 +4,8 @@ import {makeFen} from 'chessops/fen';
 import {makeSquare,parseSquare} from 'chessops/util';
 import {blankStudy,chess960Fen,positionFromFen,playUci,replay,legalMoves,studyPgn,importStudyPgn,outcome,loadStudy,saveStudy} from '../src/local-rules.ts';
 import {puzzles,openings,endgames} from '../src/training-content.ts';
-import {selectStyle} from '../src/offline-engine.ts';
+import {reviewAssessment,adaptiveLevel} from '../src/review-assessment.ts';
+import {selectStyle,skillForLevel} from '../src/offline-engine.ts';
 
 const positions=new Set();
 for(let i=0;i<960;i++){
@@ -36,6 +37,11 @@ const storage=new Map();globalThis.localStorage={getItem:k=>storage.get(k)||null
 assert(saveStudy(game,'guest'));assert(saveStudy(variant,'account-A'));assert.equal(loadStudy('guest').variant,'standard');assert.equal(loadStudy('account-A').variant,'chess960');
 saveStudy(mate,'guest');storage.set('qk-study-v2:guest','broken');assert.deepEqual(loadStudy('guest').moves,game.moves);assert.deepEqual(loadStudy('account-B').moves,[]);
 const lines=[{move:'a2a3',cp:30},{move:'e2e4',cp:20},{move:'d2d4',cp:5}],features=m=>({capture:m==='e2e4'?3:0,check:m==='e2e4',center:m==='d2d4'?7:0,exposure:m==='a2a3'?5:0});
+assert.equal(selectStyle([{move:'a2a3',cp:30},{move:'e2e4',cp:20,engineChosen:true}],'balanced',features,5).move,'e2e4');
 assert.equal(selectStyle(lines,'fox',features,5).move,'e2e4');assert.equal(selectStyle(lines,'owl',features,5).move,'d2d4');assert.equal(selectStyle(lines,'tortoise',features,5).move,'e2e4');assert.equal(selectStyle(lines,'beginner',features,1).move,'d2d4');
 const roundtrip=new Chess();roundtrip.loadPgn(studyPgn(game));assert.equal(makeFen(replay(game).pos.toSetup()),roundtrip.fen());
+const seventyFive={...blankStudy(),start:'4k3/8/8/8/8/8/8/R3K3 w - - 150 76'};assert.match(outcome(seventyFive),/75-move/);
+const resigned=importStudyPgn('1. e4 e5 0-1');assert.match(studyPgn(resigned),/\[Result "0-1"\]/);
+assert.equal(reviewAssessment(150,-100,'w',true).category,'Blunder');assert.equal(reviewAssessment(-100,0,'b').category,'Mistake');assert.equal(reviewAssessment(0,-49,'w').category,'No major loss');assert.equal(reviewAssessment(0,NaN,'b').category,'Not evaluated');assert(reviewAssessment(100,-20,'w',true).missedTactic);assert.equal(adaptiveLevel(5,'win',false),5);assert.equal(adaptiveLevel(5,'loss',true),4);assert.equal(adaptiveLevel(10,'win',true),10);
+assert.equal(skillForLevel(10),20);assert.equal(skillForLevel(1),0);assert.equal(new Set(Array.from({length:10},(_,i)=>skillForLevel(i+1))).size,10);
 console.log('Studio rules: all 960 setups, stationary/normal Chess960 castling, en passant, underpromotion, authored exercises, PGN/FEN, corruption recovery, namespaces and style choices passed.');

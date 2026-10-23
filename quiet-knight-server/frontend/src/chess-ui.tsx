@@ -474,7 +474,7 @@ export function GameSurface(p: GameSurfaceProps) {
     (p.online
       ? color === p.me
         ? "You"
-        : p.opponentJoined || color === "w"
+        : p.opponentJoined
           ? "Opponent"
           : "Seat open"
       : color === p.me

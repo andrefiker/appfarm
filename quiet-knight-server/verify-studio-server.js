@@ -19,6 +19,11 @@ export async function verifyStudioServer({request,post,redis,prefix,restart}){
  const reaction=await post(route+'/reaction',{seat_token:white,kind:'fox',game_number:1});assert.equal(reaction.status,200);room=reaction.data.room;
  assert.equal((await post(route+'/reaction',{seat_token:white,kind:'fox',game_number:1})).status,429);
  assert.equal((await proposal(black,'request','draw')).status,200);assert.equal((await proposal(white,'accept')).status,200);assert.equal(room.status,'draw');assert.equal(room.score_event.result,'1/2-1/2');
+ const rematchInput={seat_token:white,action:'request',colors:'swap',game_number:1};let proposalResult=await post(route+'/rematch',rematchInput);assert.equal(proposalResult.status,200);let pending=proposalResult.data.room.rematch_proposal;
+ assert.equal((await post(route+'/rematch',{seat_token:white,action:'accept',proposal_id:pending.id,game_number:1})).status,403);
+ assert.equal((await post(route+'/rematch',{seat_token:black,action:'decline',proposal_id:pending.id,game_number:1})).status,200);
+ proposalResult=await post(route+'/rematch',rematchInput);pending=proposalResult.data.room.rematch_proposal;
+ assert.equal((await post(route+'/rematch',{seat_token:white,action:'cancel',proposal_id:pending.id,game_number:1})).status,200);
  assert.equal(await redis.ttl(prefix+'room:'+a.data.room.code),-1,'Historical games must not expire');
  await restart();assert.equal((await request(route)).data.room.status,'draw');
  assert.equal((await post('/rooms',{variant:'chess960'})).status,400);

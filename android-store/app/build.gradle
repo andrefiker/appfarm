@@ -14,6 +14,15 @@ android {
         buildConfigField 'String', 'SOURCE_COMMIT', '"local-unverified"'
     }
 
+    // Only the dedicated Quiet Knight CI command supplies this environment
+    // variable. Other AppFarm build/signing defaults remain untouched.
+    if (System.getenv('QK_CANDIDATE_STORE')) {
+        signingConfigs.debug.storeFile = file(System.getenv('QK_CANDIDATE_STORE'))
+        signingConfigs.debug.storePassword = 'android'
+        signingConfigs.debug.keyAlias = 'androiddebugkey'
+        signingConfigs.debug.keyPassword = 'android'
+    }
+
     flavorDimensions 'app'
     productFlavors {
         quietKnight {

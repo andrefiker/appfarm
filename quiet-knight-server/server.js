@@ -19,7 +19,7 @@ const PORT = Number(process.env.PORT || 3000);
 const FRONTEND_ORIGIN = new URL(process.env.FRONTEND_ORIGIN || 'https://quiet-knight-server-production.up.railway.app').origin;
 const RAILWAY_FRONTEND_ORIGIN = 'https://quiet-knight-server-production.up.railway.app';
 const PUBLIC_DIR = fileURLToPath(new URL('./public/', import.meta.url));
-const BUILD = 'qk-server-2026-09-13-r10-mutual-pause';
+const BUILD = 'qk-server-2026-10-23-studio-v1';
 const log = (event, fields = {}) => console.log(JSON.stringify({event,...fields}));
 const identities=new IdentityStore();
 await identities.checkSchema().then(async()=>log('identity.storage',{...(await identities.health()),mode:'check'})).catch(()=>log('identity.unavailable',{mode:'check'}));
@@ -49,7 +49,7 @@ function publicRoom(room) {
   return {
     code: room.code,
     kind: room.kind||"live", variant:"standard", white_nickname:room.white_nickname||"", black_nickname:room.black_nickname||"",
-    proposal:room.proposal||null, reaction:room.reaction||null,
+    rematch_proposal:room.rematch_proposal||null,proposal:room.proposal||null, reaction:room.reaction||null,
     fen: room.fen,
     turn: room.turn,
     status: room.status,
@@ -413,6 +413,19 @@ async function handleApi(req, res, url) {
     room=await settleRoom(room);
     if((room.game_number||1)!==previousNumber||!terminal(room))return send(res,409,{error:'The rematch has already started'},origin);
     if(room.white_player&&room.black_player&&!room.score_event)return send(res,503,{error:'The result is saved at the table. Please wait for Quiet Points to be recorded before rematching.'},origin);
+    if(input.action==='request'){
+      if(room.rematch_proposal)return send(res,409,{error:'Answer the existing rematch request first'},origin);
+      if(!['same','swap'].includes(input.colors))return send(res,400,{error:'Choose same or swap colors'},origin);
+      room.rematch_proposal={id:randomUUID(),by:color,colors:input.colors,game_number:previousNumber};room.version++;await saveRoom(room);return send(res,200,{room:publicRoom(room)},origin);
+    }
+    if(input.action!==undefined){
+      const proposal=room.rematch_proposal;
+      if(!proposal||proposal.id!==input.proposal_id||proposal.game_number!==previousNumber)return send(res,409,{error:'That rematch proposal is no longer pending'},origin);
+      if(!['accept','decline','cancel'].includes(input.action))return send(res,400,{error:'Choose accept, decline or cancel'},origin);
+      if((input.action==='cancel')!==(proposal.by===color))return send(res,403,{error:'Only the other player can answer'},origin);
+      if(input.action!=='accept'){room.rematch_proposal=null;room.version++;await saveRoom(room);return send(res,200,{room:publicRoom(room)},origin);}
+      input.colors=proposal.colors;
+    }
     if(input.colors!==undefined&&!['same','swap'].includes(input.colors))return send(res,400,{error:'Choose same or swap colors'},origin);
     if(input.colors==='swap'&&room.black_token){
       [room.white_token,room.black_token]=[room.black_token,room.white_token];
@@ -420,7 +433,7 @@ async function handleApi(req, res, url) {
       [room.white_nickname,room.black_nickname]=[room.black_nickname||"",room.white_nickname||""];
       [room.white_join_digest,room.black_join_digest]=[room.black_join_digest||null,room.white_join_digest||null];
     }
-    room.proposal=null;room.reaction=null;room.draw_agreement=null;room.move_requests=[];
+    room.rematch_proposal=null;room.proposal=null;room.reaction=null;room.draw_agreement=null;room.move_requests=[];
     room.game_number=previousNumber+1;room.started_at=Date.now();room.ended_at=null;room.score_event=null;
     room.points_policy=await identities.pairStatus(room.white_player,room.black_player);
     const game = new Chess();

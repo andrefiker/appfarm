@@ -52,7 +52,7 @@ test('untimed new game, two clients, background/reconnect, rematch and preserved
     const near=JSON.parse(await redis.get(key));near.white_time_ms=500;near.turn_started_at=Date.now();await redis.set(key,JSON.stringify(near),{EX:604800});await redis.zAdd('qk:clock-deadlines',{score:near.turn_started_at+500,value:code});
     await expect(a.page.getByRole('heading',{name:'Black wins on time',exact:true})).toBeVisible();await expect(b.page.getByRole('heading',{name:'Black wins on time',exact:true})).toBeVisible();
     await expect(clock(a.page,'White')).toHaveText('00:00');await expect(a.page.locator('.clock-active')).toHaveCount(0);
-    await a.page.getByRole('button',{name:'Rematch',exact:true}).click();await a.page.getByRole('button',{name:'Swap colors',exact:true}).click();
+    await a.page.getByRole('button',{name:'Rematch',exact:true}).click();await a.page.getByRole('button',{name:'Swap colors',exact:true}).click();await b.page.getByRole('button',{name:'Accept rematch',exact:true}).click();
     await expect(a.page.getByRole('group',{name:'Chess board, Black at bottom',exact:true})).toBeVisible();
     await expect(a.page.getByRole('timer')).toHaveCount(0);await expect(b.page.getByRole('timer')).toHaveCount(0);
     await move(b.page,'e2','e4');await expect(a.page.locator('[data-square=e4]')).toHaveAttribute('data-piece','wp');

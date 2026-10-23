@@ -21,7 +21,7 @@ test('fresh guests play multiplayer, resume, resign and swap; spectators cannot 
   await a.page.goto('about:blank');await move(b.page,'e7','e5');await a.page.goto(invite);await live(a.page);await expect(a.page.locator('[data-square=e5]')).toHaveAttribute('data-piece','bp');
   await expect(a.page.getByRole('timer')).toHaveCount(0);
   await b.page.getByRole('button',{name:'Resign',exact:true}).click();await b.page.getByRole('button',{name:'Confirm resign',exact:true}).click();
-  await a.page.getByRole('button',{name:'Rematch',exact:true}).click();await a.page.getByRole('button',{name:'Swap colors',exact:true}).click();
+  await a.page.getByRole('button',{name:'Rematch',exact:true}).click();await a.page.getByRole('button',{name:'Swap colors',exact:true}).click();await b.page.getByRole('button',{name:'Accept rematch',exact:true}).click();
   await expect(a.page.getByRole('group',{name:'Chess board, Black at bottom',exact:true})).toBeVisible();await move(b.page,'e2','e4');await expect(a.page.locator('[data-square=e4]')).toHaveAttribute('data-piece','wp');
   for(const p of [a.page,b.page,s.page])expect(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);
   await b.page.screenshot({path:'output/playwright/guest-board-320.png',fullPage:true});

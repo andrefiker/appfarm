@@ -153,11 +153,20 @@ jobs:
       - name: Restore the candidate debug signing identity
         uses: actions/cache@v4
         with:
-          path: ~/.android/debug.keystore
+          path: ${{ runner.temp }}/qk-signing/candidate.keystore
           key: quiet-knight-studio-debug-key-v1
+
+      - name: Prepare the retained test signing key
+        run: |
+          mkdir -p "$RUNNER_TEMP/qk-signing"
+          if [ ! -f "$RUNNER_TEMP/qk-signing/candidate.keystore" ]; then
+            keytool -genkeypair -keystore "$RUNNER_TEMP/qk-signing/candidate.keystore" -storepass android -keypass android -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -dname 'CN=Quiet Knight Test, O=AppFarm, C=BR'
+          fi
 
       - name: Assemble signed debug APK
         working-directory: android-store
+        env:
+          QK_CANDIDATE_STORE: ${{ runner.temp }}/qk-signing/candidate.keystore
         run: gradle --no-daemon :app:assembleQuietKnightDebug
 
       - name: Verify package, signature, permissions, and bundled game assets
@@ -185,7 +194,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: quiet-knight-studio-private-debug-key
-          path: ~/.android/debug.keystore
+          path: ${{ runner.temp }}/qk-signing/candidate.keystore
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 1

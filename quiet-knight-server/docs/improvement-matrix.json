@@ -4,392 +4,625 @@
     {
       "id": 1,
       "requirement": "Make the game screen board-first: maximize playable board area on portrait Android, remove distracting chrome, maintain legible player and status information, and avoid touch obstruction or overflow at ~320 px width.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/chess-ui.tsx; frontend/src/studio.css",
+      "evidence": [
+        "frontend-acceptance/studio.spec.js; rendered 320px board"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 2,
       "requirement": "Retain all 12 existing Animal Kingdom PNGs unchanged and accessible. Add an alternative high-clarity Classic/Staunton piece set, visually distinct for each piece and side even at small sizes. Never replace or silently alter approved Animal Kingdom assets.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/classic-pieces.tsx; pieces.tsx; table-atmosphere.tsx",
+      "evidence": [
+        "frontend/tests/animal-assets.test.mjs; studio.spec.js"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 3,
       "requirement": "Open directly to a no-login play menu with obvious Play Computer, Play Friend and Continue Game actions. Optional Account panel retains registration, login, recovery and private history without blocking guest play.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/GameApp.tsx; knight-id.tsx",
+      "evidence": [
+        "frontend-acceptance/guest.spec.js"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 4,
       "requirement": "Guarantee all NEW ordinary games and rematches are genuinely UNTIMED at the authoritative backend/game-state level. Preserve all existing stored 10+0 clocks and their server timeout behavior. Never implement the superseded 15+0 request; never merely hide clock UI. Detect legacy/incompatible production capabilities, explain limitations clearly, and prevent misleading claims. Untimed PGN TimeControl is \u201c-\u201d; historical timed PGN remains \u201c600+0\u201d.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "clock.js; capabilities.js; frontend/src/server-capabilities.ts; game-record.ts",
+      "evidence": [
+        "verify-clock.js; verify-clock-server.js; clock.spec.js; studio.spec.js"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 5,
       "requirement": "Make shareable private friend invitations, ideally links plus room codes. Validate permissions, app-link handling and recipient flows, with a manual fallback if links cannot open the app.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/invitation.tsx; GameApp.tsx; Android flavor manifest and MainActivity",
+      "evidence": [
+        "studio.spec.js QR lobby; manual fallback; physical recipient intent NOT TESTED"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "studio.spec.js QR lobby; manual fallback; physical recipient intent NOT TESTED"
     },
     {
       "id": 6,
       "requirement": "Auto-save games and moves reliably across app kills, screen lock, network interruptions and device restarts. Distinguish local/computer state from server-authoritative multiplayer state; never overwrite a newer remote game with stale local data.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/offline.ts; local-rules.ts; live-resume.ts; use-room-realtime.ts",
+      "evidence": [
+        "account-local-data.test.mjs; studio-rules.test.mjs; guest.spec.js; device kill/reboot NOT TESTED"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "account-local-data.test.mjs; studio-rules.test.mjs; guest.spec.js; device kill/reboot NOT TESTED"
     },
     {
       "id": 7,
       "requirement": "Add adjustable and meaningful engine difficulty presets (beginner, casual, club, strong, plus a suitable fine-grained control). Verify actual behavior at each difficulty rather than only changing labels.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/offline-engine.ts; use-computer-opponent.ts; chess-ui.tsx",
+      "evidence": [
+        "wasm-engine.test.mjs all ten real UCI skill settings"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 8,
       "requirement": "Highlight selected squares, legal destinations, captures, last move and a checked king using clear, accessible contrast and restrained visuals.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/chess-ui.tsx; game.css; studio.css",
+      "evidence": [
+        "guest.spec.js; studio.spec.js; rendered QA"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 9,
       "requirement": "Build a navigable post-game analysis mode with Stockfish-based evaluation, alternative moves, readable mistake categories and a way back to the original game. Keep analysis separate from actual multiplayer moves.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/StudyRoom.tsx; offline-engine.ts",
+      "evidence": [
+        "studio.spec.js offline Stockfish evaluation/review"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 10,
       "requirement": "Deliver and verify a genuinely OFFLINE computer chess engine on-device, identifying its actual technology/version and license. The existing bundled fallback is NOT proof of offline native Stockfish 18. If native Stockfish 18 is infeasible within constraints, use a real locally bundled, licensed engine and truthfully label its version; do not claim unavailable strength or functionality.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/scripts/prepare-engine.mjs; src/offline-engine.ts; public/engine generated at build",
+      "evidence": [
+        "wasm-engine.test.mjs; studio.spec.js offline worker"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 11,
       "requirement": "Make reconnection resilient: reconnecting guest/account players recover authorized seats and authoritative board state; viewers never gain move rights; surface meaningful connection states and avoid double-submitted moves.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/use-room-realtime.ts; GameApp.tsx; server.js roleFor/resolveSeats",
+      "evidence": [
+        "verify-guest-server.js; verify-server.js; guest.spec.js"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 12,
       "requirement": "Qualify the APK for Poco X7 Pro / Android 16 where real-device access exists: installation, touch, portrait layout, screen lock/background/restore, audio, offline play and two-client multiplayer. If hardware is unavailable, use emulators/browser tests and explicitly list physical checks as unverified.",
       "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "implementation": "android-store; docs/release-candidate.md physical checklist",
+      "evidence": [
+        "No physical Poco X7 Pro or Android emulator available"
+      ],
+      "candidate_implementation": "hardware unavailable",
+      "remaining_limit": "No physical Poco X7 Pro or Android emulator available"
     },
     {
       "id": 13,
       "requirement": "Support both tap-to-move and drag-to-move; configurable, touch friendly and usable without precision gestures.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/chess-ui.tsx pointer gestures and tap/keyboard",
+      "evidence": [
+        "studio.spec.js drag plus confirmation"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 14,
       "requirement": "Show clear legal-move previews and optional attack/capture distinctions, without revealing analysis when assistance is disabled.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/chess-ui.tsx; GameApp.tsx; StudyRoom.tsx",
+      "evidence": [
+        "guest.spec.js legal destinations; studio.spec.js castling/promotion"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 15,
       "requirement": "Use subtle, optional capture/move animations; prioritize responsiveness, clarity and reduced-motion settings.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/play-preferences.tsx; chess-ui.tsx; game.css; studio.css",
+      "evidence": [
+        "source preference/reduced-motion review; browser movement"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 16,
       "requirement": "Implement a large, accessible four-piece promotion chooser with correct underpromotion behavior.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/chess-ui.tsx PromotionChoices; StudyRoom.tsx",
+      "evidence": [
+        "studio-rules.test.mjs four promotions; studio.spec.js knight underpromotion"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 17,
       "requirement": "Display captured material and material balance without crowding the board.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/chess-ui.tsx MaterialScore/CapturedPieces",
+      "evidence": [
+        "rendered board; existing view-model material logic"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 18,
       "requirement": "Provide expandable algebraic move history, review navigation and current move highlighting; browsing history must not accidentally mutate the live game.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/chess-ui.tsx MoveHistory; StudyRoom.tsx cursor",
+      "evidence": [
+        "studio.spec.js read-only previous/live position"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 19,
       "requirement": "Support manual board flip, sensible automatic orientation for Black and correct coordinate labels.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/GameApp.tsx orientation; StudyRoom.tsx flip; boardSquares",
+      "evidence": [
+        "clock.spec.js both orientations; studio-rules.test.mjs 960; manual flip source"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 20,
       "requirement": "Offer an optional confirmation-before-move setting; default off, especially for quick casual play.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/GameApp.tsx proposeMove; play-preferences.tsx",
+      "evidence": [
+        "studio.spec.js drag/confirm/cancel boundary"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 21,
       "requirement": "Support undo/redo/takeback against the computer; multiplayer takebacks require explicit bilateral consent and server-checked authorization if offered. Never allow spectators or unauthorized clients to roll back moves.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/GameApp.tsx local undo/redo; consent.js",
+      "evidence": [
+        "studio.spec.js computer undo/redo; consent.test.mjs; verify-studio-server.js"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 22,
       "requirement": "Handle stalemate, checkmate, legal draws, offers/acceptance, repetition, insufficient material and applicable 50-/75-move conditions correctly; preserve PGN result and rules consistency.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "chess.js standard rules; frontend/src/local-rules.ts; consent.js; identity.js",
+      "evidence": [
+        "verify-server.js checkmate/draw records; studio-rules.test.mjs mate/75/fivefold/promotion"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 23,
       "requirement": "Add fully local pass-and-play for two people on one phone, with turn-based board flipping, no login and no network requirement.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/StudyRoom.tsx pass mode",
+      "evidence": [
+        "studio.spec.js pass-and-play, auto orientation, persistence"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 24,
       "requirement": "Add separately selectable Chess960/Fischer Random, with verified starting setup, legal Chess960 castling, FEN/PGN representation, replay and correct engine/backend support. Default remains standard untimed chess; gate unsupported online variants rather than fake support.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/local-rules.ts chessops; StudyRoom.tsx; offline-engine.ts",
+      "evidence": [
+        "studio-rules.test.mjs all960/castling; wasm-engine.test.mjs; studio.spec.js"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 25,
       "requirement": "Provide a readable post-game evaluation graph and jump-to-position navigation; mark whether evaluation is engine-generated or provisional.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/StudyRoom.tsx analysis graph/review cursor",
+      "evidence": [
+        "studio.spec.js actual Stockfish graph"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 26,
       "requirement": "Detect major blunders, mistakes and missed tactical opportunities using declared scoring thresholds/search limits, and avoid pseudoscientific precision or \u201cbest move\u201d guarantees.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/review-assessment.ts; StudyRoom.tsx",
+      "evidence": [
+        "studio-rules.test.mjs scoring boundaries; studio.spec.js analysis"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 27,
       "requirement": "Add useful, understandable explanations of candidate best moves using deterministic chess features/variations (threats, material, king safety, tactics); no paid API or external generative AI. Distinguish explanation heuristics from engine evaluation.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/local-rules.ts moveFeatures; StudyRoom.tsx candidate hints",
+      "evidence": [
+        "studio-rules.test.mjs feature-based style selection; studio.spec.js engine analysis; heuristic explanations labelled"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 28,
       "requirement": "Give offline AI opponents recognizable playing styles (e.g., Fox = tactical, Tortoise = defensive, Owl = positional, plus beginner), implemented through real, tested difficulty/selection parameters, not merely names or random illegal moves.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/offline-engine.ts selectStyle; play-preferences.tsx",
+      "evidence": [
+        "studio-rules.test.mjs distinct synthetic candidate choices; real engine all skills; full on-phone style comparison NOT TESTED"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "studio-rules.test.mjs distinct synthetic candidate choices; real engine all skills; full on-phone style comparison NOT TESTED"
     },
     {
       "id": 29,
       "requirement": "Optionally adapt computer difficulty based on local games with user consent/toggle and transparency; do not secretly modify rated or human games.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/review-assessment.ts adaptiveLevel; GameApp.tsx startComputer",
+      "evidence": [
+        "studio-rules.test.mjs opt-in/clamp/new-game policy"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 30,
       "requirement": "Add offline tactics exercises with solutions, hints, explanations, replay and a small properly licensed starter set; support forks, pins, skewers, discovered attacks, mate patterns and progressively harder puzzles.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/training-content.ts; StudyRoom.tsx",
+      "evidence": [
+        "studio-rules.test.mjs every authored solution; studio.spec.js underpromotion exercise"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 31,
       "requirement": "Add a compact offline opening explorer with transparent source/license, name, move frequency or curated continuation data, and no fabricated statistics.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/training-content.ts openings; StudyRoom.tsx",
+      "evidence": [
+        "studio-rules.test.mjs all eight legal curated lines; no frequency claims"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 32,
       "requirement": "Add an offline endgame trainer (basic mates, king/pawn and elementary rook endings) with correct position setup, success criteria and hints.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/training-content.ts endgames; StudyRoom.tsx",
+      "evidence": [
+        "studio-rules.test.mjs both basic mates, four promotion choices and legal rook/pawn setup"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 33,
       "requirement": "Add a position editor and robust FEN import/export, turn/castling/en-passant validation and ability to start local engine analysis or a game from a legal position.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/local-rules.ts validation; StudyRoom.tsx editor",
+      "evidence": [
+        "studio-rules.test.mjs invalid FEN/castling/EP; studio.spec.js empty editor rejection"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 34,
       "requirement": "Permit analysis of locally saved positions without overwriting an ongoing match; \u201cContinue the Position\u201d should be one tap from the home screen where a saved session exists.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/GameApp.tsx Continue; StudyRoom.tsx independent namespace",
+      "evidence": [
+        "studio.spec.js continue/analyse; studio-rules.test.mjs save isolation"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 35,
       "requirement": "Add engine strength, thinking time, CPU/battery and responsiveness controls; cancel or suspend obsolete searches on navigation/backgrounding and profile performance on Android.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/offline-engine.ts disposable worker; play-preferences.tsx",
+      "evidence": [
+        "wasm-engine.test.mjs; studio.spec.js background worker termination; Android performance NOT TESTED"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "wasm-engine.test.mjs; studio.spec.js background worker termination; Android performance NOT TESTED"
     },
     {
       "id": 36,
       "requirement": "Generate shareable QR invitations without forcing a camera permission; provide link/code input and operating-system/external QR scanning alternatives. Only add in-app camera scanning after separate permission approval.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/invitation.tsx InviteQR; Android manifest",
+      "evidence": [
+        "studio.spec.js generated QR dialog; no camera permission; physical QR scanning NOT TESTED"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "studio.spec.js generated QR dialog; no camera permission; physical QR scanning NOT TESTED"
     },
     {
       "id": 37,
       "requirement": "Allow local guest display nicknames without creating accounts. Sanitize display names, keep private seat credentials out of names, links, logs and screenshots.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "capabilities.js guestName; server.js nicknames; play-preferences.tsx",
+      "evidence": [
+        "consent.test.mjs sanitization; verify-studio-server.js guest nicknames"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 38,
       "requirement": "Add a clear game lobby showing side selection, invitation state, untimed/variant rules and spectator count, without disclosing protected information.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "server.js side selection/presence; GameApp.tsx room lobby",
+      "evidence": [
+        "verify-studio-server.js Black creation; studio.spec.js correspondence lobby"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 39,
       "requirement": "Display actionable connectivity indicators: connected, reconnecting, peer disconnected, server unavailable and incompatible backend. Do not claim delivery of a move before server confirmation.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/server-capabilities.ts; use-room-realtime.ts; GameApp.tsx",
+      "evidence": [
+        "guest.spec.js reconnect; studio.spec.js incompatible server blocks creation"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 40,
       "requirement": "Make one-tap rematches with same/swapped colors; enforce guest/account ownership and untimed rematch creation. Support refusal/cancellation cleanly.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "server.js rematch request/accept/decline/cancel; GameApp.tsx",
+      "evidence": [
+        "verify-studio-server.js consent/refusal/cancel; clock.spec.js and guest.spec.js swapped rematch"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 41,
       "requirement": "Add optional correspondence-style asynchronous play, with server-persisted turns and reopen/resume flows. Preserve the \u201cnew games untimed\u201d rule: NO countdowns, per-move forfeits or implicit time controls. Optional reminders must not become compulsory, spammy or paid; do not enable live notifications without necessary permission and release approval.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "server.js room.kind and TTL-free active/history; frontend lobby/resume",
+      "evidence": [
+        "verify-studio-server.js persistence/restart; infrastructure AOF/RDB qualification remains a production prerequisite"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "verify-studio-server.js persistence/restart; infrastructure AOF/RDB qualification remains a production prerequisite"
     },
     {
       "id": 42,
       "requirement": "Add safe spectator mode: read-only board and legal public game status, no move, resign, pause, rematch, nudge or private token access.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "access-control.js; server.js authorization/WS roles",
+      "evidence": [
+        "verify-guest-server.js spectator HTTP/WS denials"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 43,
       "requirement": "Add a small opt-in, nonverbal, abuse-resistant reaction palette, including optional Animal Kingdom reactions. No free-form chat, uploads or unmoderated message service.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "server.js reaction allowlist/cooldown; GameApp.tsx opt-in emoji palette",
+      "evidence": [
+        "verify-studio-server.js spectator denial/cooldown; no free-form messages"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 44,
       "requirement": "Design abandoned-room expiration/cleanup with explicit documentation and tests. Never delete active or historical games or accounts; live cleanup jobs/database writes require separate production approval.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "server.js saveRoom TTL rule/startup retention",
+      "evidence": [
+        "verify-studio-server.js waiting TTL, active/history PERSIST; no live job executed"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 45,
       "requirement": "Show server capabilities and live/unsupported game features clearly; avoid misleading \u201cuntimed multiplayer available\u201d claims while the production server still uses the old behavior.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "capabilities.js protocol2; frontend/src/server-capabilities.ts; about.tsx",
+      "evidence": [
+        "studio.spec.js older-server compatibility; public production health read"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 46,
       "requirement": "Optimize immersive portrait Android UI with correct insets, keyboard behavior, navigation gestures, orientation safety and large tap targets; do not require a landscape layout.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "android-store Quiet Knight flavor; MainActivity insets/lifecycle; studio.css",
+      "evidence": [
+        "APK compilation/manifest gate; browser320px; physical insets/keyboard NOT TESTED"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "APK compilation/manifest gate; browser320px; physical insets/keyboard NOT TESTED"
     },
     {
       "id": 47,
       "requirement": "Add a configurable left-handed control layout and ergonomic one-handed access without changing chess orientation unexpectedly.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/play-preferences.tsx; studio.css",
+      "evidence": [
+        "studio.spec.js left control layout; rendered320px"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 48,
       "requirement": "Offer board/UI themes: Classic Wood, Midnight, Ivory, Forest and Animal Kingdom. Persist preferences locally; themes must not obscure the pieces or change rules.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/table-atmosphere.tsx; studio.css",
+      "evidence": [
+        "studio.spec.js all five requested themes and persistence source"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 49,
       "requirement": "Add accessibility: high contrast, non-color-only indicators, TalkBack/semantic labels where possible, scalable controls, reduced motion, readable text and tap alternatives to dragging. Validate against relevant WCAG 2.2 touch principles.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/chess-ui.tsx semantic board/keyboard; play-preferences; studio.css",
+      "evidence": [
+        "browser320px, tap alternatives, reduced-motion/high-contrast source; TalkBack/system scaling NOT TESTED"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "browser320px, tap alternatives, reduced-motion/high-contrast source; TalkBack/system scaling NOT TESTED"
     },
     {
       "id": 50,
       "requirement": "Add quiet, optional move/capture sounds and configurable haptics that respect mute/accessibility/system behavior. No surprise audio or permanent background playback.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/chess-audio.ts; GameApp.tsx sounds/haptics defaults off",
+      "evidence": [
+        "source cancellation/mute review; real Android audio/haptics/system behavior NOT TESTED"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "source cancellation/mute review; real Android audio/haptics/system behavior NOT TESTED"
     },
     {
       "id": 51,
       "requirement": "Reduce polling, unnecessary WebView CPU/battery usage and stale engine work; test foreground/background recovery, thermal/battery impact and cancellation of computation.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/offline-engine.ts; use-room-realtime.ts; native lifecycle",
+      "evidence": [
+        "studio.spec.js real worker cancellation/restart; physical thermal/battery NOT TESTED"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "studio.spec.js real worker cancellation/restart; physical thermal/battery NOT TESTED"
     },
     {
       "id": 52,
       "requirement": "Add a privacy-safe About / Diagnostics screen showing package/version/code, source commit, engine implementation/version, offline status, server compatibility and sanitized connection status. Do not expose tokens, private player records, credential-bearing URLs or secrets.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/about.tsx; diagnostics.ts; native build metadata",
+      "evidence": [
+        "source redaction/metadata review; APK package/version verification"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 53,
       "requirement": "Add portable PGN game export/import and FEN sharing with strong input validation, clear save/restore boundaries, no compulsory registration and no accidental local-data overwrite.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "frontend/src/local-rules.ts import/export; game-record.ts",
+      "evidence": [
+        "studio-rules.test.mjs strict PGN/FEN roundtrip and results; studio.spec.js export and invalid import"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 54,
       "requirement": "Harden anonymous capability tokens, account-seat identity checks, WebSocket reauthorization, rate limiting, replay/idempotency, logging redaction, spectator boundaries, secure Android WebViewAssetLoader and restrictive file-access settings. Test attacks with synthetic users; do not loosen security to make guest access easier.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "server.js; access-control.js; consent.js; network.ts; native WebView settings",
+      "evidence": [
+        "verify-guest-server.js; verify-studio-server.js; auth-http tests; source WebView review"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "Final exact-commit CI qualification pending"
     },
     {
       "id": 55,
       "requirement": "Create repeatable release artifacts with versioning, proven signing/package identity, checksum, commit hash, reproducible build instructions, relevant licenses, test reports, screenshots, rollback/migration guidance and upgrade compatibility notes. Preserve separately gated schema-v4 release process and do not claim an older differently signed APK can update in place.",
-      "status": "NOT TESTED",
-      "implementation": "Baseline audit pending",
-      "evidence": []
+      "status": "PARTIAL",
+      "implementation": "workflows; android-store; prepare-engine.mjs; docs; release artifacts",
+      "evidence": [
+        "CI/APK signature/checksum/source/license preservation; compatible production rollback room-data proof remains separately gated"
+      ],
+      "candidate_implementation": "implemented",
+      "remaining_limit": "CI/APK signature/checksum/source/license preservation; compatible production rollback room-data proof remains separately gated"
     }
   ],
   "special_features": [
-    "Quiet Mode",
-    "Continue the Position",
-    "Animal Kingdom AI styles"
-  ]
+    {
+      "name": "Quiet Mode",
+      "implementation": "play-preferences.tsx + studio.css",
+      "evidence": "studio.spec.js quiet/left rendering"
+    },
+    {
+      "name": "Continue the Position",
+      "implementation": "GameApp.tsx + StudyRoom.tsx separate session",
+      "evidence": "studio.spec.js continuation and offline analysis"
+    },
+    {
+      "name": "Animal Kingdom AI styles",
+      "implementation": "offline-engine.ts + local-rules.ts move features",
+      "evidence": "studio-rules.test.mjs policy choices; physical style comparison not tested"
+    }
+  ],
+  "qualification": "Development matrix: implementations present; final exact-commit CI, packaging and rendered review must pass before promotion to DONE. No production deployment."
 }

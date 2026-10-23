@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {spawn} from 'node:child_process';
 import {createInterface} from 'node:readline';
 import {Chess} from 'chess.js';
+import {skillForLevel} from '../src/offline-engine.ts';
 import {positionFromFen,playUci} from '../src/local-rules.ts';
 const engine='node_modules/stockfish/bin/stockfish-18-lite-single.js';
 async function search(fen,level=5,chess960=false){return new Promise((resolve,reject)=>{
@@ -10,7 +11,7 @@ async function search(fen,level=5,chess960=false){return new Promise((resolve,re
  p.stderr.on('data',s=>{stderr+=String(s).slice(0,200);});p.on('error',reject);
  const write=s=>p.stdin.write(s+'\n');
  lines.on('line',line=>{if(line.startsWith('id name '))name=line.slice(8);
-  if(line==='uciok'){write('setoption name Threads value 1');write('setoption name Hash value 16');write('setoption name UCI_Chess960 value '+chess960);write('setoption name Skill Level value '+(level-1)*2);write('isready');}
+  if(line==='uciok'){write('setoption name Threads value 1');write('setoption name Hash value 16');write('setoption name UCI_Chess960 value '+chess960);write('setoption name Skill Level value '+skillForLevel(level));write('isready');}
   if(line==='readyok'){write('position fen '+fen);write('go movetime 100');}
   if(line.startsWith('bestmove ')){best=line.split(' ')[1];write('quit');}
  });p.on('close',code=>{clearTimeout(timer);if(code!==0||!best)reject(Error('WASM engine failed: '+stderr));else resolve({name,move:best});});write('uci');

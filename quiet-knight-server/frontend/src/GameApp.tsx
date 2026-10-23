@@ -1,3 +1,4 @@
+import {adaptiveLevel} from './review-assessment';
 import {InviteQR,parseInvitation} from './invitation';
 import {About} from './about';
 import {StudyRoom} from './StudyRoom';
@@ -42,6 +43,7 @@ type Role = "white" | "black" | "spectator";
 type RoomState = ClockState & {
   game_number?: number;
   kind?:string;white_nickname?:string;black_nickname?:string;
+  rematch_proposal?:{id:string;by:Color;colors:"same"|"swap"}|null;
   proposal?:{id:string;kind:"draw"|"takeback";by:Color}|null;
   reaction?:{kind:string;by:Color;at:number}|null;
   white_player?: { id: string; handle: string; quiet_points: number } | null;
@@ -77,6 +79,7 @@ type Modal =
   | "resign"
   | "invite"
   | null;
+const REACTIONS:Record<string,string>={hello:"👋", "well-played":"👏",thanks:"🙏",fox:"🦊",owl:"🦉",tortoise:"🐢"};
 const BUILD = "Quiet Knight 1.1.0 candidate · offline studio";
 function roleColor(role: Role | null): Color | null {
   return role === "white" ? "w" : role === "black" ? "b" : null;
@@ -346,7 +349,7 @@ export default function GameApp() {
   }, [table.pieceSet, unquiet]);
   useEffect(() => {
     setSelected(null);
-    setPromotion(null);
+    setPromotion(null);setPendingMove(null);
   }, [room?.code, room?.version]);
   useEffect(() => {
     // Account restoration clears the previous room view. Join only after that
@@ -610,7 +613,7 @@ export default function GameApp() {
     remember(localGameIdKey(accountId), id);
   }
   function startComputer(color: Color) {
-    const adjusted=prefs.adaptive&&localGame.isCheckmate()?Math.max(1,Math.min(10,level+(localGame.turn()!==humanColor?1:-1))):level;
+    const adjusted=localGame.isGameOver()?adaptiveLevel(level,localGame.isCheckmate()?(localGame.turn()!==humanColor?'win':'loss'):'draw',prefs.adaptive):level;
     if(adjusted!==level)setLevel(adjusted);
     newLocalTable();
     setEnginePaused(false);setRedoMoves([]);setFlipped(false);
@@ -841,7 +844,7 @@ export default function GameApp() {
       endRequest();
     }
   }
-  async function rematch(colors: "same" | "swap" = "same") {
+  async function rematch(colors: "same" | "swap" = "same",action="request") {
     closeModal();
     setSelected(null);
     setMotion(null);
@@ -853,7 +856,7 @@ export default function GameApp() {
     if (!room || !seatToken || !beginRequest()) return;
     try {
       const { data } = await api.post(`/api/rooms/${room.code}/rematch`, {
-        colors,
+        colors, action, proposal_id:room.rematch_proposal?.id,
         game_number: room.game_number || 1,
         seat_token: seatToken,
         connection_id: connectionId || undefined,
@@ -1278,7 +1281,7 @@ export default function GameApp() {
           }
           tableExtra={
             <>
-            {room?<section className="room-lobby" aria-label="Game lobby"><p>Room {room.code} · {room.kind==='correspondence'?'Correspondence · no deadlines':'Live'} · {room.time_control?'Historical 10+0':'Untimed'} · Standard · {presence?.spectators??0} spectators</p><button className="secondary" onClick={()=>{setTableControls(false);setModal('invite');}}>Show invitation QR</button>{role!=='spectator'&&room.status==='active'?<><div className="study-actions"><button disabled={busy||Boolean(room.proposal)} onClick={()=>void consent('request','draw')}>Offer draw</button>{!room.time_control&&!room.points_policy?.eligible?<button disabled={busy||Boolean(room.proposal)||!room.moves.length} onClick={()=>void consent('request','takeback')}>Request takeback</button>:null}</div>{room.proposal?<div role="status"><p>{room.proposal.kind} requested by {room.proposal.by==='w'?'White':'Black'}</p>{room.proposal.by===me?<button onClick={()=>void consent('cancel')}>Cancel proposal</button>:<><button onClick={()=>void consent('accept')}>Accept proposal</button><button onClick={()=>void consent('decline')}>Decline proposal</button></>}</div>:null}{prefs.reactions?<div className="study-actions" aria-label="Quiet reactions">{['hello','well-played','thanks','fox','owl','tortoise'].map(kind=><button key={kind} disabled={busy} onClick={()=>void reaction(kind)}>{kind}</button>)}</div>:null}</>:null}{prefs.reactions&&room.reaction&&Date.now()-room.reaction.at<15000?<p role="status">{room.reaction.by==='w'?'White':'Black'}: {room.reaction.kind}</p>:null}</section>:null}
+            {room?<section className="room-lobby" aria-label="Game lobby"><p>Room {room.code} · {room.kind==='correspondence'?'Correspondence · no deadlines':'Live'} · {room.time_control?'Historical 10+0':'Untimed'} · Standard · {presence?.spectators??0} spectators</p><button className="secondary" onClick={()=>{setTableControls(false);setModal('invite');}}>Show invitation QR</button>{role!=='spectator'&&room.status==='active'?<><div className="study-actions"><button disabled={busy||Boolean(room.proposal)} onClick={()=>void consent('request','draw')}>Offer draw</button>{!room.time_control&&!room.points_policy?.eligible?<button disabled={busy||Boolean(room.proposal)||!room.moves.length} onClick={()=>void consent('request','takeback')}>Request takeback</button>:null}</div>{room.proposal?<div role="status"><p>{room.proposal.kind} requested by {room.proposal.by==='w'?'White':'Black'}</p>{room.proposal.by===me?<button onClick={()=>void consent('cancel')}>Cancel proposal</button>:<><button onClick={()=>void consent('accept')}>Accept proposal</button><button onClick={()=>void consent('decline')}>Decline proposal</button></>}</div>:null}{prefs.reactions?<div className="study-actions" aria-label="Quiet reactions">{['hello','well-played','thanks','fox','owl','tortoise'].map(kind=><button key={kind} aria-label={kind} title={kind} disabled={busy} onClick={()=>void reaction(kind)}>{REACTIONS[kind]}</button>)}</div>:null}</>:null}{prefs.reactions&&room.reaction&&Date.now()-room.reaction.at<15000?<p role="status">{room.reaction.by==='w'?'White':'Black'}: {REACTIONS[room.reaction.kind]||'•'}</p>:null}</section>:null}
             {room && (room.white_player || room.black_player) ? (
               <div className="quiet-score" aria-label="Quiet Points">
                 {ended ? (
@@ -1346,7 +1349,7 @@ export default function GameApp() {
           connection={connection}
           level={level}
           me={me}
-          opponentJoined={Boolean(room?.black_joined)}
+          opponentJoined={Boolean(me==="b"?room?.white_joined:room?.black_joined)}
           turn={turn}
           ended={ended}
           waiting={waiting}
@@ -1378,6 +1381,7 @@ export default function GameApp() {
           }}
         />
       ) : null}
+      {screen==='game'&&room?.rematch_proposal?<section className="rematch-consent" aria-label="Rematch request"><p>{room.rematch_proposal.by===me?'Your opponent is considering the rematch.':'Your opponent offers a rematch.'} {room.rematch_proposal.colors==='swap'?'Swap colors.':'Same colors.'}</p>{room.rematch_proposal.by===me?<button className="secondary" onClick={()=>void rematch('same','cancel')}>Cancel rematch request</button>:role!=='spectator'?<><button className="primary" onClick={()=>void rematch('same','accept')}>Accept rematch</button><button className="secondary" onClick={()=>void rematch('same','decline')}>Decline rematch</button></>:null}</section>:null}
       {pendingMove?<section className="move-confirmation" role="dialog" aria-label="Confirm move"><p>{pendingMove.from} → {pendingMove.to}</p><button onClick={()=>performMove(pendingMove.from,pendingMove.to,pendingMove.promotion)}>Confirm move</button><button onClick={()=>setPendingMove(null)}>Cancel move</button></section>:null}
       {screen === "home" ? (
         <p className="network-build">
@@ -1475,7 +1479,7 @@ export default function GameApp() {
                 tableSettings
               ) : modal === "invite" && room ? (
                 <>
-                  <InviteQR url={roomLink(room.code)} code={room.code}/>
+                  <InviteQR url={roomLink(room.code)} code={room.code}/><a href={`quietknight://join/${room.code}`}>Open in installed Quiet Knight</a>
                   <p>Copy this link and send it to your friend.</p>
                   <input
                     className="invite-field"

@@ -7,7 +7,7 @@ export async function inspectServer(signal?: AbortSignal): Promise<Compatibility
     if (r.status === 404) return {state:'incompatible',message:'This server uses an older game protocol. New untimed friend games require the separately approved server update. Existing rooms can still be reopened.'};
     if (!r.ok) throw Error('unavailable');
     const c = await r.json();
-    if (c.protocol !== 1 || c.new_games !== 'untimed' || c.guest_play !== true || !Array.isArray(c.variants) || !c.variants.includes('standard'))
+    if (c.protocol !== 2 || c.new_games !== 'untimed' || c.guest_play !== true || !Array.isArray(c.variants) || !c.variants.includes('standard'))
       return {state:'incompatible',message:'Untimed guest multiplayer is unsupported by this server. Local play is available offline.'};
     return {state:'compatible', message:'Server supports untimed guest games.',capabilities:c};
   } catch { return {state:'unavailable',message:'Server unavailable. Local play works offline; reconnect to create a friend game.'}; }

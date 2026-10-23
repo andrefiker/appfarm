@@ -1,11 +1,13 @@
+CURRENT DEFAULT (2026-10-23): New live games and rematches are untimed. Existing timed games retain their stored 10+0 clocks, pause/resume and timeout behavior. Computer mode remains untimed. Legacy pause/timeout checks below apply only to persisted timed fixtures.
+
 # Tests
 
 ## Test 1 - Open an invite, recover the same seat, and exchange moves [sanity]
 Viewport: mobile (375x667)
-Covers: Railway room creation, direct invite join, Redis-backed idempotent join credentials, initial Railway room read, Railway WebSocket live updates, move validation, board geometry, 10+0 server clocks, White start on join, Zen clock visibility
+Covers: Railway room creation, direct invite join, Redis-backed idempotent join credentials, initial Railway room read, Railway WebSocket live updates, move validation, board geometry, untimed new games and preserved historical 10+0 clocks, White start on join, Zen clock visibility
 Description: Checks the actual second-phone workflow instead of just app startup.
 Steps:
-1. Actor A chooses Create live game and copies the invite. Before B joins, verify both clocks show 10:00 and remain stopped. On Web Share capable phones, Share invite is primary and Copy invite remains available. Verify the native share receives the direct room URL, cancellation is quiet, and denial/unavailable API falls back to copy.
+1. Actor A chooses Create live game and copies the invite. Before and after B joins a NEW game, verify no clock or pause controls are shown. On Web Share capable phones, Share invite is primary and Copy invite remains available. Verify the native share receives the direct room URL, cancellation is quiet, and denial/unavailable API falls back to copy.
 2. Actor B in a separate browser context opens that exact invite. Verify joining ends with a board, not a permanent Please wait screen, and White's clock begins.
 3. Reload B using the same URL. Verify B recovers Black, not a spectator, while A remains White.
 4. Verify both connection labels say Live and A sees Opponent or the friend’s Knight ID, not Seat open. A and B must report Opponent at the table; spectators do not count as present.
@@ -77,7 +79,7 @@ Steps:
 5. Verify both clients show Black wins. A chooses Rematch then Swap colors. Verify game_number increments, A becomes Black and B becomes White, both boards orient correctly, B can play e4 and A is rejected for playing White. Reload both and recover the swapped roles using existing seat tokens and Black’s original join key. Finish and choose Same colors; roles stay unchanged and game_number increments again. Expand Your games together and confirm wins/losses/draws include casual games.
 6. After the finished game choose Preview postcard and Share game. Verify the card uses the actual final board and existing piece artwork, names, result, move count and date, with no credentials or hosted image. File-capable Web Share uses a local PNG; cancellation is quiet; download/text fallback works. For a guest, Home remembers only a small local list and Last game opens a read-only final board. A Knight ID profile uses recent completed ledger records; final viewing must not change the current live room or seat.
 Expected: Promotions and cancellation work; resignation reaches both clients; rematch preserves the same room and seats, restores 32 pieces with White to move, and clears captured rows and history, and restores material totals to 39 each.
-Clock ending acceptance: In a fresh guest game leave White without moving until its full 10 minutes expires. Both viewers receive Black wins on time without another action; clocks stop, White alone sees the existing losing line, and late moves are rejected. A spectator sees no losing line. Same-color and swap-color rematches restore 10:00 for both colors. Insufficient-mating-material timeouts draw, with no losing line. Server deterministic and real-Redis suites cover material cases, exact deadlines, races, restart recovery, scoring once, and legacy rooms remaining untimed until rematch. Computer and offline modes have no clocks.
+Historical clock acceptance ONLY: use an isolated persisted 10+0 fixture (never a live database record) and leave White without moving until its remaining time expires. Both viewers receive Black wins on time without another action; clocks stop, White alone sees the existing losing line, and late moves are rejected. A spectator sees no losing line. Same-color and swap-color rematches start a NEW untimed game with no clocks. Insufficient-mating-material timeouts draw, with no losing line. Server deterministic and real-Redis suites cover material cases, exact deadlines, races, restart recovery, scoring once, and legacy rooms remaining untimed until rematch. Computer and offline modes have no clocks.
 
 
 

@@ -8,6 +8,7 @@ import pg from 'pg';
 import { WebSocket } from 'ws';
 import { createClient } from 'redis';
 import { IdentityStore } from './identity.js';
+import { verifyClockServer } from './verify-clock-server.js';
 
 if (!process.env.DATABASE_URL || !process.env.REDIS_URL) throw new Error('DATABASE_URL and REDIS_URL are required');
 const schema = `qk_verify_${randomUUID().replaceAll('-', '')}`;
@@ -121,7 +122,7 @@ try {
   assert.equal((await post(`/rooms/${room.code}/move`, { seat_token: room.black.seat_token, from: 'e7', to: 'e5' }, a)).status, 403);
   const replied = await post(`/rooms/${room.code}/move`, { seat_token: room.black.seat_token, from: 'e7', to: 'e5' }, b);
   assert.equal(replied.status, 200);
-  assert.equal(replied.data.room.clock_running_color, 'w');
+  assert.equal(replied.data.room.time_control, undefined);
   const nudge = await post(`/rooms/${room.code}/nudge`, { seat_token: room.black.seat_token, request_id: randomUUID() }, b);
   assert.equal(nudge.status, 200);
   assert.equal((await post(`/rooms/${room.code}/nudge`, { seat_token: room.black.seat_token, request_id: randomUUID() }, b)).status, 429);
@@ -152,7 +153,8 @@ try {
   assert.equal((await request(`/rooms/${mate.code}`, { cookie: a })).data.room.status, 'checkmate');
   assert.equal((await pool.query('SELECT count(*)::int AS n FROM qk_games WHERE room_code=$1', [mate.code])).rows[0].n, 1);
 
-  console.log(JSON.stringify({ event: 'server.acceptance', passed: true, migration: 4, checks: ['canonical Android frontend and PWA manifest', 'mandatory auth', 'registration and duplicate ID', 'room create/join and ownership', 'legal/illegal moves', 'authenticated WebSocket seats', 'reconnect/resume', 'clock synchronization', 'nudge rate limit', 'resignation', 'checkmate', 'exactly-once results', 'server restart persistence'] }));
+  await verifyClockServer({request,post,makeRoom,socket,waitFor,redis,pool,prefix,cookies:[a,b],restart:async()=>{await stop();await start();}});
+  console.log(JSON.stringify({ event: 'server.acceptance', passed: true, migration: 4, checks: ['canonical Android frontend and PWA manifest', 'mandatory auth', 'registration and duplicate ID', 'room create/join and ownership', 'legal/illegal moves', 'authenticated WebSocket seats', 'reconnect/resume', 'untimed default and legacy clock preservation', 'nudge rate limit', 'resignation', 'checkmate', 'exactly-once results', 'server restart persistence'] }));
 } finally {
   for (const ws of sockets) ws.terminate();
   await stop();

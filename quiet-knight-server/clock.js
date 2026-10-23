@@ -1,11 +1,13 @@
 import { Chess } from 'chess.js';
 
+// Historical 10+0 rooms keep their stored clocks. New games are untimed.
 export const INITIAL_MS = 600000;
 export const timed = room => room.time_control?.initial_ms === INITIAL_MS;
 const timeKey = color => color === 'w' ? 'white_time_ms' : 'black_time_ms';
 
-export function resetClock(room, now) {
-  Object.assign(room, {time_control:{initial_ms:INITIAL_MS,increment_ms:0}, white_time_ms:INITIAL_MS, black_time_ms:INITIAL_MS, clock_running_color:room.status === 'active' ? 'w' : null, turn_started_at:room.status === 'active' ? now : null, flagged_color:null});
+// Called only at a NEW game boundary (creation/rematch), never on load or join.
+export function resetClock(room) {
+  for (const key of ['time_control','white_time_ms','black_time_ms','clock_running_color','turn_started_at','flagged_color']) delete room[key];
   clearPause(room);
 }
 export function clearPause(room) {

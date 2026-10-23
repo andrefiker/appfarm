@@ -837,10 +837,10 @@ export function HomeSurface({
               <h2>Play a friend</h2>
               <span className="mode-mark">
                 <i />
-                10 + 0
+                Untimed
               </span>
             </div>
-            <p>Ten minutes each. Share a room and make your move.</p>
+            <p>No time limit. Share a room and make your move.</p>
             <button
               type="button"
               className="primary wide"

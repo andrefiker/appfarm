@@ -3,7 +3,7 @@ import {promisify} from 'node:util';
 import {readFile} from 'node:fs/promises';
 import pg from 'pg';
 import {Chess} from 'chess.js';
-import {validTimeout} from './clock.js';
+import {validTimeout,timed} from './clock.js';
 
 export class IdentityError extends Error {constructor(status,message){super(message);this.status=status;}}
 const hash=value=>createHash('sha256').update(value).digest('hex');
@@ -29,6 +29,7 @@ export function gameRecord(room){
  const started=new Date(room.started_at||room.created_at);
  const ended=new Date(room.ended_at||Date.now());
  game.header('Event','Quiet Knight','Date',started.toISOString().slice(0,10).replaceAll('-','.'),'White',room.white_player?.handle||'White','Black',room.black_player?.handle||'Black','Result',result);
+ game.header('TimeControl',timed(room)?`${room.time_control.initial_ms/1000}+${room.time_control.increment_ms/1000}`:'-');
  return{game,result,started,ended,pgn:game.pgn()};
 }
 export class IdentityStore{

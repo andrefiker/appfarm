@@ -1,10 +1,16 @@
 import assert from 'node:assert/strict';
 import {Chess} from 'chess.js';
-import {resetClock,deadline,remaining,moveClock,stopClock,flagClock,hasMatingMaterial,validTimeout} from './clock.js';
+import {resetClock as resetUntimedClock,timed,deadline,remaining,moveClock,stopClock,flagClock,hasMatingMaterial,validTimeout} from './clock.js';
+import {resetTimedClock as resetClock} from './tests/clock-fixture.js';
 import {gameRecord,terminal} from './identity.js';
 import {movePushPlan,nudgePlan} from './push-notifications.js';
 
 const room=()=>({code:'CLOCKA',game_number:1,version:1,status:'waiting',turn:'w',winner:null,moves:[],fen:new Chess().fen(),created_at:1000});
+const untimed=room();resetUntimedClock(untimed);assert.equal(timed(untimed),false);assert.equal(untimed.time_control,undefined);assert.equal(deadline(untimed),null);
+untimed.status='active';const before=structuredClone(untimed);moveClock(untimed,10000000);stopClock(untimed,10000000);assert.equal(flagClock(untimed,10000000),false);assert.deepEqual(untimed,before);
+untimed.status='resigned';untimed.winner='w';assert.ok(gameRecord(untimed).pgn.includes('[TimeControl "-"]'));
+const rematch=room();rematch.status='active';resetClock(rematch,1000);rematch.clock_paused=true;rematch.pause_id='old-pause';resetUntimedClock(rematch);assert.equal(timed(rematch),false);assert.equal(deadline(rematch),null);assert.equal(rematch.clock_paused,false);assert.equal(rematch.pause_id,null);
+for(const key of ['time_control','white_time_ms','black_time_ms','clock_running_color','turn_started_at','flagged_color'])assert.equal(Object.hasOwn(rematch,key),false);
 const waiting=room();resetClock(waiting,1000);assert.equal(deadline(waiting),null);assert.equal(remaining(waiting,'w',999999),600000);
 waiting.status='active';resetClock(waiting,1000);assert.equal(deadline(waiting),601000);
 assert.equal(remaining(waiting,'w',3000),598000);assert.equal(remaining(waiting,'b',3000),600000);
@@ -31,6 +37,7 @@ const samples=[
 ];
 for(const [fen,expected,label] of samples)assert.equal(hasMatingMaterial(fen,'w'),expected,label);
 const timeout=room();timeout.status='active';resetClock(timeout,1000);assert.equal(flagClock(timeout,601000),true);assert.equal(terminal(timeout),true);assert.equal(gameRecord(timeout).result,'0-1');assert.ok(gameRecord(timeout).pgn.includes('[Result "0-1"]'));
+assert.ok(gameRecord(timeout).pgn.includes('[TimeControl "600+0"]'));
 assert.throws(()=>gameRecord({...timeout,winner:'w'}));assert.throws(()=>gameRecord({...timeout,white_time_ms:1}));
 const drawn={...room(),status:'active',fen:samples[0][0]};resetClock(drawn,1000);flagClock(drawn,601000);assert.equal(drawn.status,'timeout_draw');assert.equal(drawn.winner,null);assert.equal(validTimeout(drawn),true);
-console.log(JSON.stringify({event:'clock.unit',passed:true,checks:['10+0 start/stop/reset','exact flag boundary','no increment','legacy untimed','12 mating-material cases','timeout record validation','terminal push/nudge suppression']}));
+console.log(JSON.stringify({event:'clock.unit',passed:true,checks:['new games/rematches untimed','legacy 10+0 start/stop','exact flag boundary','no increment','untimed/10+0 PGN','12 mating-material cases','timeout record validation','terminal push/nudge suppression']}));

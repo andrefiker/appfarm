@@ -185,7 +185,7 @@ async function createRoom(player=null) {
     if (await redis.exists(roomKey(code))) continue;
     const game = new Chess();
     const room = { code, white_token: randomUUID(), black_token: null, white_join_digest:null, black_join_digest: null, white_player:publicPlayer(player),black_player:null,game_number:1, moves: [], fen: game.fen(), turn: 'w', status: 'waiting', winner: null, version: 1, created_at: Date.now() };
-    resetClock(room,Date.now());
+    resetClock(room);
     try { await saveRoom(room); return room; } catch(error) { if(error.code !== 'QK_CONFLICT') throw error; }
   }
   throw new Error('room_create_failed');
@@ -194,7 +194,7 @@ async function createRoom(player=null) {
 async function handleApi(req, res, url) {
   const origin = req.headers.origin || '';
   if (req.method === 'OPTIONS') return send(res, 204, {}, origin);
-  if (req.method === 'GET' && url.pathname === '/health') { const identity=await identities.health(); const healthy=redis.isReady&&subscriber.isReady&&identity.available&&identity.migration>=4; return send(res,healthy?200:503,{ok:healthy,service:'quiet-knight-live',build:BUILD,commit:process.env.RAILWAY_GIT_COMMIT_SHA||null,identity,clock:'10+0'},origin); }
+  if (req.method === 'GET' && url.pathname === '/health') { const identity=await identities.health(); const healthy=redis.isReady&&subscriber.isReady&&identity.available&&identity.migration>=4; return send(res,healthy?200:503,{ok:healthy,service:'quiet-knight-live',build:BUILD,commit:process.env.RAILWAY_GIT_COMMIT_SHA||null,identity,clock:'untimed'},origin); }
   if (req.method === 'GET' && url.pathname === '/computer/health') return send(res, computer.ready ? 200 : 503, computer.status(), origin);
   if(req.method==='GET'&&url.pathname==='/push/public-key')return send(res,pushes.available?200:503,{supported:pushes.available,public_key:pushes.available?pushes.publicKey:null},origin);
   if(req.method==='POST'&&(url.pathname==='/push/subscribe'||url.pathname==='/push/unsubscribe')){
@@ -397,7 +397,7 @@ async function handleApi(req, res, url) {
     room.turn = 'w';
     room.status = room.black_token ? 'active' : 'waiting';
     room.winner = null;
-    resetClock(room,Date.now());
+    resetClock(room);
     room.version += 1;
     await saveRoom(room);
     const view = publicRoom(room);

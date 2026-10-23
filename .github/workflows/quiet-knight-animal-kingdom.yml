@@ -54,6 +54,7 @@ jobs:
           npm ci
           npm run test:animal
           npm run test:account
+          npx tsc --noEmit
           npm run build -- --base=./
 
       - name: Bundle the game into the existing Android app
@@ -76,6 +77,37 @@ jobs:
           npm run test:migration-safety
           npm run migrate:identity
           npm run test:auth-http
+          mkdir -p public
+          cp -R frontend/dist/. public/
+          node predeploy.js
+
+      - name: Rendered untimed and legacy-clock acceptance on isolated candidate
+        working-directory: quiet-knight-server/frontend-acceptance
+        env:
+          DATABASE_URL: postgresql://postgres:qk_test@127.0.0.1:5432/qk_test
+          REDIS_URL: redis://127.0.0.1:6379
+          FRONTEND_ORIGIN: http://127.0.0.1:3000
+          QK_FRONTEND_URL: http://127.0.0.1:3000/
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          node ../server.js > "$RUNNER_TEMP/quiet-knight-browser-server.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" || true' EXIT
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3000/health >/dev/null; then break; fi
+            sleep 0.25
+          done
+          npx playwright test clock.spec.js
+
+      - name: Upload synthetic rendered QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quiet-knight-clock-rendered-qa
+          path: quiet-knight-server/frontend-acceptance/output/playwright/*.png
+          if-no-files-found: ignore
+          retention-days: 1
 
       - name: Set up Java 17 and Android SDK
         uses: actions/setup-java@v4

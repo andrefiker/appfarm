@@ -15,7 +15,9 @@ export function useKnightId(){
  const[player,setPlayer]=useState<KnightPlayer|null>(null),[games,setGames]=useState<RememberedGame[]>([]),[computerGames,setComputerGames]=useState<ComputerGame[]>([]),[error,setError]=useState(''),[busy,setBusy]=useState(false),[recoveryCode,setRecoveryCode]=useState('');
  const authRevision=useRef(0);
  const refresh=useCallback(async()=>{const revision=authRevision.current;if(!navigator.onLine){setError('Connection problem. Check your internet connection.');return;}try{const health=await accountRequest<{available:boolean;migration:number}>('/players/health');if(revision!==authRevision.current)return;if(!accountServiceReady(health)){setError('Server unavailable. Accounts are not ready yet.');return;}const data=await playerRequest('/players/me');if(revision!==authRevision.current)return;setPlayer(data.player);setGames(data.games||[]);setComputerGames(data.computer_games||[]);setError('');}catch(e){if(revision!==authRevision.current)return;if((e as{status?:number}).status===401){setPlayer(null);setGames([]);setComputerGames([]);try{localStorage.removeItem('qk-player-profile-v1');localStorage.removeItem('qk-player-active-v1');}catch{}setError('');}else setError(e instanceof Error?e.message:'Server unavailable. Please try again later.');}},[]);
- useEffect(()=>{void refresh();window.addEventListener('online',refresh);return()=>window.removeEventListener('online',refresh);},[refresh]);
+ // Guest play starts immediately, including offline. Restore an account only
+ // when its optional panel is opened; never interrupt a guest game on startup.
+ useEffect(()=>{if(!player)return;window.addEventListener('online',refresh);return()=>window.removeEventListener('online',refresh);},[refresh,player?.id]);
  const act=useCallback(async(path:string,payload:unknown)=>{if(busy)return false;authRevision.current++;setBusy(true);setError('');try{const result=await playerRequest(path,payload);if(!result.player?.registered||!result.player.id)throw new Error('Server unavailable. Please try again later.');authRevision.current++;setPlayer(result.player);setGames(result.games||[]);setComputerGames(result.computer_games||[]);setRecoveryCode(result.recovery_code||'');try{localStorage.removeItem('qk-player-token-v1');localStorage.removeItem('qk-player-profile-v1');localStorage.removeItem('qk-player-active-v1');}catch{}return true;}catch(e){setError(e instanceof Error?e.message:'Account request failed. Please try again.');return false;}finally{setBusy(false);}},[busy]);
  const register=(handle:string,password:string)=>act('/players/register',{handle,password});
  const login=(handle:string,password:string)=>act('/players/login',{handle,password});
@@ -28,7 +30,7 @@ export function useKnightId(){
  return{player:playerAccount,profile:player,registered:player?.registered===true,games,computerGames,busy,error,recoveryCode,clearRecoveryCode,register,login,recover,claim,logout,refresh,recordComputer};
 }
 
-export function AccountGate({knight}:{knight:ReturnType<typeof useKnightId>}){
+export function AccountGate({knight,embedded=false,onContinue}:{knight:ReturnType<typeof useKnightId>;embedded?:boolean;onContinue?:()=>void}){
  const[view,setView]=useState<'choose'|'create'|'login'|'recover'|'claim'|'recovery'>('choose');
  const[handle,setHandle]=useState(''),[password,setPassword]=useState(''),[code,setCode]=useState('');
  async function submit(e:FormEvent){e.preventDefault();let ok=false;
@@ -38,9 +40,9 @@ export function AccountGate({knight}:{knight:ReturnType<typeof useKnightId>}){
   else if(view==='claim')ok=!!await knight.claim(password);
   if(ok){if(['create','recover','claim'].includes(view))setView('recovery');else setView('choose');setPassword('');}
  }
- return <main className="account-gate"><section className="account-card"><p className="account-kicker">QUIET KNIGHT</p><h1>Every game belongs to you.</h1><p className="account-intro">Create or log in to a permanent Knight account to play on PC, Android, and iPhone.</p>
+ return <div className={embedded?"optional-account":"account-gate"}><section className="account-card"><p className="account-kicker">QUIET KNIGHT</p><h1>Every game belongs to you.</h1><p className="account-intro">Accounts are optional. Sign in to keep your results across devices, or close this panel and play without one.</p>
   {view==='choose'?<div className="account-actions"><button className="primary wide" onClick={()=>setView('create')}>Create Account</button><button className="secondary wide" onClick={()=>setView('login')}>Log In</button></div>:null}
-  {view==='recovery'?<div role="status"><h2>Save your recovery code</h2><p>Your account is ready. Keep this code somewhere private so you can reset your password later.</p><code className="recovery-code">{knight.recoveryCode}</code><button className="primary wide" onClick={()=>{knight.clearRecoveryCode();setView('choose');}}>Continue to game</button></div>:null}
+  {view==='recovery'?<div role="status"><h2>Save your recovery code</h2><p>Your account is ready. Keep this code somewhere private so you can reset your password later.</p><code className="recovery-code">{knight.recoveryCode}</code><button className="primary wide" onClick={()=>{knight.clearRecoveryCode();setView('choose');onContinue?.();}}>Continue to game</button></div>:null}
   {['create','login','recover','claim'].includes(view)?<form className="account-form" onSubmit={submit}>
     {view==='create'?<><h2>Create Account</h2><label htmlFor="account-handle">Knight ID</label><input id="account-handle" value={handle} onChange={e=>setHandle(e.target.value)} pattern="(?=(?:.*[A-Za-z]){3})[A-Za-z0-9_-]{3,20}" minLength={3} maxLength={20} autoComplete="username" autoCapitalize="none" autoCorrect="off" spellCheck={false} required/><small>Use at least 3 letters.</small></>:null}
     {view==='login'?<><h2>Log In</h2><label htmlFor="login-handle">Knight ID</label><input id="login-handle" value={handle} onChange={e=>setHandle(e.target.value)} autoComplete="username" autoCapitalize="none" required/></>:null}
@@ -53,7 +55,7 @@ export function AccountGate({knight}:{knight:ReturnType<typeof useKnightId>}){
   {view==='choose'&&knight.profile&&!knight.profile.registered?<button className="secondary wide" onClick={()=>setView('claim')}>Link this existing Knight ID</button>:null}
   {view==='login'?<button className="text-button" onClick={()=>setView('recover')}>Forgot password?</button>:null}
   {view==='choose'&&knight.error?<p role="alert">{knight.error}</p>:null}
- </section></main>;
+ </section></div>;
 }
 
 export function KnightIdPanel({knight,onView}:{knight:ReturnType<typeof useKnightId>;onView?:(game:RememberedGame)=>void}){

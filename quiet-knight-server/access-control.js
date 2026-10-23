@@ -8,7 +8,12 @@ export async function requireAuthenticated(identities, req, cookie, { registered
 }
 
 export function ownsRoomSeat(room, token, playerId) {
-  if (!room || !token || !playerId) return false;
-  return (token === room.white_token && room.white_player?.id === playerId)
-    || (token === room.black_token && room.black_player?.id === playerId);
+  if (!room || !token) return false;
+  const side = token === room.white_token ? 'white'
+    : token === room.black_token ? 'black' : null;
+  if (!side) return false;
+  const owner = room[side + '_player']?.id;
+  // Anonymous seats are capabilities: the private token is still mandatory.
+  // Account-owned seats additionally require the original account identity.
+  return owner ? owner === playerId : true;
 }

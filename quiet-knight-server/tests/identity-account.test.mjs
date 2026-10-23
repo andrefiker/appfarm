@@ -129,7 +129,7 @@ assert.equal((await sameSessionOnNewStore.authenticate(null, created.session)).i
 const expiring = await store.login('QuietKnight', password);
 pool.sessions.get(digest(expiring.session)).expires_at = Date.now() - 1;
 assert.equal(await store.authenticate(null, expiring.session), null, 'Expired sessions must be rejected');
-await assert.rejects(requireAuthenticated(store, { headers: {} }, ''), error => error.status === 401, 'Gameplay guard must reject unauthenticated requests');
+await assert.rejects(requireAuthenticated(store, { headers: {} }, ''), error => error.status === 401, 'Private account guard must reject unauthenticated requests');
 assert.equal((await requireAuthenticated(store, { headers: {} }, created.session)).id, created.player.id);
 
 await assert.rejects(store.register('quietknight', password), error => error instanceof IdentityError && error.status === 409);
@@ -157,6 +157,12 @@ assert.equal(await store.authenticate(null, recovered.session), null, 'Logout mu
 const roomSeat = { white_token: 'white-seat', black_token: 'black-seat', white_player: { id: created.player.id }, black_player: { id: '72b9d12c-934a-4acb-8f81-b8c3db8a2b8a' } };
 assert.equal(ownsRoomSeat(roomSeat, 'white-seat', created.player.id), true);
 assert.equal(ownsRoomSeat(roomSeat, 'white-seat', roomSeat.black_player.id), false, 'Switching accounts cannot restore another player’s seat');
+assert.equal(ownsRoomSeat(roomSeat, 'white-seat', null), false, 'Guest mode cannot take an account-owned seat');
+const guestSeat = { white_token: 'guest-white', black_token: 'guest-black', white_player: null, black_player: null };
+assert.equal(ownsRoomSeat(guestSeat, 'guest-white', null), true);
+assert.equal(ownsRoomSeat(guestSeat, 'guest-black', created.player.id), true, 'Signing in does not invalidate a guest seat token');
+assert.equal(ownsRoomSeat(guestSeat, '', null), false);
+assert.equal(ownsRoomSeat(guestSeat, 'spectator', null), false);
 
 const computerGameId = '6ddc859e-f735-4b24-8f6f-96a1539e4e93';
 const foolMate = [
@@ -186,6 +192,6 @@ assert.equal(claimed.player.quiet_points, 17, 'Claim must preserve legacy Quiet 
 assert.equal(claimed.player.human_games, 6, 'Claim must preserve historical results');
 assert.equal(await store.authenticate(`Bearer ${legacyToken}`, ''), null, 'Claim must invalidate the old device credential');
 assert.equal((await store.authenticate(null, claimed.session)).id, legacyId);
-await assert.rejects(requireAuthenticated(store, { headers: { authorization: `Bearer ${legacyToken}` } }, ''), error => error.status === 401, 'Unclaimed legacy identities cannot enter gameplay');
+await assert.rejects(requireAuthenticated(store, { headers: { authorization: `Bearer ${legacyToken}` } }, ''), error => error.status === 401, 'Private account APIs still require valid authentication');
 
 console.log('Account tests passed: registration, case-insensitive uniqueness, login, session persistence/revocation, one-time recovery, legacy identity/points/history preservation, authenticated access guard, and idempotent server-derived computer results.');

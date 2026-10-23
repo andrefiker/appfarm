@@ -9,6 +9,7 @@ import { WebSocket } from 'ws';
 import { createClient } from 'redis';
 import { IdentityStore } from './identity.js';
 import { verifyClockServer } from './verify-clock-server.js';
+import { verifyGuestServer } from './verify-guest-server.js';
 
 if (!process.env.DATABASE_URL || !process.env.REDIS_URL) throw new Error('DATABASE_URL and REDIS_URL are required');
 const schema = `qk_verify_${randomUUID().replaceAll('-', '')}`;
@@ -56,7 +57,7 @@ const stop = async () => {
   child = null;
 };
 const socket = async (code, cookie, seatToken) => {
-  const ws = new WebSocket(`${base.replace('http:', 'ws:')}/ws?room=${code}`, { origin, headers: { Cookie: cookie }, handshakeTimeout: 7000 });
+  const ws = new WebSocket(`${base.replace('http:', 'ws:')}/ws?room=${code}`, { origin, headers: cookie ? { Cookie: cookie } : {}, handshakeTimeout: 7000 });
   const messages = [];
   ws.on('message', raw => { try { messages.push(JSON.parse(String(raw))); } catch {} });
   ws.on('error', () => {});
@@ -96,7 +97,7 @@ try {
   assert.doesNotMatch(html, /localhost|127\.0\.0\.1/, 'Android page must not depend on a development server');
   const manifest = await fetch(`${base}/manifest.webmanifest`, { signal: AbortSignal.timeout(8000) });
   assert.equal(manifest.status, 200, 'PWA manifest must be bundled');
-  assert.equal((await post('/rooms', {})).status, 401);
+  assert.equal((await post('/rooms', {})).status, 200);
   const alice = await post('/players/register', { handle: 'PredeployAlice', password: 'ordinarypass' });
   const bob = await post('/players/register', { handle: 'PredeployBob', password: 'ordinarypass' });
   assert.equal(alice.status, 201);
@@ -154,7 +155,8 @@ try {
   assert.equal((await pool.query('SELECT count(*)::int AS n FROM qk_games WHERE room_code=$1', [mate.code])).rows[0].n, 1);
 
   await verifyClockServer({request,post,makeRoom,socket,waitFor,redis,pool,prefix,cookies:[a,b],restart:async()=>{await stop();await start();}});
-  console.log(JSON.stringify({ event: 'server.acceptance', passed: true, migration: 4, checks: ['canonical Android frontend and PWA manifest', 'mandatory auth', 'registration and duplicate ID', 'room create/join and ownership', 'legal/illegal moves', 'authenticated WebSocket seats', 'reconnect/resume', 'untimed default and legacy clock preservation', 'nudge rate limit', 'resignation', 'checkmate', 'exactly-once results', 'server restart persistence'] }));
+  await verifyGuestServer({request,post,socket,waitFor,pool,accountCookie:a,restart:async()=>{await stop();await start();}});
+  console.log(JSON.stringify({ event: 'server.acceptance', passed: true, migration: 4, checks: ['canonical Android frontend and PWA manifest', 'optional accounts with protected records', 'registration and duplicate ID', 'room create/join and ownership', 'legal/illegal moves', 'authenticated WebSocket seats', 'reconnect/resume', 'untimed default and legacy clock preservation', 'nudge rate limit', 'resignation', 'checkmate', 'exactly-once results', 'server restart persistence'] }));
 } finally {
   for (const ws of sockets) ws.terminate();
   await stop();

@@ -128,10 +128,10 @@ function broadcast(code, payload) {
   void loadRoom(code).then(room=>{if(room)resolveSeats(room);}).catch(()=>{});
 }
 
-function roleFor(room,digest){return digest&&digest===hash(room.white_token)?'white':digest&&room.black_token&&digest===hash(room.black_token)?'black':'spectator';}
+function roleFor(room,digest,playerId){const role=digest&&digest===hash(room.white_token)?'white':digest&&room.black_token&&digest===hash(room.black_token)?'black':'spectator';const owner=role==='white'?room.white_player?.id:role==='black'?room.black_player?.id:null;return owner&&owner!==playerId?'spectator':role;}
 function tablePresence(code){const set=sockets.get(code)||[];return{white:[...set].some(ws=>ws.readyState===1&&ws.seatRole==='white'),black:[...set].some(ws=>ws.readyState===1&&ws.seatRole==='black')};}
 function publishPresence(code){const presence=tablePresence(code);const data=JSON.stringify({type:'presence.update',...presence});for(const ws of sockets.get(code)||[])if(ws.readyState===1)ws.send(data);}
-function resolveSeats(room){for(const ws of sockets.get(room.code)||[]){if(ws.readyState!==1||!ws.seatDigest)continue;ws.seatRole=roleFor(room,ws.seatDigest);ws.send(JSON.stringify({type:'seat.role',role:ws.seatRole,game_number:room.game_number||1,room_version:room.version}));}publishPresence(room.code);}
+function resolveSeats(room){for(const ws of sockets.get(room.code)||[]){if(ws.readyState!==1||!ws.seatDigest)continue;ws.seatRole=roleFor(room,ws.seatDigest,ws.playerId);ws.send(JSON.stringify({type:'seat.role',role:ws.seatRole,game_number:room.game_number||1,room_version:room.version}));}publishPresence(room.code);}
 function sendToRole(code,role,payload){let delivered=0;const message=JSON.stringify(payload);for(const ws of sockets.get(code)||[])if(ws.readyState===1&&ws.seatRole===role)try{ws.send(message);delivered++;}catch{}return delivered;}
 
 async function rateLimitNudge(room,seatToken){
@@ -166,6 +166,7 @@ function clearSessionCookie(){return 'qk_session=; Path=/; Max-Age=0; HttpOnly; 
 function sendSession(res,status,data,origin,token){res.writeHead(status,{...corsHeaders(origin),'Content-Type':'application/json; charset=utf-8','Set-Cookie':sessionCookie(token)});res.end(JSON.stringify(data));}
 function sendLoggedOut(res,status,data,origin){res.writeHead(status,{...corsHeaders(origin),'Content-Type':'application/json; charset=utf-8','Set-Cookie':clearSessionCookie()});res.end(JSON.stringify(data));}
 async function authenticated(req,{registered=true}={}){return requireAuthenticated(identities,req,identityCookie(req),{registered});}
+async function optionalPlayer(req){return identities.authenticate(req.headers.authorization,identityCookie(req));}
 
 async function bodyJson(req) {
   const chunks = [];
@@ -198,11 +199,11 @@ async function handleApi(req, res, url) {
   if (req.method === 'GET' && url.pathname === '/computer/health') return send(res, computer.ready ? 200 : 503, computer.status(), origin);
   if(req.method==='GET'&&url.pathname==='/push/public-key')return send(res,pushes.available?200:503,{supported:pushes.available,public_key:pushes.available?pushes.publicKey:null},origin);
   if(req.method==='POST'&&(url.pathname==='/push/subscribe'||url.pathname==='/push/unsubscribe')){
-    const player=await authenticated(req);const input=await bodyJson(req);const code=normalizeCode(input.room_code);const room=await loadRoom(code);
+    const player=await optionalPlayer(req);const input=await bodyJson(req);const code=normalizeCode(input.room_code);const room=await loadRoom(code);
     if(!room)return send(res,404,{error:'Room not found'},origin);
     const token=typeof input.seat_token==='string'?input.seat_token:'';
     const color=token&&token===room.white_token?'w':token&&token===room.black_token?'b':null;
-    if(!color||(color==='w'?room.white_player?.id:room.black_player?.id)!==player.id)return send(res,403,{error:'This Knight ID does not own that seat'},origin);
+    if(!color||!ownsRoomSeat(room,token,player?.id))return send(res,403,{error:'This Knight ID does not own that seat'},origin);
     try{return send(res,200,url.pathname.endsWith('/subscribe')?await pushes.subscribe(room,input.seat_token,input.subscription):await pushes.unsubscribe(room,input.seat_token,input.endpoint),origin);}catch(error){if(error instanceof PushError)return send(res,error.status,{error:error.message},origin);throw error;}
   }
   if(req.method==='GET'&&url.pathname==='/players/health')return send(res,200,await identities.health(),origin);
@@ -227,7 +228,6 @@ async function handleApi(req, res, url) {
   const pairMatch=url.pathname.match(/^\/players\/([a-f0-9-]{36})\/head-to-head\/([a-f0-9-]{36})$/);
   if(req.method==='GET'&&pairMatch){const player=await authenticated(req);if(![pairMatch[1],pairMatch[2]].includes(player.id))return send(res,403,{error:'You cannot view another account’s records'},origin);return send(res,200,await identities.headToHead(pairMatch[1],pairMatch[2]),origin);}
   if (req.method === 'POST' && url.pathname === '/computer/move') {
-    await authenticated(req);
     const controller = new AbortController();
     const closed = () => { if (!res.writableEnded) controller.abort(); };
     res.once('close', closed);
@@ -246,7 +246,7 @@ async function handleApi(req, res, url) {
     } finally { res.off('close', closed); }
   }
   if (req.method === 'POST' && url.pathname === '/rooms') {
-    const player=await authenticated(req);
+    const player=await optionalPlayer(req);
     const room = await createRoom(player);
     return send(res, 200, { room: publicRoom(room), seat_token: room.white_token, role: 'white' }, origin);
   }
@@ -256,21 +256,21 @@ async function handleApi(req, res, url) {
   const action = match[2] || '';
   let room = await loadRoom(code);
   if (!room) return send(res, 404, { error: 'Room not found' }, origin);
-  if (req.method === 'GET' && !action) {await authenticated(req);return send(res, 200, { room: publicRoom(await settleRoom(room)) }, origin);}
+  if (req.method === 'GET' && !action) {return send(res, 200, { room: publicRoom(await settleRoom(room)) }, origin);}
   if (req.method !== 'POST') return send(res, 405, { error: 'Method not allowed' }, origin);
   const input = await bodyJson(req);
   room=await expireRoom(room);
   if(!room)return send(res,404,{error:'Room not found'},origin);
 
   if (action === 'join') {
-    const joiningPlayer=await authenticated(req);
+    const joiningPlayer=await optionalPlayer(req);
     const seatToken = typeof input.seat_token === 'string' ? input.seat_token : '';
     const joinKey = typeof input.join_key === 'string' && /^[a-f0-9]{48}$/.test(input.join_key) ? input.join_key : '';
     const joinDigest = joinKey ? digestJoin(joinKey) : null;
-    if(joinDigest&&room.white_join_digest===joinDigest)return ownsRoomSeat(room,room.white_token,joiningPlayer.id)?send(res,200,{room:publicRoom(room),seat_token:room.white_token,role:'white'},origin):send(res,403,{error:'This Knight ID does not own that seat'},origin);
-    if (seatToken && seatToken === room.white_token) return ownsRoomSeat(room,seatToken,joiningPlayer.id)?send(res, 200, { room: publicRoom(room), seat_token: room.white_token, role: 'white' }, origin):send(res,403,{error:'This Knight ID does not own that seat'},origin);
-    if (seatToken && room.black_token && seatToken === room.black_token) return ownsRoomSeat(room,seatToken,joiningPlayer.id)?send(res, 200, { room: publicRoom(room), seat_token: room.black_token, role: 'black' }, origin):send(res,403,{error:'This Knight ID does not own that seat'},origin);
-    if (joinDigest && room.black_token && room.black_join_digest === joinDigest) return ownsRoomSeat(room,room.black_token,joiningPlayer.id)?send(res,200,{room:publicRoom(room),seat_token:room.black_token,role:'black'},origin):send(res,403,{error:'This Knight ID does not own that seat'},origin);
+    if(joinDigest&&room.white_join_digest===joinDigest)return ownsRoomSeat(room,room.white_token,joiningPlayer?.id)?send(res,200,{room:publicRoom(room),seat_token:room.white_token,role:'white'},origin):send(res,403,{error:'This Knight ID does not own that seat'},origin);
+    if (seatToken && seatToken === room.white_token) return ownsRoomSeat(room,seatToken,joiningPlayer?.id)?send(res, 200, { room: publicRoom(room), seat_token: room.white_token, role: 'white' }, origin):send(res,403,{error:'This Knight ID does not own that seat'},origin);
+    if (seatToken && room.black_token && seatToken === room.black_token) return ownsRoomSeat(room,seatToken,joiningPlayer?.id)?send(res, 200, { room: publicRoom(room), seat_token: room.black_token, role: 'black' }, origin):send(res,403,{error:'This Knight ID does not own that seat'},origin);
+    if (joinDigest && room.black_token && room.black_join_digest === joinDigest) return ownsRoomSeat(room,room.black_token,joiningPlayer?.id)?send(res,200,{room:publicRoom(room),seat_token:room.black_token,role:'black'},origin):send(res,403,{error:'This Knight ID does not own that seat'},origin);
     if (!room.black_token) {
       const player=joiningPlayer;
       room.black_token = joinKey ? seatFromJoin(joinKey) : randomUUID();
@@ -288,12 +288,12 @@ async function handleApi(req, res, url) {
     return send(res, 200, { room: publicRoom(room), seat_token: null, role: 'spectator' }, origin);
   }
 
-  const player=await authenticated(req);
+  const player=await optionalPlayer(req);
 
   const seatToken = typeof input.seat_token === 'string' ? input.seat_token : '';
   const color = seatToken === room.white_token ? 'w' : seatToken && seatToken === room.black_token ? 'b' : null;
   if (!color) return send(res, 403, { error: 'You do not own a seat in this game' }, origin);
-  if (!ownsRoomSeat(room,seatToken,player.id)) return send(res,403,{error:'This Knight ID does not own that seat'},origin);
+  if (!ownsRoomSeat(room,seatToken,player?.id)) return send(res,403,{error:'This Knight ID does not own that seat'},origin);
 
   if (action === 'pause') {
     const now=Date.now();
@@ -483,13 +483,13 @@ server.on('upgrade', async (req, socket, head) => {
   try {
     const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
     if (url.pathname !== '/ws') return socket.destroy();
-    const player=await authenticated(req);
+    const player=await optionalPlayer(req);
     const code = normalizeCode(url.searchParams.get('room'));
     const room = await loadRoom(code);
     if (!room) return socket.destroy();
     wss.handleUpgrade(req, socket, head, ws => {
       ws.roomCode = code;
-      ws.playerId=player.id;
+      ws.playerId=player?.id||null;
       log('ws.connected',{room:code,version:room.version});
       const set = sockets.get(code) || new Set();
       set.add(ws);
@@ -504,9 +504,7 @@ server.on('upgrade', async (req, socket, head) => {
             if(Date.now()-(ws.lastHello||0)<1000)return;ws.lastHello=Date.now();
             const token=typeof message.seat_token==='string'&&message.seat_token.length<=128?message.seat_token:'';
             const latest=await loadRoom(code);if(!latest||ws.readyState!==1)return;
-            ws.seatDigest=token?hash(token):null;ws.seatRole=roleFor(latest,ws.seatDigest);
-            const assigned=ws.seatRole==='white'?latest.white_player?.id:ws.seatRole==='black'?latest.black_player?.id:null;
-            if(assigned!==ws.playerId)ws.seatRole='spectator';
+            ws.seatDigest=token?hash(token):null;ws.seatRole=roleFor(latest,ws.seatDigest,ws.playerId);
             ws.send(JSON.stringify({type:'seat.role',role:ws.seatRole,game_number:latest.game_number||1,room_version:latest.version}));publishPresence(code);return;
           }
           if(message.type!=='room.sync')return;

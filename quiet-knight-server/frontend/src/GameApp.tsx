@@ -107,16 +107,16 @@ function failureText(err: unknown, fallback: string) {
 }
 export default function GameApp() {
   const knight = useKnightId();
-  const [memories, setMemories] = useState(recentTables);
+  const [memories, setMemories] = useState(() => recentTables("guest"));
   const [viewedGame, setViewedGame] = useState<GameRecord | null>(null);
   const [localTableId, setLocalTableId] = useState(() => {
-    const id = stored("qk-local-table-id-v1") || crypto.randomUUID();
-    remember("qk-local-table-id-v1", id);
+    const id = stored(localGameIdKey("guest")) || crypto.randomUUID();
+    remember(localGameIdKey("guest"), id);
     return id;
   });
   const table = useTablePreferences();
   const [tableControls, setTableControls] = useState(false);
-  const [initialLocal] = useState(loadLocal);
+  const [initialLocal] = useState(() => loadLocal("guest"));
   const [resumeLive, setResumeLive] = useState(lastLiveRoom);
   const [diagnostics, setDiagnostics] = useState("");
   const [diagnosing, setDiagnosing] = useState(false);
@@ -165,9 +165,9 @@ export default function GameApp() {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const preferences = useRef({ sound, haptics });
   preferences.current = { sound, haptics };
-  const accountId = knight.player?.id ?? null;
-  const activeAccount = useRef<string | null>(null);
-  const [gameOwner, setGameOwner] = useState<string | null>(null);
+  const accountId = knight.player?.id ?? "guest";
+  const activeAccount = useRef<string>("guest");
+  const [gameOwner, setGameOwner] = useState<string>("guest");
   const savedComputerGames = useRef(new Set<string>());
   const [onlineRetry, setOnlineRetry] = useState(0);
   const acceptRoom = useCallback((next: RoomState) => {
@@ -206,18 +206,18 @@ export default function GameApp() {
     setResumeLive(null);
     setRoom(null); setRole(null); setRoleGame(1); setPresence(null); setSeatToken(null);
     setJoinCode(""); setMode("local"); setScreen("home"); setSelected(null);
-    setPromotion(null); setModal(null); setViewedGame(null); setMessage("");
-    const saved = accountId ? loadLocal(accountId) : { moves: [], color: "w" as Color, level: 5 };
+    setPromotion(null); setModal(current => current === "identity" ? current : null); setViewedGame(null); setMessage("");
+    const saved = loadLocal(accountId);
     setLocalMoves(saved.moves); setHumanColor(saved.color); setLevel(saved.level);
-    const id = (accountId && stored(localGameIdKey(accountId))) || crypto.randomUUID();
-    setLocalTableId(id); if (accountId) remember(localGameIdKey(accountId), id);
-    setMemories(accountId ? recentTables(accountId) : []);
+    const id = stored(localGameIdKey(accountId)) || crypto.randomUUID();
+    setLocalTableId(id); remember(localGameIdKey(accountId), id);
+    setMemories(recentTables(accountId));
     endReactionKey.current = "";
     setGameOwner(accountId);
   }, [accountId]);
   useEffect(() => {
-    if (mode === "local" && knight.player && gameOwner === accountId)
-      saveLocal({ moves: localMoves, color: humanColor, level }, knight.player.id);
+    if (mode === "local" && gameOwner === accountId)
+      saveLocal({ moves: localMoves, color: humanColor, level }, accountId);
   }, [localMoves, humanColor, level, mode, accountId, gameOwner]);
   useEffect(() => {
     const retry = () => setOnlineRetry(value => value + 1);
@@ -331,7 +331,7 @@ export default function GameApp() {
   useEffect(() => {
     // Account restoration clears the previous room view. Join only after that
     // reset has completed, so a fast invite response cannot be discarded.
-    if (!accountId || gameOwner !== accountId || resumeStarted.current) return;
+    if (gameOwner !== accountId || resumeStarted.current) return;
     resumeStarted.current = true;
     const code = new URL(window.location.href).searchParams.get("room");
     if (code) {
@@ -443,9 +443,9 @@ export default function GameApp() {
         : undefined,
   };
   useEffect(() => {
-    if (ended && knight.player && gameOwner === knight.player.id && (mode === "local" || role !== "spectator")) {
-      rememberTable(record, knight.player.id);
-      setMemories(recentTables(knight.player.id));
+    if (ended && gameOwner === accountId && (mode === "local" || role !== "spectator")) {
+      rememberTable(record, accountId);
+      setMemories(recentTables(accountId));
     }
   }, [ended, record.id, room?.score_event?.id, accountId, gameOwner]);
   const dialogOpen = Boolean(modal || promotion);
@@ -583,7 +583,7 @@ export default function GameApp() {
   function newLocalTable() {
     const id = crypto.randomUUID();
     setLocalTableId(id);
-    if (knight.player) remember(localGameIdKey(knight.player.id), id);
+    remember(localGameIdKey(accountId), id);
   }
   function startComputer(color: Color) {
     newLocalTable();
@@ -1114,8 +1114,7 @@ export default function GameApp() {
                 : modal === "resign"
                   ? "Resign this game?"
                   : "Your invite";
-  if (!knight.player || knight.recoveryCode) return <AccountGate knight={knight} />;
-  if (gameOwner !== knight.player.id) return <main className="account-gate"><section className="account-card" role="status"><p className="account-kicker">QUIET KNIGHT</p><h1>Loading your account</h1><p className="account-intro">Preparing your saved games.</p></section></main>;
+  if (gameOwner !== accountId) return <main className="account-gate"><section className="account-card" role="status"><p className="account-kicker">QUIET KNIGHT</p><h1>Loading your account</h1><p className="account-intro">Preparing your saved games.</p></section></main>;
   return (
     <>
       {screen === "home" && localMoves.length > 0 ? (
@@ -1158,7 +1157,7 @@ export default function GameApp() {
                   ? `${knight.player.handle} · ${knight.player.quiet_points} Quiet Points`
                   : knight.profile
                     ? "Link this existing Knight ID"
-                    : "Create Knight ID"}
+                    : "Account (optional)"}
               </button>
               {!knight.player && memories[0] ? (
                 <button
@@ -1402,6 +1401,8 @@ export default function GameApp() {
                     </button>
                   </div>
                 </>
+              ) : modal === "identity" && (!knight.player || knight.recoveryCode) ? (
+                <AccountGate knight={knight} embedded onContinue={closeModal} />
               ) : modal === "identity" ? (
                 <KnightIdPanel
                   knight={knight}

@@ -41,7 +41,10 @@ try {
   await start();
   assert.deepEqual((await request('/players/health')).data, { available: true, migration: 4 });
   assert.equal((await request('/players/me')).status, 401);
-  assert.equal((await post('/rooms', {})).status, 401);
+  const guest = await post('/rooms', {});
+  assert.equal(guest.status, 200);
+  assert.equal(guest.data.room.white_player, null);
+  assert.equal((await post('/players/me/computer-games', {})).status, 401);
 
   const created = await post('/players/register', { handle: 'Fiker', password: 'password' });
   assert.equal(created.status, 201);

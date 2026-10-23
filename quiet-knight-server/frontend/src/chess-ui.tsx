@@ -941,7 +941,7 @@ export function HomeSurface({
         </div>
       </div>
       <footer className="home-footer">
-        <span>Every game starts with your Knight ID.</span>
+        <span>Play freely. No account required.</span>
         <span>Take your time.</span>
       </footer>
     </main>

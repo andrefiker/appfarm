@@ -19,9 +19,9 @@ android {
             dimension 'app'
             // The original CI debug signing key was not retained. Install this
             // candidate alongside it, preserving the original app and local saves.
-            applicationId 'com.andrefiker.quietknight.appfarm.untimed'
-            versionCode 3
-            versionName '1.0.2'
+            applicationId 'com.andrefiker.quietknight.appfarm.guest'
+            versionCode 4
+            versionName '1.0.3'
             resValue 'string', 'app_name', 'Quiet Knight'
             buildConfigField 'String', 'HOME_URL', '"https://quiet-knight-server-production.up.railway.app/assets/quiet-knight/index.html"'
         }

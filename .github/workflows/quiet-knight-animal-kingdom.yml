@@ -116,7 +116,7 @@ jobs:
             if curl -fsS http://127.0.0.1:3000/health >/dev/null; then break; fi
             sleep 0.25
           done
-          timeout 240s npx playwright test clock.spec.js --global-timeout=180000
+          timeout 240s npx playwright test clock.spec.js guest.spec.js --global-timeout=180000
 
       - name: Upload synthetic rendered QA
         if: always()

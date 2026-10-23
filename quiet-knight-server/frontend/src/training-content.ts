@@ -2,7 +2,7 @@
 // Continuations are curated, not a statistical game database.
 export const puzzles=[
  {name:'Fork · royal double attack',fen:'4k1q1/8/8/3N4/8/8/8/4K3 w - - 0 1',solution:['d5f6'],hint:'Find a knight check that also attacks the queen.',explanation:'Nf6+ attacks the king on e8 and queen on g8. Black must answer the check.',theme:'fork',difficulty:1},
- {name:'Pin · use the open file',fen:'4k3/4q3/8/8/8/8/8/R5K1 w - - 0 1',solution:['a1e1'],hint:'Place the rook on the king and queen’s file.',explanation:'Re1 pins the queen on e7 to the king on e8. A pinned piece cannot expose its king.',theme:'pin',difficulty:1},
+ {name:'Pin · use the open file',fen:'4k3/4q3/8/8/8/8/8/R4K2 w - - 0 1',solution:['a1e1'],hint:'Place the rook on the king and queen’s file.',explanation:'Re1 pins the queen on e7 to the king on e8. Your king protects the rook: if the queen captures it, Kxe1 captures the queen. A pinned piece cannot expose its king.',theme:'pin',difficulty:1},
  {name:'Skewer · king in front',fen:'4q3/8/4k3/8/8/8/8/R5K1 w - - 0 1',solution:['a1e1'],hint:'Check along the e-file.',explanation:'Re1+ puts the king in front of its queen. After the king moves, the rook may win the queen; examine Black’s replies.',theme:'skewer',difficulty:2},
  {name:'Discovered check',fen:'4k3/8/8/q7/8/8/4B3/4R1K1 w - - 0 1',solution:['e2b5'],hint:'Move the bishop off the rook’s file.',explanation:'Bb5+ uncovers the rook on e1. The rook gives check while the bishop develops.',theme:'discovered attack',difficulty:2},
  {name:'Back-rank mate',fen:'6k1/5ppp/8/8/8/8/8/4R1K1 w - - 0 1',solution:['e1e8'],hint:'The king has no flight square behind its pawns.',explanation:'Re8# attacks across the eighth rank. The black pawns block every escape square.',theme:'mate pattern',difficulty:1},

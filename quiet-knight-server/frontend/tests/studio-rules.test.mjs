@@ -47,4 +47,5 @@ assert.equal(reviewAssessment(150,-100,'w',true).category,'Blunder');assert.equa
 assert.equal(skillForLevel(10),20);assert.equal(skillForLevel(1),0);assert.equal(new Set(Array.from({length:10},(_,i)=>skillForLevel(i+1))).size,10);
 assert.equal(variantForFen('4k3/8/8/8/8/8/8/RK4R1 w GA - 0 1'),'chess960');assert.equal(variantForFen(blankStudy().start),'standard');assert.equal(variantForFen(blankStudy().start,'chess960'),'chess960');
 for(let level=1;level<=10;level++){const move=chooseComputerMove([],level);assert(move);const g=new Chess();assert(g.move({from:move.from,to:move.to,promotion:move.promotion}));}
+const pin=positionFromFen(puzzles.find(p=>p.theme==='pin').fen);playUci(pin,'a1e1');assert.throws(()=>playUci(pin,'e7d6'));playUci(pin,'e7e1');playUci(pin,'f1e1');assert.equal(pin.board.get(parseSquare('e1')).role,'king');
 console.log('Studio rules: all 960 setups, stationary/normal Chess960 castling, en passant, underpromotion, authored exercises, PGN/FEN, corruption recovery, namespaces and style choices passed.');

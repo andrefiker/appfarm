@@ -13,6 +13,11 @@ export function positionFromFen(fen:string){
   if(setup.epSquare!==undefined){const white=setup.turn==='white',rank=Math.floor(setup.epSquare/8);const pawn=setup.board.get(setup.epSquare+(white?-8:8));if(rank!==(white?5:2)||pawn?.role!=='pawn'||pawn.color===setup.turn||setup.board.has(setup.epSquare)||setup.board.has(setup.epSquare+(white?8:-8))||setup.halfmoves!==0)throw Error('Invalid en passant target.');}
   const pos=Chess.fromSetup(setup).unwrap();if(!pos.castles.castlingRights.equals(setup.castlingRights))throw Error('Castling rights do not match the king and rook setup.');return pos;
 }
+export function variantForFen(fen:string,preferred:'standard'|'chess960'='standard'){
+ const pos=positionFromFen(fen);if(preferred==='chess960')return preferred;
+ for(const color of ['white','black'] as const){const back=color==='white'?0:56;const rights=[...pos.castles.castlingRights].filter(s=>Math.floor(s/8)===back/8);if(rights.length&&(pos.board.kingOf(color)!==back+4||rights.some(s=>s!==back&&s!==back+7)))return 'chess960' as const;}
+ return 'standard' as const;
+}
 export function legalMoves(pos:Chess):NormalMove[]{const out:NormalMove[]=[];for(const[from,dests]of pos.allDests())for(const to of dests){const p=pos.board.get(from);for(const promotion of p?.role==='pawn'&&(to<8||to>=56)?['queen','rook','bishop','knight'] as const:[undefined]){const m={from,to,promotion};if(pos.isLegal(m))out.push(m);}}return out;}
 export function playUci(pos:Chess,uci:string){const m=parseUci(uci);if(!m)throw Error('Invalid move');const normalized=normalizeMove(pos,m);if(!pos.isLegal(normalized))throw Error('Illegal move');const san=makeSan(pos,normalized);pos.play(normalized);return san;}
 export function replay(session:StudySession,until=session.moves.length){const pos=positionFromFen(session.start),sans:string[]=[],fens=[makeFen(pos.toSetup())];for(const uci of session.moves.slice(0,until)){sans.push(playUci(pos,uci));fens.push(makeFen(pos.toSetup()));}return{pos,sans,fens};}

@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import {Chess} from 'chess.js';
+import {chooseComputerMove} from '../src/computer.ts';
 import {makeFen} from 'chessops/fen';
 import {makeSquare,parseSquare} from 'chessops/util';
-import {blankStudy,chess960Fen,positionFromFen,playUci,replay,legalMoves,studyPgn,importStudyPgn,outcome,loadStudy,saveStudy} from '../src/local-rules.ts';
+import {blankStudy,chess960Fen,positionFromFen,variantForFen,playUci,replay,legalMoves,studyPgn,importStudyPgn,outcome,loadStudy,saveStudy} from '../src/local-rules.ts';
 import {puzzles,openings,endgames} from '../src/training-content.ts';
 import {reviewAssessment,adaptiveLevel} from '../src/review-assessment.ts';
 import {selectStyle,skillForLevel} from '../src/offline-engine.ts';
@@ -44,4 +45,6 @@ const seventyFive={...blankStudy(),start:'4k3/8/8/8/8/8/8/R3K3 w - - 150 76'};as
 const resigned=importStudyPgn('1. e4 e5 0-1');assert.match(studyPgn(resigned),/\[Result "0-1"\]/);
 assert.equal(reviewAssessment(150,-100,'w',true).category,'Blunder');assert.equal(reviewAssessment(-100,0,'b').category,'Mistake');assert.equal(reviewAssessment(0,-49,'w').category,'No major loss');assert.equal(reviewAssessment(0,NaN,'b').category,'Not evaluated');assert(reviewAssessment(100,-20,'w',true).missedTactic);assert.equal(adaptiveLevel(5,'win',false),5);assert.equal(adaptiveLevel(5,'loss',true),4);assert.equal(adaptiveLevel(10,'win',true),10);
 assert.equal(skillForLevel(10),20);assert.equal(skillForLevel(1),0);assert.equal(new Set(Array.from({length:10},(_,i)=>skillForLevel(i+1))).size,10);
+assert.equal(variantForFen('4k3/8/8/8/8/8/8/RK4R1 w GA - 0 1'),'chess960');assert.equal(variantForFen(blankStudy().start),'standard');assert.equal(variantForFen(blankStudy().start,'chess960'),'chess960');
+for(let level=1;level<=10;level++){const move=chooseComputerMove([],level);assert(move);const g=new Chess();assert(g.move({from:move.from,to:move.to,promotion:move.promotion}));}
 console.log('Studio rules: all 960 setups, stationary/normal Chess960 castling, en passant, underpromotion, authored exercises, PGN/FEN, corruption recovery, namespaces and style choices passed.');

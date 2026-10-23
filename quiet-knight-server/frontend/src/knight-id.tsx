@@ -31,7 +31,7 @@ export function useKnightId(){
 }
 
 export function AccountGate({knight,embedded=false,onContinue}:{knight:ReturnType<typeof useKnightId>;embedded?:boolean;onContinue?:()=>void}){
- const[view,setView]=useState<'choose'|'create'|'login'|'recover'|'claim'|'recovery'>('choose');
+ const[view,setView]=useState<'choose'|'create'|'login'|'recover'|'claim'|'recovery'>(()=>knight.recoveryCode?'recovery':'choose');
  const[handle,setHandle]=useState(''),[password,setPassword]=useState(''),[code,setCode]=useState('');
  async function submit(e:FormEvent){e.preventDefault();let ok=false;
   if(view==='create')ok=!!await knight.register(handle,password);

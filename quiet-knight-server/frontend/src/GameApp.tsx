@@ -456,7 +456,7 @@ export default function GameApp() {
       dialog.showModal();
       dialog.querySelector<HTMLElement>("[data-autofocus]")?.focus();
     } else if (!dialogOpen && dialog.open) dialog.close();
-  }, [dialogOpen]);
+  }, [dialogOpen, gameOwner]);
   function closeModal() {
     setModal(null);
     setPromotion(null);

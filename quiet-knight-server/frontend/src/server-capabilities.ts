@@ -15,12 +15,12 @@ export async function inspectServer(signal?: AbortSignal): Promise<Compatibility
 export function useServerCapabilities() {
   const [result,setResult] = useState<Compatibility>({state:'checking',message:'Checking friend-game compatibility…'});
   useEffect(()=>{
-    let controller: AbortController;
+    let controller: AbortController; let mounted=true;
     const check = () => { controller?.abort(); controller = new AbortController(); const current=controller;
       const timer=setTimeout(()=>current.abort(),4000);
-      void inspectServer(current.signal).then(r=>{if(!current.signal.aborted)setResult(r);else if(controller===current)setResult({state:'unavailable',message:'Server check timed out. Local play remains available.'});}).finally(()=>clearTimeout(timer)); };
+      void inspectServer(current.signal).then(r=>{if(!mounted||controller!==current)return;if(!current.signal.aborted)setResult(r);else if(controller===current)setResult({state:'unavailable',message:'Server check timed out. Local play remains available.'});}).finally(()=>clearTimeout(timer)); };
     check();window.addEventListener('online',check);
-    return()=>{controller?.abort();window.removeEventListener('online',check);};
+    return()=>{mounted=false;controller?.abort();window.removeEventListener('online',check);};
   },[]);
   return result;
 }

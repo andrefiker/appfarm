@@ -25,7 +25,7 @@ test('untimed new game, two clients, background/reconnect, rematch and preserved
   const a=await actor(browser,390),b=await actor(browser,360);
   const redis=createClient({url:process.env.REDIS_URL||'redis://127.0.0.1:6379'});await redis.connect();
   try{
-    await a.page.goto(url);await expect(a.page.getByText('No time limit. Share a room and make your move.',{exact:true})).toBeVisible();
+    await a.page.goto(url);await expect(a.page.getByText('Untimed friend play requires a compatible server. Existing timed tables keep their clocks.',{exact:true})).toBeVisible();
     await a.page.getByRole('button',{name:'Create live game',exact:true}).click();await live(a.page);
     await expect(a.page.getByRole('timer')).toHaveCount(0);
     const invite=a.page.url(),code=new URL(invite).searchParams.get('room'),key='qk:room:'+code;

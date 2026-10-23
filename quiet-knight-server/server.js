@@ -305,6 +305,7 @@ async function handleApi(req, res, url) {
   if (!ownsRoomSeat(room,seatToken,player?.id)) return send(res,403,{error:'This Knight ID does not own that seat'},origin);
 
   if(action==='consent'){
+    const now=Date.now();if(deadline(room)!==null&&now>=deadline(room)){room=await expireRoom(room,now);return send(res,409,{error:'Time expired',room:publicRoom(room)},origin);}
     consentTransition(room,color,input);room.version++;await saveRoom(room);room=await settleRoom(room);
     return send(res,200,{room:publicRoom(room)},origin);
   }
@@ -362,6 +363,8 @@ async function handleApi(req, res, url) {
   }
 
   if (action === 'move') {
+    if(input.game_number!==undefined&&input.game_number!==(room.game_number||1))return send(res,409,{error:'Game changed; reload the table'},origin);
+    if(input.expected_version!==undefined&&input.expected_version!==room.version)return send(res,409,{error:'Board version changed; reload the table'},origin);
     if (room.status !== 'active') return send(res, 409, { error: 'Game is not active' }, origin);
     if (room.clock_paused) return send(res,409,{error:'The game is paused. Resume before moving.',room:publicRoom(room)},origin);
     if (room.turn !== color) return send(res, 409, { error: 'Not your turn' }, origin);

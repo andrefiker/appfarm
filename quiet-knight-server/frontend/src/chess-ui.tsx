@@ -759,7 +759,7 @@ export function GameSurface(p: GameSurfaceProps) {
   );
 }
 export function HomeSurface({
-  identity,
+  identity, extras,
   level,
   joinCode,
   busy,
@@ -773,6 +773,7 @@ export function HomeSurface({
   onResumeLive,
 }: {
   identity?: React.ReactNode;
+  extras?: React.ReactNode;
   resumeLive?: string | null;
   onResumeLive?: () => void;
   level: number;
@@ -948,6 +949,7 @@ export function HomeSurface({
               Offline Stockfish · Saved on this device
             </p>
           </section>
+          {extras}
         </div>
       </div>
       <footer className="home-footer">

@@ -7,6 +7,10 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.os.Build;
+import android.view.WindowInsets;
+import android.graphics.Insets;
 import android.webkit.CookieManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -44,7 +48,16 @@ public class MainActivity extends Activity {
         webView.setLayoutParams(new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
-        setContentView(webView);
+        if (quietKnight()) {
+            FrameLayout safeRoot = new FrameLayout(this);
+            safeRoot.addView(webView);
+            if (Build.VERSION.SDK_INT >= 30) safeRoot.setOnApplyWindowInsetsListener((view, insets) -> {
+                Insets bars = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
+                view.setPadding(bars.left, bars.top, bars.right, bars.bottom);
+                return insets;
+            });
+            setContentView(safeRoot);
+        } else setContentView(webView);
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);

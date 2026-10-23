@@ -11,7 +11,7 @@ test('fresh guests play multiplayer, resume, resign and swap; spectators cannot 
  const a=await actor(browser),b=await actor(browser,320),s=await actor(browser,360);
  try{
   await a.page.goto(url);await noGate(a.page);expect(a.accountRequests).toEqual([]);
-  await mkdir('output/playwright',{recursive:true});await a.page.screenshot({path:'output/playwright/guest-home-390.png',fullPage:true});
+  await mkdir('output/playwright',{recursive:true});await expect(a.page.locator('.home-play')).toHaveCSS('opacity','1');await a.page.screenshot({path:'output/playwright/guest-home-390.png',fullPage:true});
   await a.page.getByRole('button',{name:'Create live game',exact:true}).click();await live(a.page);
   const invite=a.page.url();await b.page.goto(invite);await live(b.page);await s.page.goto(invite);await live(s.page);
   await expect(b.page.getByRole('group',{name:'Chess board, Black at bottom',exact:true})).toBeVisible();

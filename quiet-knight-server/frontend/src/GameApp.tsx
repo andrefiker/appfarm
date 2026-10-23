@@ -202,6 +202,7 @@ export default function GameApp() {
         : next,
     );
   }, []);
+  useEffect(()=>{requestGeneration.current++;setPendingMove(null);},[room?.code,room?.game_number]);
   const { connection, connectionId, detail, reconnect, getDiagnostics } =
     useRoomRealtime<RoomState>(room?.code || null, acceptRoom, {
       seatToken,
@@ -642,7 +643,7 @@ export default function GameApp() {
         from,
         to,
         promotion: promotionPiece,
-        expected_fen: room.fen, request_id:crypto.randomUUID(),
+        expected_fen: room.fen, expected_version:room.version, game_number:room.game_number||1, request_id:crypto.randomUUID(),
         connection_id: connectionId || undefined,
       });
       if (generation === requestGeneration.current) {
@@ -678,7 +679,7 @@ export default function GameApp() {
       endRequest();
     }
   }
-  function proposeMove(from:string,to:string,promotionPiece="q"){if(prefs.confirm)setPendingMove({from,to,promotion:promotionPiece});else performMove(from,to,promotionPiece);}
+  function proposeMove(from:string,to:string,promotionPiece="q"){closeModal();if(prefs.confirm)setPendingMove({from,to,promotion:promotionPiece});else performMove(from,to,promotionPiece);}
   function performMove(from: string, to: string, promotionPiece = "q") {
     closeModal();
     setPendingMove(null);setEnginePaused(false);setRedoMoves([]);
@@ -1157,7 +1158,7 @@ export default function GameApp() {
   return (
     <>
       {screen === "study" ? <StudyRoom key={accountId} owner={accountId} prefs={prefs} seed={studySeed} onBack={()=>setScreen(room?"game":"home")}/> : null}
-      {screen === "home" ? <section className="studio-entry"><h2>Continue the position</h2><button className="secondary" onClick={()=>openStudy(localMoves.length?{sans:localMoves.map(m=>m.san||"")}:undefined)}>Continue the position · analyse</button><button className="secondary" onClick={()=>openStudy({mode:"pass"})}>Pass and play · offline</button><button className="secondary" onClick={()=>openStudy()}>Study, puzzles & Chess960</button><p role="status" className="server-compatibility">{compatibility.message}</p><label>Friend-game side<select aria-label="Friend-game side" value={friendSide} onChange={e=>setFriendSide(e.target.value)}><option value="white">White</option><option value="black">Black</option></select></label><label>Friend-game style<select aria-label="Friend-game style" value={friendKind} onChange={e=>setFriendKind(e.target.value)}><option value="live">Live · untimed</option><option value="correspondence">Correspondence · no deadlines</option></select></label><label>Paste invite link<input aria-label="Paste invite link" value={inviteInput} maxLength={1000} onChange={e=>setInviteInput(e.target.value)}/></label><button className="secondary" onClick={()=>{const code=parseInvitation(inviteInput);if(code)void joinRoom(code);else setMessage("Paste a valid room link or six-character code.");}}>Open invitation</button></section>:null}
+
       {screen === "home" && localMoves.length > 0 ? (
         <div className="resume-local">
           <button
@@ -1184,6 +1185,7 @@ export default function GameApp() {
       ) : null}
       {screen === "home" ? (
         <HomeSurface
+          extras={<section className="studio-entry"><h2>Continue the position</h2><button className="secondary" onClick={()=>openStudy(localMoves.length?{sans:localMoves.map(m=>m.san||"")}:undefined)}>Continue the position · analyse</button><button className="secondary" onClick={()=>openStudy({mode:"pass"})}>Pass and play · offline</button><button className="secondary" onClick={()=>openStudy()}>Study, puzzles & Chess960</button><p role="status" className="server-compatibility">{compatibility.message}</p><details className="friend-setup"><summary>Friend options & invite link</summary><label>Friend-game side<select aria-label="Friend-game side" value={friendSide} onChange={e=>setFriendSide(e.target.value)}><option value="white">White</option><option value="black">Black</option></select></label><label>Friend-game style<select aria-label="Friend-game style" value={friendKind} onChange={e=>setFriendKind(e.target.value)}><option value="live">Live · untimed</option><option value="correspondence">Correspondence · no deadlines</option></select></label><label>Paste invite link<input aria-label="Paste invite link" value={inviteInput} maxLength={1000} onChange={e=>setInviteInput(e.target.value)}/></label><button className="secondary" onClick={()=>{const code=parseInvitation(inviteInput);if(code)void joinRoom(code);else setMessage("Paste a valid room link or six-character code.");}}>Open invitation</button></details></section>}
           identity={
             <>
               <button

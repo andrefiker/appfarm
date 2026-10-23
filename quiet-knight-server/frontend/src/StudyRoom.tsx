@@ -22,8 +22,9 @@ export function StudyRoom({owner,prefs,seed,onBack}:{owner:string;prefs:PlayPref
  const search=useRef<AbortController|null>(null);
  const[fenText,setFenText]=useState(session.start),[pgnText,setPgnText]=useState(''),[variantIndex,setVariantIndex]=useState(518),[exercise,setExercise]=useState<{kind:'puzzle'|'endgame';index:number}|null>(null),[hint,setHint]=useState(false);
  const[editor,setEditor]=useState<Position>(()=>boardPosition(positionFromFen(session.start))),[brush,setBrush]=useState('wp'),[editTurn,setEditTurn]=useState('w'),[castling,setCastling]=useState('-'),[ep,setEp]=useState('-');
- const current=useMemo(()=>replay(session,session.cursor),[session]),fen=makeFen(current.pos.toSetup()),board=boardPosition(current.pos),turn:Color=current.pos.turn==='white'?'w':'b',end=outcome(session);
- const orientation:Color=flip?'b':session.mode==='pass'&&autoFlip?turn:session.mode==='computer'?session.human:'w';
+ const current=useMemo(()=>replay(session,session.cursor),[session.start,session.moves,session.cursor]),fen=makeFen(current.pos.toSetup()),board=boardPosition(current.pos),turn:Color=current.pos.turn==='white'?'w':'b',end=useMemo(()=>outcome(session),[session.start,session.moves]);
+ const baseOrientation:Color=session.mode==='pass'&&autoFlip?turn:session.mode==='computer'?session.human:'w';
+ const orientation:Color=flip?(baseOrientation==='w'?'b':'w'):baseOrientation;
  const legal=legalMoves(current.pos),targets=prefs.hints&&selected?legal.filter(m=>makeSquare(m.from)===selected).map(m=>makeSquare(m.to)):[];
  const locked=thinking||Boolean(end)||claim||session.cursor!==session.moves.length||(session.mode==='computer'&&turn!==session.human);
  useEffect(()=>{if(!saveStudy(session,owner))setNotice('Storage unavailable. Export PGN before leaving; this position may not survive closing.');},[session,owner]);

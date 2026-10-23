@@ -150,6 +150,12 @@ jobs:
         with:
           gradle-version: '8.10.2'
 
+      - name: Restore the candidate debug signing identity
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: quiet-knight-studio-debug-key-v1
+
       - name: Assemble signed debug APK
         working-directory: android-store
         run: gradle --no-daemon :app:assembleQuietKnightDebug
@@ -174,6 +180,15 @@ jobs:
             exit 1
           fi
           sha256sum dist/QuietKnight-Animal-Kingdom-debug.apk
+
+      - name: Preserve candidate private debug signing identity
+        uses: actions/upload-artifact@v4
+        with:
+          name: quiet-knight-studio-private-debug-key
+          path: ~/.android/debug.keystore
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

@@ -5,6 +5,7 @@ on:
     branches: [ feature/quiet-knight-animal-kingdom ]
     paths:
       - 'quiet-knight-server/frontend/**'
+      - 'quiet-knight-server/frontend-acceptance/**'
       - 'android-store/**'
       - '.github/workflows/quiet-knight-animal-kingdom.yml'
   workflow_dispatch:

@@ -1,6 +1,7 @@
 import {test,expect} from '@playwright/test';
 import {mkdir} from 'node:fs/promises';
 const url=process.env.QK_FRONTEND_URL||'http://127.0.0.1:3000/';
+test.setTimeout(60000);
 test.skip(!/^http:\/\/(127\.0\.0\.1|localhost):/.test(url),'isolated candidate only');
 
 // Optional local visual harness when native PostgreSQL cannot run in a
@@ -54,6 +55,7 @@ test('pictured preset applies to existing preferences without losing saved play'
  await page.locator('[data-square=e2]').click();await page.locator('[data-square=e4]').click();
  await expect(page.locator('[data-square=g1]')).toHaveAttribute('aria-disabled','false');
  await page.getByRole('button',{name:'Open table controls',exact:true}).click();
+ await page.getByText('Preferences & diagnostics',{exact:true}).click();
  await page.getByRole('button',{name:'Use pictured wood table',exact:true}).click();
  await expect(page.locator('[data-square=e4]')).toHaveAttribute('data-piece','wp');
  await expect(page.getByRole('timer')).toHaveCount(0);

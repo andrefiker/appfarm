@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Intent;
 import org.json.JSONObject;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.view.WindowInsetsController;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.ViewGroup;
@@ -49,14 +51,32 @@ public class MainActivity extends Activity {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
         if (quietKnight()) {
+            int tableColor = Color.rgb(14, 25, 27);
+            getWindow().setBackgroundDrawable(new ColorDrawable(tableColor));
+            getWindow().getDecorView().setBackgroundColor(tableColor);
+            getWindow().setStatusBarColor(tableColor);
+            getWindow().setNavigationBarColor(tableColor);
+            webView.setBackgroundColor(tableColor);
             FrameLayout safeRoot = new FrameLayout(this);
+            safeRoot.setBackgroundColor(tableColor);
             safeRoot.addView(webView);
-            if (Build.VERSION.SDK_INT >= 30) safeRoot.setOnApplyWindowInsetsListener((view, insets) -> {
-                Insets bars = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
-                view.setPadding(bars.left, bars.top, bars.right, bars.bottom);
-                return insets;
-            });
+            if (Build.VERSION.SDK_INT >= 30) {
+                // Own insets on Android 11+, including enforced edge-to-edge
+                // on Android 15+. Keep the WebView inside the system bars.
+                getWindow().setDecorFitsSystemWindows(false);
+                safeRoot.setOnApplyWindowInsetsListener((view, insets) -> {
+                    Insets bars = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
+                    Insets keyboard = insets.getInsets(WindowInsets.Type.ime());
+                    view.setPadding(bars.left, bars.top, bars.right, Math.max(bars.bottom, keyboard.bottom));
+                    return WindowInsets.CONSUMED;
+                });
+            }
             setContentView(safeRoot);
+            if (Build.VERSION.SDK_INT >= 30) {
+                getWindow().getInsetsController().setSystemBarsAppearance(0,
+                        WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS | WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS);
+                safeRoot.post(safeRoot::requestApplyInsets);
+            }
         } else setContentView(webView);
 
         WebSettings settings = webView.getSettings();

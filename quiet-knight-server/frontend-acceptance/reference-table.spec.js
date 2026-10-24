@@ -43,20 +43,47 @@ test('pictured wood table, carved pieces and responsive untimed waiting room',as
  expect(errors).toEqual([]);
 });
 
-test('pictured preset applies to existing preferences without losing saved play',async({page})=>{
- await page.addInitScript(()=>{localStorage.setItem('qk-piece-set-v1','classic');localStorage.setItem('qk-atmosphere-v1','Royal Meadow');});
- await page.goto(url);await page.getByRole('button',{name:'Open settings',exact:true}).click();
- await expect(page.getByLabel('Chess piece set',{exact:true})).toHaveValue('classic');
- await page.getByRole('button',{name:'Use pictured wood table',exact:true}).click();
- await expect(page.getByLabel('Chess piece set',{exact:true})).toHaveValue('kawaii-faces');
- await expect(page.getByLabel('Table atmosphere',{exact:true})).toHaveValue('Walnut');
- await page.getByRole('button',{name:'Close dialog',exact:true}).click();
+test('upgrade applies pictured design automatically and preserves saved play and later choices',async({page})=>{
+ await page.addInitScript(()=>{
+  if(localStorage.getItem('reference-test-seeded'))return;
+  localStorage.setItem('qk-piece-set-v1','classic');
+  localStorage.setItem('qk-atmosphere-v1','Royal Meadow');
+  localStorage.setItem('qk-zen-table-v1','true');
+  localStorage.setItem('reference-test-seeded','true');
+ });
+ await page.goto(url);
+ await expect(page.locator('body')).toHaveAttribute('data-piece-set','kawaii-faces');
+ await expect(page.locator('body')).toHaveAttribute('data-atmosphere','walnut');
  await page.getByRole('button',{name:'Play White',exact:true}).click();
  await page.locator('[data-square=e2]').click();await page.locator('[data-square=e4]').click();
  await expect(page.locator('[data-square=g1]')).toHaveAttribute('aria-disabled','false');
- await page.getByRole('button',{name:'Open table controls',exact:true}).click();
- await page.getByText('Preferences & diagnostics',{exact:true}).click();
+ const saves=await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage).filter(([key])=>key.startsWith('qk-local-save-v1:')&&!key.endsWith(':backup')&&!key.includes(':recovery'))));
+ expect(Object.keys(saves).length).toBeGreaterThan(0);
+ // Simulate upgrading an installation with a real saved computer position.
+ await page.evaluate(()=>{
+  localStorage.setItem('qk-piece-set-v1','classic');
+  localStorage.setItem('qk-atmosphere-v1','Royal Meadow');
+  localStorage.removeItem('qk-pictured-table-upgrade-v1');
+ });
+ await page.reload();
+ await expect(page.locator('body')).toHaveAttribute('data-piece-set','kawaii-faces');
+ await expect(page.locator('body')).toHaveAttribute('data-atmosphere','walnut');
+ await expect(page.getByRole('button',{name:'Resume saved computer game',exact:true})).toBeVisible();
+ expect(await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage).filter(([key])=>key.startsWith('qk-local-save-v1:')&&!key.endsWith(':backup')&&!key.includes(':recovery'))))).toEqual(saves);
+ await page.getByRole('button',{name:'Open settings',exact:true}).click();
+ await expect(page.getByLabel('Chess piece set',{exact:true})).toHaveValue('kawaii-faces');
+ await page.getByLabel('Chess piece set',{exact:true}).selectOption('classic');
+ await page.getByRole('button',{name:'Close dialog',exact:true}).click();
+ await page.reload();
+ await expect(page.locator('body')).toHaveAttribute('data-piece-set','classic');
+ await page.getByRole('button',{name:'Open settings',exact:true}).click();
  await page.getByRole('button',{name:'Use pictured wood table',exact:true}).click();
- await expect(page.locator('[data-square=e4]')).toHaveAttribute('data-piece','wp');
+ await page.getByRole('button',{name:'Close dialog',exact:true}).click();
+ await page.getByRole('button',{name:'Create live game',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'Waiting for a friend',exact:true})).toBeVisible();
+ await expect(page.locator('.board svg.chess-art')).toHaveCount(32);
  await expect(page.getByRole('timer')).toHaveCount(0);
+ await geometry(page);
+ await mkdir('output/playwright',{recursive:true});
+ await page.screenshot({path:'output/playwright/reference-upgraded-installation-390.png',fullPage:true});
 });

@@ -1,0 +1,29 @@
+/* Match André's wood-table reference. Historical clocks remain conditional. */
+body[data-atmosphere="walnut"]:has(.mobile-table) { background: #0e191b; }
+.mobile-table .game-header { min-height: 54px; }
+.mobile-table .player-bar { height: 59px; }
+.mobile-table .game-title h1 { font-size: 19px; }
+.mobile-table .game-title button.connection { font-size: 12px; }
+.mobile-table .player-handle { font-size: 15px; line-height: 20px; }
+.mobile-table .player-meta { font-size: 12px; line-height: 17px; }
+.mobile-table .player-quip { font-style: normal; font-size: 12px; }
+.mobile-table .board-frame { padding: 5px; border-radius: 9px; border-color: #d6bc8455; background: #27302f; }
+/* Square names remain accessible; study boards retain visible coordinates. */
+.mobile-table .square-coordinate { display: none; }
+.mobile-table .table-below { padding: 0 8px; }
+.mobile-table .game-status { min-height: 40px; padding: 7px 0; }
+.mobile-table .game-status h2 { font-size: 16px; }
+.mobile-table .table-toolbar { padding: 4px 0; gap: 6px; }
+.mobile-table .table-controls-toggle { font-size: 12px; }
+.mobile-table .table-context .primary { min-height: 44px; padding: 11px 14px; border-radius: 13px; font-size: 14px; }
+.mobile-table .live-material { padding: 14px 0 8px; font-size: 13px; }
+.mobile-table .live-captures .loss-row { min-height: 36px; grid-template-columns: 108px minmax(0,1fr); }
+.mobile-table .live-captures .loss-label { font-size: 13px; }
+.mobile-table .live-captures .loss-empty { font-size: 12px; }
+@media (max-width: 359px) {
+  .mobile-table .game-title h1 { font-size: 17px; }
+  .mobile-table .game-title { gap: 7px; }
+  .mobile-table .player-quip { max-width: 100px; font-size: 11px; }
+  .mobile-table .table-controls-toggle { padding-left: 3px; padding-right: 3px; }
+  .mobile-table .live-material { gap: 4px 10px; font-size: 12px; }
+}

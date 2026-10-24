@@ -80,7 +80,7 @@ type Modal =
   | "invite"
   | null;
 const REACTIONS:Record<string,string>={hello:"👋", "well-played":"👏",thanks:"🙏",fox:"🦊",owl:"🦉",tortoise:"🐢"};
-const BUILD = "Quiet Knight 1.1.0 candidate · offline studio";
+const BUILD = "Quiet Knight 1.1.1 · wood table";
 function roleColor(role: Role | null): Color | null {
   return role === "white" ? "w" : role === "black" ? "b" : null;
 }
@@ -1010,6 +1010,7 @@ export default function GameApp() {
           }}
         />
       </label>
+      <button type="button" className="secondary wide" onClick={() => {table.applyReferenceTable();updatePrefs({quiet:false});setMessage("Wood table and carved pieces restored.");}}>Use pictured wood table</button>
       <label className="preference-row">
         <span>Board style</span>
         <select

@@ -5,6 +5,7 @@ import './index.css'; import './game.css';
 import './modern.css';
 import './animal-kingdom.css';
 import './studio.css';
+import './reference-table.css';
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>

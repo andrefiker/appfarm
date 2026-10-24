@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "prebuild": "node scripts/prepare-engine.mjs",
     "predev": "node scripts/prepare-engine.mjs",
-    "test:studio": "node --experimental-strip-types tests/table-preferences.test.mjs && node --experimental-strip-types tests/studio-rules.test.mjs && node --experimental-strip-types tests/wasm-engine.test.mjs"
+    "test:studio": "node --experimental-strip-types tests/haptics.test.mjs && node --experimental-strip-types tests/table-preferences.test.mjs && node --experimental-strip-types tests/studio-rules.test.mjs && node --experimental-strip-types tests/wasm-engine.test.mjs"
   },
   "dependencies": {
     "chess.js": "^1.4.0",

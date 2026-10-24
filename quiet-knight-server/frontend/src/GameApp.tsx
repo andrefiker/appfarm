@@ -1,3 +1,4 @@
+import {loadHapticPreference,playHaptic} from './haptics';
 import {adaptiveLevel} from './review-assessment';
 import {InviteQR,parseInvitation} from './invitation';
 import {About} from './about';
@@ -80,7 +81,7 @@ type Modal =
   | "invite"
   | null;
 const REACTIONS:Record<string,string>={hello:"👋", "well-played":"👏",thanks:"🙏",fox:"🦊",owl:"🦉",tortoise:"🐢"};
-const BUILD = "Quiet Knight 1.1.2 · wood table";
+const BUILD = "Quiet Knight 1.1.3 · wood table";
 function roleColor(role: Role | null): Color | null {
   return role === "white" ? "w" : role === "black" ? "b" : null;
 }
@@ -170,7 +171,7 @@ export default function GameApp() {
   const lastAnimalReaction = useRef(0);
   const animalReactionTimer = useRef<number | null>(null);
   const [haptics, setHaptics] = useState(
-    () => stored("qk-haptics") === "true",
+    () => {try{return loadHapticPreference(localStorage);}catch{return loadHapticPreference();}},
   );
   const [volume, setVolume] = useState(() => {
     const saved = Number(stored("qk-volume") || "80");
@@ -384,8 +385,7 @@ export default function GameApp() {
       san: sans[count - 1] || "",
       serial: Date.now(),
     });
-    if (preferences.current.haptics && "vibrate" in navigator)
-      navigator.vibrate(18);
+    if (screen === "game") playHaptic(check ? "check" : history?.[count - 1]?.captured ? "capture" : "move", preferences.current.haptics);
     if (preferences.current.sound)
       void chessAudio.play(
         Boolean(history?.[count - 1]?.captured),
@@ -408,8 +408,7 @@ export default function GameApp() {
     const now = Date.now();
     if (old?.key === key && !old.present && present && now - old.at > 30000) {
       void chessAudio.knock();
-      if (preferences.current.haptics && "vibrate" in navigator)
-        navigator.vibrate(10);
+      if (screen === "game") playHaptic("arrival", preferences.current.haptics);
       arrival.current = { key, present, at: now };
     } else
       arrival.current = { key, present, at: old?.key === key ? old.at : 0 };
@@ -713,8 +712,7 @@ export default function GameApp() {
     if (locked) return;
     const piece = game.get(square as Square);
     if (piece && piece.color === me) {
-      if (preferences.current.haptics && "vibrate" in navigator)
-        navigator.vibrate(7);
+      if (selected !== square) playHaptic("select", preferences.current.haptics);
       setSelected((previous) => (previous === square ? null : square));
       return;
     }
@@ -1077,6 +1075,8 @@ export default function GameApp() {
           onChange={(e) => setHaptics(e.target.checked)}
         />
       </label>
+      <button type="button" className="secondary" disabled={!haptics} onClick={()=>playHaptic('move',haptics)}>Test haptics</button>
+      <p className="settings-note">Gentle feedback for selection, moves, captures and check. Your phone’s touch feedback setting applies.</p>
       <p className="settings-note">
         Tap a piece, then its destination. Arrow keys move focus; Enter selects.
         Motion follows your device’s reduced-motion preference.
@@ -1161,7 +1161,7 @@ export default function GameApp() {
   if (gameOwner !== accountId) return <main className="account-gate"><section className="account-card" role="status"><p className="account-kicker">QUIET KNIGHT</p><h1>Loading your account</h1><p className="account-intro">Preparing your saved games.</p></section></main>;
   return (
     <>
-      {screen === "study" ? <StudyRoom key={accountId} owner={accountId} prefs={prefs} seed={studySeed} onBack={()=>setScreen(room?"game":"home")}/> : null}
+      {screen === "study" ? <StudyRoom key={accountId} owner={accountId} prefs={prefs} haptics={haptics} seed={studySeed} onBack={()=>setScreen(room?"game":"home")}/> : null}
 
       {screen === "home" && localMoves.length > 0 ? (
         <div className="resume-local">

@@ -11,6 +11,12 @@ import android.os.Bundle;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.os.Build;
+import android.os.SystemClock;
+import android.view.HapticFeedbackConstants;
+import java.util.Collections;
+import androidx.webkit.WebViewCompat;
+import androidx.webkit.WebMessageCompat;
+import androidx.webkit.WebViewFeature;
 import android.view.WindowInsets;
 import android.graphics.Insets;
 import android.webkit.CookieManager;
@@ -24,6 +30,7 @@ import androidx.webkit.WebViewAssetLoader;
 public class MainActivity extends Activity {
     private WebView webView;
     private WebViewAssetLoader assetLoader;
+    private long lastHapticAt;
     private boolean quietKnight() { return "quietKnight".equals(BuildConfig.FLAVOR); }
     private String launchUrl(Intent intent) {
         if (!quietKnight() || intent == null || intent.getData() == null) return BuildConfig.HOME_URL;
@@ -97,6 +104,31 @@ public class MainActivity extends Activity {
         settings.setDisplayZoomControls(false);
         settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         settings.setUserAgentString(settings.getUserAgentString() + " AppFarmAndroid/1.0");
+
+        if (quietKnight() && WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
+            WebViewCompat.addWebMessageListener(webView, "QuietKnightHaptics",
+                    Collections.singleton("https://quiet-knight-server-production.up.railway.app"),
+                    (view, message, sourceOrigin, isMainFrame, reply) -> {
+                        String url = view.getUrl();
+                        if (!isMainFrame || message.getType() != WebMessageCompat.TYPE_STRING || !"https".equals(sourceOrigin.getScheme())
+                                || !"quiet-knight-server-production.up.railway.app".equals(sourceOrigin.getHost())
+                                || url == null || !url.startsWith(BuildConfig.HOME_URL)
+                                || !view.hasWindowFocus() || isFinishing()) return;
+                        String kind = message.getData();
+                        int feedback;
+                        if ("select".equals(kind)) feedback = HapticFeedbackConstants.CLOCK_TICK;
+                        else if ("move".equals(kind) || "arrival".equals(kind)) feedback = HapticFeedbackConstants.VIRTUAL_KEY;
+                        else if ("capture".equals(kind)) feedback = HapticFeedbackConstants.LONG_PRESS;
+                        else if ("check".equals(kind)) feedback = Build.VERSION.SDK_INT >= 30 ? HapticFeedbackConstants.CONFIRM : HapticFeedbackConstants.LONG_PRESS;
+                        else return;
+                        long now = SystemClock.uptimeMillis();
+                        if (now - lastHapticAt < 35) return;
+                        lastHapticAt = now;
+                        // Uses Android's touch-feedback setting; no override
+                        // flags, vibration permission, or background effects.
+                        view.performHapticFeedback(feedback);
+                    });
+        }
 
         CookieManager.getInstance().setAcceptCookie(true);
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);

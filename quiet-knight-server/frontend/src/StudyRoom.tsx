@@ -1,3 +1,4 @@
+import {playHaptic} from './haptics';
 import {reviewAssessment} from './review-assessment';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {makeFen,parseBoardFen,makeBoardFen} from 'chessops/fen';
@@ -15,12 +16,13 @@ import {puzzles,openings,endgames} from './training-content';
 export type StudySeed={fen?:string;sans?:string[];mode?:StudySession['mode']};
 function seeded(seed:StudySeed):StudySession{const s={...blankStudy(),start:seed.fen||blankStudy().start,mode:seed.mode||'analysis'};const pos=positionFromFen(s.start);for(const san of seed.sans||[]){const move=parseSan(pos,san);if(!move)throw Error('Cannot replay source game');s.moves.push(makeUci(move));pos.play(move);}s.cursor=s.moves.length;return s;}
 function download(text:string,name:string){const url=URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-export function StudyRoom({owner,prefs,seed,onBack}:{owner:string;prefs:PlayPreferences;seed?:StudySeed;onBack:()=>void}){
+export function StudyRoom({owner,prefs,haptics,seed,onBack}:{owner:string;prefs:PlayPreferences;haptics:boolean;seed?:StudySeed;onBack:()=>void}){
  const[session,setSession]=useState<StudySession>(()=>{try{return seed?seeded(seed):loadStudy(owner);}catch{return blankStudy();}});
  const[selected,setSelected]=useState<string|null>(null),[flip,setFlip]=useState(false),[autoFlip,setAutoFlip]=useState(true),[notice,setNotice]=useState(''),[thinking,setThinking]=useState(false),[visible,setVisible]=useState(document.visibilityState!=='hidden');
  const[tab,setTab]=useState<'play'|'analysis'|'training'|'openings'|'editor'|'files'>('play'),[promotion,setPromotion]=useState<{from:string;to:string}|null>(null),[confirm,setConfirm]=useState<string|null>(null),[redo,setRedo]=useState<string[]>([]),[claim,setClaim]=useState(false);
  const[lines,setLines]=useState<EngineLine[]>([]),[evaluationFen,setEvaluationFen]=useState(''),[graph,setGraph]=useState<{fen:string;cp:number;mate?:number;depth:number;best?:string}[]>([]),[progress,setProgress]=useState(0);
  const search=useRef<AbortController|null>(null);
+ const previousHaptic=useRef<{start:string;moves:string[];cursor:number}|null>(null);
  const[fenText,setFenText]=useState(session.start),[pgnText,setPgnText]=useState(''),[variantIndex,setVariantIndex]=useState(518),[exercise,setExercise]=useState<{kind:'puzzle'|'endgame';index:number}|null>(null),[hint,setHint]=useState(false);
  const[editor,setEditor]=useState<Position>(()=>boardPosition(positionFromFen(session.start))),[brush,setBrush]=useState('wp'),[editTurn,setEditTurn]=useState('w'),[castling,setCastling]=useState('-'),[ep,setEp]=useState('-');
  const current=useMemo(()=>replay(session,session.cursor),[session.start,session.moves,session.cursor]),fen=makeFen(current.pos.toSetup()),board=boardPosition(current.pos),turn:Color=current.pos.turn==='white'?'w':'b',end=useMemo(()=>outcome(session),[session.start,session.moves]);
@@ -28,6 +30,14 @@ export function StudyRoom({owner,prefs,seed,onBack}:{owner:string;prefs:PlayPref
  const orientation:Color=flip?(baseOrientation==='w'?'b':'w'):baseOrientation;
  const legal=legalMoves(current.pos),targets=prefs.hints&&selected?legal.filter(m=>makeSquare(m.from)===selected).map(m=>makeSquare(m.to)):[];
  const locked=thinking||Boolean(end)||claim||session.cursor!==session.moves.length||(session.mode==='computer'&&turn!==session.human);
+ useEffect(()=>{
+  const old=previousHaptic.current;
+  previousHaptic.current={start:session.start,moves:session.moves,cursor:session.cursor};
+  if(!old||old.start!==session.start||old.cursor!==old.moves.length||session.cursor!==session.moves.length||session.moves.length!==old.moves.length+1||!old.moves.every((m,i)=>m===session.moves[i]))return;
+  const before=replay(session,session.moves.length-1).pos;
+  const captured=moveFeatures(before,session.moves[session.moves.length-1]).capture;
+  playHaptic(current.pos.isCheck()?'check':captured?'capture':'move',haptics);
+ },[session.start,session.moves,session.cursor,haptics]);
  useEffect(()=>{if(!saveStudy(session,owner))setNotice('Storage unavailable. Export PGN before leaving; this position may not survive closing.');},[session,owner]);
  useEffect(()=>{const visibility=()=>{const show=document.visibilityState!=='hidden';setVisible(show);if(!show){search.current?.abort();setThinking(false);}};const hide=()=>{setVisible(false);search.current?.abort();setThinking(false);};const show=()=>setVisible(true);document.addEventListener('visibilitychange',visibility);window.addEventListener('qk-background',hide);window.addEventListener('qk-resume',show);return()=>{search.current?.abort();document.removeEventListener('visibilitychange',visibility);window.removeEventListener('qk-background',hide);window.removeEventListener('qk-resume',show);};},[]);
  useEffect(()=>{setSelected(null);setLines([]);setClaim(false);},[fen]);
@@ -40,7 +50,7 @@ export function StudyRoom({owner,prefs,seed,onBack}:{owner:string;prefs:PlayPref
   }).catch(e=>{if(e.name!=='AbortError')setNotice('Offline engine unavailable. Change to pass-and-play or retry.');}).finally(()=>{if(search.current===controller)setThinking(false);});
   return()=>controller.abort();
  },[fen,session.mode,session.variant,session.cursor,session.moves.length,session.human,session.level,turn,end,visible,prefs.style,prefs.think]);
- function replace(next:StudySession){search.current?.abort();setThinking(false);setSession(next);setSelected(null);setRedo([]);setExercise(null);setGraph([]);setNotice('');setLines([]);setClaim(false);}
+ function replace(next:StudySession){previousHaptic.current=null;search.current?.abort();setThinking(false);setSession(next);setSelected(null);setRedo([]);setExercise(null);setGraph([]);setNotice('');setLines([]);setClaim(false);}
  function commit(uci:string){setConfirm(null);setPromotion(null);try{const pos=current.pos.clone(),move=parseUci(uci);if(!move||!pos.isLegal(move))throw Error('Illegal move');
   if(exercise?.kind==='puzzle'&&uci!==puzzles[exercise.index].solution[session.moves.length]){setNotice('Try another move. Your exercise position is unchanged.');return;}
   pos.play(move);setSession(s=>({...s,result:undefined,moves:[...s.moves,uci],cursor:s.moves.length+1}));setRedo([]);setSelected(null);
@@ -55,9 +65,10 @@ export function StudyRoom({owner,prefs,seed,onBack}:{owner:string;prefs:PlayPref
  }
  function square(s:string){if(tab==='editor'){setEditor(b=>{const next={...b};if(brush==='erase')delete next[s];else next[s]={color:brush[0] as Color,type:brush[1] as Kind};return next;});return;}if(locked)return;
   if(selected&&legal.some(m=>makeSquare(m.from)===selected&&makeSquare(m.to)===s)){propose(selected,s);return;}
+  if(board[s]?.color===turn&&selected!==s)playHaptic('select',haptics);
   setSelected(board[s]?.color===turn?(selected===s?null:s):null);
  }
- function browse(cursor:number){search.current?.abort();setThinking(false);setSession(s=>({...s,cursor:Math.max(0,Math.min(s.moves.length,cursor))}));setSelected(null);}
+ function browse(cursor:number){previousHaptic.current=null;search.current?.abort();setThinking(false);setSession(s=>({...s,cursor:Math.max(0,Math.min(s.moves.length,cursor))}));setSelected(null);}
  function startTraining(kind:'puzzle'|'endgame',index:number){const item=kind==='puzzle'?puzzles[index]:endgames[index];replace({...blankStudy(),start:item.fen,mode:kind==='puzzle'?'analysis':'computer'});setExercise({kind,index});setHint(false);setTab('play');}
  async function analyse(all=false){search.current?.abort();const controller=new AbortController();search.current=controller;setThinking(true);setProgress(0);setNotice('');const fens=all?replay(session).fens:[fen],samples:typeof graph=[];
   try{for(let i=0;i<fens.length;i++){const p=positionFromFen(fens[i]);if(p.isEnd()){samples.push({fen:fens[i],cp:p.isCheckmate()?(p.turn==='white'?-100000:100000):0,depth:0});continue;}

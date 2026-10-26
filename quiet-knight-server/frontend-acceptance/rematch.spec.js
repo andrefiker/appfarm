@@ -1,6 +1,5 @@
 import {test,expect} from '@playwright/test';
-import {mkdir,readFile,stat} from 'node:fs/promises';
-import path from 'node:path';
+import {mkdir} from 'node:fs/promises';
 const url=process.env.QK_FRONTEND_URL||'http://127.0.0.1:3000/';
 test.skip(!/^http:\/\/(127\.0\.0\.1|localhost):/.test(url),'isolated candidate only');
 async function move(page,from,to){await expect(page.locator(`[data-square=${from}]`)).toHaveAttribute('aria-disabled','false');await page.locator(`[data-square=${from}]`).click();await page.locator(`[data-square=${to}]`).click();}
@@ -49,20 +48,13 @@ test('one tap starts a friend rematch without opponent action, including pending
 // Exercise the actual pinned 1.1.4 bundle, not a mocked recipient. Only its
 // static files differ: both phones still use the same real candidate server.
 test('updated player starts immediately while the opponent remains on 1.1.4',async({browser})=>{
- test.skip(!process.env.QK_LEGACY_FRONTEND_DIR,'pinned legacy bundle required');
+ test.skip(!process.env.QK_LEGACY_FRONTEND_URL,'pinned legacy bundle required');
+ if(process.env.QK_LEGACY_FRONTEND_URL)expect(new URL(process.env.QK_LEGACY_FRONTEND_URL).origin).toBe(new URL(url).origin);
  const a=await browser.newContext({viewport:{width:390,height:844}}),b=await browser.newContext({viewport:{width:360,height:844},serviceWorkers:'block'});
- const dir=path.resolve(process.env.QK_LEGACY_FRONTEND_DIR),p=await a.newPage(),q=await b.newPage(),errors=[];
+ const p=await a.newPage(),q=await b.newPage(),errors=[];
  for(const page of [p,q])page.on('pageerror',e=>errors.push(e.message));
- await b.route('**/*',async route=>{
-  const request=route.request(),pathname=new URL(request.url()).pathname;
-  const file=path.resolve(dir,'.'+(pathname==='/'?'/index.html':pathname));
-  if(request.method()==='GET'&&file.startsWith(dir+path.sep)){
-   try{if((await stat(file)).isFile()){const ext=path.extname(file),mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.wasm':'application/wasm','.json':'application/json','.png':'image/png','.svg':'image/svg+xml'}[ext]||'application/octet-stream';return route.fulfill({body:await readFile(file),contentType:mime});}}catch{/* API paths go to the real server. */}
-  }
-  await route.continue();
- });
  try{
-  await p.goto(url);await p.getByRole('button',{name:'Create live game',exact:true}).click();await live(p);const invite=p.url();await q.goto(invite);
+  await p.goto(url);await p.getByRole('button',{name:'Create live game',exact:true}).click();await live(p);const invite=p.url(),legacy=new URL(process.env.QK_LEGACY_FRONTEND_URL);legacy.search=new URL(invite).search;await q.goto(legacy.href);
   try{await live(q);}catch(error){await mkdir('output/playwright',{recursive:true});await q.screenshot({path:'output/playwright/rematch-legacy-load-failure.png',fullPage:true});console.log('Legacy client page errors:',errors,'Rendered state:',await q.locator('body').innerText());throw error;}
   await move(p,'e2','e4');await move(q,'e7','e5');await p.getByRole('button',{name:'Resign',exact:true}).click();await p.getByRole('button',{name:'Confirm resign',exact:true}).click();
   // Reproduce the user's existing pending request in the older receiver.

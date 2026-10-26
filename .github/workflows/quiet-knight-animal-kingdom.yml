@@ -116,6 +116,8 @@ jobs:
           npm run test:auth-http
           mkdir -p public
           cp -R frontend/dist/. public/
+          mkdir -p public/legacy-rematch
+          cp -R "$RUNNER_TEMP/qk-legacy-client/quiet-knight-server/frontend/dist/." public/legacy-rematch/
           node predeploy.js
 
       - name: Rendered untimed and legacy-clock acceptance on isolated candidate
@@ -128,7 +130,7 @@ jobs:
           REDIS_URL: redis://127.0.0.1:6379/1
           FRONTEND_ORIGIN: http://127.0.0.1:3000
           QK_FRONTEND_URL: http://127.0.0.1:3000/
-          QK_LEGACY_FRONTEND_DIR: ${{ runner.temp }}/qk-legacy-client/quiet-knight-server/frontend/dist
+          QK_LEGACY_FRONTEND_URL: http://127.0.0.1:3000/legacy-rematch/index.html
         run: |
           npm ci
           # Hosted Ubuntu already includes Chromium's shared libraries. Avoid

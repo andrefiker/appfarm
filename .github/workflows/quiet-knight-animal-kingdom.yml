@@ -131,7 +131,7 @@ jobs:
             if curl -fsS http://127.0.0.1:3000/health >/dev/null; then break; fi
             sleep 0.25
           done
-          timeout --kill-after=10s 210s npx playwright test clock.spec.js guest.spec.js studio.spec.js reference-table.spec.js haptics.spec.js --global-timeout=180000
+          timeout --kill-after=10s 210s npx playwright test clock.spec.js guest.spec.js studio.spec.js reference-table.spec.js haptics.spec.js rematch.spec.js --global-timeout=180000
 
       - name: Upload synthetic rendered QA
         if: always()
@@ -161,6 +161,35 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10.2'
+
+      # Build without any signing identity. The retained-key gate below stays
+      # closed unless its secret is supplied; the owner can sign this candidate
+      # locally without uploading a private keystore to the runner.
+      - name: Assemble unsigned candidate for local retained-key signing
+        working-directory: android-store
+        run: |
+          cat > "$RUNNER_TEMP/qk-unsigned.gradle" <<'GRADLE'
+          allprojects { p ->
+            p.plugins.withId('com.android.application') {
+              p.android.buildTypes.debug.signingConfig = null
+            }
+          }
+          GRADLE
+          gradle --no-daemon -I "$RUNNER_TEMP/qk-unsigned.gradle" :app:assembleQuietKnightDebug
+          apk_path="$(find app/build/outputs/apk/quietKnight/debug -name '*.apk' -type f -print -quit)"
+          test -n "$apk_path"
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c -P 16 4 "$apk_path"
+          mkdir -p "$RUNNER_TEMP/qk-unsigned"
+          cp "$apk_path" "$RUNNER_TEMP/qk-unsigned/Quiet-Knight-unsigned.apk"
+          sha256sum "$RUNNER_TEMP/qk-unsigned/Quiet-Knight-unsigned.apk"
+
+      - name: Preserve unsigned candidate for local signing
+        uses: actions/upload-artifact@v4
+        with:
+          name: quiet-knight-unsigned-candidate
+          path: ${{ runner.temp }}/qk-unsigned/Quiet-Knight-unsigned.apk
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Prepare the retained test signing key
         env:

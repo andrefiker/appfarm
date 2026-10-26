@@ -1,5 +1,6 @@
 import {test,expect} from '@playwright/test';
-import {mkdir} from 'node:fs/promises';
+import {mkdir,readFile,stat} from 'node:fs/promises';
+import path from 'node:path';
 const url=process.env.QK_FRONTEND_URL||'http://127.0.0.1:3000/';
 test.skip(!/^http:\/\/(127\.0\.0\.1|localhost):/.test(url),'isolated candidate only');
 async function move(page,from,to){await expect(page.locator(`[data-square=${from}]`)).toHaveAttribute('aria-disabled','false');await page.locator(`[data-square=${from}]`).click();await page.locator(`[data-square=${to}]`).click();}
@@ -43,4 +44,32 @@ test('one tap starts a friend rematch without opponent action, including pending
   await q.reload();await live(q);await expect(q.locator('[data-square=c5]')).toHaveAttribute('data-piece','bp');expect((await read()).game_number).toBe(4);
   expect(requests.map(r=>r.who)).toEqual(['a','a','b']);expect(requests.every(r=>r.data.action===undefined)).toBe(true);expect(errors).toEqual([]);
  }finally{await a.close();await b.close();await s.close();}
+});
+
+// Exercise the actual pinned 1.1.4 bundle, not a mocked recipient. Only its
+// static files differ: both phones still use the same real candidate server.
+test('updated player starts immediately while the opponent remains on 1.1.4',async({browser})=>{
+ test.skip(!process.env.QK_LEGACY_FRONTEND_DIR,'pinned legacy bundle required');
+ const a=await browser.newContext({viewport:{width:390,height:844}}),b=await browser.newContext({viewport:{width:360,height:844},serviceWorkers:'block'});
+ const dir=path.resolve(process.env.QK_LEGACY_FRONTEND_DIR),p=await a.newPage(),q=await b.newPage(),errors=[];
+ for(const page of [p,q])page.on('pageerror',e=>errors.push(e.message));
+ await b.route('**/*',async route=>{
+  const request=route.request(),pathname=new URL(request.url()).pathname;
+  const file=path.resolve(dir,'.'+(pathname==='/'?'/index.html':pathname));
+  if(request.method()==='GET'&&file.startsWith(dir+path.sep)){
+   try{if((await stat(file)).isFile()){const ext=path.extname(file),mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.wasm':'application/wasm','.json':'application/json','.png':'image/png','.svg':'image/svg+xml'}[ext]||'application/octet-stream';return route.fulfill({body:await readFile(file),contentType:mime});}}catch{/* API paths go to the real server. */}
+  }
+  await route.continue();
+ });
+ try{
+  await p.goto(url);await p.getByRole('button',{name:'Create live game',exact:true}).click();await live(p);const invite=p.url();await q.goto(invite);await live(q);
+  await move(p,'e2','e4');await move(q,'e7','e5');await p.getByRole('button',{name:'Resign',exact:true}).click();await p.getByRole('button',{name:'Confirm resign',exact:true}).click();
+  // Reproduce the user's existing pending request in the older receiver.
+  await q.getByRole('button',{name:'Rematch',exact:true}).click();await q.getByRole('button',{name:'Swap colors',exact:true}).click();await expect(q.getByRole('dialog',{name:'Rematch requested',exact:true})).toBeVisible();
+  await p.getByRole('button',{name:'Rematch',exact:true}).click();
+  await expect(q.getByRole('dialog')).toHaveCount(0);await expect(q.getByRole('group',{name:'Chess board, White at bottom',exact:true})).toBeVisible();
+  await move(q,'d2','d4');await expect(p.locator('[data-square=d4]')).toHaveAttribute('data-piece','wp');await move(p,'d7','d5');await expect(q.locator('[data-square=d5]')).toHaveAttribute('data-piece','bp');
+  await q.screenshot({path:'output/playwright/rematch-legacy-opponent-360.png',fullPage:true});
+  await q.reload();await live(q);await expect(q.locator('[data-square=d5]')).toHaveAttribute('data-piece','bp');expect(errors).toEqual([]);
+ }finally{await a.close();await b.close();}
 });

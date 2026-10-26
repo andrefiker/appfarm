@@ -72,7 +72,6 @@ type RoomState = ClockState & {
 };
 type Modal =
   | "memory"
-  | "rematch"
   | "identity"
   | "settings"
   | "leave"
@@ -473,20 +472,6 @@ export default function GameApp() {
       setMemories(recentTables(accountId));
     }
   }, [ended, record.id, room?.score_event?.id, accountId, gameOwner]);
-  const noticedRematch = useRef<string | null>(null);
-  useEffect(() => {
-    const offer = screen === "game" && ended && (role === "white" || role === "black") && room?.rematch_proposal
-      ? `${room.code}:${room.game_number || 1}:${room.rematch_proposal.id}` : null;
-    const previous = noticedRematch.current;
-    noticedRematch.current = offer;
-    if (offer && offer !== previous) {
-      setTableControls(false);
-      setPromotion(null);
-      setModal("rematch");
-    } else if (!offer && previous) {
-      setModal(current => current === "rematch" ? null : current);
-    }
-  }, [screen, ended, role, room?.code, room?.game_number, room?.rematch_proposal?.id]);
   const dialogOpen = Boolean(modal || promotion);
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -856,7 +841,7 @@ export default function GameApp() {
       endRequest();
     }
   }
-  async function rematch(colors: "same" | "swap" = "same",action="request") {
+  async function rematch(colors: "same" | "swap" = "same") {
     setTableControls(false);
     closeModal();
     setSelected(null);
@@ -869,7 +854,9 @@ export default function GameApp() {
     if (!room || !seatToken || !beginRequest()) return;
     try {
       const { data } = await api.post(`/api/rooms/${room.code}/rematch`, {
-        colors, action, proposal_id:room.rematch_proposal?.id,
+        // The existing immediate-rematch endpoint omits action. The server
+        // authenticates the seat, saves the result and advances game_number.
+        colors,
         game_number: room.game_number || 1,
         seat_token: seatToken,
         connection_id: connectionId || undefined,
@@ -877,9 +864,9 @@ export default function GameApp() {
       acceptRoom(data.room as RoomState);
     } catch (err) {
       const reason = (err as {response?:{data?:{error?:unknown}}})?.response?.data?.error;
-      setMessage(typeof reason === "string" ? reason : failureText(err, "Could not send the rematch. Please try again."));
-      // A timed-out offer may already be saved. Refresh canonical state
-      // instead of sending a second request or silently losing the offer.
+      setMessage(typeof reason === "string" ? reason : failureText(err, "Could not start the rematch. Please reconnect and try again."));
+      // A timed-out rematch may already have started. Read canonical state
+      // rather than retrying a mutation or resetting the board locally.
       try { const {data} = await api.get(`/api/rooms/${room.code}`); acceptRoom(data.room as RoomState); } catch { /* Reconnect remains available. */ }
     } finally {
       endRequest();
@@ -1162,19 +1149,17 @@ export default function GameApp() {
     ? "Promote your pawn"
     : modal === "memory"
       ? "The final position"
-      : modal === "rematch"
-        ? room?.rematch_proposal ? room.rematch_proposal.by === me ? "Rematch requested" : "Rematch offered" : "Another game?"
-        : modal === "identity"
-          ? "Knight ID"
-          : modal === "settings"
-            ? "At your table"
-            : modal === "leave"
-              ? "Leave this game?"
-              : modal === "restart"
-                ? "Start a new game?"
-                : modal === "resign"
-                  ? "Resign this game?"
-                  : "Your invite";
+      : modal === "identity"
+        ? "Knight ID"
+        : modal === "settings"
+          ? "At your table"
+          : modal === "leave"
+            ? "Leave this game?"
+            : modal === "restart"
+              ? "Start a new game?"
+              : modal === "resign"
+                ? "Resign this game?"
+                : "Your invite";
   if (gameOwner !== accountId) return <main className="account-gate"><section className="account-card" role="status"><p className="account-kicker">QUIET KNIGHT</p><h1>Loading your account</h1><p className="account-intro">Preparing your saved games.</p></section></main>;
   return (
     <>
@@ -1370,7 +1355,6 @@ export default function GameApp() {
           opponentJoined={Boolean(me==="b"?room?.white_joined:room?.black_joined)}
           turn={turn}
           ended={ended}
-          rematchPending={Boolean(room?.rematch_proposal)}
           waiting={waiting}
           spectator={role === "spectator"}
           status={status}
@@ -1381,7 +1365,7 @@ export default function GameApp() {
           onBack={() => setModal("leave")}
           onSettings={() => setModal("settings")}
           onNew={() => {
-            if (room) setModal("rematch");
+            if (room) void rematch("swap");
             else if (localMoves.length === 0) void rematch();
             else setModal("restart");
           }}
@@ -1443,50 +1427,6 @@ export default function GameApp() {
                 />
               ) : modal === "memory" && viewedGame ? (
                 <FinalPosition record={viewedGame} />
-              ) : modal === "rematch" && room?.rematch_proposal ? (
-                <section className="rematch-consent" aria-label="Rematch request">
-                  <p role="status">{room.rematch_proposal.by === me ? "Waiting for your friend to accept." : "Your friend would like another game."}</p>
-                  <p>{room.rematch_proposal.colors === "swap" ? "Swap colors." : "Keep the same colors."}</p>
-                  {connection !== "Live" ? <button className="secondary" onClick={reconnect}>Reconnect to answer</button> : null}
-                  <div className="dialog-actions">
-                    {room.rematch_proposal.by === me ? (
-                      <button className="secondary" disabled={busy || connection !== "Live"} onClick={()=>void rematch('same','cancel')}>Cancel rematch request</button>
-                    ) : role !== "spectator" ? <>
-                      <button className="primary" disabled={busy || connection !== "Live"} onClick={()=>void rematch('same','accept')}>Accept rematch</button>
-                      <button className="secondary" disabled={busy || connection !== "Live"} onClick={()=>void rematch('same','decline')}>Decline rematch</button>
-                    </> : null}
-                  </div>
-                </section>
-              ) : modal === "rematch" ? (
-                <>
-                  <p>Same table, a fresh position.</p>
-                  {room?.white_player && room?.black_player ? (
-                    <p className="settings-note">
-                      {room.score_event?.scored &&
-                      room.points_policy?.remaining === 1
-                        ? "Today’s points between you two are complete. Rematches are now casual."
-                        : room.points_policy?.reason}
-                    </p>
-                  ) : null}
-                  <div className="dialog-actions">
-                    <button
-                      type="button"
-                      className="primary"
-                      disabled={busy || connection !== "Live"}
-                      onClick={() => void rematch("swap")}
-                    >
-                      Swap colors
-                    </button>
-                    <button
-                      type="button"
-                      className="secondary"
-                      disabled={busy || connection !== "Live"}
-                      onClick={() => void rematch("same")}
-                    >
-                      Same colors
-                    </button>
-                  </div>
-                </>
               ) : modal === "identity" && (!knight.player || knight.recoveryCode) ? (
                 <AccountGate knight={knight} embedded onContinue={closeModal} />
               ) : modal === "identity" ? (

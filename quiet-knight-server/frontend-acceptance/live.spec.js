@@ -400,9 +400,6 @@ test("Promotion, resign cancel/confirm, rematch, native share and copy fallback"
       b.page.getByRole("heading", { name: "Black wins", exact: true }),
     ).toBeVisible();
     await a.page.getByRole("button", { name: "Rematch", exact: true }).click();
-    await a.page
-      .getByRole("button", { name: "Swap colors", exact: true })
-      .click();
     await expect(
       b.page.getByRole("group", {
         name: "Chess board, White at bottom",

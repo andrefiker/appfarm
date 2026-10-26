@@ -442,7 +442,6 @@ export type GameSurfaceProps = {
   opponentJoined: boolean;
   turn: Color;
   ended: boolean;
-  rematchPending?: boolean;
   waiting: boolean;
   spectator: boolean;
   status: string;
@@ -499,7 +498,7 @@ export function GameSurface(p: GameSurfaceProps) {
         onClick={p.onNew}
       >
         <Icon name="new" />
-        {p.rematchPending ? "View rematch request" : "Rematch"}
+        Rematch
       </button>
     ) : (
       <button

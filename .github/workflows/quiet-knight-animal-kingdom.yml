@@ -85,6 +85,15 @@ jobs:
           npx tsc --noEmit
           npm run build -- --base=./
 
+      - name: Build pinned 1.1.4 opponent for mixed-version rematch acceptance
+        run: |
+          git fetch --no-tags --depth=1 origin a890f56d46dbd54bde1bc7941bb805cf5df7341d
+          mkdir -p "$RUNNER_TEMP/qk-legacy-client"
+          git archive a890f56d46dbd54bde1bc7941bb805cf5df7341d quiet-knight-server/frontend | tar -x -C "$RUNNER_TEMP/qk-legacy-client"
+          cd "$RUNNER_TEMP/qk-legacy-client/quiet-knight-server/frontend"
+          ln -s "$GITHUB_WORKSPACE/quiet-knight-server/frontend/node_modules" node_modules
+          GITHUB_SHA=a890f56d46dbd54bde1bc7941bb805cf5df7341d npm run build -- --base=./
+
       - name: Bundle the game into the existing Android app
         run: |
           mkdir -p android-store/app/src/main/assets/quiet-knight
@@ -119,6 +128,7 @@ jobs:
           REDIS_URL: redis://127.0.0.1:6379/1
           FRONTEND_ORIGIN: http://127.0.0.1:3000
           QK_FRONTEND_URL: http://127.0.0.1:3000/
+          QK_LEGACY_FRONTEND_DIR: ${{ runner.temp }}/qk-legacy-client/quiet-knight-server/frontend/dist
         run: |
           npm ci
           # Hosted Ubuntu already includes Chromium's shared libraries. Avoid

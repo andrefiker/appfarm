@@ -62,7 +62,8 @@ test('updated player starts immediately while the opponent remains on 1.1.4',asy
   await route.continue();
  });
  try{
-  await p.goto(url);await p.getByRole('button',{name:'Create live game',exact:true}).click();await live(p);const invite=p.url();await q.goto(invite);await live(q);
+  await p.goto(url);await p.getByRole('button',{name:'Create live game',exact:true}).click();await live(p);const invite=p.url();await q.goto(invite);
+  try{await live(q);}catch(error){await mkdir('output/playwright',{recursive:true});await q.screenshot({path:'output/playwright/rematch-legacy-load-failure.png',fullPage:true});console.log('Legacy client page errors:',errors,'Rendered state:',await q.locator('body').innerText());throw error;}
   await move(p,'e2','e4');await move(q,'e7','e5');await p.getByRole('button',{name:'Resign',exact:true}).click();await p.getByRole('button',{name:'Confirm resign',exact:true}).click();
   // Reproduce the user's existing pending request in the older receiver.
   await q.getByRole('button',{name:'Rematch',exact:true}).click();await q.getByRole('button',{name:'Swap colors',exact:true}).click();await expect(q.getByRole('dialog',{name:'Rematch requested',exact:true})).toBeVisible();

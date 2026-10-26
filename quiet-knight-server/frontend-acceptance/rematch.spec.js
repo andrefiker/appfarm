@@ -5,44 +5,42 @@ test.skip(!/^http:\/\/(127\.0\.0\.1|localhost):/.test(url),'isolated candidate o
 async function move(page,from,to){await expect(page.locator(`[data-square=${from}]`)).toHaveAttribute('aria-disabled','false');await page.locator(`[data-square=${from}]`).click();await page.locator(`[data-square=${to}]`).click();}
 const live=page=>expect(page.getByRole('button',{name:'Connection: Live. Reconnect',exact:true})).toBeVisible();
 
-test('friend receives an automatic rematch prompt after mate; same/swap, decline, cancel and reload remain usable',async({browser})=>{
- const a=await browser.newContext({viewport:{width:320,height:844}}),b=await browser.newContext({viewport:{width:390,height:844}});
- const p=await a.newPage(),q=await b.newPage(),errors=[];
- for(const page of [p,q])page.on('pageerror',e=>errors.push(e.message));
+test('one tap starts a friend rematch without opponent action, including pending offers and disconnected opponents',async({browser})=>{
+ const a=await browser.newContext({viewport:{width:320,height:844}}),b=await browser.newContext({viewport:{width:390,height:844}}),s=await browser.newContext();
+ const p=await a.newPage(),q=await b.newPage(),spectator=await s.newPage(),errors=[],requests=[];
+ for(const page of [p,q,spectator])page.on('pageerror',e=>errors.push(e.message));
+ for(const [who,page] of [['a',p],['b',q]])page.on('request',r=>{if(r.method()==='POST'&&new URL(r.url()).pathname.endsWith('/rematch'))requests.push({who,data:r.postDataJSON()});});
  try{
   await p.goto(url);await p.getByRole('button',{name:'Create live game',exact:true}).click();await live(p);
-  const invite=p.url(),code=new URL(invite).searchParams.get('room');await q.goto(invite);await live(q);
-  const read=async()=>{const r=await a.request.get(new URL('/rooms/'+code,url).href);return(await r.json()).room;};
+  const invite=p.url(),code=new URL(invite).searchParams.get('room'),endpoint=new URL('/rooms/'+code,url).href;await q.goto(invite);await live(q);await spectator.goto(invite);await live(spectator);
+  const read=async()=>{const r=await a.request.get(endpoint);return(await r.json()).room;};
   await move(p,'f2','f3');await move(q,'e7','e5');await move(p,'g2','g4');await move(q,'d8','h4');
   await expect(p.getByRole('heading',{name:'Black wins',exact:true})).toBeVisible();
-  await p.getByRole('button',{name:'Rematch',exact:true}).click();await p.getByRole('button',{name:'Swap colors',exact:true}).click();
-  await expect.poll(async()=>(await read()).rematch_proposal?.colors).toBe('swap');
-  expect((await read()).game_number).toBe(1);expect((await read()).status).toBe('checkmate');
-  await mkdir('output/playwright',{recursive:true});await q.screenshot({path:'output/playwright/rematch-received-390.png',fullPage:true});
-  // Crucially, do not click/scroll to an off-screen banner: the recipient
-  // must receive a visible, actionable prompt without searching the page.
-  await expect(q.getByRole('dialog',{name:'Rematch offered',exact:true})).toBeVisible();
-  await expect(q.getByRole('button',{name:'Accept rematch',exact:true})).toBeInViewport({ratio:1});
-  await expect(p.getByRole('dialog',{name:'Rematch requested',exact:true})).toBeVisible();
-  await expect(p.getByRole('button',{name:'Cancel rematch request',exact:true})).toBeInViewport({ratio:1});
-  await q.getByRole('button',{name:'Accept rematch',exact:true}).click();
+  // One tap, no color chooser and no interaction at all on the other phone.
+  await p.getByRole('button',{name:'Rematch',exact:true}).click();
   await expect.poll(async()=>(await read()).game_number).toBe(2);
+  const first=await read();expect(first.status).toBe('active');expect(first.moves).toEqual([]);expect(first.rematch_proposal).toBe(null);expect(first.time_control).toBeUndefined();
+  expect(requests).toHaveLength(1);expect(requests[0].who).toBe('a');expect(requests[0].data.action).toBeUndefined();expect(requests[0].data.colors).toBe('swap');
   await expect(p.getByRole('dialog')).toHaveCount(0);await expect(q.getByRole('dialog')).toHaveCount(0);
-  await expect(p.getByRole('group',{name:'Chess board, Black at bottom',exact:true})).toBeVisible();
+  await expect(p.getByRole('group',{name:'Chess board, Black at bottom',exact:true})).toBeVisible();await expect(q.getByRole('group',{name:'Chess board, White at bottom',exact:true})).toBeVisible();
+  await mkdir('output/playwright',{recursive:true});await p.screenshot({path:'output/playwright/rematch-instant-320.png',fullPage:true});await q.screenshot({path:'output/playwright/rematch-opponent-390.png',fullPage:true});
+  // A stale duplicate cannot restart the new game, and a spectator cannot do so.
+  const stale=await a.request.post(endpoint+'/rematch',{data:requests[0].data});expect(stale.status()).toBe(409);expect((await read()).game_number).toBe(2);
+  const denied=await s.request.post(endpoint+'/rematch',{data:{seat_token:'invalid',game_number:2,colors:'swap'}});expect(denied.status()).toBe(403);
+  await expect(spectator.getByRole('button',{name:'Rematch',exact:true})).toHaveCount(0);
   await move(q,'e2','e4');await expect(p.locator('[data-square=e4]')).toHaveAttribute('data-piece','wp');await move(p,'e7','e5');
   await q.getByRole('button',{name:'Resign',exact:true}).click();await q.getByRole('button',{name:'Confirm resign',exact:true}).click();
-  // Same-color offer survives a receiver reload and can be declined.
-  await p.getByRole('button',{name:'Rematch',exact:true}).click();await p.getByRole('button',{name:'Same colors',exact:true}).click();
-  await expect(q.getByRole('dialog',{name:'Rematch offered',exact:true})).toBeVisible();await q.reload();await live(q);
-  await expect(q.getByRole('dialog',{name:'Rematch offered',exact:true})).toBeVisible();await q.getByRole('button',{name:'Decline rematch',exact:true}).click();
-  await expect.poll(async()=>(await read()).rematch_proposal).toBe(null);expect((await read()).game_number).toBe(2);
-  await expect(p.getByRole('dialog')).toHaveCount(0);
-  await p.getByRole('button',{name:'Rematch',exact:true}).click();await p.getByRole('button',{name:'Same colors',exact:true}).click();
-  await expect(q.getByRole('dialog',{name:'Rematch offered',exact:true})).toBeVisible();await p.getByRole('button',{name:'Cancel rematch request',exact:true}).click();
-  await expect(q.getByRole('dialog')).toHaveCount(0);expect((await read()).game_number).toBe(2);
-  // A further offer starts a third usable game without changing colors.
-  await p.getByRole('button',{name:'Rematch',exact:true}).click();await p.getByRole('button',{name:'Same colors',exact:true}).click();await q.getByRole('button',{name:'Accept rematch',exact:true}).click();
-  await expect.poll(async()=>(await read()).game_number).toBe(3);await move(q,'d2','d4');await move(p,'d7','d5');
-  expect((await read()).time_control).toBeUndefined();expect(errors).toEqual([]);
- }finally{await a.close();await b.close();}
+  // Old clients may already have left an unanswered proposal at this table.
+  // The immediate route must clear it rather than requiring an answer.
+  const pending=await a.request.post(endpoint+'/rematch',{data:{...requests[0].data,game_number:2,action:'request',colors:'same'}});expect(pending.status()).toBe(200);expect((await read()).rematch_proposal).toBeTruthy();
+  await p.getByRole('button',{name:'Rematch',exact:true}).click();await expect.poll(async()=>(await read()).game_number).toBe(3);expect((await read()).rematch_proposal).toBe(null);
+  await move(p,'d2','d4');await move(q,'d7','d5');
+  await p.getByRole('button',{name:'Resign',exact:true}).click();await p.getByRole('button',{name:'Confirm resign',exact:true}).click();
+  // The other player can also initiate. Offline receiver returns to game four.
+  await p.goto('about:blank');await q.getByRole('button',{name:'Rematch',exact:true}).click();await expect.poll(async()=>(await read()).game_number).toBe(4);
+  await p.goto(invite);await live(p);await expect(p.getByRole('group',{name:'Chess board, Black at bottom',exact:true})).toBeVisible();await expect(p.getByRole('dialog')).toHaveCount(0);
+  await move(q,'c2','c4');await expect(p.locator('[data-square=c4]')).toHaveAttribute('data-piece','wp');await move(p,'c7','c5');
+  await q.reload();await live(q);await expect(q.locator('[data-square=c5]')).toHaveAttribute('data-piece','bp');expect((await read()).game_number).toBe(4);
+  expect(requests.map(r=>r.who)).toEqual(['a','a','b']);expect(requests.every(r=>r.data.action===undefined)).toBe(true);expect(errors).toEqual([]);
+ }finally{await a.close();await b.close();await s.close();}
 });

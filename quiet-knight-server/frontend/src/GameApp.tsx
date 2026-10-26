@@ -81,7 +81,7 @@ type Modal =
   | "invite"
   | null;
 const REACTIONS:Record<string,string>={hello:"👋", "well-played":"👏",thanks:"🙏",fox:"🦊",owl:"🦉",tortoise:"🐢"};
-const BUILD = "Quiet Knight 1.1.3 · wood table";
+const BUILD = "Quiet Knight 1.1.4 · wood table";
 function roleColor(role: Role | null): Color | null {
   return role === "white" ? "w" : role === "black" ? "b" : null;
 }
@@ -473,6 +473,20 @@ export default function GameApp() {
       setMemories(recentTables(accountId));
     }
   }, [ended, record.id, room?.score_event?.id, accountId, gameOwner]);
+  const noticedRematch = useRef<string | null>(null);
+  useEffect(() => {
+    const offer = screen === "game" && ended && (role === "white" || role === "black") && room?.rematch_proposal
+      ? `${room.code}:${room.game_number || 1}:${room.rematch_proposal.id}` : null;
+    const previous = noticedRematch.current;
+    noticedRematch.current = offer;
+    if (offer && offer !== previous) {
+      setTableControls(false);
+      setPromotion(null);
+      setModal("rematch");
+    } else if (!offer && previous) {
+      setModal(current => current === "rematch" ? null : current);
+    }
+  }, [screen, ended, role, room?.code, room?.game_number, room?.rematch_proposal?.id]);
   const dialogOpen = Boolean(modal || promotion);
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -843,6 +857,7 @@ export default function GameApp() {
     }
   }
   async function rematch(colors: "same" | "swap" = "same",action="request") {
+    setTableControls(false);
     closeModal();
     setSelected(null);
     setMotion(null);
@@ -861,9 +876,11 @@ export default function GameApp() {
       });
       acceptRoom(data.room as RoomState);
     } catch (err) {
-      setMessage(
-        failureText(err, "Could not start the rematch. Please try again."),
-      );
+      const reason = (err as {response?:{data?:{error?:unknown}}})?.response?.data?.error;
+      setMessage(typeof reason === "string" ? reason : failureText(err, "Could not send the rematch. Please try again."));
+      // A timed-out offer may already be saved. Refresh canonical state
+      // instead of sending a second request or silently losing the offer.
+      try { const {data} = await api.get(`/api/rooms/${room.code}`); acceptRoom(data.room as RoomState); } catch { /* Reconnect remains available. */ }
     } finally {
       endRequest();
     }
@@ -1146,7 +1163,7 @@ export default function GameApp() {
     : modal === "memory"
       ? "The final position"
       : modal === "rematch"
-        ? "Another game?"
+        ? room?.rematch_proposal ? room.rematch_proposal.by === me ? "Rematch requested" : "Rematch offered" : "Another game?"
         : modal === "identity"
           ? "Knight ID"
           : modal === "settings"
@@ -1353,6 +1370,7 @@ export default function GameApp() {
           opponentJoined={Boolean(me==="b"?room?.white_joined:room?.black_joined)}
           turn={turn}
           ended={ended}
+          rematchPending={Boolean(room?.rematch_proposal)}
           waiting={waiting}
           spectator={role === "spectator"}
           status={status}
@@ -1382,7 +1400,6 @@ export default function GameApp() {
           }}
         />
       ) : null}
-      {screen==='game'&&room?.rematch_proposal?<section className="rematch-consent" aria-label="Rematch request"><p>{room.rematch_proposal.by===me?'Your opponent is considering the rematch.':'Your opponent offers a rematch.'} {room.rematch_proposal.colors==='swap'?'Swap colors.':'Same colors.'}</p>{room.rematch_proposal.by===me?<button className="secondary" onClick={()=>void rematch('same','cancel')}>Cancel rematch request</button>:role!=='spectator'?<><button className="primary" onClick={()=>void rematch('same','accept')}>Accept rematch</button><button className="secondary" onClick={()=>void rematch('same','decline')}>Decline rematch</button></>:null}</section>:null}
       {pendingMove?<section className="move-confirmation" role="dialog" aria-label="Confirm move"><p>{pendingMove.from} → {pendingMove.to}</p><button onClick={()=>performMove(pendingMove.from,pendingMove.to,pendingMove.promotion)}>Confirm move</button><button onClick={()=>setPendingMove(null)}>Cancel move</button></section>:null}
       {screen === "home" ? (
         <p className="network-build">
@@ -1426,6 +1443,20 @@ export default function GameApp() {
                 />
               ) : modal === "memory" && viewedGame ? (
                 <FinalPosition record={viewedGame} />
+              ) : modal === "rematch" && room?.rematch_proposal ? (
+                <section className="rematch-consent" aria-label="Rematch request">
+                  <p role="status">{room.rematch_proposal.by === me ? "Waiting for your friend to accept." : "Your friend would like another game."}</p>
+                  <p>{room.rematch_proposal.colors === "swap" ? "Swap colors." : "Keep the same colors."}</p>
+                  {connection !== "Live" ? <button className="secondary" onClick={reconnect}>Reconnect to answer</button> : null}
+                  <div className="dialog-actions">
+                    {room.rematch_proposal.by === me ? (
+                      <button className="secondary" disabled={busy || connection !== "Live"} onClick={()=>void rematch('same','cancel')}>Cancel rematch request</button>
+                    ) : role !== "spectator" ? <>
+                      <button className="primary" disabled={busy || connection !== "Live"} onClick={()=>void rematch('same','accept')}>Accept rematch</button>
+                      <button className="secondary" disabled={busy || connection !== "Live"} onClick={()=>void rematch('same','decline')}>Decline rematch</button>
+                    </> : null}
+                  </div>
+                </section>
               ) : modal === "rematch" ? (
                 <>
                   <p>Same table, a fresh position.</p>
@@ -1441,6 +1472,7 @@ export default function GameApp() {
                     <button
                       type="button"
                       className="primary"
+                      disabled={busy || connection !== "Live"}
                       onClick={() => void rematch("swap")}
                     >
                       Swap colors
@@ -1448,6 +1480,7 @@ export default function GameApp() {
                     <button
                       type="button"
                       className="secondary"
+                      disabled={busy || connection !== "Live"}
                       onClick={() => void rematch("same")}
                     >
                       Same colors

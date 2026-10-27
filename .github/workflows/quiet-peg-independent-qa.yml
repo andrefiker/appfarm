@@ -24,6 +24,7 @@ jobs:
       - name: Rules and build
         run: |
           node quiet-peg-solitaire/tests/engine.test.js
+          python3 quiet-peg-solitaire/tests/icon-resources.py
           gradle --no-daemon -p quiet-peg-solitaire assembleDebug
       - name: Verify exact APK structure and bundled source
         run: |
@@ -32,6 +33,9 @@ jobs:
           TOOLS="$ANDROID_HOME/build-tools/35.0.0"
           "$TOOLS/aapt" dump badging "$APK" | tee /tmp/peg-badging.txt
           grep -F "package: name='com.andrefiker.quietpegsolitaire' versionCode='3' versionName='1.0.2'" /tmp/peg-badging.txt
+          "$TOOLS/aapt" dump resources "$APK" > /tmp/peg-resources.txt
+          grep -F "mipmap/ic_launcher" /tmp/peg-resources.txt
+          grep -F "drawable/peg_icon_foreground" /tmp/peg-resources.txt
           "$TOOLS/aapt" dump permissions "$APK" | tee /tmp/peg-permissions.txt
           if grep -q "uses-permission" /tmp/peg-permissions.txt; then exit 1; fi
           "$TOOLS/apksigner" verify --verbose --print-certs "$APK"

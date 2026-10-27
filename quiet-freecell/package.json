@@ -1,0 +1,1 @@
+{"name":"quiet-freecell","version":"1.0.1","private":true,"type":"module","scripts":{"test":"node --test"}}

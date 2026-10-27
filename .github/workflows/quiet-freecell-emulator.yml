@@ -1,0 +1,61 @@
+name: Quiet FreeCell candidate verification
+on:
+  push:
+    branches: [codex/quiet-freecell-completion]
+    paths: ['quiet-freecell/**', '.github/workflows/quiet-freecell-emulator.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test-exact-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Test rules and verified solutions
+        working-directory: quiet-freecell
+        run: npm test
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
+      - name: Install build tools and verify exact APK
+        run: |
+          set +o pipefail
+          yes | sdkmanager 'build-tools;35.0.0' >/dev/null
+          set -o pipefail
+          sha256sum -c quiet-freecell/ci/SHA256SUMS
+          APK=quiet-freecell/ci/Quiet-FreeCell-v1.0.1.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK" | tee /tmp/qf-signature.txt
+          grep -F "b78be1caaf9193df8fe12aa97de70d1ed7f57edf64f0f3e3ac28cd0584b43261" /tmp/qf-signature.txt
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep -F "name='com.andrefiker.quietfreecell' versionCode='2' versionName='1.0.1'"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions "$APK" | grep -F 'android.permission.VIBRATE'
+          ! "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions "$APK" | grep -F 'android.permission.INTERNET'
+          for file in index.html style.css app.js engine.js statistics.js challenges.js clock.js storage.js; do
+            unzip -p "$APK" "assets/$file" | cmp - "quiet-freecell/$file"
+          done
+      - name: Enable emulator acceleration
+        run: sudo chmod 666 /dev/kvm
+      - name: Install and launch the exact candidate on Android
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          script: bash quiet-freecell/ci/emulator-smoke.sh
+      - name: Save emulator screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quiet-freecell-emulator-screen
+          path: quiet-freecell/ci-output/board.png
+          if-no-files-found: ignore
+          retention-days: 7

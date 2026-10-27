@@ -1,0 +1,9 @@
+import {copy,move,suit,won,validState} from './engine.js';
+// Constructed by reversing legal foundation moves; scrambles are reversible single-card moves.
+const tableau=[[25,37,23,48,21,46,19],[51,24,36,9,34,7,32],[12,50,10,35,8,33,6],[38,11,49,22,47,20,45],[5,30,16,41,14,39],[31,4,29,2,27,0],[18,43,3,28,1,26],[44,17,42,15,40,13]];
+export const challenges=[{id:1,name:'Opening',steps:0},{id:2,name:'Maneuver',steps:12},{id:3,name:'Workspace',steps:32}];
+export function challenge(id){const def=challenges.find(x=>x.id===Number(id));if(!def)return null;let s={seed:def.id,deck:tableau.flat(),tableau:copy(tableau),cells:Array(4).fill(null),foundations:[[],[],[],[]]};const inverse=[];let rand=(0x9e3779b9^id)>>>0;let prior='';
+ for(let n=0;n<def.steps;n++){let options=[];for(let kind of ['t','c'])for(let i=0;i<(kind==='t'?8:4);i++){const from={kind,i};for(let dst of ['t','c'])for(let j=0;j<(dst==='t'?8:4);j++){const to={kind:dst,i:j};const next=move(s,from,to);if(next&&JSON.stringify([next.tableau,next.cells])!==prior)options.push({from,to,next})}}if(!options.length)throw Error('Challenge scramble exhausted');rand^=rand<<13;rand^=rand>>>17;rand^=rand<<5;rand>>>=0;const pick=options[rand%options.length];prior=JSON.stringify([s.tableau,s.cells]);s=pick.next;inverse.unshift({from:pick.to,to:pick.from});}
+ const original=copy(s),solution=inverse.slice();for(const step of inverse){s=move(s,step.from,step.to);if(!s)throw Error('Invalid challenge reversal')}
+ while(!won(s)){let advanced=false;for(let i=0;i<8;i++){let c=s.tableau[i].at(-1);if(c===undefined)continue;let from={kind:'t',i},to={kind:'f',i:suit(c)},next=move(s,from,to);if(next){solution.push({from,to});s=next;advanced=true;break}}if(!advanced)throw Error('Unsolvable challenge')}
+ if(!validState(original))throw Error('Invalid challenge');return {state:original,solution};}

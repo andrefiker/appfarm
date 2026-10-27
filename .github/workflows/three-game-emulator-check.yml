@@ -1,0 +1,44 @@
+name: Three game exact APK emulator QA
+on:
+  push:
+    branches: [codex/three-game-emulator-check-20261027]
+    paths: ['ci/three-game-emulator/**', '.github/workflows/three-game-emulator-check.yml']
+permissions:
+  contents: read
+jobs:
+  exact-apks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
+      - name: Verify exact binaries and signing
+        run: |
+          set +o pipefail
+          yes | sdkmanager 'build-tools;35.0.0' >/dev/null
+          set -o pipefail
+          sha256sum -c ci/three-game-emulator/SHA256SUMS
+          for apk in ci/three-game-emulator/*.apk; do
+            "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs "$apk" | grep -F b78be1caaf9193df8fe12aa97de70d1ed7f57edf64f0f3e3ac28cd0584b43261
+            ! "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions "$apk" | grep -F android.permission.INTERNET
+          done
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging ci/three-game-emulator/mines.apk | grep -F "name='com.andrefiker.minesweeper' versionCode='3' versionName='1.0.2'"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging ci/three-game-emulator/bubbles.apk | grep -F "name='com.andrefiker.quietbubbles' versionCode='4' versionName='1.0.3'"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging ci/three-game-emulator/snake.apk | grep -F "name='com.andrefiker.quietsnake' versionCode='4' versionName='1.0.3'"
+      - name: Enable emulator acceleration
+        run: sudo chmod 666 /dev/kvm
+      - name: Install exact APKs and exercise UI
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          script: python3 ci/three-game-emulator/smoke.py

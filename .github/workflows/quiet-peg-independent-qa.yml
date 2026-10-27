@@ -31,7 +31,7 @@ jobs:
           APK=quiet-peg-solitaire/app/build/outputs/apk/debug/app-debug.apk
           TOOLS="$ANDROID_HOME/build-tools/35.0.0"
           "$TOOLS/aapt" dump badging "$APK" | tee /tmp/peg-badging.txt
-          grep -F "package: name='com.andrefiker.quietpegsolitaire' versionCode='2' versionName='1.0.1'" /tmp/peg-badging.txt
+          grep -F "package: name='com.andrefiker.quietpegsolitaire' versionCode='3' versionName='1.0.2'" /tmp/peg-badging.txt
           "$TOOLS/aapt" dump permissions "$APK" | tee /tmp/peg-permissions.txt
           if grep -q "uses-permission" /tmp/peg-permissions.txt; then exit 1; fi
           "$TOOLS/apksigner" verify --verbose --print-certs "$APK"
@@ -41,6 +41,19 @@ jobs:
             unzip -p "$APK" "assets/$file" | cmp - "quiet-peg-solitaire/app/src/main/assets/$file"
           done
           sha256sum "$APK" | tee /tmp/peg-apk.sha256
+      - name: Compare public preview signing certificates
+        run: |
+          set -euo pipefail
+          APK=quiet-peg-solitaire/app/build/outputs/apk/debug/app-debug.apk
+          SIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
+          curl -fsSL 'https://github.com/andrefiker/appfarm/releases/download/quiet-peg-solitaire-v1.0.1/Quiet-Peg-Solitaire-v1.0.1.apk' -o /tmp/peg-v101.apk
+          echo '36edb8c420b1caf1ce9b6b77ff988f1081d486a8d2d3fe3a7a0928854aca9df8  /tmp/peg-v101.apk' | sha256sum -c -
+          "$SIGNER" verify --verbose --print-certs /tmp/peg-v101.apk | tee /tmp/peg-v101-signature.txt
+          "$SIGNER" verify --verbose --print-certs "$APK" | tee /tmp/peg-candidate-signature.txt
+          old=$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' /tmp/peg-v101-signature.txt)
+          new=$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' /tmp/peg-candidate-signature.txt)
+          test -n "$old" && test -n "$new"
+          if [ "$old" = "$new" ]; then echo 'SIGNING_CONTINUITY=matching'; else echo 'SIGNING_CONTINUITY=different; APK cannot update the installed preview'; fi
       - name: Prepare emulator
         run: |
           sudo chmod a+rw /dev/kvm

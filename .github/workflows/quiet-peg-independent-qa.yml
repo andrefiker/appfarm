@@ -2,7 +2,7 @@ name: Quiet Peg Solitaire Android verification
 on:
   push:
     branches: [peg-independent-qa-20261027]
-    paths: ['quiet-peg-solitaire/**', '.github/workflows/quiet-peg-solitaire-android.yml']
+    paths: ['quiet-peg-solitaire/**', '.github/workflows/quiet-peg-independent-qa.yml']
   workflow_dispatch:
 permissions:
   contents: read

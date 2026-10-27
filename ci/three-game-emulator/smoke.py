@@ -10,7 +10,7 @@ def tap(x,y): adb('shell','input','tap',str(x),str(y));time.sleep(1)
 def launch(pkg): adb('shell','am','start','-n',pkg+'/.MainActivity');time.sleep(3);assert pkg in adb('shell','dumpsys','activity','activities')
 def background(pkg): adb('shell','input','keyevent','HOME');time.sleep(1);launch(pkg)
 adb('shell','wm','size','393x852');adb('shell','wm','density','160')
-for name,pkg in [('mines','com.andrefiker.minesweeper'),('bubbles','com.andrefiker.quietbubbles'),('snake','com.andrefiker.quietsnake')]:
+for name,pkg in [('snake','com.andrefiker.quietsnake'),('bubbles','com.andrefiker.quietbubbles'),('mines','com.andrefiker.minesweeper')]:
     adb('install','-r','ci/three-game-emulator/'+name+'.apk');launch(pkg);capture(name+'-launch')
     if name=='mines': tap(196,300);capture(name+'-input');background(pkg);capture(name+'-resume');tap(75,815);capture(name+'-restart')
     elif name=='bubbles': tap(196,400);capture(name+'-play');tap(196,350);capture(name+'-input');background(pkg);capture(name+'-resume')

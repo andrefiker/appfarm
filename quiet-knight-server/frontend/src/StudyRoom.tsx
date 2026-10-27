@@ -1,3 +1,4 @@
+import {useMoveArchive} from './archive-ui';
 import {playHaptic} from './haptics';
 import {reviewAssessment} from './review-assessment';
 import {useEffect,useMemo,useRef,useState} from 'react';
@@ -17,7 +18,8 @@ export type StudySeed={fen?:string;sans?:string[];mode?:StudySession['mode']};
 function seeded(seed:StudySeed):StudySession{const s={...blankStudy(),start:seed.fen||blankStudy().start,mode:seed.mode||'analysis'};const pos=positionFromFen(s.start);for(const san of seed.sans||[]){const move=parseSan(pos,san);if(!move)throw Error('Cannot replay source game');s.moves.push(makeUci(move));pos.play(move);}s.cursor=s.moves.length;return s;}
 function download(text:string,name:string){const url=URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 export function StudyRoom({owner,prefs,haptics,seed,onBack}:{owner:string;prefs:PlayPreferences;haptics:boolean;seed?:StudySeed;onBack:()=>void}){
- const[session,setSession]=useState<StudySession>(()=>{try{return seed?seeded(seed):loadStudy(owner);}catch{return blankStudy();}});
+ const identify=(s:StudySession):StudySession=>({...s,archiveId:s.archiveId||crypto.randomUUID(),archiveMode:s.mode==='analysis'?s.archiveMode:s.mode});
+ const[session,setSession]=useState<StudySession>(()=>{try{return identify(seed?seeded(seed):loadStudy(owner));}catch{return identify(blankStudy());}});
  const[selected,setSelected]=useState<string|null>(null),[flip,setFlip]=useState(false),[autoFlip,setAutoFlip]=useState(true),[notice,setNotice]=useState(''),[thinking,setThinking]=useState(false),[visible,setVisible]=useState(document.visibilityState!=='hidden');
  const[tab,setTab]=useState<'play'|'analysis'|'training'|'openings'|'editor'|'files'>('play'),[promotion,setPromotion]=useState<{from:string;to:string}|null>(null),[confirm,setConfirm]=useState<string|null>(null),[redo,setRedo]=useState<string[]>([]),[claim,setClaim]=useState(false);
  const[lines,setLines]=useState<EngineLine[]>([]),[evaluationFen,setEvaluationFen]=useState(''),[graph,setGraph]=useState<{fen:string;cp:number;mate?:number;depth:number;best?:string}[]>([]),[progress,setProgress]=useState(0);
@@ -26,6 +28,10 @@ export function StudyRoom({owner,prefs,haptics,seed,onBack}:{owner:string;prefs:
  const[fenText,setFenText]=useState(session.start),[pgnText,setPgnText]=useState(''),[variantIndex,setVariantIndex]=useState(518),[exercise,setExercise]=useState<{kind:'puzzle'|'endgame';index:number}|null>(null),[hint,setHint]=useState(false);
  const[editor,setEditor]=useState<Position>(()=>boardPosition(positionFromFen(session.start))),[brush,setBrush]=useState('wp'),[editTurn,setEditTurn]=useState('w'),[castling,setCastling]=useState('-'),[ep,setEp]=useState('-');
  const current=useMemo(()=>replay(session,session.cursor),[session.start,session.moves,session.cursor]),fen=makeFen(current.pos.toSetup()),board=boardPosition(current.pos),turn:Color=current.pos.turn==='white'?'w':'b',end=useMemo(()=>outcome(session),[session.start,session.moves]);
+ const archivedLine=useMemo(()=>replay(session),[session.start,session.moves]);
+ const archiveMode=session.mode==='analysis'?session.archiveMode:session.mode;
+ const archiveResult=session.result&&session.result!=='*'?session.result:end?(archivedLine.pos.isCheckmate()?(archivedLine.pos.turn==='white'?'0-1':'1-0'):'1/2-1/2'):'*';
+ const archiveError=useMoveArchive(owner,!exercise&&archiveMode&&session.moves.length?{id:'studio:'+session.archiveId,mode:archiveMode==='pass'?'pass':'computer',variant:session.variant,white:archiveMode==='pass'?'White':session.human==='w'?'You':ENGINE_NAME,black:archiveMode==='pass'?'Black':session.human==='b'?'You':ENGINE_NAME,humanColor:archiveMode==='computer'?session.human:undefined,level:archiveMode==='computer'?session.level:undefined,startFen:session.start,fen:makeFen(archivedLine.pos.toSetup()),sans:archivedLine.sans,result:archiveResult,reason:end||undefined,timeControl:'-'}:null);
  const baseOrientation:Color=session.mode==='pass'&&autoFlip?turn:session.mode==='computer'?session.human:'w';
  const orientation:Color=flip?(baseOrientation==='w'?'b':'w'):baseOrientation;
  const legal=legalMoves(current.pos),targets=prefs.hints&&selected?legal.filter(m=>makeSquare(m.from)===selected).map(m=>makeSquare(m.to)):[];
@@ -50,7 +56,7 @@ export function StudyRoom({owner,prefs,haptics,seed,onBack}:{owner:string;prefs:
   }).catch(e=>{if(e.name!=='AbortError')setNotice('Offline engine unavailable. Change to pass-and-play or retry.');}).finally(()=>{if(search.current===controller)setThinking(false);});
   return()=>controller.abort();
  },[fen,session.mode,session.variant,session.cursor,session.moves.length,session.human,session.level,turn,end,visible,prefs.style,prefs.think]);
- function replace(next:StudySession){previousHaptic.current=null;search.current?.abort();setThinking(false);setSession(next);setSelected(null);setRedo([]);setExercise(null);setGraph([]);setNotice('');setLines([]);setClaim(false);}
+ function replace(next:StudySession){previousHaptic.current=null;search.current?.abort();setThinking(false);setSession(identify(next));setSelected(null);setRedo([]);setExercise(null);setGraph([]);setNotice('');setLines([]);setClaim(false);}
  function commit(uci:string){setConfirm(null);setPromotion(null);try{const pos=current.pos.clone(),move=parseUci(uci);if(!move||!pos.isLegal(move))throw Error('Illegal move');
   if(exercise?.kind==='puzzle'&&uci!==puzzles[exercise.index].solution[session.moves.length]){setNotice('Try another move. Your exercise position is unchanged.');return;}
   pos.play(move);setSession(s=>({...s,result:undefined,moves:[...s.moves,uci],cursor:s.moves.length+1}));setRedo([]);setSelected(null);
@@ -86,14 +92,14 @@ export function StudyRoom({owner,prefs,haptics,seed,onBack}:{owner:string;prefs:
   {confirm?<div className="study-actions"><p>Confirm {confirm}?</p><button onClick={()=>commit(confirm)}>Confirm move</button><button onClick={()=>setConfirm(null)}>Cancel move</button></div>:null}
  </>;
  return <main className="qk study-room"><header className="game-header"><button className="secondary" onClick={()=>{search.current?.abort();onBack();}}>Back to table</button><h1>Local chess studio</h1></header>
- <p className="study-status" role="status">{tab==='editor'?'Position editor':end|| (claim?'Draw claimed':thinking?'Engine working…':`${turn==='w'?'White':'Black'} to move`)} · {session.variant==='chess960'?'Chess960':'Standard'} · Untimed</p>
+ {archiveError?<p role="alert">{archiveError}</p>:null}<p className="study-status" role="status">{tab==='editor'?'Position editor':end|| (claim?'Draw claimed':thinking?'Engine working…':`${turn==='w'?'White':'Black'} to move`)} · {session.variant==='chess960'?'Chess960':'Standard'} · Untimed</p>
  <nav aria-label="Studio sections" className="study-tabs">{(['play','analysis','training','openings','editor','files'] as const).map(t=><button key={t} aria-pressed={tab===t} onClick={()=>{setTab(t);if(t==='editor'){setEditor(board);setEditTurn(turn);setCastling(fen.split(' ')[2]);setEp(fen.split(' ')[3]);}}}>{t}</button>)}</nav>
  {body}
  <p role="status">{notice}</p>
  {exercise?<aside className="study-exercise"><strong>{exercise.kind==='puzzle'?puzzles[exercise.index].name:endgames[exercise.index].name}</strong><button onClick={()=>setHint(!hint)}>{hint?'Hide hint':'Hint'}</button>{hint?<p>{exercise.kind==='puzzle'?puzzles[exercise.index].hint:endgames[exercise.index].hint}</p>:null}<button onClick={()=>startTraining(exercise.kind,exercise.index)}>Replay exercise</button><button onClick={()=>{setExercise(null);setTab('training');}}>Choose exercise</button></aside>:null}
  <div className="study-actions"><button onClick={()=>setFlip(!flip)}>Flip board</button><button disabled={session.cursor===0} onClick={()=>browse(session.cursor-1)}>Previous position</button><button disabled={session.cursor===session.moves.length} onClick={()=>browse(session.cursor+1)}>Next position</button><button onClick={()=>browse(session.moves.length)}>Live local position</button></div>
  <p>Position {session.cursor} / {session.moves.length}. Reviewing never changes the original live match. Castling in Chess960: select the king, then its rook.</p>
- {tab==='play'?<section className="study-panel"><h2>Local play</h2><label>Mode<select aria-label="Local game mode" value={session.mode} onChange={e=>setSession(s=>({...s,mode:e.target.value as StudySession['mode']}))}><option value="analysis">Explore both sides</option><option value="pass">Pass and play · two people</option><option value="computer">Offline computer</option></select></label>
+ {tab==='play'?<section className="study-panel"><h2>Local play</h2><label>Mode<select aria-label="Local game mode" value={session.mode} onChange={e=>{const mode=e.target.value as StudySession['mode'];setSession(s=>({...s,mode,archiveMode:mode==='analysis'?s.archiveMode:mode}));}}><option value="analysis">Explore both sides</option><option value="pass">Pass and play · two people</option><option value="computer">Offline computer</option></select></label>
  <label>Your side<select aria-label="Local human side" value={session.human} onChange={e=>setSession(s=>({...s,human:e.target.value as Color}))}><option value="w">White</option><option value="b">Black</option></select></label>
  <label>Computer level<input aria-label="Studio level" type="range" min="1" max="10" value={session.level} onChange={e=>setSession(s=>({...s,level:Number(e.target.value)}))}/>{session.level}/10</label>
  <label><input type="checkbox" checked={autoFlip} onChange={e=>setAutoFlip(e.target.checked)}/>Flip each turn in pass-and-play</label>

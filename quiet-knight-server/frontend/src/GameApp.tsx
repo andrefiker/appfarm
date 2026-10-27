@@ -11,6 +11,8 @@ import type {ClockState} from './chess-clock';
 import { ClockControls } from './clock-controls';
 import type { PauseAction } from './clock-controls';
 import { GameExports, GamePostcard, FinalPosition } from "./game-keepsake";
+import {accountSnapshots,replayArchive,saveArchive} from "./move-archive";
+import {ArchivePanel,useMoveArchive} from "./archive-ui";
 import { recentTables, rememberTable } from "./game-record";
 import type { GameRecord } from "./game-record";
 import {
@@ -43,6 +45,7 @@ import type { LocalMove } from "./computer";
 type Role = "white" | "black" | "spectator";
 type RoomState = ClockState & {
   game_number?: number;
+  started_at?: number; ended_at?: number;
   kind?:string;white_nickname?:string;black_nickname?:string;
   rematch_proposal?:{id:string;by:Color;colors:"same"|"swap"}|null;
   proposal?:{id:string;kind:"draw"|"takeback";by:Color}|null;
@@ -71,6 +74,7 @@ type RoomState = ClockState & {
   last_move: { from: string; to: string; san: string } | null;
 };
 type Modal =
+  | "archive"
   | "memory"
   | "identity"
   | "settings"
@@ -472,6 +476,18 @@ export default function GameApp() {
       setMemories(recentTables(accountId));
     }
   }, [ended, record.id, room?.score_event?.id, accountId, gameOwner]);
+  useEffect(()=>{if(!knight.player||gameOwner!==accountId)return;for(const snapshot of accountSnapshots(knight.games,knight.computerGames)){try{replayArchive(snapshot);void saveArchive(accountId,snapshot).catch(()=>setMessage("An account game could not be copied to the local archive. Its server record is unchanged."));}catch{/* Keep the original server record. */}}},[knight.games,knight.computerGames,accountId,gameOwner]);
+  const archiveError = useMoveArchive(accountId, gameOwner === accountId &&
+    ((!room && localMoves.length > 0) || (room && (role === "white" || role === "black") && roleGame === (room.game_number || 1) && (sans.length > 0 || ended))) ? {
+    id: record.id, mode: room ? "friend" : "computer", variant: "standard",
+    white: room?.white_player?.handle || room?.white_nickname || record.white,
+    black: room?.black_player?.handle || room?.black_nickname || record.black,
+    humanColor: me || undefined, level: room ? undefined : level,
+    fen: record.fen, sans, result: record.result, reason: ended ? room?.status || (game.isCheckmate() ? "checkmate" : "draw") : undefined,
+    startedAt: room ? new Date(room.started_at || room.created_at).toISOString() : undefined,
+    finishedAt: room?.ended_at ? new Date(room.ended_at).toISOString() : undefined,
+    timeControl: record.timeControl, serverVersion: room?.version,
+  } : null);
   const dialogOpen = Boolean(modal || promotion);
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -1147,6 +1163,8 @@ export default function GameApp() {
   );
   const modalTitle = promotion
     ? "Promote your pawn"
+    : modal === "archive"
+      ? "Move archive"
     : modal === "memory"
       ? "The final position"
       : modal === "identity"
@@ -1163,6 +1181,7 @@ export default function GameApp() {
   if (gameOwner !== accountId) return <main className="account-gate"><section className="account-card" role="status"><p className="account-kicker">QUIET KNIGHT</p><h1>Loading your account</h1><p className="account-intro">Preparing your saved games.</p></section></main>;
   return (
     <>
+      {archiveError&&screen==="game"?<p role="alert" className="server-compatibility">{archiveError}</p>:null}
       {screen === "study" ? <StudyRoom key={accountId} owner={accountId} prefs={prefs} haptics={haptics} seed={studySeed} onBack={()=>setScreen(room?"game":"home")}/> : null}
 
       {screen === "home" && localMoves.length > 0 ? (
@@ -1191,7 +1210,7 @@ export default function GameApp() {
       ) : null}
       {screen === "home" ? (
         <HomeSurface
-          extras={<section className="studio-entry"><h2>Continue the position</h2><button className="secondary" onClick={()=>openStudy(localMoves.length?{sans:localMoves.map(m=>m.san||"")}:undefined)}>Continue the position · analyse</button><button className="secondary" onClick={()=>openStudy({mode:"pass"})}>Pass and play · offline</button><button className="secondary" onClick={()=>openStudy()}>Study, puzzles & Chess960</button><p role="status" className="server-compatibility">{compatibility.message}</p><details className="friend-setup"><summary>Friend options & invite link</summary><label>Friend-game side<select aria-label="Friend-game side" value={friendSide} onChange={e=>setFriendSide(e.target.value)}><option value="white">White</option><option value="black">Black</option></select></label><label>Friend-game style<select aria-label="Friend-game style" value={friendKind} onChange={e=>setFriendKind(e.target.value)}><option value="live">Live · untimed</option><option value="correspondence">Correspondence · no deadlines</option></select></label><label>Paste invite link<input aria-label="Paste invite link" value={inviteInput} maxLength={1000} onChange={e=>setInviteInput(e.target.value)}/></label><button className="secondary" onClick={()=>{const code=parseInvitation(inviteInput);if(code)void joinRoom(code);else setMessage("Paste a valid room link or six-character code.");}}>Open invitation</button></details></section>}
+          extras={<section className="studio-entry"><button className="secondary" onClick={()=>{setTableControls(false);setModal("archive");}}>Move archive & export</button>{archiveError?<p role="alert">{archiveError}</p>:null}<h2>Continue the position</h2><button className="secondary" onClick={()=>openStudy(localMoves.length?{sans:localMoves.map(m=>m.san||"")}:undefined)}>Continue the position · analyse</button><button className="secondary" onClick={()=>openStudy({mode:"pass"})}>Pass and play · offline</button><button className="secondary" onClick={()=>openStudy()}>Study, puzzles & Chess960</button><p role="status" className="server-compatibility">{compatibility.message}</p><details className="friend-setup"><summary>Friend options & invite link</summary><label>Friend-game side<select aria-label="Friend-game side" value={friendSide} onChange={e=>setFriendSide(e.target.value)}><option value="white">White</option><option value="black">Black</option></select></label><label>Friend-game style<select aria-label="Friend-game style" value={friendKind} onChange={e=>setFriendKind(e.target.value)}><option value="live">Live · untimed</option><option value="correspondence">Correspondence · no deadlines</option></select></label><label>Paste invite link<input aria-label="Paste invite link" value={inviteInput} maxLength={1000} onChange={e=>setInviteInput(e.target.value)}/></label><button className="secondary" onClick={()=>{const code=parseInvitation(inviteInput);if(code)void joinRoom(code);else setMessage("Paste a valid room link or six-character code.");}}>Open invitation</button></details></section>}
           identity={
             <>
               <button
@@ -1256,7 +1275,7 @@ export default function GameApp() {
             ended,
             room ? room.black_joined : true,
           )}
-          historyTools={<><GameExports key={record.id} record={record} /><button className="secondary" onClick={()=>openStudy({sans:[...sans]})}>Review / analyse game</button><button className="secondary" onClick={()=>setFlipped(v=>!v)}>Flip board</button>{!room?<div className="study-actions"><button disabled={!localMoves.length} onClick={()=>{setEnginePaused(true);const cut=localGame.turn()===humanColor?2:1;setRedoMoves(localMoves.slice(-cut));setLocalMoves(v=>v.slice(0,-cut));}}>Undo computer turn</button><button disabled={!redoMoves.length} onClick={()=>{setLocalMoves(v=>[...v,...redoMoves]);setRedoMoves([]);setEnginePaused(false);}}>Redo computer turn</button>{enginePaused?<button onClick={()=>setEnginePaused(false)}>Resume computer</button>:null}</div>:null}</>}
+          historyTools={<><button className="secondary" onClick={()=>{setTableControls(false);setModal("archive");}}>Move archive & export</button>{archiveError?<p role="alert">{archiveError}</p>:null}<GameExports key={record.id} record={record} /><button className="secondary" onClick={()=>openStudy({sans:[...sans]})}>Review / analyse game</button><button className="secondary" onClick={()=>setFlipped(v=>!v)}>Flip board</button>{!room?<div className="study-actions"><button disabled={!localMoves.length} onClick={()=>{setEnginePaused(true);const cut=localGame.turn()===humanColor?2:1;setRedoMoves(localMoves.slice(-cut));setLocalMoves(v=>v.slice(0,-cut));}}>Undo computer turn</button><button disabled={!redoMoves.length} onClick={()=>{setLocalMoves(v=>[...v,...redoMoves]);setRedoMoves([]);setEnginePaused(false);}}>Redo computer turn</button>{enginePaused?<button onClick={()=>setEnginePaused(false)}>Resume computer</button>:null}</div>:null}</>}
           postGame={
             ended ? <GamePostcard key={record.id} record={record} /> : null
           }
@@ -1425,6 +1444,8 @@ export default function GameApp() {
                     proposeMove(promotion.from, promotion.to, kind)
                   }
                 />
+              ) : modal === "archive" ? (
+                <ArchivePanel key={accountId} owner={accountId}/>
               ) : modal === "memory" && viewedGame ? (
                 <FinalPosition record={viewedGame} />
               ) : modal === "identity" && (!knight.player || knight.recoveryCode) ? (

@@ -6,7 +6,7 @@ import type { FormEvent } from 'react';
 
 export type KnightPlayer = { id:string; handle:string; quiet_points:number; scored_games:number; wins:number; draws:number; losses:number; current_win_streak:number; best_win_streak:number; registered:boolean; human_games:number; human_wins:number; human_draws:number; human_losses:number; computer_games:number; computer_wins:number; computer_draws:number; computer_losses:number };
 export type RememberedGame = { id:string; room_code:string; game_number:number; white_player_id:string|null; black_player_id:string|null; white_points:number; black_points:number; score_reason?:string; white_handle:string; black_handle:string; result:string; final_fen:string; moves:{san:string}[]; scored:boolean; ended_at:string };
-export type ComputerGame={id:string;result:string;final_fen:string;moves:{san:string}[];level:number;ended_at:string};
+export type ComputerGame={id:string;client_game_id?:string;result:string;final_fen:string;moves:{san?:string;from?:string;to?:string;promotion?:string}[];level:number;ended_at:string};
 type AuthResponse={player:KnightPlayer;games?:RememberedGame[];computer_games?:ComputerGame[];recovery_code?:string};
 
 async function playerRequest(path:string,body?:unknown):Promise<AuthResponse>{return accountRequest<AuthResponse>(path,body,identityHeaders());}

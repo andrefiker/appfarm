@@ -8,6 +8,8 @@ import android.graphics.drawable.ColorDrawable;
 import android.view.WindowInsetsController;
 import android.net.Uri;
 import android.os.Bundle;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.os.Build;
@@ -31,6 +33,8 @@ public class MainActivity extends Activity {
     private WebView webView;
     private WebViewAssetLoader assetLoader;
     private long lastHapticAt;
+    private String pendingArchive;
+    private static final int ARCHIVE_DOCUMENT = 7341;
     private boolean quietKnight() { return "quietKnight".equals(BuildConfig.FLAVOR); }
     private String launchUrl(Intent intent) {
         if (!quietKnight() || intent == null || intent.getData() == null) return BuildConfig.HOME_URL;
@@ -130,6 +134,33 @@ public class MainActivity extends Activity {
                     });
         }
 
+        if (quietKnight() && WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
+            WebViewCompat.addWebMessageListener(webView, "QuietKnightExport",
+                    Collections.singleton("https://quiet-knight-server-production.up.railway.app"),
+                    (view, message, sourceOrigin, isMainFrame, reply) -> {
+                        String url = view.getUrl();
+                        if (!isMainFrame || message.getType() != WebMessageCompat.TYPE_STRING
+                                || !"https".equals(sourceOrigin.getScheme())
+                                || !"quiet-knight-server-production.up.railway.app".equals(sourceOrigin.getHost())
+                                || url == null || !url.startsWith(BuildConfig.HOME_URL)
+                                || !view.hasWindowFocus() || isFinishing()) return;
+                        try {
+                            if (pendingArchive != null) throw new IllegalStateException("Export already open");
+                            JSONObject data = new JSONObject(message.getData());
+                            String name = data.getString("name"), mime = data.getString("mime"), text = data.getString("text");
+                            if (!name.matches("Quiet-Knight-games-[0-9-]+\\.(json|pgn)")
+                                    || !("application/json".equals(mime) || "application/x-chess-pgn".equals(mime))
+                                    || text.length() > 32 * 1024 * 1024) throw new IllegalArgumentException("Invalid archive");
+                            pendingArchive = text;
+                            Intent save = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                            save.addCategory(Intent.CATEGORY_OPENABLE);
+                            save.setType(mime);
+                            save.putExtra(Intent.EXTRA_TITLE, name);
+                            startActivityForResult(save, ARCHIVE_DOCUMENT);
+                        } catch (Exception error) { pendingArchive = null; archiveResult(false, false); }
+                    });
+        }
+
         CookieManager.getInstance().setAcceptCookie(true);
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
         webView.setWebChromeClient(new WebChromeClient());
@@ -164,6 +195,30 @@ public class MainActivity extends Activity {
         } else {
             webView.restoreState(savedInstanceState);
         }
+    }
+
+    private void archiveResult(boolean ok, boolean cancelled) {
+        if (webView != null && !isFinishing()) webView.evaluateJavascript(
+                "window.dispatchEvent(new CustomEvent('qk-export-result',{detail:{ok:" + ok + ",cancelled:" + cancelled + "}}))", null);
+    }
+
+    @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode != ARCHIVE_DOCUMENT) return;
+        final String archive = pendingArchive;
+        pendingArchive = null;
+        if (resultCode != RESULT_OK || data == null || data.getData() == null) { archiveResult(false, true); return; }
+        final Uri destination = data.getData();
+        if (archive == null) { archiveResult(false, false); return; }
+        new Thread(() -> {
+            boolean saved = false;
+            try (OutputStream output = getContentResolver().openOutputStream(destination, "wt")) {
+                if (output == null) throw new IllegalStateException("Cannot open destination");
+                output.write(archive.getBytes(StandardCharsets.UTF_8)); output.flush(); saved = true;
+            } catch (Exception ignored) { }
+            final boolean ok = saved;
+            runOnUiThread(() -> archiveResult(ok, false));
+        }, "quiet-knight-export").start();
     }
 
     @Override

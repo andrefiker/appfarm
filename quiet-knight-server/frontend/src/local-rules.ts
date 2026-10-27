@@ -5,7 +5,7 @@ import {makeSan,parseSan} from 'chessops/san';
 import type {Move,NormalMove} from 'chessops/types';
 import type {Position} from './chess-ui';
 export {INITIAL_FEN};
-export type StudySession={schema:2;start:string;moves:string[];variant:'standard'|'chess960';mode:'analysis'|'pass'|'computer';human:'w'|'b';level:number;cursor:number;result?:'1-0'|'0-1'|'1/2-1/2'|'*'};
+export type StudySession={archiveId?:string;archiveMode?:'pass'|'computer';schema:2;start:string;moves:string[];variant:'standard'|'chess960';mode:'analysis'|'pass'|'computer';human:'w'|'b';level:number;cursor:number;result?:'1-0'|'0-1'|'1/2-1/2'|'*'};
 export function positionFromFen(fen:string){
   if(typeof fen!=='string'||fen.length>200||fen.trim().split(/\s+/).length!==6)throw Error('Use a complete six-field FEN.');
   const setup=parseFen(fen.trim()).unwrap();

@@ -1,5 +1,5 @@
 import {test,expect} from '@playwright/test';
-import {mkdir} from 'node:fs/promises';
+import {mkdir,readFile} from 'node:fs/promises';
 const url=process.env.QK_FRONTEND_URL||'http://127.0.0.1:3000/';
 test.skip(!/^http:\/\/(127\.0\.0\.1|localhost):/.test(url),'isolated candidate only');
 async function move(page,from,to){await expect(page.locator(`[data-square=${from}]`)).toHaveAttribute('aria-disabled','false');await page.locator(`[data-square=${from}]`).click();await page.locator(`[data-square=${to}]`).click();}
@@ -41,6 +41,9 @@ test('one tap starts a friend rematch without opponent action, including pending
   await p.goto(invite);await live(p);await expect(p.getByRole('group',{name:'Chess board, Black at bottom',exact:true})).toBeVisible();await expect(p.getByRole('dialog')).toHaveCount(0);
   await move(q,'c2','c4');await expect(p.locator('[data-square=c4]')).toHaveAttribute('data-piece','wp');await move(p,'c7','c5');
   await q.reload();await live(q);await expect(q.locator('[data-square=c5]')).toHaveAttribute('data-piece','bp');expect((await read()).game_number).toBe(4);
+  await p.getByRole('button',{name:'Table controls',exact:true}).click();await p.getByRole('button',{name:'Move archive & export',exact:true}).click();
+  const downloaded=p.waitForEvent('download');await p.getByRole('button',{name:'Export all games · JSON',exact:true}).click();const file=await downloaded,archive=JSON.parse(await readFile(await file.path(),'utf8'));
+  expect(archive.game_count).toBe(4);expect(archive.games[0].moves.map(m=>m.san)).toEqual(['f3','e5','g4','Qh4#']);expect(archive.games[0].result).toBe('0-1');expect(archive.games[3].moves.map(m=>m.san)).toEqual(['c4','c5']);expect(archive.games[3].status).toBe('unfinished');expect(JSON.stringify(archive)).not.toContain('seat_token');
   expect(requests.map(r=>r.who)).toEqual(['a','a','b']);expect(requests.every(r=>r.data.action===undefined)).toBe(true);expect(errors).toEqual([]);
  }finally{await a.close();await b.close();await s.close();}
 });

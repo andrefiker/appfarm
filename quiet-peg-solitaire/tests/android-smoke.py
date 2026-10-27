@@ -5,7 +5,13 @@ def adb(*args):
 
 def snapshot():
     for attempt in range(10):
-        result = adb('shell', 'uiautomator', 'dump', '/sdcard/peg-window.xml')
+        try:
+            result = adb('shell', 'uiautomator', 'dump', '/sdcard/peg-window.xml')
+        except subprocess.CalledProcessError as exc:
+            if exc.returncode != 137:
+                raise
+            time.sleep(2)
+            continue
         # uiautomator can exit zero even when its accessibility root is null.
         # Do not read the previous successful dump in that case.
         if 'UI hierchary dumped to:' in result or 'UI hierarchy dumped to:' in result:

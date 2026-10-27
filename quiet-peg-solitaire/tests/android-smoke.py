@@ -25,9 +25,12 @@ def require(root, value):
         raise SystemExit(f'Expected {value!r}, UI: {text(root)}')
 
 root = ET.parse(sys.argv[1]).getroot()
-if "isn't responding" in text(root):
-    tap(root, 'Close app')
-    adb('shell', 'am', 'start', '-W', '-n', 'com.andrefiker.quietpegsolitaire/.MainActivity')
+for attempt in range(12):
+    if any(n.get('text') == 'Play' or n.get('content-desc') == 'Play' for n in root.iter()):
+        break
+    if "isn't responding" in text(root):
+        tap(root, 'Close app')
+        adb('shell', 'am', 'start', '-W', '-n', 'com.andrefiker.quietpegsolitaire/.MainActivity')
     time.sleep(5)
     root = snapshot()
 tap(root, 'Play')

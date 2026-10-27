@@ -212,9 +212,12 @@ public class MainActivity extends Activity {
         if (archive == null) { archiveResult(false, false); return; }
         new Thread(() -> {
             boolean saved = false;
-            try (OutputStream output = getContentResolver().openOutputStream(destination, "wt")) {
-                if (output == null) throw new IllegalStateException("Cannot open destination");
-                output.write(archive.getBytes(StandardCharsets.UTF_8)); output.flush(); saved = true;
+            try {
+                try (OutputStream output = getContentResolver().openOutputStream(destination, "wt")) {
+                    if (output == null) throw new IllegalStateException("Cannot open destination");
+                    output.write(archive.getBytes(StandardCharsets.UTF_8)); output.flush();
+                }
+                saved = true;
             } catch (Exception ignored) { }
             final boolean ok = saved;
             runOnUiThread(() -> archiveResult(ok, false));

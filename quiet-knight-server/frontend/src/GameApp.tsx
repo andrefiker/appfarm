@@ -484,7 +484,7 @@ export default function GameApp() {
     black: room?.black_player?.handle || room?.black_nickname || record.black,
     humanColor: me || undefined, level: room ? undefined : level,
     fen: record.fen, sans, result: record.result, reason: ended ? room?.status || (game.isCheckmate() ? "checkmate" : "draw") : undefined,
-    startedAt: room ? new Date(room.started_at || room.created_at).toISOString() : undefined,
+    startedAt: room?.started_at ? new Date(room.started_at).toISOString() : room && (room.game_number || 1) === 1 ? new Date(room.created_at).toISOString() : undefined,
     finishedAt: room?.ended_at ? new Date(room.ended_at).toISOString() : undefined,
     timeControl: record.timeControl, serverVersion: room?.version,
   } : null);

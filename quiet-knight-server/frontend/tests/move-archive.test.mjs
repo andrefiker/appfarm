@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {Chess} from 'chess.js';
-import {mergeArchive,archiveJson,archivePgn,replayArchive} from '../src/move-archive.ts';
+import {mergeArchive,archiveJson,archivePgn,replayArchive,accountSnapshots} from '../src/move-archive.ts';
 import {chess960Fen,playUci,positionFromFen} from '../src/local-rules.ts';
 import {makeFen} from 'chessops/fen';
 function snapshot(id,moves,result='*'){const c=new Chess();for(const m of moves)c.move(m);return{id,mode:'computer',variant:'standard',white:'You',black:'Stockfish',sans:moves,fen:c.fen(),result};}
@@ -13,3 +13,8 @@ const leaky={...snapshot('safe',['e4']),seat_token:'PRIVATE',password:'SECRET',c
 const start=chess960Fen(42),pos=positionFromFen(start),san=playUci(pos,'e2e4');const v=mergeArchive('guest',{...snapshot('960',[]),variant:'chess960',startFen:start,sans:[san],fen:makeFen(pos.toSetup())});assert.equal(v.moves[0].uci,'e2e4');assert.match(archivePgn([v]),/\[Variant "Chess960"\]/);
 const promotion=new Chess('7k/P7/6K1/8/8/8/8/8 w - - 0 1');promotion.move('a8=N');const promoted=mergeArchive('guest',{...snapshot('promotion',[]),startFen:'7k/P7/6K1/8/8/8/8/8 w - - 0 1',sans:['a8=N'],fen:promotion.fen()});assert.equal(promoted.moves[0].uci,'a7a8n');
 console.log('Move archive: full replay, 15-game export, PGN roundtrip, unfinished games, undo branches, duplicate sync, promotion, Chess960 and secret exclusion passed.');
+
+const ongoing=mergeArchive('guest',snapshot('live',['e4']));assert.deepEqual(mergeArchive('guest',{...snapshot('live',['e4','e5'],'1-0'),source:'legacy-local'},ongoing),ongoing,'Old recent-game migration must not overwrite newer play');
+const account=accountSnapshots([],[{id:'server-id',client_game_id:'local-id',moves:[{from:'e2',to:'e4'}],result:'0-1',final_fen:snapshot('x',['e4']).fen,ended_at:'2026-10-27T12:00:00Z',level:5}]);assert.equal(account[0].id,'local-id');assert.deepEqual(account[0].sans,['e4']);
+const castle=snapshot('castle',['e4','e5','Nf3','Nc6','Bc4','Nf6','O-O']);assert.equal(mergeArchive('guest',castle).moves.at(-1).uci,'e1g1');
+const ep=snapshot('ep',['e4','a6','e5','d5','exd6']);assert.equal(mergeArchive('guest',ep).moves.at(-1).uci,'e5d6');

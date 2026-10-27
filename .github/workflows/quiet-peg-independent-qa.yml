@@ -25,6 +25,22 @@ jobs:
         run: |
           node quiet-peg-solitaire/tests/engine.test.js
           gradle --no-daemon -p quiet-peg-solitaire assembleDebug
+      - name: Verify exact APK structure and bundled source
+        run: |
+          set -euo pipefail
+          APK=quiet-peg-solitaire/app/build/outputs/apk/debug/app-debug.apk
+          TOOLS="$ANDROID_HOME/build-tools/35.0.0"
+          "$TOOLS/aapt" dump badging "$APK" | tee /tmp/peg-badging.txt
+          grep -F "package: name='com.andrefiker.quietpegsolitaire' versionCode='2' versionName='1.0.1'" /tmp/peg-badging.txt
+          "$TOOLS/aapt" dump permissions "$APK" | tee /tmp/peg-permissions.txt
+          if grep -q "uses-permission" /tmp/peg-permissions.txt; then exit 1; fi
+          "$TOOLS/apksigner" verify --verbose --print-certs "$APK"
+          "$TOOLS/zipalign" -c -v 4 "$APK"
+          unzip -Z1 "$APK" | grep '^assets/'
+          for file in index.html style.css app.js engine.js; do
+            unzip -p "$APK" "assets/$file" | cmp - "quiet-peg-solitaire/app/src/main/assets/$file"
+          done
+          sha256sum "$APK" | tee /tmp/peg-apk.sha256
       - name: Prepare emulator
         run: |
           sudo chmod a+rw /dev/kvm
@@ -48,7 +64,7 @@ jobs:
           adb exec-out cat /sdcard/window.xml > /tmp/window.xml
           python3 quiet-peg-solitaire/tests/android-smoke.py /tmp/window.xml
       - name: Record tested APK checksum
-        run: sha256sum quiet-peg-solitaire/app/build/outputs/apk/debug/app-debug.apk
+        run: sha256sum -c /tmp/peg-apk.sha256
       - uses: actions/upload-artifact@v4
         with:
           name: quiet-peg-tested-debug-apk

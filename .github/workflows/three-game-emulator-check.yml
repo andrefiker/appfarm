@@ -42,3 +42,11 @@ jobs:
           profile: pixel_2
           disable-animations: true
           script: python3 ci/three-game-emulator/smoke.py
+      - name: Save emulator screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: three-game-emulator-screens
+          path: ci/three-game-emulator/screens/*.png
+          if-no-files-found: ignore
+          retention-days: 7

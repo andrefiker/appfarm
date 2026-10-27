@@ -1,29 +1,19 @@
-import subprocess,time,re,xml.etree.ElementTree as ET
+import subprocess,time,pathlib
 def adb(*args): return subprocess.check_output(['adb',*args],text=True)
-def dump():
-    time.sleep(1)
-    raw=adb('exec-out','uiautomator','dump','/dev/tty')
-    return ET.fromstring(raw[raw.index('<?xml'):raw.rindex('</hierarchy>')+12])
-def click(pattern):
-    for node in dump().iter():
-        text=' '.join([node.get('text',''),node.get('content-desc','')])
-        if re.search(pattern,text,re.I):
-            bounds=re.findall(r'\d+',node.get('bounds',''))
-            if len(bounds)==4:
-                x1,y1,x2,y2=map(int,bounds);adb('shell','input','tap',str((x1+x2)//2),str((y1+y2)//2));return
-    raise AssertionError('UI target not found: '+pattern)
-def launch(pkg):
-    adb('shell','am','start','-n',pkg+'/.MainActivity');time.sleep(3)
-    assert pkg in adb('shell','dumpsys','activity','activities')
-def background(pkg):
-    adb('shell','input','keyevent','HOME');time.sleep(1);launch(pkg)
+def capture(label):
+    time.sleep(2)
+    data=subprocess.check_output(['adb','exec-out','screencap','-p'])
+    assert data.startswith(b'\x89PNG')
+    pathlib.Path('ci/three-game-emulator/screens').mkdir(exist_ok=True)
+    pathlib.Path('ci/three-game-emulator/screens/'+label+'.png').write_bytes(data)
+def tap(x,y): adb('shell','input','tap',str(x),str(y));time.sleep(1)
+def launch(pkg): adb('shell','am','start','-n',pkg+'/.MainActivity');time.sleep(3);assert pkg in adb('shell','dumpsys','activity','activities')
+def background(pkg): adb('shell','input','keyevent','HOME');time.sleep(1);launch(pkg)
 adb('shell','wm','size','393x852');adb('shell','wm','density','160')
 for name,pkg in [('mines','com.andrefiker.minesweeper'),('bubbles','com.andrefiker.quietbubbles'),('snake','com.andrefiker.quietsnake')]:
-    adb('install','-r','ci/three-game-emulator/'+name+'.apk');launch(pkg)
-    if name=='mines':
-        adb('shell','input','tap','196','300');time.sleep(1);background(pkg);click(r'New game');print('Mines: tile input, background/relaunch, restart')
-    elif name=='bubbles':
-        click(r'^PLAY$');adb('shell','input','tap','196','350');time.sleep(2);click(r'Ⅱ|Pause');click(r'RESTART');background(pkg);print('Bubbles: play, shot, pause/restart, background/relaunch')
-    else:
-        click(r'^Play');time.sleep(1);click(r'Pause|Ⅱ');click(r'Resume');background(pkg);print('Snake: play, pause/resume, background/relaunch')
+    adb('install','-r','ci/three-game-emulator/'+name+'.apk');launch(pkg);capture(name+'-launch')
+    if name=='mines': tap(196,300);capture(name+'-input');background(pkg);capture(name+'-resume');tap(75,815);capture(name+'-restart')
+    elif name=='bubbles': tap(196,360);capture(name+'-play');tap(196,350);capture(name+'-input');background(pkg);capture(name+'-resume')
+    else: tap(196,430);capture(name+'-play');tap(350,55);capture(name+'-pause');background(pkg);capture(name+'-resume')
+    print(name+': install, launch, input and relaunch executed; screenshots saved for inspection',flush=True)
     adb('shell','am','force-stop',pkg)

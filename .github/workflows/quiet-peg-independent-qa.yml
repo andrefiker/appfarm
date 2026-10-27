@@ -1,0 +1,60 @@
+name: Quiet Peg Solitaire Android verification
+on:
+  push:
+    branches: [peg-independent-qa-20261027]
+    paths: ['quiet-peg-solitaire/**', '.github/workflows/quiet-peg-solitaire-android.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      ANDROID_AVD_HOME: /tmp/quiet-peg-avd
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Rules and build
+        run: |
+          node quiet-peg-solitaire/tests/engine.test.js
+          gradle --no-daemon -p quiet-peg-solitaire assembleDebug
+      - name: Prepare emulator
+        run: |
+          sudo chmod a+rw /dev/kvm
+          echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
+          export PATH="$ANDROID_HOME/platform-tools:$PATH"
+          mkdir -p "$ANDROID_AVD_HOME"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platform-tools' 'emulator' 'system-images;android-35;google_apis;x86_64' >/dev/null || true
+          echo no | "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd -n peg -k 'system-images;android-35;google_apis;x86_64' --force
+          test -f "$ANDROID_AVD_HOME/peg.ini"
+          "$ANDROID_HOME/emulator/emulator" -avd peg -no-window -no-audio -no-snapshot -no-boot-anim -gpu swiftshader_indirect -memory 2048 > /tmp/emulator.log 2>&1 &
+          timeout 300 adb wait-for-device
+          timeout 300 bash -c 'until [[ "$(adb shell getprop sys.boot_completed | tr -d "\r")" == 1 ]]; do sleep 3; done'
+          adb shell input keyevent 82
+      - name: Install and launch
+        run: |
+          adb install -r quiet-peg-solitaire/app/build/outputs/apk/debug/app-debug.apk
+          adb shell am start -W -n com.andrefiker.quietpegsolitaire/.MainActivity
+          adb shell pidof com.andrefiker.quietpegsolitaire
+          sleep 10
+          adb shell uiautomator dump /sdcard/window.xml
+          adb exec-out cat /sdcard/window.xml > /tmp/window.xml
+          python3 quiet-peg-solitaire/tests/android-smoke.py /tmp/window.xml
+      - name: Record tested APK checksum
+        run: sha256sum quiet-peg-solitaire/app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: quiet-peg-tested-debug-apk
+          path: quiet-peg-solitaire/app/build/outputs/apk/debug/app-debug.apk
+      - name: Emulator diagnostics on failure
+        if: failure()
+        run: |
+          tail -100 /tmp/emulator.log || true
+          adb logcat -d -t 300 || true

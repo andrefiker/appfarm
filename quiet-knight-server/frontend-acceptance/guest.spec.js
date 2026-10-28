@@ -10,11 +10,24 @@ async function noGate(p){await expect(p.getByRole('button',{name:'Play White',ex
 test('fresh guests play multiplayer, resume, resign and swap; spectators cannot move',async({browser})=>{
  const a=await actor(browser),b=await actor(browser,320),s=await actor(browser,360);
  try{
+  await a.context.addInitScript(()=>{if(localStorage.getItem('single-style-seeded'))return;localStorage.setItem('qk-piece-set-v1','classic');localStorage.setItem('qk-atmosphere-v1','Midnight');localStorage.setItem('qk-pictured-table-upgrade-v1','applied');localStorage.setItem('single-style-seeded','1');});
+  await b.context.addInitScript(()=>{if(localStorage.getItem('single-style-seeded'))return;localStorage.setItem('qk-piece-set-v1','animal-kingdom');localStorage.setItem('qk-atmosphere-v1','Royal Meadow');localStorage.setItem('qk-pictured-table-upgrade-v1','applied');localStorage.setItem('single-style-seeded','1');});
   await a.page.goto(url);await noGate(a.page);expect(a.accountRequests).toEqual([]);
   await mkdir('output/playwright',{recursive:true});await expect(a.page.locator('.home-play')).toHaveCSS('opacity','1');await a.page.screenshot({path:'output/playwright/guest-home-390.png',fullPage:true});
   await a.page.getByRole('button',{name:'Create live game',exact:true}).click();await live(a.page);
   const invite=a.page.url();await b.page.goto(invite);await live(b.page);await s.page.goto(invite);await live(s.page);
   await expect(b.page.getByRole('group',{name:'Chess board, Black at bottom',exact:true})).toBeVisible();
+  for(const p of [a.page,b.page]){
+   await expect(p.locator('body')).toHaveAttribute('data-atmosphere','walnut');
+   await expect(p.locator('body')).toHaveAttribute('data-piece-set','kawaii-faces');
+   await expect(p.locator('.board svg.chess-art')).toHaveCount(32);
+   await expect(p.locator('.board .classic-piece,.board .animal-piece')).toHaveCount(0);
+  }
+  // Scope changes generated SVG ids; actual carved geometry must match both views.
+  expect(await a.page.locator('[data-square=f8] svg path').evaluateAll(xs=>xs.map(x=>x.getAttribute('d')))).toEqual(await b.page.locator('[data-square=f8] svg path').evaluateAll(xs=>xs.map(x=>x.getAttribute('d'))));
+  await b.page.screenshot({path:'output/playwright/same-carved-black-320.png',fullPage:true});
+  await a.page.screenshot({path:'output/playwright/same-carved-white-390.png',fullPage:true});
+
   await expect(s.page.locator('[data-square=e2]')).toHaveAttribute('aria-disabled','true');
   const rejected=await s.context.request.post(new URL('/rooms/'+new URL(invite).searchParams.get('room')+'/move',url).href,{data:{from:'e2',to:'e4',seat_token:'invalid'}});expect(rejected.status()).toBe(403);
   await move(a.page,'e2','e4');await expect(b.page.locator('[data-square=e4]')).toHaveAttribute('data-piece','wp');

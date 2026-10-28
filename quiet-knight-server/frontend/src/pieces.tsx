@@ -1,6 +1,4 @@
 import type { ReactElement } from 'react';
-import { ClassicPiece } from './classic-pieces';
-import { AnimalPiece } from './animal-pieces';
 export type Color = 'w' | 'b';
 export type Kind = 'p' | 'n' | 'b' | 'r' | 'q' | 'k';
 export const pieceNames: Record<Kind, string> = {
@@ -22,10 +20,6 @@ export function Piece({
   scope: string;
   label?: string;
 }): ReactElement {
-  if (typeof document !== 'undefined' && document.body.dataset.pieceSet === 'classic') return <ClassicPiece color={color} kind={kind} label={label}/>;
-  if (typeof document !== 'undefined' && document.body.dataset.pieceSet === 'animal-kingdom') {
-    return <AnimalPiece color={color} kind={kind} scope={scope} label={label} />;
-  }
   const id = `qk-${scope}-${color}-${kind}`.replace(/[^a-zA-Z0-9_-]/g, '');
   const white = color === 'w';
   const palette = white

@@ -1,33 +1,8 @@
-/* Royal Meadow: quiet color, clear states, and an exact flat 8x8 playing field. */
+/* Archived artwork classes and shared account surfaces. */
 .animal-piece { filter: drop-shadow(0 1.25px 1px #11181372); }
 .animal-piece.art-b { filter: brightness(1.14) contrast(1.04) drop-shadow(0 1.25px 1px #11181372); }
 .animal-reaction { min-height:28px; margin:1px 0 8px; padding:5px 10px; border-left:2px solid #b18b59; color:#e5dcc8; font:italic 14px/1.35 Georgia,serif; letter-spacing:.01em; }
 .animal-reaction:empty { display:none; }
-
-body[data-atmosphere="royal-meadow"] {
-  --surface:#292d27; --text:#eee8dc; --muted:#c3c8bc; --line:#536052; --accent:#c9a56d;
-  --light-a:#eee4d1; --light-b:#e8ddc5; --dark-a:#71836e; --dark-b:#657763;
-  background:radial-gradient(ellipse at 20% 0,#78866b22,transparent 58%),#20251f;
-}
-body[data-atmosphere="royal-meadow"] .board-frame {
-  position:relative; padding:7px; border:1px solid #8f7957; border-radius:5px;
-  background:repeating-linear-gradient(135deg,#8b70441c 0 1px,transparent 1px 7px),linear-gradient(145deg,#414437,#282d26 38%,#332c21 72%,#1d241f);
-  box-shadow:0 2px 0 #171b17,0 12px 28px #0006,inset 0 1px #ffffff20,inset 0 -1px #11170f;
-}
-body[data-atmosphere="royal-meadow"] .board-frame::before {
-  content:""; position:absolute; inset:3px; z-index:0; pointer-events:none;
-  border:1px solid #d0b77a38; border-radius:2px;
-}
-body[data-atmosphere="royal-meadow"] .board { position:relative; z-index:1; outline:1px solid #242923; box-shadow:0 0 0 1px #c7ae7545; }
-body[data-atmosphere="royal-meadow"] .square-light { background:radial-gradient(ellipse at 18% 12%,#fff8e62b,transparent 68%),linear-gradient(145deg,#eee4d1,#e3d8c1); }
-body[data-atmosphere="royal-meadow"] .square-dark { background:radial-gradient(ellipse at 18% 12%,#e7eddb19,transparent 68%),linear-gradient(145deg,#71836e,#5e705f); }
-body[data-atmosphere="royal-meadow"] .square-last::after { background:#c2a75b48; box-shadow:inset 0 0 0 1px #806a3c9c; }
-body[data-atmosphere="royal-meadow"] .square-selected::after { border-color:#fff0c5; background:#edd18455; box-shadow:inset 0 0 0 2px #292d278c; }
-body[data-atmosphere="royal-meadow"] .square-check::after { background:radial-gradient(ellipse,#ac5146bb,#87382f66); border-color:#91483d; }
-body[data-atmosphere="royal-meadow"] .target-dot { background:#263329dc; box-shadow:0 0 0 2px #eee4d1cc; }
-body[data-atmosphere="royal-meadow"] .capture-ring { border-color:#263329e8; box-shadow:inset 0 0 0 2px #eee4d1b8; }
-body[data-atmosphere="royal-meadow"] .game-status h2, body[data-atmosphere="royal-meadow"] .game-title h1 { color:#eee4d1; }
-body[data-atmosphere="royal-meadow"] .animal-reaction { color:#eee4d1; border-left-color:#c9a56d; }
 
 @media(prefers-reduced-motion:reduce) { .animal-piece, .animal-reaction { animation:none!important; transition:none!important; } }
 

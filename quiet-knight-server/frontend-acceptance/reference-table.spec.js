@@ -43,7 +43,7 @@ test('pictured wood table, carved pieces and responsive untimed waiting room',as
  expect(errors).toEqual([]);
 });
 
-test('upgrade applies pictured design automatically and preserves saved play and later choices',async({page})=>{
+test('single style overrides old choices on every launch and preserves saved play',async({page})=>{
  await page.addInitScript(()=>{
   if(localStorage.getItem('reference-test-seeded'))return;
   localStorage.setItem('qk-piece-set-v1','classic');
@@ -71,14 +71,15 @@ test('upgrade applies pictured design automatically and preserves saved play and
  await expect(page.getByRole('button',{name:'Resume saved computer game',exact:true})).toBeVisible();
  expect(await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage).filter(([key])=>key.startsWith('qk-local-save-v1:')&&!key.endsWith(':backup')&&!key.includes(':recovery'))))).toEqual(saves);
  await page.getByRole('button',{name:'Open settings',exact:true}).click();
- await expect(page.getByLabel('Chess piece set',{exact:true})).toHaveValue('kawaii-faces');
- await page.getByLabel('Chess piece set',{exact:true}).selectOption('classic');
+ for(const label of ['Chess piece set','Table atmosphere','Unquiet Mode'])await expect(page.getByLabel(label,{exact:true})).toHaveCount(0);
+ await expect(page.getByRole('button',{name:'Use pictured wood table',exact:true})).toHaveCount(0);
+ await expect(page.getByLabel('Haptic feedback',{exact:true})).toBeVisible();
  await page.getByRole('button',{name:'Close dialog',exact:true}).click();
+ // An already-upgraded installation cannot restore an obsolete appearance.
+ await page.evaluate(()=>{localStorage.setItem('qk-piece-set-v1','animal-kingdom');localStorage.setItem('qk-atmosphere-v1','Forest');localStorage.setItem('qk-pictured-table-upgrade-v1','applied');});
  await page.reload();
- await expect(page.locator('body')).toHaveAttribute('data-piece-set','classic');
- await page.getByRole('button',{name:'Open settings',exact:true}).click();
- await page.getByRole('button',{name:'Use pictured wood table',exact:true}).click();
- await page.getByRole('button',{name:'Close dialog',exact:true}).click();
+ await expect(page.locator('body')).toHaveAttribute('data-piece-set','kawaii-faces');
+ await expect(page.locator('body')).toHaveAttribute('data-atmosphere','walnut');
  await page.getByRole('button',{name:'Create live game',exact:true}).click();
  await expect(page.getByRole('heading',{name:'Waiting for a friend',exact:true})).toBeVisible();
  await expect(page.locator('.board svg.chess-art')).toHaveCount(32);

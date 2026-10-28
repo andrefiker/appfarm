@@ -5,7 +5,7 @@ Branch: `codex/pocket-bowling-v1.0.0`. Main unchanged.
 Architecture: dependency-free canvas + fixed 120 Hz planar physics; deterministic scoring; localStorage transaction; bundled offline Java WebView. No backend, analytics, ads or runtime network.
 
 ## Verified locally
-- 15 automated test groups pass, including exhaustive legal final-frame triples and two complete deterministic physics games.
+- 16 automated test groups pass, including exhaustive legal final-frame triples and two complete deterministic physics games.
 - APK built; ZIP/DEX/resources, package/version, launcher, portrait declaration, exact bundled asset equivalence checked.
 - zipalign passes; v2/v3 signature passes; standard RSA 2048 Android Debug certificate.
 - Only VIBRATE permission; no Internet permission.

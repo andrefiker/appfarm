@@ -1,0 +1,2 @@
+Owner explicitly authorized this versioned GitHub Release. Publish only after the
+workflow's tests, browser QA, APK verification and Android emulator gates succeed.

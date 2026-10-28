@@ -78,4 +78,9 @@ jobs:
         run: |
           git tag tower-stack-v1.0.0 "$GITHUB_SHA"
           git push origin refs/tags/tower-stack-v1.0.0
-          gh release create tower-stack-v1.0.0 --repo "$GITHUB_REPOSITORY" --title 'Tower Stack v1.0.0' --notes-file tower-stack/RELEASE_NOTES.md tower-stack/Tower-Stack-v1.0.0.apk tower-stack/SHA256SUMS.txt
+          git archive --format=zip --output=tower-stack/Tower-Stack-v1.0.0-source.zip "$GITHUB_SHA" tower-stack .github/workflows/tower-stack-apk.yml
+          (cd tower-stack && zip -qr Tower-Stack-v1.0.0-QA.zip qa)
+          cp tower-stack/RELEASE_NOTES.md /tmp/tower-release-notes.md
+          printf '\nVerified commit: %s\nWorkflow evidence: https://github.com/%s/actions/runs/%s\n' "$GITHUB_SHA" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" >> /tmp/tower-release-notes.md
+          cat tower-stack/SHA256SUMS.txt >> /tmp/tower-release-notes.md
+          gh release create tower-stack-v1.0.0 --repo "$GITHUB_REPOSITORY" --title 'Tower Stack v1.0.0' --notes-file /tmp/tower-release-notes.md tower-stack/Tower-Stack-v1.0.0.apk tower-stack/SHA256SUMS.txt tower-stack/Tower-Stack-v1.0.0-source.zip tower-stack/Tower-Stack-v1.0.0-QA.zip tower-stack/dist/index.html

@@ -25,6 +25,7 @@ export class World {
  put(x,y,m,t){const i=this.index(x,y);if(i<0)return false;if(!Number.isInteger(m)||m<0||m>10)throw Error('Unknown material');this.set(i,m,t);return true;}
  set(i,m,t){this.cells[i]=m;this.temp[i]=t??(m===7?1100:m===5?650:m===8?150:20);this.life[i]=m===5?55:m===6?220:m===8?0:0;this.updated[i]=this.tick;}
  swap(a,b){let q=this.cells[a];this.cells[a]=this.cells[b];this.cells[b]=q;q=this.temp[a];this.temp[a]=this.temp[b];this.temp[b]=q;q=this.life[a];this.life[a]=this.life[b];this.life[b]=q;this.updated[a]=this.updated[b]=this.tick;}
+ canEnter(m,j){return j>=0&&(this.cells[j]===0||(!gas(m)&&materials[m].density>materials[this.cells[j]].density&&(liquid(this.cells[j])||gas(this.cells[j]))));}
  count(){const c=new Uint32Array(11);for(const m of this.cells)c[m]++;return c;}
  clear(){this.cells.fill(0);this.temp.fill(20);this.life.fill(0);this.updated.fill(0);this.tick=0;}
  step(){
@@ -66,7 +67,8 @@ export class World {
    for(let attempt=0;attempt<(liquid(m)||gas(m)?5:3);attempt++){
     const xx=attempt===0?x:attempt===1||attempt===3?x+s:x-s;
     const yy=attempt<3?y+dy:y,j=this.index(xx,yy);
-    if(j>=0&&(c[j]===0||(!gas(m)&&materials[m].density>materials[c[j]].density&&(liquid(c[j])||gas(c[j]))))){this.swap(i,j);moved=true;break;}
+    if((attempt===1||attempt===2)&&!this.canEnter(m,this.index(xx,y)))continue;
+    if(this.canEnter(m,j)){this.swap(i,j);moved=true;break;}
    }
    if(!moved)this.updated[i]=this.tick;
   }

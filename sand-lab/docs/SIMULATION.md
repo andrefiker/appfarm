@@ -4,7 +4,7 @@ IDs are permanent: 0 air, 1 sand, 2 water, 3 stone, 4 wood, 5 fire, 6 smoke, 7 l
 
 Each 1/30 simulation second first exchanges heat between occupied right/down neighbor pairs. Exchange is 0.035 of the old difference per pair, applied simultaneously, then heat relaxes 0.2% toward 20 and clamps to −100…1500 game units. Air insulates. Heat is not measured in °C. Lava resets its own heat to 1100; fire to 650.
 
-Movement scans bottom to top with seeded alternation of horizontal scan direction. Each particle considers down (up for gas), then diagonals in seeded order, then sideways for liquids/gases. Density ordering is sand > lava > water > oil > gases > air. Solids do not swap. A move swaps material, temperature and lifetime atomically. Update stamps stop a moving particle from receiving its normal update twice. A displaced lighter particle can be displaced again by another particle, preserving occupancy. No wraparound; boundaries are sealed. Lava moves only every fourth tick.
+Movement scans bottom to top with seeded alternation of horizontal scan direction. Each particle considers down (up for gas), then diagonals in seeded order, then sideways for liquids/gases. Density ordering is sand > lava > water > oil > gases > air. Solids do not swap. A move swaps material, temperature and lifetime atomically. Update stamps stop a moving particle from receiving its normal update twice. A displaced lighter particle can be displaced again by another particle, preserving occupancy. Diagonal motion also requires a passable horizontal neighbor, so particles cannot cut through a sealed diagonal corner. No wraparound; boundaries are sealed. Lava moves only every fourth tick.
 
 Rules, creation and consumption:
 

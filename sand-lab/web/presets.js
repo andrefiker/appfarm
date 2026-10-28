@@ -17,7 +17,7 @@ export function preset(name,w=160,h=240){
   basin();rect(.05,.16,.38,.018,M.STONE);rect(.05,.04,.025,.13,M.STONE);rect(.08,.05,.3,.11,M.WATER);
   for(let k=0;k<4;k++)rect(k%2?.36:.58,.3+k*.14,.23,.025,M.STONE);
  }else if(name==='Sand hourglass'){
-  for(let y=.16;y<.8;y+=1/h){const x=.5+Math.abs(y-.48)*.9;p(x,y,M.STONE);p(1-x,y,M.STONE);}
+  for(let y=.16;y<.8;y+=1/h){const x=.5+Math.max(.025,Math.abs(y-.48)*.9);p(x,y,M.STONE);p(1-x,y,M.STONE);}
   rect(.2,.15,.6,.015,M.STONE);rect(.2,.8,.6,.015,M.STONE);
   for(let y=.19;y<.43;y+=1/h)for(let x=.23;x<.77;x+=1/w)if(Math.abs(x-.5)<Math.abs(y-.48)*.9-.02)p(x,y,M.SAND);
  }else if(name==='Oil fire'){

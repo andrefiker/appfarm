@@ -9,7 +9,13 @@ def find(text,exact=False,timeout=25):
  end=time.time()+timeout
  while time.time()<end:
   found=[]
-  for n in nodes():
+  current=nodes()
+  # A known emulator launcher ANR is unrelated to the app. Never dismiss an app ANR.
+  if any(n.attrib.get('text')=="Pixel Launcher isn't responding" for n in current):
+   close=next(n for n in current if n.attrib.get('resource-id')=='android:id/aerr_close')
+   b=list(map(int,re.findall(r'\d+',close.attrib['bounds'])))
+   adb('shell','input','tap',str((b[0]+b[2])//2),str((b[1]+b[3])//2));time.sleep(2);continue
+  for n in current:
    values=[n.attrib.get('text',''),n.attrib.get('content-desc','')]
    if any((v==text if exact else text.casefold() in v.casefold()) for v in values):
     b=list(map(int,re.findall(r'\d+',n.attrib['bounds'])))
@@ -32,7 +38,7 @@ adb('install','-r','Sand-Lab-v1.0.0.apk')
 adb('shell','settings','put','global','airplane_mode_on','1')
 adb('shell','svc','wifi','disable');adb('shell','svc','data','disable')
 adb('shell','am','start','-W','-n','com.andrefiker.sandlab/.MainActivity');time.sleep(5)
-shot('android-launch.png');find('Worlds');find('Pause')
+find('Worlds');find('Pause');assert find('Worlds')[1]>=48,'Header overlaps status bar';shot('android-launch.png')
 tap('Pause');find('Resume')
 # Draw a continuous stroke in the upper, empty part of the world.
 size=list(map(int,re.findall(r'\d+',adb('shell','wm','size'))[-2:]));w,h=size

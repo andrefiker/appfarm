@@ -139,3 +139,13 @@ Vercel:
 2. Confirm whether their APK artifacts/workflow branches still exist before resuming them.
 3. Complete or explicitly cancel the pending Railway/Lovable cleanup in its own execution task.
 4. Update this file only when meaningful state changes.
+
+## Slingshot Structures — 1.0.0
+
+- Directory: `slingshot-structures/`; package `com.andrefiker.slingshotstructures`.
+- Development branch: `feat/slingshot-structures-v1.0.0`; source resolved by release tag `slingshot-structures-v1.0.0`. Not merged into main.
+- Offline Canvas/Matter.js physics puzzle; 30 Classic levels, Endless, Precision, Sandbox; minimal Java WebView.
+- Signed debug/test APK built locally, assets/signatures/package verified. SHA-256: `1061088f02059e21b09f1bf7a992718b01b57fae2172663789a98c85eb803f46`.
+- 19 engine tests, 30 stability/solution checks, offline Chromium touch QA and four portrait sizes passed. Android install/launch and hardware performance remain untested; no connected device/emulator.
+- Authorized release: https://github.com/andrefiker/appfarm/releases/tag/slingshot-structures-v1.0.0 ; detailed evidence in `slingshot-structures/QA.md` and `APP_STATE.md`.
+- Rollback baseline: `0db2815c14b727031d63e7c14ef0a75255690e90` (before this new app).

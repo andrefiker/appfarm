@@ -1,0 +1,1 @@
+{"name":"slingshot-structures","version":"1.0.0","private":true,"scripts":{"test":"node --test tests/*.test.cjs","validate":"node tools/validate.cjs","serve":"python3 -m http.server 8765 -d web"},"license":"UNLICENSED"}

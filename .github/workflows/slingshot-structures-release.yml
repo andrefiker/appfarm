@@ -1,0 +1,72 @@
+name: Slingshot Structures verified release
+on:
+  push:
+    branches: [feat/slingshot-structures-v1.0.0]
+    paths: ['slingshot-structures/**', '.github/workflows/slingshot-structures-release.yml']
+permissions:
+  contents: write
+concurrency:
+  group: slingshot-structures-1.0.0
+  cancel-in-progress: false
+jobs:
+  verify-and-release:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: slingshot-structures
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test physics and all 30 levels
+        run: |
+          npm test
+          node tools/validate.cjs
+          node --check web/game.js
+          python3 tools/verify-apk.py
+      - name: Offline mobile touch QA
+        run: |
+          npm install --prefix /tmp/qa playwright@1.58.2 --no-audit --no-fund
+          /tmp/qa/node_modules/.bin/playwright install --with-deps chromium
+          PLAYWRIGHT_MODULE=/tmp/qa/node_modules/playwright node tests/mobile-qa.cjs
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Rebuild Android source
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-35' 'build-tools;35.0.0' >/dev/null
+          gradle --no-daemon -p android -Pandroid.aapt2FromMavenOverride="$ANDROID_HOME/build-tools/35.0.0/aapt2" :app:assembleDebug
+      - name: Verify preserved signed release APK
+        run: |
+          APK=dist/Slingshot-Structures-v1.0.0.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -c 4 "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | tee /tmp/badging
+          grep -q "package: name='com.andrefiker.slingshotstructures' versionCode='1' versionName='1.0.0'" /tmp/badging
+          ! "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions "$APK" | grep android.permission.INTERNET
+          python3 tools/verify-apk.py
+      - name: Publish authorized release without merging
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG=slingshot-structures-v1.0.0
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo 'Release already exists; preserving immutable published assets.'
+            exit 0
+          fi
+          git archive --format=zip --output=dist/Slingshot-Structures-v1.0.0-source.zip HEAD slingshot-structures .github/workflows/slingshot-structures-release.yml
+          cp /tmp/slingshot-qa-results.json dist/mobile-qa-results.json
+          python3 - <<'PY'
+          import glob,zipfile
+          with zipfile.ZipFile('dist/Slingshot-Structures-v1.0.0-QA.zip','w',zipfile.ZIP_DEFLATED) as z:
+              for p in glob.glob('/tmp/slingshot-*.png')+['QA.md','validation.json','dist/mobile-qa-results.json','dist/verification.txt']:
+                  z.write(p,p.split('/')[-1])
+          PY
+          cp RELEASE_NOTES.md /tmp/slingshot-release-notes.md
+          printf '\nVerified source commit: `%s`\n' "$GITHUB_SHA" >> /tmp/slingshot-release-notes.md
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title 'Slingshot Structures v1.0.0' --notes-file /tmp/slingshot-release-notes.md dist/Slingshot-Structures-v1.0.0.apk dist/SHA256SUMS.txt dist/verification.txt dist/Slingshot-Structures-v1.0.0-source.zip dist/Slingshot-Structures-v1.0.0-QA.zip

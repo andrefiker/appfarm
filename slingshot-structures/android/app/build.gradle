@@ -1,0 +1,14 @@
+plugins { id 'com.android.application' }
+android {
+ namespace 'com.andrefiker.slingshotstructures'
+ compileSdk 35
+ buildToolsVersion "35.0.0"
+ defaultConfig {
+  applicationId 'com.andrefiker.slingshotstructures'
+  minSdk 26
+  targetSdk 34
+  versionCode 1
+  versionName '1.0.0'
+ }
+ sourceSets { main.assets.srcDirs = ['../../web'] }
+}

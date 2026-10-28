@@ -1,0 +1,20 @@
+{
+  "checks": [
+    "390x844 first screen, offline file assets",
+    "multitouch cancellation refunds shot",
+    "touch launch and rapid input lock",
+    "level 1 collapse, objective, result, score and unlock",
+    "score persists after reload",
+    "reload during collapse restores pre-shot checkpoint with ammo",
+    "mirrored touch aiming, dark lab, barrier level 20",
+    "seeded Endless stability, winning-shot gate, deterministic reload",
+    "sandbox touch placement, save, reload, undo",
+    "corbel arch level 24 touch completion",
+    "320x640 portrait, footer visible",
+    "360x740 portrait, footer visible",
+    "540x960 portrait, footer visible",
+    "Android pause event suspends gameplay",
+    "no JavaScript runtime errors"
+  ],
+  "errors": []
+}

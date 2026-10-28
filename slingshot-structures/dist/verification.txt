@@ -1,0 +1,54 @@
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): true
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+Signer #1 certificate DN: CN=Android Debug, O=Android, C=US
+Signer #1 certificate SHA-256 digest: 17a7a15aa5428ec112f6a58aba319f526766773f050744516a3c64175477935f
+Signer #1 certificate SHA-1 digest: 1d9ceea7782372e40d31ae18b7aaf419130a7ced
+Signer #1 certificate MD5 digest: 6be284e8151273f644b44b36da1227b7
+Signer #1 key algorithm: RSA
+Signer #1 key size (bits): 2048
+Signer #1 public key SHA-256 digest: 1093fdff00e3b335babfe2b9b9e961e1195a49a7694a87c387bb5da7252be51d
+Signer #1 public key SHA-1 digest: e49cb72ccbd13681a444d506c0aa35ca8db26c81
+Signer #1 public key MD5 digest: da67f65aea686777267378879cffebd2
+package: name='com.andrefiker.slingshotstructures' versionCode='1' versionName='1.0.0' platformBuildVersionName='15' platformBuildVersionCode='35' compileSdkVersion='35' compileSdkVersionCodename='15'
+sdkVersion:'26'
+targetSdkVersion:'34'
+uses-permission: name='android.permission.VIBRATE'
+application-label:'Slingshot Structures'
+application-icon-160:'res/drawable/icon.xml'
+application: label='Slingshot Structures' icon='res/drawable/icon.xml'
+application-debuggable
+launchable-activity: name='com.andrefiker.slingshotstructures.MainActivity'  label='' icon=''
+feature-group: label=''
+  uses-feature: name='android.hardware.faketouch'
+  uses-implied-feature: name='android.hardware.faketouch' reason='default feature for all apps'
+  uses-feature: name='android.hardware.screen.portrait'
+  uses-implied-feature: name='android.hardware.screen.portrait' reason='one or more activities have specified a portrait orientation'
+main
+supports-screens: 'small' 'normal' 'large' 'xlarge'
+supports-any-density: 'true'
+locales: '--_--'
+densities: '160'
+Verifying alignment of dist/Slingshot-Structures-v1.0.0.apk (4)...
+      87 META-INF/com/android/build/gradle/app-metadata.properties (OK - compressed)
+     180 classes.dex (OK - compressed)
+     855 classes2.dex (OK - compressed)
+   17523 assets/style.css (OK - compressed)
+   19629 assets/vendor/MATTER-LICENSE.txt (OK - compressed)
+   20330 assets/vendor/matter.cjs (OK - compressed)
+   50909 AndroidManifest.xml (OK - compressed)
+   51925 res/drawable/icon.xml (OK - compressed)
+   52596 resources.arsc (OK)
+    3300 assets/engine.js (OK - compressed)
+    8216 assets/game.js (OK - compressed)
+   53215 assets/index.html (OK - compressed)
+   55631 META-INF/ANDROIDD.SF (OK - compressed)
+   56427 META-INF/ANDROIDD.RSA (OK - compressed)
+   57543 META-INF/MANIFEST.MF (OK - compressed)
+Verification succesful
+No errors detected in compressed data of dist/Slingshot-Structures-v1.0.0.apk.

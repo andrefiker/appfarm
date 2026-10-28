@@ -1,0 +1,4 @@
+const S=require('../web/engine.js');
+function solve(level){for(const power of[1,.85,.7])for(let deg=0;deg<=72;deg+=4){const g=new S.Session(level);if(!g.stable)return null;const angle=deg*Math.PI/180,a=S.aim(-72*Math.cos(angle)*power,72*Math.sin(angle)*power);g.launch(a);g.finish();if(g.state==='won')return{degrees:deg,power,shots:g.shots,score:g.points};}return null;}
+if(require.main===module){let bad=0;const results=[];for(let i=0;i<30;i++){const level=S.classic(i),g=new S.Session(level),solution=solve(level);const result={level:i+1,title:level.title,stable:g.stable,solution};results.push(result);if(!g.stable||!solution)bad++;console.log(JSON.stringify(result));}require('fs').writeFileSync('validation.json',JSON.stringify(results,null,2));process.exitCode=bad?1:0;}
+module.exports={solve};

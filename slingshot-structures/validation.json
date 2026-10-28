@@ -1,0 +1,332 @@
+[
+  {
+    "level": 1,
+    "title": "First principles",
+    "stable": true,
+    "solution": {
+      "degrees": 0,
+      "power": 1,
+      "shots": 1,
+      "score": 2625
+    }
+  },
+  {
+    "level": 2,
+    "title": "Weak at the knees",
+    "stable": true,
+    "solution": {
+      "degrees": 0,
+      "power": 1,
+      "shots": 1,
+      "score": 2625
+    }
+  },
+  {
+    "level": 3,
+    "title": "Through the window",
+    "stable": true,
+    "solution": {
+      "degrees": 0,
+      "power": 1,
+      "shots": 1,
+      "score": 2750
+    }
+  },
+  {
+    "level": 4,
+    "title": "A little leverage",
+    "stable": true,
+    "solution": {
+      "degrees": 0,
+      "power": 1,
+      "shots": 1,
+      "score": 2500
+    }
+  },
+  {
+    "level": 5,
+    "title": "High hopes",
+    "stable": true,
+    "solution": {
+      "degrees": 0,
+      "power": 1,
+      "shots": 1,
+      "score": 2200
+    }
+  },
+  {
+    "level": 6,
+    "title": "The overhang",
+    "stable": true,
+    "solution": {
+      "degrees": 0,
+      "power": 1,
+      "shots": 1,
+      "score": 2200
+    }
+  },
+  {
+    "level": 7,
+    "title": "Stone on timber",
+    "stable": true,
+    "solution": {
+      "degrees": 0,
+      "power": 1,
+      "shots": 1,
+      "score": 2250
+    }
+  },
+  {
+    "level": 8,
+    "title": "Load bearing",
+    "stable": true,
+    "solution": {
+      "degrees": 0,
+      "power": 1,
+      "shots": 1,
+      "score": 2250
+    }
+  },
+  {
+    "level": 9,
+    "title": "Glass house",
+    "stable": true,
+    "solution": {
+      "degrees": 0,
+      "power": 1,
+      "shots": 1,
+      "score": 2000
+    }
+  },
+  {
+    "level": 10,
+    "title": "Two of a kind",
+    "stable": true,
+    "solution": {
+      "degrees": 0,
+      "power": 1,
+      "shots": 1,
+      "score": 2167
+    }
+  },
+  {
+    "level": 11,
+    "title": "The crossing",
+    "stable": true,
+    "solution": {
+      "degrees": 32,
+      "power": 1,
+      "shots": 1,
+      "score": 2056
+    }
+  },
+  {
+    "level": 12,
+    "title": "Centre of gravity",
+    "stable": true,
+    "solution": {
+      "degrees": 24,
+      "power": 1,
+      "shots": 1,
+      "score": 2000
+    }
+  },
+  {
+    "level": 13,
+    "title": "The gate",
+    "stable": true,
+    "solution": {
+      "degrees": 0,
+      "power": 1,
+      "shots": 1,
+      "score": 2143
+    }
+  },
+  {
+    "level": 14,
+    "title": "Heavy crown",
+    "stable": true,
+    "solution": {
+      "degrees": 4,
+      "power": 1,
+      "shots": 1,
+      "score": 2000
+    }
+  },
+  {
+    "level": 15,
+    "title": "Thin ice",
+    "stable": true,
+    "solution": {
+      "degrees": 12,
+      "power": 1,
+      "shots": 1,
+      "score": 2000
+    }
+  },
+  {
+    "level": 16,
+    "title": "The cantilever",
+    "stable": true,
+    "solution": {
+      "degrees": 0,
+      "power": 1,
+      "shots": 1,
+      "score": 2167
+    }
+  },
+  {
+    "level": 17,
+    "title": "Double deck",
+    "stable": true,
+    "solution": {
+      "degrees": 24,
+      "power": 1,
+      "shots": 1,
+      "score": 2000
+    }
+  },
+  {
+    "level": 18,
+    "title": "Fragile foundation",
+    "stable": true,
+    "solution": {
+      "degrees": 24,
+      "power": 1,
+      "shots": 1,
+      "score": 2045
+    }
+  },
+  {
+    "level": 19,
+    "title": "The long bridge",
+    "stable": true,
+    "solution": {
+      "degrees": 0,
+      "power": 1,
+      "shots": 1,
+      "score": 2100
+    }
+  },
+  {
+    "level": 20,
+    "title": "Iron resolve",
+    "stable": true,
+    "solution": {
+      "degrees": 36,
+      "power": 1,
+      "shots": 1,
+      "score": 2045
+    }
+  },
+  {
+    "level": 21,
+    "title": "Split decision",
+    "stable": true,
+    "solution": {
+      "degrees": 4,
+      "power": 1,
+      "shots": 1,
+      "score": 2000
+    }
+  },
+  {
+    "level": 22,
+    "title": "Three storeys",
+    "stable": true,
+    "solution": {
+      "degrees": 0,
+      "power": 1,
+      "shots": 1,
+      "score": 2250
+    }
+  },
+  {
+    "level": 23,
+    "title": "Keystone",
+    "stable": true,
+    "solution": {
+      "degrees": 32,
+      "power": 1,
+      "shots": 1,
+      "score": 2042
+    }
+  },
+  {
+    "level": 24,
+    "title": "The asymmetric",
+    "stable": true,
+    "solution": {
+      "degrees": 44,
+      "power": 0.7,
+      "shots": 1,
+      "score": 2045
+    }
+  },
+  {
+    "level": 25,
+    "title": "Four corners",
+    "stable": true,
+    "solution": {
+      "degrees": 0,
+      "power": 1,
+      "shots": 1,
+      "score": 2077
+    }
+  },
+  {
+    "level": 26,
+    "title": "Top heavy",
+    "stable": true,
+    "solution": {
+      "degrees": 24,
+      "power": 1,
+      "shots": 1,
+      "score": 2143
+    }
+  },
+  {
+    "level": 27,
+    "title": "The long reach",
+    "stable": true,
+    "solution": {
+      "degrees": 12,
+      "power": 1,
+      "shots": 1,
+      "score": 2000
+    }
+  },
+  {
+    "level": 28,
+    "title": "Mixed signals",
+    "stable": true,
+    "solution": {
+      "degrees": 0,
+      "power": 1,
+      "shots": 1,
+      "score": 2200
+    }
+  },
+  {
+    "level": 29,
+    "title": "Last support",
+    "stable": true,
+    "solution": {
+      "degrees": 28,
+      "power": 1,
+      "shots": 1,
+      "score": 2067
+    }
+  },
+  {
+    "level": 30,
+    "title": "Controlled demolition",
+    "stable": true,
+    "solution": {
+      "degrees": 24,
+      "power": 1,
+      "shots": 1,
+      "score": 2045
+    }
+  }
+]

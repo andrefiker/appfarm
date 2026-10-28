@@ -6,7 +6,7 @@
   local deterministic replay saves; no backend or Internet permission.
 - Implemented: Endless, Precision, Time Attack, Zen, Sandbox; Classic, Minimal,
   Neon; optional rotation; sound/haptics; pause; statistics; one-tap restart.
-- Local verification: 18 rules/physics tests pass. Browser cannot start here
+- Local verification: 19 rules/physics tests pass. Browser cannot start here
   because socket creation is restricted. SDK, JDK and Gradle recovered locally; actual signed APK built. Mobile browser
   playthrough passed in CI. Android emulator gate remains pending.
 - Release status: candidate; do not infer published/device-tested until CI evidence.

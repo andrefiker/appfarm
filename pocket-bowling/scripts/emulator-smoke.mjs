@@ -31,7 +31,7 @@ try{
  await wait(1000);adb('shell','input','keyevent','3');await wait(600);
  adb('shell','am','start','-W','-n',pkg+'/.MainActivity');await wait(11000);
  xml=await dump('emulator-after-roll');screen('emulator-after-roll');
- assert.ok(xml.includes('down.')||xml.includes('STRIKE')||xml.includes('Gutter')||xml.includes('No pins'));
+ assert.ok(xml.includes('down.')||xml.includes('STRIKE')||xml.includes('Gutter')||xml.includes('No pins')||xml.includes('Split. Stay precise.'));
  // The scorecard is the authoritative persistence check, not a welcome label.
  tap(xml,'Scorecard');await wait(500);xml=await dump('emulator-scorecard-before');
  const before=texts(xml);assert.ok(before.includes('Your scorecard'));

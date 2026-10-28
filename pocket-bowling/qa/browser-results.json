@@ -1,0 +1,86 @@
+{
+  "status": "PASS",
+  "results": [
+    "viewport 390x844: no scrolling; primary action inside viewport",
+    "viewport 360x640: no scrolling; primary action inside viewport",
+    "viewport 320x568: no scrolling; primary action inside viewport",
+    "viewport 412x915: no scrolling; primary action inside viewport",
+    {
+      "game": 1,
+      "rolls": [
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10,
+        10
+      ],
+      "stats": {
+        "games": 1,
+        "best": 300,
+        "sum": 300,
+        "strikes": 12,
+        "spares": 0,
+        "pins": 120,
+        "perfect": 1,
+        "longest": 12,
+        "streak": 12,
+        "challenges": 0,
+        "firstRolls": 12,
+        "spareAttempts": 0
+      }
+    },
+    {
+      "game": 2,
+      "rolls": [
+        7,
+        0,
+        9,
+        0,
+        7,
+        0,
+        9,
+        0,
+        7,
+        0,
+        9,
+        0,
+        7,
+        0,
+        9,
+        0,
+        7,
+        0,
+        9,
+        0
+      ],
+      "stats": {
+        "games": 2,
+        "best": 300,
+        "sum": 380,
+        "strikes": 12,
+        "spares": 0,
+        "pins": 200,
+        "perfect": 1,
+        "longest": 12,
+        "streak": 0,
+        "challenges": 0,
+        "firstRolls": 22,
+        "spareAttempts": 10
+      }
+    },
+    "physical split converted to a spare through two UI deliveries",
+    "practice formation and remaining pins tested",
+    "pointer flick releases ball and resolves physical throw",
+    "reload during pin motion: no duplicate scoring",
+    "challenge and time attack tested, menu pauses clock, expired game rejects releases",
+    "theme, handedness and audio preferences survive reload"
+  ],
+  "errors": []
+}

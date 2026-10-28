@@ -139,3 +139,14 @@ Vercel:
 2. Confirm whether their APK artifacts/workflow branches still exist before resuming them.
 3. Complete or explicitly cancel the pending Railway/Lovable cleanup in its own execution task.
 4. Update this file only when meaningful state changes.
+
+## Pocket Bowling — verified 1.0.0 release (2026-10-28)
+
+- Directory `pocket-bowling/`, branch `codex/pocket-bowling-v1.0.0`; verified release commit `a91227e3e91ebc192e03748b45e68a117bf974b1`; immutable tag `pocket-bowling-v1.0.0`. Main unchanged.
+- Package `com.andrefiker.pocketbowling`, version 1.0.0/code 1. Offline bundled WebView; five modes, three themes, fixed-step planar bowling physics and authentic ten-pin scoring. No backend or Internet permission.
+- Release: https://github.com/andrefiker/appfarm/releases/tag/pocket-bowling-v1.0.0
+- APK `Pocket-Bowling-v1.0.0.apk`, SHA-256 `6ff9af349cae2f38c18315b5611bfb72a321614e48e741ed564fbe409973d6c8`; public download compared byte-for-byte with verified candidate.
+- Actions run `40775782848`: all 16 test groups, two full browser UI games (300/80), physical spare conversion, four mobile viewports, asset/package/signature checks, and offline API 35 emulator install/swipe/background/force-stop scorecard recovery passed.
+- Source complete; PWA built; APK built, structurally verified and emulator install-tested. Physical-phone QA remains pending. Planar/tipping approximation, not full 3D; optional AI omitted.
+- Debug signing key retained privately, certificate SHA-256 `17a7a15aa5428ec112f6a58aba319f526766773f050744516a3c64175477935f`; recovery instructions in `pocket-bowling/APP_STATE.md`. Do not replace the key for future updates.
+- Rollback base before project: `0db2815c14b727031d63e7c14ef0a75255690e90`; future working baseline is the 1.0.0 tag.

@@ -5,11 +5,11 @@ Branch: `codex/pocket-bowling-v1.0.0`. Main unchanged.
 Architecture: dependency-free canvas + fixed 120 Hz planar physics; deterministic scoring; localStorage transaction; bundled offline Java WebView. No backend, analytics, ads or runtime network.
 
 ## Verified locally
-- 13 automated test groups pass, including exhaustive legal final-frame triples and two complete deterministic physics games.
+- 14 automated test groups pass, including exhaustive legal final-frame triples and two complete deterministic physics games.
 - APK built; ZIP/DEX/resources, package/version, launcher, portrait declaration, exact bundled asset equivalence checked.
 - zipalign passes; v2/v3 signature passes; standard RSA 2048 Android Debug certificate.
 - Only VIBRATE permission; no Internet permission.
-- Browser launch was blocked locally (process socket restriction); no local visual or device QA claim.
+- Browser QA on GitHub Actions passed two complete UI games (300 and 80), pointer flick, four phone sizes, modes, settings and recovery. Screenshot review prompted a compact-phone layout refinement; final rerun required. Local browser launch is unavailable. No physical-device QA claim.
 
 ## Release gate
 `pocket-bowling-release.yml` requires browser gameplay QA, candidate verification and an API 35 offline emulator smoke test before tagging/publishing. Candidate lives under release/; checksums and signature evidence accompany it. Check the run's actual result before treating the release as published or emulator-tested.

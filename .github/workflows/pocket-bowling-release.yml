@@ -9,7 +9,6 @@ concurrency:
   cancel-in-progress: true
 permissions:
   contents: write
-  actions: write
 jobs:
   verify:
     timeout-minutes: 15
@@ -18,10 +17,6 @@ jobs:
       run:
         working-directory: pocket-bowling
     steps:
-      - name: Cancel superseded candidate verification
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh run cancel 40771511199 --repo andrefiker/appfarm || true
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:

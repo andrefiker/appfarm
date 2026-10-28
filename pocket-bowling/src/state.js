@@ -10,7 +10,7 @@ export function commitRoll(g,remaining,stats){if(g.phase!=='rolling')throw Error
   if(g.mode==='challenge')g.standing=[...LAYOUTS[1+g.challenge%(LAYOUTS.length-1)]];
   if(g.mode==='time')g.standing=[...LAYOUTS[0]];
  }else{
- const f=before.frames.at(-1),first=!f||f.closed||before.frame===frameCount(g)&&(f.rolls.length===1&&f.rolls[0]===10||f.rolls.length===2&&(f.rolls[1]===10||f.rolls[0]+f.rolls[1]===10));
+ const f=before.frames.at(-1),first=!f||f.closed||before.frame===frameCount(g)&&(f.rolls.length===1&&f.rolls[0]===10||f.rolls.length===2&&(f.rolls[0]===10?f.rolls[1]===10:f.rolls[0]+f.rolls[1]===10));
  if(first){stats.firstRolls++;if(pins===10){stats.strikes++;stats.streak++;stats.longest=Math.max(stats.longest,stats.streak);}else stats.streak=0;}
  else {stats.spareAttempts++;if(remaining.length===0)stats.spares++;stats.streak=0;}
  g.rolls.push(pins);const after=score(g.rolls,frameCount(g));g.standing=after.remaining===10?[...LAYOUTS[0]]:remaining;

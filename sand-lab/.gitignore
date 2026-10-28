@@ -1,0 +1,11 @@
+dist/
+android-build/
+android/.gradle/
+android/local.properties
+android/app/build/
+*.apk
+*.p12
+node_modules/
+!release/*.apk
+*.idsig
+*.zip

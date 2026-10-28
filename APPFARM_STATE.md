@@ -139,3 +139,7 @@ Vercel:
 2. Confirm whether their APK artifacts/workflow branches still exist before resuming them.
 3. Complete or explicitly cancel the pending Railway/Lovable cleanup in its own execution task.
 4. Update this file only when meaningful state changes.
+
+## SAND LAB 1.0.0 — isolated release branch
+
+Source and wrapper: sand-lab/, branch sand-lab/v1.0.0 (no merge to main). Package com.andrefiker.sandlab/versionCode 1. Ten-material offline sandbox. Signed APK release/Sand-Lab-v1.0.0.apk, SHA-256 1e97f71eda555e430ecdd9611ec81445ad87f8babbeacbacaecfc6d6c081d5de. 32 deterministic tests, browser interaction and six live experiment playtests pass; APK package/assets/v2-v3 signature/alignment/zero-permissions verified. Android 15 emulator release gate defined in sand-lab-release.yml; inspect its result before claiming native QA/publication. Private signing-key continuity and detailed evidence are in sand-lab/APP_STATE.md. Rollback: 0db2815c14b727031d63e7c14ef0a75255690e90.

@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "results": [
+    "painting, continuous strokes, pause, undo and redo",
+    "named save, load while paused, rename, duplicate, delete confirmation",
+    "speed, handedness, themes and camera",
+    "background session persistence and exact restoration",
+    "360×640, 390×844 and 768×1024 no overflow",
+    {
+      "desktopChromiumMeanStepMs": {
+        "water": 3.401666666629414,
+        "fire": 8.49333333335817,
+        "smoke": 2.375,
+        "lava": 2.75
+      }
+    }
+  ],
+  "errors": [],
+  "remoteRequests": 0
+}

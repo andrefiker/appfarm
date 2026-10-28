@@ -1,0 +1,17 @@
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): true
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+Signer #1 certificate DN: CN=SAND LAB Test, O=Andre Fiker, C=BR
+Signer #1 certificate SHA-256 digest: 56d85ae7c775ed79efe86fa5e07ea47b34d8cd0fa7e8dc3235731f5760ad8c7c
+Signer #1 certificate SHA-1 digest: 36452efc12504967df6caa2199b6af2a250ee352
+Signer #1 certificate MD5 digest: 48a08f1423081f44914b646c81f3e1e0
+Signer #1 key algorithm: RSA
+Signer #1 key size (bits): 3072
+Signer #1 public key SHA-256 digest: 078ff995d9cfb9b63f3c66119decc77c8292e6eb63f9fe0247aba89c4dac638f
+Signer #1 public key SHA-1 digest: b1b5eba183f92d772702bd6269b2631a604ef213
+Signer #1 public key MD5 digest: 82d5a81ec88cb4569b99128d931d1910

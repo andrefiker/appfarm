@@ -1,0 +1,7 @@
+android-build/
+*.apk
+qa-artifacts/
+node_modules/
+*.keystore
+
+*.idsig

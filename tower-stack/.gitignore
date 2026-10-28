@@ -9,3 +9,5 @@ qa/*.json
 
 dist/
 android/app/src/main/assets/
+
+*.apk

@@ -22,11 +22,11 @@ rebuilt debug APKs can update it. Preserve the published APK for reproducible in
 ## Design and rules
 
 Matter.js 0.20.0 (MIT; notice in `vendor/MATTER-LICENSE`) handles unconstrained rigid
-bodies at 60 fixed simulation steps/s, 10 position/8 velocity iterations, slight
+bodies at 60 fixed simulation steps/s, 20 position/8 velocity iterations, slight
 restitution and material friction. Shapes are rectangles and trapezoids; density
 changes mass and inertia. Gravity, torque and collapse are simulated, never scripted.
 Body sleeping is disabled because support removal could leave sleeping bodies
-suspended. Rendering culls offscreen blocks; paused games do no simulation work.
+suspended. Rendering interpolates fixed-step poses and culls offscreen blocks; paused games do no simulation work.
 The accumulator caps catch-up at 100 ms, so severe stalls slow active game time
 rather than produce a physics explosion. The three-minute clock measures active
 simulation time, excluding pauses and background time.

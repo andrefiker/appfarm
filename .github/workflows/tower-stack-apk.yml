@@ -14,7 +14,9 @@ jobs:
       - name: Retire superseded candidate
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh api -X POST repos/andrefiker/appfarm/actions/runs/40772527984/cancel || true
+        run: |
+          gh api -X POST repos/andrefiker/appfarm/actions/runs/40772671371/cancel || true
+          gh api -X POST repos/andrefiker/appfarm/actions/runs/40772701075/cancel || true
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:

@@ -1,0 +1,79 @@
+name: Tower Stack APK and gameplay verification
+on:
+  push:
+    branches: [tower-stack-v1.0.0]
+    paths: ['tower-stack/**', '.github/workflows/tower-stack-apk.yml']
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Physics and rules
+        working-directory: tower-stack
+        run: npm test && npm run build
+      - name: Browser tools
+        working-directory: tower-stack
+        run: npm install --no-save playwright@1.56.1 && npx playwright install --with-deps chromium
+      - name: Mobile browser playthrough
+        working-directory: tower-stack
+        run: npm run qa
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Android SDK
+        run: yes | sdkmanager 'platforms;android-35' 'build-tools;35.0.0' >/dev/null
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Build signed APK
+        run: gradle --no-daemon -p tower-stack/android :app:assembleDebug
+      - name: Verify APK identity, permissions, offline bundle and signature
+        run: |
+          APK=tower-stack/android/app/build/outputs/apk/debug/app-debug.apk
+          TOOLS=$ANDROID_HOME/build-tools/35.0.0
+          "$TOOLS/aapt" dump badging "$APK" | tee tower-stack/qa/apk-badging.txt
+          grep "name='com.andrefiker.towerstack' versionCode='1' versionName='1.0.0'" tower-stack/qa/apk-badging.txt
+          "$TOOLS/aapt" dump permissions "$APK" | tee tower-stack/qa/apk-permissions.txt
+          ! grep 'android.permission.INTERNET' tower-stack/qa/apk-permissions.txt
+          "$TOOLS/apksigner" verify --verbose --print-certs "$APK" | tee tower-stack/qa/apk-signature.txt
+          "$TOOLS/zipalign" -c 4 "$APK"
+          unzip -p "$APK" assets/tower-stack.html | cmp - tower-stack/dist/index.html
+          cp "$APK" tower-stack/Tower-Stack-v1.0.0.apk
+          cd tower-stack && sha256sum Tower-Stack-v1.0.0.apk > SHA256SUMS.txt
+      - name: Emulator acceleration
+        run: sudo chmod 666 /dev/kvm
+      - name: Android offline gameplay
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          disable-animations: true
+          script: node tower-stack/scripts/emulator-qa.mjs
+      - name: Preserve APK and evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tower-stack-release-candidate
+          path: |
+            tower-stack/Tower-Stack-v1.0.0.apk
+            tower-stack/SHA256SUMS.txt
+            tower-stack/qa/
+            tower-stack/dist/
+      - name: Publish authorized release after verification
+        if: hashFiles('tower-stack/RELEASE_READY') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git tag tower-stack-v1.0.0 "$GITHUB_SHA"
+          git push origin refs/tags/tower-stack-v1.0.0
+          gh release create tower-stack-v1.0.0 --repo "$GITHUB_REPOSITORY" --title 'Tower Stack v1.0.0' --notes-file tower-stack/RELEASE_NOTES.md tower-stack/Tower-Stack-v1.0.0.apk tower-stack/SHA256SUMS.txt

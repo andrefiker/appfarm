@@ -1,0 +1,11 @@
+package/
+*.tgz
+node_modules/
+android/.gradle/
+android/local.properties
+android/app/build/
+qa/*.png
+qa/*.json
+
+dist/
+android/app/src/main/assets/

@@ -23,3 +23,8 @@ export function step(w,dt=DT){if(w.done)return;w.time+=dt;w.hits=[];const b=w.ba
 export function simulate(x=0,a=0,p=.8,s=0,ids=LAYOUTS[0]){const w=createWorld(ids,release(x,a,p,s));while(!w.done)step(w);return w;}
 export function standing(w){return w.pins.filter(p=>!p.down).map(p=>p.id);}
 export function isSplit(ids){if(ids.includes(1)||ids.length<2)return false;const pp=rack(ids);return pp.some(a=>pp.every(b=>a===b||Math.hypot(a.x-b.x,a.y-b.y)>.44));}
+// Shared projection and inverse input mapping keep touch aiming in lane units.
+export function projectLane(x,y,w,h){const t=Math.max(0,Math.min(1,y/19.5)),s=(1-t*.61)*w*.64;return {x:w/2+x*s,y:h*.92-t*(h*.92-Math.max(100,h*.28)),s};}
+export function unprojectLane(x,y,w,h){const depth=(h*.92-y)/(h*.92-Math.max(100,h*.28))*19.5;return {x:(x-w/2)/((1-depth/19.5*.61)*w*.64),y:depth};}
+export function screenPosition(x,w){return Math.max(-.45,Math.min(.45,(x-w/2)/projectLane(0,.3,w,500).s));}
+export function gestureDelivery(start,end,w,h){const dy=start.y-end.y,a=unprojectLane(start.x,start.y,w,h),b=unprojectLane(end.x,end.y,w,h);return {power:Math.max(0,Math.min(1,.15+dy/h*1.2+dy/Math.max(80,end.t-start.t)*.16)),angle:Math.max(-.09,Math.min(.09,Math.atan2(b.x-a.x,b.y-a.y)))};}

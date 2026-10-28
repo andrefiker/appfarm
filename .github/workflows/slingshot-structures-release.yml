@@ -59,7 +59,7 @@ jobs:
             echo 'Release already exists; preserving immutable published assets.'
             exit 0
           fi
-          git archive --format=zip --output=dist/Slingshot-Structures-v1.0.0-source.zip HEAD slingshot-structures .github/workflows/slingshot-structures-release.yml
+          git -C .. archive --format=zip --output=slingshot-structures/dist/Slingshot-Structures-v1.0.0-source.zip HEAD slingshot-structures .github/workflows/slingshot-structures-release.yml
           cp /tmp/slingshot-qa-results.json dist/mobile-qa-results.json
           python3 - <<'PY'
           import glob,zipfile

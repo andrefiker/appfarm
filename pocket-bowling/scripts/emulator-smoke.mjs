@@ -1,9 +1,38 @@
-import {execFileSync as run} from 'node:child_process';import assert from 'node:assert/strict';import {mkdir,writeFile} from 'node:fs/promises';
-const adb=(...a)=>run('adb',a,{encoding:'utf8'});const pkg='com.andrefiker.pocketbowling';await mkdir('qa-artifacts',{recursive:true});adb('install','-r','release/Pocket-Bowling-v1.0.0.apk');adb('shell','svc','wifi','disable');adb('shell','svc','data','disable');adb('shell','am','start','-W','-n',pkg+'/.MainActivity');
-const wait=ms=>new Promise(r=>setTimeout(r,ms));await wait(3500);
-function shot(x,y){adb('shell','input','swipe',String(x),String(y),String(x+4),String(y-180),'180');}
-// Pixel 2, 1080x1920. Capture XML evidence and derive lane/control coordinates.
-adb('shell','uiautomator','dump','/sdcard/pocket.xml');let xml=adb('shell','cat','/sdcard/pocket.xml');assert.ok(xml.includes('Pocket')||xml.includes('BOWL'));
-function bounds(label){const node=xml.match(new RegExp('<node[^>]*(?:text|content-desc)="'+label+'"[^>]*>'));if(!node)throw Error('Missing UI '+label);const b=node[0].match(/bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/);assert.ok(b);return b.slice(1).map(Number);}
-const lane=bounds('Bowling lane. Position the ball then swipe upward to bowl.');const x=Math.round((lane[0]+lane[2])/2),y=Math.round(lane[1]+(lane[3]-lane[1])*.85);shot(x,y);await wait(1000);adb('shell','input','keyevent','3');await wait(600);adb('shell','am','start','-W','-n',pkg+'/.MainActivity');await wait(11000);adb('shell','uiautomator','dump','/sdcard/pocket.xml');xml=adb('shell','cat','/sdcard/pocket.xml');assert.ok(xml.includes('down.')||xml.includes('STRIKE')||xml.includes('Gutter')||xml.includes('No pins'));await writeFile('qa-artifacts/emulator-after-roll.xml',xml);run('adb',['exec-out','screencap','-p'],{stdio:['ignore',await import('node:fs').then(m=>m.openSync('qa-artifacts/emulator-after-roll.png','w')),'inherit']});
-adb('shell','am','force-stop',pkg);adb('shell','am','start','-W','-n',pkg+'/.MainActivity');await wait(3000);adb('shell','uiautomator','dump','/sdcard/pocket.xml');xml=adb('shell','cat','/sdcard/pocket.xml');assert.ok(xml.includes('Welcome back.'));await writeFile('qa-artifacts/emulator-resumed.xml',xml);console.log('PASS: installed, launched offline, pointer release, background/resume, force-stop restore. No physical device claim.');
+import {execFileSync as run} from 'node:child_process';
+import assert from 'node:assert/strict';
+import {mkdir,writeFile} from 'node:fs/promises';
+import {openSync,closeSync} from 'node:fs';
+const adb=(...a)=>run('adb',a,{encoding:'utf8'});
+const pkg='com.andrefiker.pocketbowling';
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+await mkdir('qa-artifacts',{recursive:true});
+async function dump(name){adb('shell','uiautomator','dump','/sdcard/pocket.xml');const xml=adb('shell','cat','/sdcard/pocket.xml');await writeFile(`qa-artifacts/${name}.xml`,xml);return xml;}
+function screen(name){const fd=openSync(`qa-artifacts/${name}.png`,'w');try{run('adb',['exec-out','screencap','-p'],{stdio:['ignore',fd,'inherit']});}finally{closeSync(fd);}}
+function bounds(xml,label){const escaped=label.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');const node=xml.match(new RegExp('<node[^>]*(?:text|content-desc)="'+escaped+'"[^>]*>'));if(!node)throw Error('Missing UI '+label);const b=node[0].match(/bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/);assert.ok(b);return b.slice(1).map(Number);}
+function tap(xml,label){const b=bounds(xml,label);adb('shell','input','tap',String(Math.round((b[0]+b[2])/2)),String(Math.round((b[1]+b[3])/2)));}
+async function ready(name){for(let i=0;i<6;i++){await wait(1500);const xml=await dump(name);if(xml.includes('Scorecard')&&xml.includes('BOWL'))return xml;}screen(name);throw Error('App did not become ready');}
+function texts(xml){return [...xml.matchAll(/\btext="([^\"]*)"/g)].map(m=>m[1]).filter(Boolean);}
+try{
+ adb('install','-r','release/Pocket-Bowling-v1.0.0.apk');
+ adb('shell','svc','wifi','disable');adb('shell','svc','data','disable');
+ adb('shell','am','start','-W','-n',pkg+'/.MainActivity');
+ let xml=await ready('emulator-initial');
+ const lane=bounds(xml,'Bowling lane. Position the ball then swipe upward to bowl.');
+ const x=Math.round((lane[0]+lane[2])/2),y=Math.round(lane[1]+(lane[3]-lane[1])*.85);
+ adb('shell','input','swipe',String(x),String(y),String(x+4),String(y-180),'180');
+ await wait(1000);adb('shell','input','keyevent','3');await wait(600);
+ adb('shell','am','start','-W','-n',pkg+'/.MainActivity');await wait(11000);
+ xml=await dump('emulator-after-roll');screen('emulator-after-roll');
+ assert.ok(xml.includes('down.')||xml.includes('STRIKE')||xml.includes('Gutter')||xml.includes('No pins'));
+ // The scorecard is the authoritative persistence check, not a welcome label.
+ tap(xml,'Scorecard');await wait(500);xml=await dump('emulator-scorecard-before');
+ const before=texts(xml);assert.ok(before.includes('Your scorecard'));
+ assert.ok(before.some(t=>/^[0-9]+$/.test(t)));
+ tap(xml,'Close dialog');await wait(400);
+ adb('shell','am','force-stop',pkg);adb('shell','am','start','-W','-n',pkg+'/.MainActivity');
+ xml=await ready('emulator-resumed');screen('emulator-resumed');
+ tap(xml,'Scorecard');await wait(500);xml=await dump('emulator-scorecard-after');screen('emulator-scorecard-after');
+ const after=texts(xml);assert.deepEqual(after,before,'Rolls and scoring must survive force-stop');
+ await writeFile('qa-artifacts/emulator-results.json',JSON.stringify({status:'PASS',offline:true,installed:true,swipe:true,backgroundResume:true,forceStopScorecardMatch:true,before,after},null,2));
+ console.log('PASS: installed, launched offline, pointer release, background/resume, exact scorecard retained after force-stop. No physical device claim.');
+}catch(error){try{await dump('emulator-failure');screen('emulator-failure');await writeFile('qa-artifacts/emulator-logcat.txt',adb('logcat','-d','-t','500'));}catch{}throw error;}

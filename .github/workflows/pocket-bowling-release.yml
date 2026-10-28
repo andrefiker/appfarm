@@ -8,6 +8,7 @@ permissions:
   contents: write
 jobs:
   verify:
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -25,6 +26,8 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
       - run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
       - name: Verify the exact locally built release candidate
         run: |
@@ -44,6 +47,7 @@ jobs:
             pocket-bowling/qa-artifacts/
             pocket-bowling/android-build/*.txt
   android:
+    timeout-minutes: 20
     needs: verify
     runs-on: ubuntu-latest
     steps:
@@ -70,6 +74,7 @@ jobs:
           name: pocket-bowling-android-qa
           path: pocket-bowling/qa-artifacts/
   publish:
+    timeout-minutes: 5
     needs: [verify, android]
     runs-on: ubuntu-latest
     steps:

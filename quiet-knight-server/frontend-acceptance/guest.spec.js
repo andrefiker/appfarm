@@ -10,8 +10,8 @@ async function noGate(p){await expect(p.getByRole('button',{name:'Play White',ex
 test('fresh guests play multiplayer, resume, resign and swap; spectators cannot move',async({browser})=>{
  const a=await actor(browser),b=await actor(browser,320),s=await actor(browser,360);
  try{
-  await a.context.addInitScript(()=>{if(localStorage.getItem('single-style-seeded'))return;localStorage.setItem('qk-piece-set-v1','classic');localStorage.setItem('qk-atmosphere-v1','Midnight');localStorage.setItem('qk-pictured-table-upgrade-v1','applied');localStorage.setItem('single-style-seeded','1');});
-  await b.context.addInitScript(()=>{if(localStorage.getItem('single-style-seeded'))return;localStorage.setItem('qk-piece-set-v1','animal-kingdom');localStorage.setItem('qk-atmosphere-v1','Royal Meadow');localStorage.setItem('qk-pictured-table-upgrade-v1','applied');localStorage.setItem('single-style-seeded','1');});
+  await a.context.addInitScript(()=>{if(location.protocol!=='http:')return;if(localStorage.getItem('single-style-seeded'))return;localStorage.setItem('qk-piece-set-v1','classic');localStorage.setItem('qk-atmosphere-v1','Midnight');localStorage.setItem('qk-pictured-table-upgrade-v1','applied');localStorage.setItem('single-style-seeded','1');});
+  await b.context.addInitScript(()=>{if(location.protocol!=='http:')return;if(localStorage.getItem('single-style-seeded'))return;localStorage.setItem('qk-piece-set-v1','animal-kingdom');localStorage.setItem('qk-atmosphere-v1','Royal Meadow');localStorage.setItem('qk-pictured-table-upgrade-v1','applied');localStorage.setItem('single-style-seeded','1');});
   await a.page.goto(url);await noGate(a.page);expect(a.accountRequests).toEqual([]);
   await mkdir('output/playwright',{recursive:true});await expect(a.page.locator('.home-play')).toHaveCSS('opacity','1');await a.page.screenshot({path:'output/playwright/guest-home-390.png',fullPage:true});
   await a.page.getByRole('button',{name:'Create live game',exact:true}).click();await live(a.page);

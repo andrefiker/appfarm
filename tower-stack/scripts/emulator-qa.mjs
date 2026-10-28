@@ -58,7 +58,7 @@ async function attach() {
   }
   async function evaluate(expression) {
     const result = await send("Runtime.evaluate", { expression, awaitPromise: true, returnByValue: true, userGesture: true });
-    if (result.exceptionDetails) throw new Error(result.exceptionDetails.text ?? "WebView JavaScript error");
+    if (result.exceptionDetails) throw new Error(JSON.stringify(result.exceptionDetails));
     return result.result?.value;
   }
   async function screenshot() {
@@ -76,10 +76,10 @@ assert.equal(await client.evaluate("document.title"),"Tower Stack");
 let size=await client.evaluate("({w:innerWidth,h:innerHeight,dpr:devicePixelRatio,overflow:document.documentElement.scrollWidth>innerWidth})");assert(size.h>size.w);assert(!size.overflow);
 async function tap(id){let p=await client.evaluate(`(()=>{let r=document.getElementById('${id}').getBoundingClientRect();return {x:(r.x+r.width/2)*devicePixelRatio,y:(r.y+r.height/2)*devicePixelRatio}})()`);let wm=adb("shell","wm","size").match(/(\d+)x(\d+)/);let physicalH=Number(wm[2]);let bottom=48*size.dpr;let top=physicalH-size.h*size.dpr-bottom;adb("shell","input","tap",String(Math.round(p.x)),String(Math.round(p.y+Math.max(0,top))))}
 // CDP dispatches actual WebView touch events in CSS coordinates, avoiding status-bar calibration assumptions.
-async function touch(id){let p=await client.evaluate(`(()=>{let r=document.getElementById('${id}').getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()`);let r=await client.evaluate(`(()=>{let e=document.elementFromPoint(${p.x},${p.y});return e.closest('button')?.id})()`);assert.equal(r,id);await client.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:p.x,y:p.y}]});await client.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]})}
+async function touch(id){for(let n=0;n<80;n++){if(await client.evaluate(`!!document.getElementById('${id}') && !document.getElementById('${id}').hidden`).catch(()=>false))break;if(n===79)throw Error('Control never became ready: '+id);await delay(100)}let p=await client.evaluate(`(()=>{let r=document.getElementById('${id}').getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()`);let r=await client.evaluate(`(()=>{let e=document.elementFromPoint(${p.x},${p.y});return e.closest('button')?.id})()`);assert.equal(r,id);await client.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:p.x,y:p.y}]});await client.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]})}
 await touch('play');
 for(let i=0;i<3;i++){await touch('drop');for(let n=0;n<100;n++){if(await client.evaluate("g.phase==='ready'"))break;await delay(100)}assert.equal(await client.evaluate("g.placed"),i+1)}
-writeFileSync('tower-stack/qa/android-stacking.png',await client.screenshot());assert(await client.evaluate('g.score>0'));
+let draw=await client.evaluate(`(()=>{try{render();return {ok:true,w,h,cam,scale,base,canvasW:canvas.width,canvasH:canvas.height,webview:navigator.userAgent}}catch(e){return {ok:false,error:e.stack}}})()`);writeFileSync('tower-stack/qa/android-render.json',JSON.stringify(draw,null,2));console.log('Renderer diagnostic:',draw);assert(draw.ok,'Android renderer must complete');let native=spawnSync('adb',['exec-out','screencap','-p']);assert.equal(native.status,0);writeFileSync('tower-stack/qa/android-native.png',native.stdout);writeFileSync('tower-stack/qa/android-stacking.png',await client.screenshot());assert(await client.evaluate('g.score>0'));
 // Touch placement through Android's input system; use UI bounds from uiautomator for exact screen coordinates.
 adb('shell','uiautomator','dump','/sdcard/tower-ui.xml');let ui=adb('shell','cat','/sdcard/tower-ui.xml');writeFileSync('tower-stack/qa/android-ui.xml',ui);
 let match=ui.match(/(?:text|content-desc)="(?:Drop block|DROP[^"]*)"[^>]*bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/);

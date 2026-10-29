@@ -19,7 +19,7 @@ test('fresh guests play multiplayer, resume, resign and swap; spectators cannot 
   await expect(b.page.getByRole('group',{name:'Chess board, Black at bottom',exact:true})).toBeVisible();
   for(const p of [a.page,b.page]){
    await expect(p.locator('body')).toHaveAttribute('data-atmosphere','walnut');
-   await expect(p.locator('body')).toHaveAttribute('data-piece-set','kawaii-faces');
+   await expect(p.locator('body')).toHaveAttribute('data-piece-set','faceted');
    await expect(p.locator('.board svg.chess-art')).toHaveCount(32);
    await expect(p.locator('.board .classic-piece,.board .animal-piece')).toHaveCount(0);
   }

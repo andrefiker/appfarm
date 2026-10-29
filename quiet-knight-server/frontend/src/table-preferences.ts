@@ -1,4 +1,4 @@
-export const REFERENCE_TABLE = {atmosphere:'Walnut', pieceSet:'kawaii-faces'} as const;
+export const REFERENCE_TABLE = {atmosphere:'Walnut', pieceSet:'faceted'} as const;
 export const REFERENCE_TABLE_UPGRADE = 'qk-pictured-table-upgrade-v1';
 type PreferenceStorage = Pick<Storage, 'getItem' | 'setItem'>;
 

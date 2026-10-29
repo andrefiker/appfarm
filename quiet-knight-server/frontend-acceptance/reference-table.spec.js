@@ -25,7 +25,7 @@ test('pictured wood table, carved pieces and responsive untimed waiting room',as
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(url);await page.getByRole('button',{name:'Create live game',exact:true}).click();
  await expect(page.getByRole('heading',{name:'Waiting for a friend',exact:true})).toBeVisible();
- await expect(page.locator('body')).toHaveAttribute('data-piece-set','kawaii-faces');
+ await expect(page.locator('body')).toHaveAttribute('data-piece-set','faceted');
  await expect(page.locator('body')).toHaveAttribute('data-atmosphere','walnut');
  await expect(page.locator('.board svg.chess-art')).toHaveCount(32);
  await expect(page.locator('.board .classic-piece,.board .animal-piece')).toHaveCount(0);
@@ -52,7 +52,7 @@ test('single style overrides old choices on every launch and preserves saved pla
   localStorage.setItem('reference-test-seeded','true');
  });
  await page.goto(url);
- await expect(page.locator('body')).toHaveAttribute('data-piece-set','kawaii-faces');
+ await expect(page.locator('body')).toHaveAttribute('data-piece-set','faceted');
  await expect(page.locator('body')).toHaveAttribute('data-atmosphere','walnut');
  await page.getByRole('button',{name:'Play White',exact:true}).click();
  await page.locator('[data-square=e2]').click();await page.locator('[data-square=e4]').click();
@@ -66,7 +66,7 @@ test('single style overrides old choices on every launch and preserves saved pla
   localStorage.removeItem('qk-pictured-table-upgrade-v1');
  });
  await page.reload();
- await expect(page.locator('body')).toHaveAttribute('data-piece-set','kawaii-faces');
+ await expect(page.locator('body')).toHaveAttribute('data-piece-set','faceted');
  await expect(page.locator('body')).toHaveAttribute('data-atmosphere','walnut');
  await expect(page.getByRole('button',{name:'Resume saved computer game',exact:true})).toBeVisible();
  expect(await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage).filter(([key])=>key.startsWith('qk-local-save-v1:')&&!key.endsWith(':backup')&&!key.includes(':recovery'))))).toEqual(saves);
@@ -78,7 +78,7 @@ test('single style overrides old choices on every launch and preserves saved pla
  // An already-upgraded installation cannot restore an obsolete appearance.
  await page.evaluate(()=>{localStorage.setItem('qk-piece-set-v1','animal-kingdom');localStorage.setItem('qk-atmosphere-v1','Forest');localStorage.setItem('qk-pictured-table-upgrade-v1','applied');});
  await page.reload();
- await expect(page.locator('body')).toHaveAttribute('data-piece-set','kawaii-faces');
+ await expect(page.locator('body')).toHaveAttribute('data-piece-set','faceted');
  await expect(page.locator('body')).toHaveAttribute('data-atmosphere','walnut');
  await page.getByRole('button',{name:'Create live game',exact:true}).click();
  await expect(page.getByRole('heading',{name:'Waiting for a friend',exact:true})).toBeVisible();
@@ -87,4 +87,19 @@ test('single style overrides old choices on every launch and preserves saved pla
  await geometry(page);
  await mkdir('output/playwright',{recursive:true});
  await page.screenshot({path:'output/playwright/reference-upgraded-installation-390.png',fullPage:true});
+});
+
+test('faceted model atlas is complete, shares unique clipping and survives offline reload',async({page,context})=>{
+ await page.goto(url);
+ await expect(page.getByText('Computer files saved for offline play',{exact:false})).toBeVisible({timeout:30000});
+ await page.getByRole('button',{name:'Play White',exact:true}).click();
+ const pieces=page.locator('.board .faceted-piece');await expect(pieces).toHaveCount(32);
+ for(const army of ['ivory','graphite'])for(const kind of ['king','queen','rook','bishop','knight','pawn'])await expect(page.locator(`.board [data-piece-model="${army}-${kind}"]`)).toHaveCount(kind==='pawn'?8:kind==='king'||kind==='queen'?1:2);
+ const ids=await pieces.locator('clipPath').evaluateAll(xs=>xs.map(x=>x.id));expect(new Set(ids).size).toBe(32);
+ const images=await pieces.locator('image').evaluateAll(xs=>xs.map(x=>x.getAttribute('href')));expect(new Set(images).size).toBe(1);
+ const src=images[0];expect(src).toMatch(/faceted-pieces-.*\.png$/);
+ await expect.poll(()=>page.evaluate(async s=>Boolean(await caches.match(s)),src)).toBe(true);
+ await context.setOffline(true);await page.reload();await page.getByRole('button',{name:'Play White',exact:true}).click();await expect(page.locator('.board .faceted-piece')).toHaveCount(32);
+ const dimensions=await page.evaluate(async s=>{const im=new Image();im.src=s;await im.decode();return[im.naturalWidth,im.naturalHeight];},src);expect(dimensions).toEqual([1086,1448]);
+ await mkdir('output/playwright',{recursive:true});await page.screenshot({path:'output/playwright/faceted-offline-390.png',fullPage:true});
 });

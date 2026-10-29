@@ -21,12 +21,12 @@ async function geometry(page){
  expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);
 }
 
-test('pictured wood table, carved pieces and responsive untimed waiting room',async({page})=>{
+test('brushed metal table, faceted pieces and responsive untimed waiting room',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(url);await page.getByRole('button',{name:'Create live game',exact:true}).click();
  await expect(page.getByRole('heading',{name:'Waiting for a friend',exact:true})).toBeVisible();
  await expect(page.locator('body')).toHaveAttribute('data-piece-set','faceted');
- await expect(page.locator('body')).toHaveAttribute('data-atmosphere','walnut');
+ await expect(page.locator('body')).toHaveAttribute('data-atmosphere','brushed-metal');
  await expect(page.locator('.board svg.chess-art')).toHaveCount(32);
  await expect(page.locator('.board .classic-piece,.board .animal-piece')).toHaveCount(0);
  await expect(page.getByRole('timer')).toHaveCount(0);
@@ -53,7 +53,7 @@ test('single style overrides old choices on every launch and preserves saved pla
  });
  await page.goto(url);
  await expect(page.locator('body')).toHaveAttribute('data-piece-set','faceted');
- await expect(page.locator('body')).toHaveAttribute('data-atmosphere','walnut');
+ await expect(page.locator('body')).toHaveAttribute('data-atmosphere','brushed-metal');
  await page.getByRole('button',{name:'Play White',exact:true}).click();
  await page.locator('[data-square=e2]').click();await page.locator('[data-square=e4]').click();
  await expect(page.locator('[data-square=g1]')).toHaveAttribute('aria-disabled','false');
@@ -67,7 +67,7 @@ test('single style overrides old choices on every launch and preserves saved pla
  });
  await page.reload();
  await expect(page.locator('body')).toHaveAttribute('data-piece-set','faceted');
- await expect(page.locator('body')).toHaveAttribute('data-atmosphere','walnut');
+ await expect(page.locator('body')).toHaveAttribute('data-atmosphere','brushed-metal');
  await expect(page.getByRole('button',{name:'Resume saved computer game',exact:true})).toBeVisible();
  expect(await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage).filter(([key])=>key.startsWith('qk-local-save-v1:')&&!key.endsWith(':backup')&&!key.includes(':recovery'))))).toEqual(saves);
  await page.getByRole('button',{name:'Open settings',exact:true}).click();
@@ -79,7 +79,7 @@ test('single style overrides old choices on every launch and preserves saved pla
  await page.evaluate(()=>{localStorage.setItem('qk-piece-set-v1','animal-kingdom');localStorage.setItem('qk-atmosphere-v1','Forest');localStorage.setItem('qk-pictured-table-upgrade-v1','applied');});
  await page.reload();
  await expect(page.locator('body')).toHaveAttribute('data-piece-set','faceted');
- await expect(page.locator('body')).toHaveAttribute('data-atmosphere','walnut');
+ await expect(page.locator('body')).toHaveAttribute('data-atmosphere','brushed-metal');
  await page.getByRole('button',{name:'Create live game',exact:true}).click();
  await expect(page.getByRole('heading',{name:'Waiting for a friend',exact:true})).toBeVisible();
  await expect(page.locator('.board svg.chess-art')).toHaveCount(32);
@@ -99,8 +99,11 @@ test('faceted model atlas is complete, shares unique clipping and survives offli
  const images=await pieces.locator('image').evaluateAll(xs=>xs.map(x=>x.getAttribute('href')));expect(new Set(images).size).toBe(1);
  const src=images[0];expect(src).toMatch(/faceted-pieces-.*\.png$/);
  await expect.poll(()=>page.evaluate(async s=>Boolean(await caches.match(s)),src)).toBe(true);
+ const icon=await page.evaluate(async()=>{const manifest=await(await fetch('./manifest.webmanifest')).json();return new URL(manifest.icons[0].src,location.href).href;});
+ await expect.poll(()=>page.evaluate(async s=>Boolean(await caches.match(s)),icon)).toBe(true);
  await context.setOffline(true);await page.reload();await page.getByRole('button',{name:'Play White',exact:true}).click();await expect(page.locator('.board .faceted-piece')).toHaveCount(32);
  const dimensions=await page.evaluate(async s=>{const im=new Image();im.src=s;await im.decode();return[im.naturalWidth,im.naturalHeight];},src);expect(dimensions).toEqual([1086,1448]);
+ const iconDimensions=await page.evaluate(async s=>{const im=new Image();im.src=s;await im.decode();return[im.naturalWidth,im.naturalHeight];},icon);expect(iconDimensions).toEqual([1254,1254]);
  await mkdir('output/playwright',{recursive:true});await page.screenshot({path:'output/playwright/faceted-offline-390.png',fullPage:true});
 });
 

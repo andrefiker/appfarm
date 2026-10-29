@@ -30,8 +30,8 @@ android {
             // The original CI debug signing key was not retained. Install this
             // candidate alongside it, preserving the original app and local saves.
             applicationId 'com.andrefiker.quietknight.appfarm.studio'
-            versionCode 13
-            versionName '1.1.8'
+            versionCode 14
+            versionName '1.1.9'
             resValue 'string', 'app_name', 'Quiet Knight'
             buildConfigField 'String', 'SOURCE_COMMIT', '"' + (System.getenv('GITHUB_SHA') ?: 'local-unverified') + '"'
             buildConfigField 'String', 'HOME_URL', '"https://quiet-knight-server-production.up.railway.app/assets/quiet-knight/index.html"'

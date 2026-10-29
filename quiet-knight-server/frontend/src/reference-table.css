@@ -1,5 +1,5 @@
-/* Match André's wood-table reference. Historical clocks remain conditional. */
-body[data-atmosphere="walnut"]:has(.mobile-table) { background: #0e191b; }
+/* Match André's approved brushed-metal table. Historical clocks remain conditional. */
+body[data-atmosphere="brushed-metal"]:has(.mobile-table) { background: #0e191b; }
 .mobile-table .game-header { min-height: 54px; }
 .mobile-table .player-bar { height: 59px; }
 .mobile-table .game-title h1 { font-size: 19px; }
@@ -7,7 +7,7 @@ body[data-atmosphere="walnut"]:has(.mobile-table) { background: #0e191b; }
 .mobile-table .player-handle { font-size: 15px; line-height: 20px; }
 .mobile-table .player-meta { font-size: 12px; line-height: 17px; }
 .mobile-table .player-quip { font-style: normal; font-size: 12px; }
-.mobile-table .board-frame { padding: 5px; border-radius: 9px; border-color: #d6bc8455; background: #27302f; }
+.mobile-table .board-frame { padding: 5px; border-radius: 9px; }
 /* Square names remain accessible; study boards retain visible coordinates. */
 .mobile-table .square-coordinate { display: none; }
 .mobile-table .table-below { padding: 0 8px; }

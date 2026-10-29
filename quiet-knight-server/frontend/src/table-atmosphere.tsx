@@ -4,7 +4,7 @@ export function useTablePreferences(){
  const[initial]=useState(()=>{try{return loadTablePreferences(localStorage);}catch{return loadTablePreferences();}});
  const[zen,setZen]=useState(initial.zen);
  useLayoutEffect(()=>{
-  document.body.dataset.atmosphere='walnut';
+  document.body.dataset.atmosphere='brushed-metal';
   document.body.dataset.pieceSet=REFERENCE_TABLE.pieceSet;
  },[]);
  useEffect(()=>{try{localStorage.setItem('qk-zen-table-v1',String(zen));}catch{}},[zen]);

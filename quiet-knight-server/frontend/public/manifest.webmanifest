@@ -1,1 +1,1 @@
-{"name":"Quiet Knight Live","short_name":"Quiet Knight","start_url":"./","display":"standalone","background_color":"#0e0c0a","theme_color":"#15120f","icons":[{"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}
+{"name":"Quiet Knight Live","short_name":"Quiet Knight","start_url":"./","display":"standalone","background_color":"#0d1918","theme_color":"#0d1918","icons":[{"src":"./icon.png","sizes":"1254x1254","type":"image/png","purpose":"any"}]}

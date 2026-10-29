@@ -7,7 +7,10 @@ const SHELL = new URL("offline-shell.html", ROOT).href;
 const absolute = (path) => new URL(path, ROOT).href;
 const isAsset = (url) =>
   url.origin === self.location.origin &&
-  (url.pathname.startsWith(new URL("assets/", ROOT).pathname) || url.pathname.startsWith(new URL("engine/", ROOT).pathname)) &&
+  (url.pathname.startsWith(new URL("assets/", ROOT).pathname) ||
+    url.pathname.startsWith(new URL("engine/", ROOT).pathname) ||
+    url.pathname === new URL("icon.png", ROOT).pathname ||
+    url.pathname === new URL("icon.svg", ROOT).pathname) &&
   /\.(js|wasm|css|svg|png|webp|woff2?)$/.test(url.pathname);
 function valid(response, url) {
   if (!response.ok) return false;
@@ -276,7 +279,7 @@ self.addEventListener("push", (event) =>
         tag: eventId,
         renotify: false,
         data: { roomCode, eventId, kind },
-        icon: absolute("icon.svg"),
+        icon: absolute("icon.png"),
         badge: absolute("icon.svg"),
       });
     })(),

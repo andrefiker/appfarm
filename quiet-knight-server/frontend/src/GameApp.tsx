@@ -81,7 +81,7 @@ type Modal =
   | "invite"
   | null;
 const REACTIONS:Record<string,string>={hello:"👋", "well-played":"👏",thanks:"🙏",fox:"🦊",owl:"🦉",tortoise:"🐢"};
-const BUILD = "Quiet Knight 1.1.9 · brushed metal";
+const BUILD = "Quiet Knight 1.1.10 · brushed metal";
 function roleColor(role: Role | null): Color | null {
   return role === "white" ? "w" : role === "black" ? "b" : null;
 }

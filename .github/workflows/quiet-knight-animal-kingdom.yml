@@ -170,6 +170,21 @@ jobs:
       - name: Install Android 35 build tools
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-35' 'build-tools;35.0.0' >/dev/null
 
+      - name: Collect public Android tools for local retained-key verification
+        run: |
+          mkdir -p "$RUNNER_TEMP/qk-public-android-tools/lib"
+          cp "$ANDROID_HOME/build-tools/35.0.0/aapt" "$ANDROID_HOME/build-tools/35.0.0/zipalign" "$RUNNER_TEMP/qk-public-android-tools/"
+          cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" "$RUNNER_TEMP/qk-public-android-tools/lib/"
+          cp -R "$ANDROID_HOME/build-tools/35.0.0/lib64" "$RUNNER_TEMP/qk-public-android-tools/"
+
+      - name: Preserve public Android verification tools
+        uses: actions/upload-artifact@v4
+        with:
+          name: quiet-knight-public-android-tools
+          path: ${{ runner.temp }}/qk-public-android-tools/
+          if-no-files-found: error
+          retention-days: 1
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:

@@ -21,6 +21,7 @@ const nsis = p => p.replaceAll('$', '$$').replaceAll('"', '$\\"').split(path.sep
 const deletion = files.map(f => `  Delete "$INSTDIR\\${nsis(f)}"`).join('\n');
 const removeDirs = dirs.map(d => `  RMDir "$INSTDIR\\${nsis(d)}"`).join('\n');
 const script = `Unicode true
+SetCompressor /SOLID lzma
 !include "x64.nsh"
 Name "Quiet Knight"
 OutFile "${path.resolve('dist/Quiet Knight Setup 1.1.11.exe')}"

@@ -1,10 +1,14 @@
-import { readdir, writeFile, mkdir } from 'node:fs/promises';
+import { readdir, writeFile, mkdir, cp, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 // Uses electron-builder's already-downloaded NSIS Linux compiler. Generate
 // exact uninstall entries so unrelated files and saved game data are retained.
-const appDir = path.resolve('dist/win-unpacked');
+const sourceDir = path.resolve('dist/win-unpacked');
+const appDir = path.resolve('dist/win-retained');
+const locales = new Set(['en-US.pak', 'en-GB.pak', 'pt-BR.pak', 'pt-PT.pak']);
+await rm(appDir, { recursive: true, force: true });
+await cp(sourceDir, appDir, { recursive: true, filter: src => path.dirname(src) !== path.join(sourceDir, 'locales') || locales.has(path.basename(src)) });
 const compiler = process.env.QK_MAKENSIS;
 if (!compiler) throw Error('Set QK_MAKENSIS to the NSIS Linux makensis executable');
 const files = [], dirs = [];

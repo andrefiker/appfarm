@@ -10,6 +10,8 @@ const isAsset = (url) =>
   (url.pathname.startsWith(new URL("assets/", ROOT).pathname) ||
     url.pathname.startsWith(new URL("engine/", ROOT).pathname) ||
     url.pathname === new URL("icon.png", ROOT).pathname ||
+    url.pathname === new URL("icon-192.png", ROOT).pathname ||
+    url.pathname === new URL("icon-512.png", ROOT).pathname ||
     url.pathname === new URL("icon.svg", ROOT).pathname) &&
   /\.(js|wasm|css|svg|png|webp|woff2?)$/.test(url.pathname);
 function valid(response, url) {

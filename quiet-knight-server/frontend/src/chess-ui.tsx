@@ -1,5 +1,6 @@
 import { LOSS_MESSAGE } from "./post-game";
 import {ChessClock} from './chess-clock';
+import {enamelStyle} from './board-surface';
 import type {ClockState} from './chess-clock';
 import { GameSoFar } from "./table-atmosphere";
 import * as React from "react";
@@ -137,6 +138,7 @@ export function ChessBoard({
             <button
               type="button"
               key={square}
+              style={enamelStyle(square)}
               data-square={square}
               data-piece={piece ? `${piece.color}${piece.type}` : ""}
               className={`square ${dark ? "square-dark" : "square-light"}${last && (last.from === square || last.to === square) ? " square-last" : ""}${selected === square ? " square-selected" : ""}${check === square ? " square-check" : ""}`}

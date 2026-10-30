@@ -18,7 +18,7 @@ test('fresh guests play multiplayer, resume, resign and swap; spectators cannot 
   const invite=a.page.url();await b.page.goto(invite);await live(b.page);await s.page.goto(invite);await live(s.page);
   await expect(b.page.getByRole('group',{name:'Chess board, Black at bottom',exact:true})).toBeVisible();
   for(const p of [a.page,b.page]){
-   await expect(p.locator('body')).toHaveAttribute('data-atmosphere','brushed-metal');
+   await expect(p.locator('body')).toHaveAttribute('data-atmosphere','emerald-enamel');
    await expect(p.locator('body')).toHaveAttribute('data-piece-set','faceted');
    await expect(p.locator('.board svg.chess-art')).toHaveCount(32);
    await expect(p.locator('.board .classic-piece,.board .animal-piece')).toHaveCount(0);

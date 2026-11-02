@@ -32,6 +32,7 @@ import { lastLiveRoom, rememberLiveRoom, forgetLiveRoom } from "./live-resume";
 import { useChessAudio } from "./chess-audio";
 import { GameSurface, HomeSurface, Icon, PromotionChoices } from "./chess-ui";
 import { DrawControls } from './draw-controls';
+import {describeBoardMotion} from './board-effects';
 import { useRoomRealtime } from "./use-room-realtime";
 import { useMoveNotifications } from "./push-notifications";
 import type { Position, Motion } from "./chess-ui";
@@ -341,24 +342,25 @@ export default function GameApp() {
       void joinRoom(normalized, stored(`qk-seat-${normalized}`));
     }
   }, [accountId, gameOwner]);
-  const previousMove = useRef<{ key: string; count: number } | null>(null);
+  const previousMove = useRef<{ key: string; count: number; position: Position } | null>(null);
+  const motionSerial = useRef(0);
   const gameKey = room
     ? `room-${room.code}-${room.game_number || 1}`
     : `local-${humanColor}`;
   useEffect(() => {
     const previous = previousMove.current;
     const count = sans.length;
-    previousMove.current = { key: gameKey, count };
+    previousMove.current = { key: gameKey, count, position };
     if (previous?.key !== gameKey || count !== previous.count + 1 || !last) {
       setMotion(null);
       return;
     }
-    setMotion({
+    setMotion(describeBoardMotion(previous.position, position, {
       from: last.from,
       to: last.to,
       san: sans[count - 1] || "",
-      serial: Date.now(),
-    });
+      serial: ++motionSerial.current,
+    }));
     if (screen === "game") playHaptic(check ? "check" : history?.[count - 1]?.captured ? "capture" : "move", preferences.current.haptics);
     if (preferences.current.sound)
       void chessAudio.play(
@@ -1304,6 +1306,8 @@ export default function GameApp() {
             last,
             check,
             motion:prefs.animate?motion:null,
+            playful:prefs.playful && prefs.animate && !prefs.quiet,
+            winner:ended ? room ? room.winner : game.isCheckmate() ? turn === 'w' ? 'b' : 'w' : null : null,
             locked,
             onSquare, drag:prefs.drag,
             onMove:(from,to)=>{if(locked||game.get(from as Square)?.color!==me)return;const moves=game.moves({square:from as Square,verbose:true}).filter(m=>m.to===to);if(!moves.length)return;if(moves.some(m=>m.promotion))setPromotion({from,to});else proposeMove(from,to);},

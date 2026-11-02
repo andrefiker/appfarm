@@ -6,6 +6,7 @@ import './modern.css';
 import './animal-kingdom.css';
 import './studio.css';
 import './reference-table.css';
+import './piece-effects.css';
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>

@@ -3,6 +3,9 @@ import {Piece} from './pieces';
 import type {Color} from './pieces';
 import type {BoardMotion} from './board-effects';
 
+// One-second CSS effects get a short cleanup margin to finish their final frame.
+const EFFECT_RETENTION_MS = 1050;
+
 export function usePieceEffects(motion: BoardMotion | null, enabled: boolean, orientation: Color, winner?: Color | null, observedSerial = motion?.serial) {
   const [reduced, setReduced] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [events, setEvents] = useState<(BoardMotion & {expires:number})[]>([]);
@@ -25,7 +28,7 @@ export function usePieceEffects(motion: BoardMotion | null, enabled: boolean, or
       const touched = [motion.from,motion.to,motion.captured?.square,motion.rook?.from,motion.rook?.to].filter(Boolean);
       setEvents(old => [...old.filter(event => !flipped && event.expires > Date.now() &&
         ![event.from,event.to,event.captured?.square,event.rook?.from,event.rook?.to].some(square => square && touched.includes(square))),
-        {...motion,expires:Date.now()+950}].slice(-3));
+        {...motion,expires:Date.now()+EFFECT_RETENTION_MS}].slice(-3));
     } else if (flipped) setEvents([]);
   }, [motion, observedSerial, enabled, reduced, orientation]);
   useEffect(() => {
@@ -42,7 +45,7 @@ export function usePieceEffects(motion: BoardMotion | null, enabled: boolean, or
     const fresh = winner && winner !== previousWinner.current;
     previousWinner.current = winner;
     setVictory(enabled && !reduced && fresh ? winner : null);
-    const timer = window.setTimeout(() => setVictory(null), 950);
+    const timer = window.setTimeout(() => setVictory(null), EFFECT_RETENTION_MS);
     return () => window.clearTimeout(timer);
   }, [winner, enabled, reduced, orientation]);
   return {events: enabled && !reduced ? events : [], victory: enabled && !reduced ? victory : null};

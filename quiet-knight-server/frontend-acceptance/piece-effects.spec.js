@@ -39,8 +39,9 @@ for(const[name,kind,fen,from,to]of captures)test(`${name} capture animates brief
   await expect(page.locator('.capture-shard')).toHaveCount(3);
   if(kind==='n')await expect(page.locator('.travel-leap')).toHaveCount(1);
   const animations=await page.locator('.board').evaluate(el=>el.getAnimations({subtree:true}).map(a=>({name:a.animationName,duration:a.effect.getTiming().duration})));
-  expect(animations.some(a=>a.name==='captured-crumble')).toBe(true);
-  expect(animations.every(a=>Number(a.duration)<=950)).toBe(true);
+  expect(animations.find(a=>a.name==='captured-crumble')?.duration).toBe(1000);
+  expect(animations.find(a=>a.name==='strike-fade')?.duration).toBe(1000);
+  expect(animations.every(a=>Number(a.duration)<=1000)).toBe(true);
   await checkGeometry(page);
   await expect(page.locator('.capture-ghost')).toHaveCount(0,{timeout:1800});
   await expect(page.locator('.playful-travel')).toHaveCount(0);
@@ -140,8 +141,8 @@ test('live-board capture and fast reply retain independent effects without stale
     game.move('Qxd5');version++;publish();
     await expect(p.locator('.strike-q')).toHaveCount(1);
     // Sample the actual rendered impact, without freezing browser animation clocks.
-    await p.waitForTimeout(350);
-    expect(await p.locator('.strike-q').evaluate(el=>Number(getComputedStyle(el).opacity))).toBeGreaterThan(.4);
+    await p.waitForTimeout(450);
+    expect(await p.locator('.strike-q').evaluate(el=>Number(getComputedStyle(el).opacity))).toBeGreaterThan(.8);
     await p.screenshot({path:'output/playwright/playful-capture-review.png',fullPage:true,animations:'allow'});
     await expect(p.locator('.strike-q')).toHaveCount(0,{timeout:1800});
     await expect(square(p,'d5')).toHaveAttribute('data-piece','bq');

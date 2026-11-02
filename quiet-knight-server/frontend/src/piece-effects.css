@@ -1,54 +1,55 @@
 /* Decorative only: never cover the board's input targets or postpone a move. */
 .piece-performance { position: absolute; inset: 0; display: block; pointer-events: none; transform-origin: 50% 88%; }
-.playful-travel { animation-duration: 760ms; animation-timing-function: cubic-bezier(.2,.7,.25,1); }
+.playful-travel { animation-duration: 1000ms; animation-timing-function: cubic-bezier(.2,.7,.25,1); }
 .travel-glide { animation-name: playful-glide; animation-duration: 260ms; }
 .travel-attack { animation-name: playful-attack; }
 .travel-leap { animation-name: playful-leap; }
-.travel-castle { animation-name: playful-castle; animation-duration: 620ms; }
+.travel-castle { animation-name: playful-castle; animation-duration: 1000ms; }
 .capture-ghost, .capture-shard, .strike-effect, .knight-dust, .promotion-effect, .promotion-pawn { position: absolute; inset: 0; display: block; pointer-events: none; }
 .capture-ghost { z-index: 3; }
-.capture-shard { animation: captured-crumble 760ms both; --shard-x: -18%; --shard-turn: -16deg; }
+.capture-shard { animation: captured-crumble 1000ms both; --shard-x: -30%; --shard-turn: -24deg; }
 .capture-shard .chess-art, .promotion-pawn .chess-art { width: 100%; height: 100%; filter: drop-shadow(0 1px 1px #241b14aa); }
 .shard-0 { clip-path: polygon(0 0, 55% 0, 42% 100%, 0 100%); }
 .shard-1 { clip-path: polygon(55% 0, 72% 0, 65% 100%, 42% 100%); --shard-x: 2%; --shard-turn: 7deg; }
-.shard-2 { clip-path: polygon(72% 0, 100% 0, 100% 100%, 65% 100%); --shard-x: 22%; --shard-turn: 20deg; }
-.strike-effect { z-index: 12; animation: strike-fade 760ms both; }
-.strike-effect i { position: absolute; left: 47%; top: 40%; width: 7%; height: 28%; border-radius: 50%; background: #f5d59a; transform: rotate(35deg); box-shadow: 0 0 5px #e9be7466; }
+.shard-2 { clip-path: polygon(72% 0, 100% 0, 100% 100%, 65% 100%); --shard-x: 32%; --shard-turn: 28deg; }
+.strike-effect { z-index: 12; animation: strike-fade 1000ms both; }
+.strike-effect:not(.strike-q)::before { content: ""; position: absolute; inset: 6%; border: 2px solid #ffe6a1; border-radius: 24%; box-shadow: 0 0 0 1px #493019, inset 0 0 0 1px #493019aa, 0 0 8px #e9be7499; }
+.strike-effect i { position: absolute; left: 47%; top: 40%; width: 9%; height: 34%; border-radius: 50%; background: #fff0bf; transform: rotate(35deg); box-shadow: 0 0 0 1px #493019cc, 0 0 6px #e9be74aa; }
 .strike-effect i:nth-child(2) { transform: rotate(100deg); }
 .strike-effect i:nth-child(3) { transform: rotate(155deg); }
-.strike-b i { left: 20%; top: 44%; width: 64%; height: 5%; transform: rotate(-42deg); background: linear-gradient(90deg,transparent,#fff4d3,transparent); box-shadow: 0 0 2px #403014, 0 0 6px #e9be7499; }
+.strike-b i { left: 10%; top: 44%; width: 80%; height: 7%; transform: rotate(-42deg); background: linear-gradient(90deg,transparent,#fff4d3,transparent); box-shadow: 0 0 2px #403014, 0 0 6px #e9be7499; }
 .strike-b i:nth-child(n+2) { display: none; }
-.strike-q i:first-child { inset: 6%; width: 88%; height: 88%; border-radius: 50%; border: 2px solid #fff0b5; background: transparent; box-shadow: 0 0 0 1px #70431cbb, inset 0 0 0 1px #70431c99, 0 0 8px #e6bc7499; animation: queen-wave 760ms both; }
+.strike-q i:first-child { inset: 6%; width: 88%; height: 88%; border-radius: 50%; border: 3px solid #fff0b5; background: transparent; box-shadow: 0 0 0 1px #70431cbb, inset 0 0 0 1px #70431c99, 0 0 8px #e6bc7499; animation: queen-wave 1000ms both; }
 .strike-q i:nth-child(n+2) { display: none; }
-.perform-hit-p { animation: pawn-bash 760ms both; }
-.perform-hit-r { animation: rook-impact 760ms both; }
-.perform-hit-b { animation: bishop-strike 760ms both; }
-.perform-hit-q, .perform-hit-k { animation: royal-strike 760ms both; }
-.perform-hit-n { animation: knight-land 760ms both; }
-.knight-dust { z-index: 6; animation: dust-scatter 760ms both; }
+.perform-hit-p { animation: pawn-bash 1000ms both; }
+.perform-hit-r { animation: rook-impact 1000ms both; }
+.perform-hit-b { animation: bishop-strike 1000ms both; }
+.perform-hit-q, .perform-hit-k { animation: royal-strike 1000ms both; }
+.perform-hit-n { animation: knight-land 1000ms both; }
+.knight-dust { z-index: 6; animation: dust-scatter 1000ms both; }
 .knight-dust i { position: absolute; bottom: 1%; left: 20%; width: 20%; height: 8%; border-radius: 50%; background: #e2c89c66; }
 .knight-dust i:nth-child(2) { left: 44%; width: 13%; }
 .knight-dust i:nth-child(3) { left: 65%; width: 17%; }
 .promotion-effect { z-index: 6; }
-.promotion-pawn { animation: pawn-transform 900ms both; }
-.promotion-swirl { position: absolute; inset: 12%; border: 2px solid transparent; border-left-color: #f3d492; border-right-color: #f3d492; border-radius: 50%; animation: promotion-swirl 900ms both; }
-.perform-promote { animation: piece-crowned 900ms both; }
-.perform-startle { animation: king-startle 650ms both; }
-.perform-bow { animation: victory-bow 900ms both; }
-.perform-topple { animation: king-topple 900ms both; }
+.promotion-pawn { animation: pawn-transform 1000ms both; }
+.promotion-swirl { position: absolute; inset: 12%; border: 2px solid transparent; border-left-color: #f3d492; border-right-color: #f3d492; border-radius: 50%; animation: promotion-swirl 1000ms both; }
+.perform-promote { animation: piece-crowned 1000ms both; }
+.perform-startle { animation: king-startle 1000ms both; }
+.perform-bow { animation: victory-bow 1000ms both; }
+.perform-topple { animation: king-topple 1000ms both; }
 @keyframes playful-glide { from { transform: translate(var(--move-x),var(--move-y)); } to { transform: translate(0,0); } }
-@keyframes playful-attack { 0% { transform: translate(var(--move-x),var(--move-y)); } 34%,100% { transform: translate(0,0); } }
-@keyframes playful-leap { 0% { transform: translate(var(--move-x),var(--move-y)); } 23% { transform: translate(calc(var(--move-x) * .5),calc(var(--move-y) * .5 - 40%)) rotate(-9deg); } 48% { transform: translate(0,0); } 60% { transform: translateY(-6%); } 75%,100% { transform: translate(0,0); } }
+@keyframes playful-attack { 0% { transform: translate(var(--move-x),var(--move-y)); } 30%,100% { transform: translate(0,0); } }
+@keyframes playful-leap { 0% { transform: translate(var(--move-x),var(--move-y)); } 16% { transform: translate(calc(var(--move-x) * .5),calc(var(--move-y) * .5 - 40%)) rotate(-9deg); } 32% { transform: translate(0,0); } 43% { transform: translateY(-8%); } 62%,100% { transform: translate(0,0); } }
 @keyframes playful-castle { 0% { transform: translate(var(--move-x),var(--move-y)); } 55% { transform: translate(0,-7%); } 100% { transform: translate(0,0); } }
-@keyframes captured-crumble { 0%,33% { opacity: 1; transform: translate(0,0) rotate(0); } 80%,100% { opacity: 0; transform: translate(var(--shard-x),24%) rotate(var(--shard-turn)) scale(.7); } }
-@keyframes strike-fade { 0%,30% { opacity: 0; transform: scale(.65); } 42% { opacity: .85; transform: scale(1); } 78%,100% { opacity: 0; transform: scale(1.2); } }
-@keyframes queen-wave { 0%,30% { transform: scale(.3); } 80%,100% { transform: scale(1.3); } }
+@keyframes captured-crumble { 0%,30% { opacity: 1; transform: translate(0,0) rotate(0); } 60% { opacity: .95; transform: translate(calc(var(--shard-x) * .65),12%) rotate(var(--shard-turn)) scale(.9); } 100% { opacity: 0; transform: translate(var(--shard-x),30%) rotate(var(--shard-turn)) scale(.65); } }
+@keyframes strike-fade { 0%,27% { opacity: 0; transform: scale(.7); } 35%,60% { opacity: 1; transform: scale(1); } 80% { opacity: .65; transform: scale(1.06); } 100% { opacity: 0; transform: scale(1.12); } }
+@keyframes queen-wave { 0%,27% { transform: scale(.35); } 38% { transform: scale(.8); } 65% { transform: scale(1); } 100% { transform: scale(1.12); } }
 @keyframes pawn-bash { 0%,25% { transform: rotate(-10deg); } 38% { transform: translateY(-5%) rotate(12deg); } 64%,100% { transform: none; } }
 @keyframes rook-impact { 0%,30% { transform: none; } 42% { transform: translateY(-8%); } 51% { transform: translateY(2%) rotate(-3deg); } 72%,100% { transform: none; } }
 @keyframes bishop-strike { 0%,27% { transform: rotate(-8deg); } 42% { transform: rotate(10deg); } 68%,100% { transform: none; } }
 @keyframes royal-strike { 0%,27% { transform: none; } 44% { transform: translateY(-6%) scale(1.04); } 72%,100% { transform: none; } }
-@keyframes knight-land { 0%,45% { transform: none; } 54% { transform: rotate(6deg); } 72%,100% { transform: none; } }
-@keyframes dust-scatter { 0%,43% { opacity: 0; transform: scale(.6); } 55% { opacity: .8; transform: scale(1); } 90%,100% { opacity: 0; transform: scale(1.3) translateY(5%); } }
+@keyframes knight-land { 0%,32% { transform: none; } 44% { transform: rotate(6deg); } 72%,100% { transform: none; } }
+@keyframes dust-scatter { 0%,32% { opacity: 0; transform: scale(.6); } 45% { opacity: .8; transform: scale(1); } 90%,100% { opacity: 0; transform: scale(1.3) translateY(5%); } }
 @keyframes pawn-transform { 0%,24% { opacity: 1; transform: none; } 65%,100% { opacity: 0; transform: translateY(-20%) scale(.6); } }
 @keyframes piece-crowned { 0%,25% { opacity: 0; transform: scale(.65); } 75% { opacity: 1; transform: translateY(-6%) scale(1.04); } 100% { opacity: 1; transform: none; } }
 @keyframes promotion-swirl { 0% { opacity: 0; transform: rotate(0) scale(.4); } 35% { opacity: .9; } 100% { opacity: 0; transform: rotate(210deg) scale(1.15); } }

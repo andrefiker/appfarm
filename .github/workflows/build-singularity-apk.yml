@@ -30,6 +30,15 @@ jobs:
           test -f web/index.html
           test -f web/shader.js
           ! grep -RniE '(https?://|fetch\(|XMLHttpRequest|WebSocket)' web --exclude='*.md'
+      - name: Validate GLSL ES shaders
+        run: |
+          node tests/extract-glsl.js
+          if ! command -v glslangValidator >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq glslang-tools
+          fi
+          glslangValidator -S vert /tmp/singularity.vert
+          glslangValidator -S frag /tmp/singularity.frag
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

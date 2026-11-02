@@ -21,8 +21,8 @@
    vec2 tile=p*190.;vec2 id=floor(tile),d=fract(tile)-.5;
    float h=hash(id),br=smoothstep(.988,1.,h);
    float core=pow(max(0.,1.-length(d)*3.6),10.);
-   float cross=(.0018/(abs(d.x)+.035)*.0018/(abs(d.y)+.035));
-   return br*(core*2.4+cross*3.)*mix(.5,1.5,hash(id+9.));
+   float spike=(.0018/(abs(d.x)+.035)*.0018/(abs(d.y)+.035));
+   return br*(core*2.4+spike*3.)*mix(.5,1.5,hash(id+9.));
  }
  vec3 sky(vec2 p){
    vec2 q=mat2(.93,-.36,.36,.93)*p;

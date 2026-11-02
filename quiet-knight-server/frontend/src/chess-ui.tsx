@@ -10,6 +10,10 @@ import { Piece, pieceNames } from "./pieces";
 import type { Color, Kind } from "./pieces";
 import type {BoardMotion} from './board-effects';
 import {CaptureEffect, LandingEffect, usePieceEffects} from './piece-effects';
+import {funDefaults} from './fun-options';
+import type {FunOptions} from './fun-options';
+import {usePersonalityAudio} from './fun-audio';
+import {CaptureFlight} from './capture-flight';
 import {
   boardSquares,
   numberedMoves,
@@ -34,6 +38,12 @@ export type BoardProps = {
   drag?: boolean;
   playful?: boolean;
   winner?: Color | null;
+  fun?: FunOptions;
+  draw?: boolean;
+  entrance?: number;
+  soundEnabled?: boolean;
+  soundVolume?: number;
+  replayMode?: boolean;
 };
 export function Icon({
   name,
@@ -98,9 +108,25 @@ export function ChessBoard({
   motion,
   locked,
   onSquare, onMove, drag=true, playful=false, winner=null, motionSequence=motion?.serial,
+  fun=funDefaults, draw=false, entrance=0, soundEnabled=false, soundVolume=80, replayMode=false,
 }: BoardProps) {
   const squares = boardSquares(orientation);
-  const {events, victory} = usePieceEffects(motion, playful, orientation, winner, motionSequence);
+  const {events, victory, handshake, arriving, allowed} = usePieceEffects(motion, playful, orientation, winner, motionSequence, draw, entrance);
+  usePersonalityAudio(motion,allowed && soundEnabled && !replayMode,soundVolume,fun,motionSequence);
+  const [captureReplay,setCaptureReplay]=React.useState<{position:Position;motion:BoardMotion;check:string|null}|null>(null);
+  const [replaying,setReplaying]=React.useState(false),[replayNumber,setReplayNumber]=React.useState(0);
+  const replayDialog=React.useRef<HTMLDialogElement>(null), seenReplay=React.useRef(motionSequence);
+  React.useEffect(()=>{
+    const fresh=motion && seenReplay.current!==motion.serial;seenReplay.current=motionSequence;
+    setReplaying(false);
+    if (!motion) setCaptureReplay(null);
+    else if (fresh && motion.captured && !replayMode) setCaptureReplay({position:{...position},motion:{...motion},check});
+  },[motionSequence,motion,orientation,replayMode]);
+  React.useEffect(()=>{if (!allowed || !fun.replay)setReplaying(false);},[allowed,fun.replay]);
+  React.useEffect(()=>{
+    const dialog=replayDialog.current;if (!dialog)return;
+    if(replaying && !dialog.open)dialog.showModal();else if(!replaying && dialog.open)dialog.close();
+  },[replaying]);
   const gesture=React.useRef<{from:string;x:number;y:number}|null>(null);
   const suppressClick=React.useRef(false);
   function moveOrigin(square: string, movement: Motion): string | null {
@@ -120,7 +146,7 @@ export function ChessBoard({
     return null;
   }
   return (
-    <div className="board-frame">
+    <><div className="board-frame">
       <div
         className="board"
         role="group"
@@ -137,8 +163,10 @@ export function ChessBoard({
           const movement = playful ? active : motion;
           const origin = moveOrigin(square, movement);
           const landing = active?.to === square;
-          const travel = active && origin ? active.san.startsWith('O-O') ? 'castle' : active.actor?.type === 'n' ? 'leap' : active.captured ? 'attack' : 'glide' : '';
-          const gestureEffect = piece?.type === 'k' && victory ? (piece.color === victory ? 'bow' : 'topple')
+          const travel = active && origin ? active.san.startsWith('O-O') ? 'castle' : fun.sneak && active.captured && active.captured.square !== active.to ? 'sneak' : active.actor?.type === 'n' ? 'leap' : active.captured ? 'attack' : 'glide' : '';
+          const gestureEffect = piece?.type === 'k' && handshake && fun.handshake ? 'handshake'
+            : victory && fun.poses && motion?.san.endsWith('#') && motion.to === square && piece?.color === victory && piece.type !== 'k' ? `pose-${piece.type}`
+            : piece?.type === 'k' && victory ? (piece.color === victory ? 'bow' : 'topple')
             : latest && check === square ? 'startle' : landing && active.promotion ? 'promote'
             : landing && active.captured ? `hit-${active.actor?.type || 'p'}` : '';
           const originIndex = origin ? squares.indexOf(origin) : index;
@@ -188,7 +216,7 @@ export function ChessBoard({
                   className={`art-cell${origin ? " art-moving" : ""}${travel ? ` playful-travel travel-${travel}` : ''}`}
                   style={style}
                 >
-                  <span key={`${active?.serial || (check === square ? latest?.serial : 'rest')}-${victory || ''}`} className={`piece-performance${gestureEffect ? ` perform-${gestureEffect}` : ''}`} data-effect={gestureEffect || undefined}>
+                  <span key={`${active?.serial || (check === square ? latest?.serial : 'rest')}-${victory || ''}-${handshake}-${arriving}`} className={`piece-performance${gestureEffect ? ` perform-${gestureEffect}` : ''}${arriving && fun.entrance && !active ? ' perform-entrance' : ''}`} style={{'--entrance-y':`${index<32?-65:65}%`} as React.CSSProperties} data-effect={gestureEffect || (arriving && fun.entrance && !active ? 'entrance' : undefined)}>
                   <Piece
                     color={piece.color}
                     kind={piece.type}
@@ -198,8 +226,8 @@ export function ChessBoard({
                   </span>
                 </span>
               ) : null}
-              {capture ? <CaptureEffect key={`capture-${capture.serial}`} motion={capture}/> : null}
-              {landing ? <LandingEffect key={`landing-${active.serial}`} motion={active}/> : null}
+              {capture ? <CaptureEffect key={`capture-${capture.serial}`} motion={capture} sneak={fun.sneak && capture.captured?.square !== capture.to}/> : null}
+              {landing ? <LandingEffect key={`landing-${active.serial}`} motion={active} fun={fun}/> : null}
               {index%8===0?<span className="square-coordinate rank-coordinate" aria-hidden="true">{square[1]}</span>:null}
               {index>=56?<span className="square-coordinate file-coordinate" aria-hidden="true">{square[0]}</span>:null}
               {target ? (
@@ -213,6 +241,13 @@ export function ChessBoard({
         })}
       </div>
     </div>
+    {!replayMode && allowed && fun.replay && captureReplay ? <div className="capture-replay-action"><button type="button" className="secondary" onClick={()=>{setReplayNumber(n=>n+1);setReplaying(true);}}>Replay last capture</button></div> : null}
+    {!replayMode ? <dialog ref={replayDialog} className="qk-dialog capture-replay-dialog" aria-labelledby="capture-replay-title" onCancel={()=>setReplaying(false)} onClose={()=>setReplaying(false)}>
+      <div className="dialog-head"><h2 id="capture-replay-title">Capture replay</h2><button type="button" autoFocus onClick={()=>setReplaying(false)}>Close replay</button></div>
+      <p>Historical capture · the match is unchanged. New moves close this preview.</p>
+      {replaying && captureReplay ? <ChessBoard key={replayNumber} position={captureReplay.position} orientation={orientation} selected={null} targets={[]} last={null} check={captureReplay.check} motion={captureReplay.motion} locked onSquare={()=>{}} drag={false} playful fun={fun} replayMode /> : null}
+      <button type="button" className="secondary" onClick={()=>setReplayNumber(n=>n+1)}>Replay again</button>
+    </dialog> : null}</>
   );
 }
 export function MaterialScore({
@@ -484,6 +519,7 @@ export type GameSurfaceProps = {
   onSound: () => void;
 };
 export function GameSurface(p: GameSurfaceProps) {
+  const stage=React.useRef<HTMLElement>(null);
   const [selection, setSelection] = React.useState<ReviewSelection | null>(null);
   const validSelection = selection && reviewStillValid(selection, p.gameId, p.sans) ? selection : null;
   const review = React.useMemo(() => validSelection ? positionAtPly(validSelection.line, validSelection.ply) : null, [validSelection]);
@@ -498,7 +534,7 @@ export function GameSurface(p: GameSurfaceProps) {
   }
   const shownBoard: BoardProps = review ? {
     ...p.board, position: review.position, last: review.last, check: review.check,
-    selected: null, targets: [], motion: null, motionSequence:p.board.motion?.serial, locked: true, drag: false,
+    selected: null, targets: [], motion: null, motionSequence:p.board.motionSequence ?? p.board.motion?.serial, locked: true, drag: false,
     onSquare: () => {}, onMove: undefined, playful: false,
   } : p.board;
   const bottom = p.board.orientation;
@@ -605,7 +641,7 @@ export function GameSurface(p: GameSurfaceProps) {
         </button>
       </header>
       <div className="game-layout">
-        <section className="board-stage" aria-label="Playing area">
+        <section ref={stage} className="board-stage" aria-label="Playing area">
           <PlayerBar
             color={top}
             clock={p.clock}
@@ -617,6 +653,7 @@ export function GameSurface(p: GameSurfaceProps) {
           />
           <LostPieces color={top} losses={shownLosses} />
           <ChessBoard {...shownBoard} />
+          <CaptureFlight stage={stage} motion={reviewing ? null : p.board.motion} observedSerial={p.board.motionSequence ?? p.board.motion?.serial} enabled={Boolean(!reviewing && p.board.playful && p.board.fun?.tray)} orientation={p.board.orientation}/>
           <LostPieces color={bottom} losses={shownLosses} />
           <PlayerBar
             color={bottom}

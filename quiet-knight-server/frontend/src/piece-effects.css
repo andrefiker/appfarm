@@ -62,3 +62,48 @@
 }
 body[data-quiet=true] .capture-ghost, body[data-quiet=true] .strike-effect, body[data-quiet=true] .knight-dust, body[data-quiet=true] .promotion-effect,
 body[data-motion=false] .capture-ghost, body[data-motion=false] .strike-effect, body[data-motion=false] .knight-dust, body[data-motion=false] .promotion-effect { display: none; }
+/* Optional fun extras share the one-second presentation window. */
+.board-stage { position:relative; }
+.comic-impact,.revenge-spark,.sneak-trail,.promotion-crown { position:absolute;pointer-events:none;z-index:14; }
+.comic-impact { left:4%;right:4%;bottom:6%;text-align:center;font:900 clamp(8px,2.4vw,14px)/1.2 system-ui,sans-serif;color:#fff4cc;text-shadow:-1px -1px #2d231b,1px -1px #2d231b,-1px 1px #2d231b,1px 1px #2d231b,0 2px 2px #101813;animation:comic-pop 1000ms both; }
+.revenge-spark { inset:0;display:grid;place-items:center;color:#bbfff0;font-size:clamp(30px,10vw,70px);text-shadow:0 0 2px #0d473d,0 0 7px #084239;animation:revenge-flare 1000ms both; }
+.promotion-crown { width:48%;height:30%;left:26%;top:0;overflow:visible;fill:#ffe2a2;stroke:#57401f;stroke-width:1.8;animation:crown-drop 1000ms both; }
+.sneak-trail { inset:0;animation:strike-fade 1000ms both; }
+.sneak-trail i { position:absolute;left:12%;top:53%;height:13%;width:8%;border-radius:50%;background:#f5dc9f;box-shadow:0 0 0 1px #54442c;transform:rotate(-25deg); }
+.sneak-trail i+i { left:28%;top:73%; }
+.travel-sneak { animation-name:pawn-sneak; }
+.capture-sneak .capture-shard { animation-name:sneaked-crumble; }
+.perform-handshake { animation:draw-bow 1000ms both; }
+.perform-pose-p { animation:pawn-cheer 1000ms both; }
+.perform-pose-n { animation:knight-rear 1000ms both; }
+.perform-pose-b { animation:bishop-salute 1000ms both; }
+.perform-pose-r { animation:rook-stomp 1000ms both; }
+.perform-pose-q { animation:queen-curtsy 1000ms both; }
+.perform-entrance { animation:formation-entry 1000ms both; }
+.capture-flight { position:absolute;display:block;z-index:20;pointer-events:none;animation:tray-flight 1000ms both;transform-origin:center; }
+.capture-flight .chess-art { width:100%;height:100%;filter:drop-shadow(0 2px 2px #0009); }
+.capture-replay-action { display:flex;justify-content:flex-end;margin:0; }
+.capture-replay-action button { min-height:44px;padding:8px 12px;font-size:12px; }
+.capture-replay-dialog { max-width:480px;width:calc(100% - 24px);padding:16px; }
+.capture-replay-dialog p { font-size:13px;color:var(--muted,#becac3); }
+.capture-replay-dialog .board-frame { width:100%;margin:12px 0; }
+.capture-replay-dialog .dialog-head { gap:10px; }
+.capture-replay-dialog h2 { font-size:19px; }
+.capture-replay-dialog button { min-height:44px; }
+.fun-settings { border-top:1px solid #81998b33;padding:12px 0; }
+.fun-settings summary { cursor:pointer;min-height:44px;display:flex;align-items:center;color:#e6cca0; }
+@keyframes comic-pop { 0%,29% { opacity:0;transform:scale(.45) rotate(-8deg); } 42%,70% { opacity:1;transform:scale(1) rotate(-5deg); } 100% { opacity:0;transform:translateY(-15%) scale(.9); } }
+@keyframes revenge-flare { 0%,32% { opacity:0;transform:scale(.3) rotate(-30deg); } 46% { opacity:1;transform:scale(.9) rotate(0); } 100% { opacity:0;transform:scale(1.2) rotate(45deg); } }
+@keyframes crown-drop { 0%,28% { opacity:0;transform:translateY(-75%) scale(.6); } 64% { opacity:1;transform:translateY(10%) scale(1); } 82% { opacity:1;transform:translateY(0); } 100% { opacity:0;transform:translateY(0); } }
+@keyframes pawn-sneak { 0% { transform:translate(var(--move-x),var(--move-y)); } 20% { transform:translate(calc(var(--move-x) * .25),calc(var(--move-y) * .8)) rotate(-12deg); } 48%,100% { transform:none; } }
+@keyframes sneaked-crumble { 0%,49% { opacity:1;transform:none; } 68% { opacity:.95;transform:translate(calc(var(--shard-x) * .65),12%) rotate(var(--shard-turn)) scale(.9); } 100% { opacity:0;transform:translate(var(--shard-x),30%) rotate(var(--shard-turn)) scale(.65); } }
+@keyframes draw-bow { 0%,100% { transform:none; } 40%,65% { transform:perspective(180px) rotateX(-25deg) translateY(7%); } }
+@keyframes pawn-cheer { 0%,100% { transform:none; } 40% { transform:translateY(-14%) rotate(-8deg); } 65% { transform:rotate(8deg); } }
+@keyframes knight-rear { 0%,100% { transform:none; } 45%,60% { transform:rotate(-18deg) translateY(-8%); } }
+@keyframes bishop-salute { 0%,100% { transform:none; } 40%,65% { transform:rotate(15deg); } }
+@keyframes rook-stomp { 0%,100% { transform:none; } 30% { transform:translateY(-12%); } 55% { transform:scale(1.06,.92); } 75% { transform:translateY(-4%); } }
+@keyframes queen-curtsy { 0%,100% { transform:none; } 45%,65% { transform:translateY(6%) rotate(-12deg) scale(.94); } }
+@keyframes formation-entry { 0% { opacity:0;transform:translateY(var(--entrance-y)); } 65% { opacity:1;transform:translateY(-3%); } 100% { opacity:1;transform:none; } }
+@keyframes tray-flight { 0%,37% { opacity:0;transform:none; } 48% { opacity:1;transform:scale(.85); } 84% { opacity:1;transform:translate(var(--flight-x),var(--flight-y)) rotate(325deg) scale(var(--flight-scale)); } 93% { opacity:1;transform:translate(var(--flight-x),calc(var(--flight-y) - 5px)) rotate(360deg) scale(var(--flight-scale)); } 100% { opacity:0;transform:translate(var(--flight-x),var(--flight-y)) rotate(360deg) scale(var(--flight-scale)); } }
+@media (prefers-reduced-motion:reduce) { .comic-impact,.revenge-spark,.sneak-trail,.promotion-crown,.capture-flight { display:none !important; } }
+body[data-quiet=true] :is(.comic-impact,.revenge-spark,.sneak-trail,.promotion-crown,.capture-flight),body[data-motion=false] :is(.comic-impact,.revenge-spark,.sneak-trail,.promotion-crown,.capture-flight) { display:none; }

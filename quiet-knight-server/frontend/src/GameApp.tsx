@@ -29,6 +29,7 @@ import { loadLocal, saveLocal, useOfflineFiles } from "./offline";
 import { shareInvite } from "./invite-share";
 import { diagnosticReport } from "./diagnostics";
 import { lastLiveRoom, rememberLiveRoom, forgetLiveRoom } from "./live-resume";
+import {pieceSoundEnabled} from './fun-audio';
 import { useChessAudio } from "./chess-audio";
 import { GameSurface, HomeSurface, Icon, PromotionChoices } from "./chess-ui";
 import { DrawControls } from './draw-controls';
@@ -175,17 +176,19 @@ export default function GameApp() {
     const saved = Number(stored("qk-volume") || "80");
     return Number.isFinite(saved) ? Math.max(20, Math.min(100, saved)) : 80;
   });
-  const chessAudio = useChessAudio(sound, volume);
+  const chessAudio = useChessAudio(sound && !prefs.quiet, volume);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [motion, setMotion] = useState<Motion>(null);
+  const [entrance, setEntrance] = useState(0);
+  useEffect(() => {if (!entrance) return; const timer = window.setTimeout(() => setEntrance(0),1100);return () => window.clearTimeout(timer);}, [entrance]);
   const roomCodeRef = useRef<string | null>(null);
   const requestLock = useRef(false);
   const requestGeneration = useRef(0);
   const resumeStarted = useRef(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const preferences = useRef({ sound, haptics });
-  preferences.current = { sound, haptics };
+  const preferences = useRef({ sound, haptics, fun:prefs.fun, playful:prefs.playful && prefs.animate && !prefs.quiet });
+  preferences.current = { sound:sound && !prefs.quiet, haptics, fun:prefs.fun, playful:prefs.playful && prefs.animate && !prefs.quiet };
   const accountId = knight.player?.id ?? "guest";
   const activeAccount = useRef<string>("guest");
   const [gameOwner, setGameOwner] = useState<string>("guest");
@@ -342,7 +345,7 @@ export default function GameApp() {
       void joinRoom(normalized, stored(`qk-seat-${normalized}`));
     }
   }, [accountId, gameOwner]);
-  const previousMove = useRef<{ key: string; count: number; position: Position } | null>(null);
+  const previousMove = useRef<{ key: string; count: number; position: Position; roomCode?: string } | null>(null);
   const motionSerial = useRef(0);
   const gameKey = room
     ? `room-${room.code}-${room.game_number || 1}`
@@ -350,19 +353,21 @@ export default function GameApp() {
   useEffect(() => {
     const previous = previousMove.current;
     const count = sans.length;
-    previousMove.current = { key: gameKey, count, position };
+    previousMove.current = { key: gameKey, count, position, roomCode: room?.code };
+    if (previous && screen === "game" && count === 0 && ((room && previous.roomCode === room.code && previous.key !== gameKey) || (!room && !previous.roomCode && previous.count > 0))) setEntrance(Date.now());
     if (previous?.key !== gameKey || count !== previous.count + 1 || !last) {
       setMotion(null);
       return;
     }
-    setMotion(describeBoardMotion(previous.position, position, {
+    setMotion(old => describeBoardMotion(previous.position, position, {
       from: last.from,
       to: last.to,
       san: sans[count - 1] || "",
       serial: ++motionSerial.current,
-    }));
+    }, old));
     if (screen === "game") playHaptic(check ? "check" : history?.[count - 1]?.captured ? "capture" : "move", preferences.current.haptics);
-    if (preferences.current.sound)
+    const actor=previous.position[last.from];
+    if (preferences.current.sound && (check || !preferences.current.playful || !actor || !pieceSoundEnabled(preferences.current.fun,actor.type)))
       void chessAudio.play(
         Boolean(history?.[count - 1]?.captured),
         Boolean(check),
@@ -1123,7 +1128,7 @@ export default function GameApp() {
   return (
     <>
       {archiveError&&screen==="game"?<p role="alert" className="server-compatibility">{archiveError}</p>:null}
-      {screen === "study" ? <StudyRoom key={accountId} owner={accountId} prefs={prefs} haptics={haptics} seed={studySeed} onBack={()=>setScreen(room?"game":"home")}/> : null}
+      {screen === "study" ? <StudyRoom key={accountId} owner={accountId} prefs={prefs} haptics={haptics} sound={sound} volume={volume} seed={studySeed} onBack={()=>setScreen(room?"game":"home")}/> : null}
 
       {screen === "home" && localMoves.length > 0 ? (
         <div className="resume-local">
@@ -1306,7 +1311,9 @@ export default function GameApp() {
             last,
             check,
             motion:prefs.animate?motion:null,
+            motionSequence:motion?.serial,
             playful:prefs.playful && prefs.animate && !prefs.quiet,
+            fun:prefs.fun, soundEnabled:sound, soundVolume:volume, draw:room?.status === "draw", entrance,
             winner:ended ? room ? room.winner : game.isCheckmate() ? turn === 'w' ? 'b' : 'w' : null : null,
             locked,
             onSquare, drag:prefs.drag,

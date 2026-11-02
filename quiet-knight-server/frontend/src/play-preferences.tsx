@@ -1,11 +1,13 @@
 import {useEffect,useState} from 'react';
+import {funDefaults,readFunOptions} from './fun-options';
+import type {FunOptions} from './fun-options';
 import type {Style} from './offline-engine';
-export type PlayPreferences={schema:1;quiet:boolean;reactions:boolean;left:boolean;drag:boolean;confirm:boolean;animate:boolean;playful:boolean;hints:boolean;contrast:boolean;style:Style;think:number;adaptive:boolean;nickname:string};
-const defaults:PlayPreferences={schema:1,quiet:false,reactions:false,left:false,drag:true,confirm:false,animate:true,playful:true,hints:true,contrast:false,style:'balanced',think:250,adaptive:false,nickname:''};
+export type PlayPreferences={schema:1;fun:FunOptions;quiet:boolean;reactions:boolean;left:boolean;drag:boolean;confirm:boolean;animate:boolean;playful:boolean;hints:boolean;contrast:boolean;style:Style;think:number;adaptive:boolean;nickname:string};
+const defaults:PlayPreferences={schema:1,fun:funDefaults,quiet:false,reactions:false,left:false,drag:true,confirm:false,animate:true,playful:true,hints:true,contrast:false,style:'balanced',think:250,adaptive:false,nickname:''};
 export function usePlayPreferences(){
   const [prefs,setPrefs]=useState<PlayPreferences>(()=>{
     try{const p=JSON.parse(localStorage.getItem('qk-play-preferences-v1')||'null');if(!p||p.schema!==1)return defaults;
-      return {...defaults,...Object.fromEntries(Object.keys(defaults).filter(k=>typeof p[k]===typeof defaults[k as keyof PlayPreferences]).map(k=>[k,p[k]])),think:Math.max(50,Math.min(1500,Number(p.think)||250)),style:['balanced','fox','tortoise','owl','beginner'].includes(p.style)?p.style:'balanced',nickname:String(p.nickname||'').replace(/[^\p{L}\p{N} ._-]/gu,'').slice(0,24)};
+      return {...defaults,...Object.fromEntries(Object.keys(defaults).filter(k=>typeof p[k]===typeof defaults[k as keyof PlayPreferences]).map(k=>[k,p[k]])),fun:readFunOptions(p.fun),think:Math.max(50,Math.min(1500,Number(p.think)||250)),style:['balanced','fox','tortoise','owl','beginner'].includes(p.style)?p.style:'balanced',nickname:String(p.nickname||'').replace(/[^\p{L}\p{N} ._-]/gu,'').slice(0,24)};
     }catch{return defaults;}
   });
   useEffect(()=>{
@@ -18,6 +20,11 @@ export function usePlayPreferences(){
 export function PlaySettings({prefs,update}:{prefs:PlayPreferences;update:(p:Partial<PlayPreferences>)=>void}){
   return <section aria-label="Play preferences"><h3>Play your way</h3>
     {([['quiet','Quiet Mode'],['reactions','Receive / send quiet reactions'],['left','Left-handed controls'],['drag','Drag to move (tap always works)'],['confirm','Confirm each move'],['animate','Move animations'],['playful','Playful piece effects'],['hints','Legal destination previews'],['contrast','High contrast'],['adaptive','Adaptive difficulty for local computer games']] as const).map(([key,label])=><label className="preference-row" key={key}><span>{label}</span><input type="checkbox" checked={prefs[key]} onChange={e=>update({[key]:e.target.checked})}/></label>)}
+    <details className="fun-settings"><summary>Fun extras</summary>
+      {([['comic','Comic capture labels'],['replay','Capture replay button'],['tray','Captured-piece landing'],['sneak','En passant sneak'],['crown','Promotion crown'],['revenge','Recapture spark'],['poses','Checkmate piece poses'],['handshake','Draw handshake'],['entrance','Rematch entrance'],['sounds','Personality sounds']] as const).map(([key,label])=><label className="preference-row" key={key}><span>{label}</span><input type="checkbox" checked={prefs.fun[key]} onChange={e=>update({fun:{...prefs.fun,[key]:e.target.checked}})}/></label>)}
+      <p className="settings-note">All visuals last one second. Replay is a separate view and never changes the match. Personality sounds also require move sounds to be enabled.</p>
+      <details><summary>Choose piece sounds</summary>{([['soundP','Pawn thud'],['soundN','Knight hoofbeats'],['soundB','Bishop sweep'],['soundR','Rook rumble'],['soundQ','Queen chime'],['soundK','King clang']] as const).map(([key,label])=><label className="preference-row" key={key}><span>{label}</span><input type="checkbox" checked={prefs.fun[key]} onChange={e=>update({fun:{...prefs.fun,[key]:e.target.checked}})}/></label>)}</details>
+    </details>
     <p className="settings-note">Playful effects add brief captures, leaps and celebrations. Move animations must be on; Quiet Mode and reduced motion suppress these effects.</p>
     <p className="settings-note">Quiet Mode keeps turn, check and connection warnings visible. Analysis remains available after play. Adaptive difficulty adjusts the next local game by one level after a win/loss; it never changes human games.</p>
     <label className="preference-row">Opponent style<select aria-label="Opponent style" value={prefs.style} onChange={e=>update({style:e.target.value as Style})}><option value="balanced">Balanced</option><option value="beginner">Beginner · forgiving</option><option value="fox">Fox · tactical</option><option value="tortoise">Tortoise · cautious</option><option value="owl">Owl · central / positional</option></select></label>

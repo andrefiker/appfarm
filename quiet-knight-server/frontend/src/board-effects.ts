@@ -7,11 +7,12 @@ export type BoardMotion = {
   actor?: ArmyPiece;
   captured?: ArmyPiece & { square: string };
   promotion?: Kind;
+  revenge?: boolean;
   rook?: { from: string; to: string };
 };
 
 // Presentation metadata only: the chess engine/server has already accepted the move.
-export function describeBoardMotion(before: Position, after: Position, move: BoardMotion): BoardMotion {
+export function describeBoardMotion(before: Position, after: Position, move: BoardMotion, previous?: BoardMotion | null): BoardMotion {
   const actor = before[move.from];
   if (!actor) return move;
   const result: BoardMotion = {...move, actor};
@@ -28,6 +29,7 @@ export function describeBoardMotion(before: Position, after: Position, move: Boa
   if (actor.type === 'p' && move.from[0] !== move.to[0] && !before[move.to]) capturedSquare = move.to[0] + move.from[1];
   const victim = before[capturedSquare];
   if (victim && victim.color !== actor.color) result.captured = {...victim, square:capturedSquare};
+  result.revenge = Boolean(result.captured && previous?.captured && previous.actor?.color !== actor.color && previous.to === capturedSquare);
   const arriving = after[move.to];
   if (actor.type === 'p' && arriving?.color === actor.color && arriving.type !== 'p') result.promotion = arriving.type;
   return result;

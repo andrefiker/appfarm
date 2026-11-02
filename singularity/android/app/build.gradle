@@ -1,0 +1,15 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'com.andrefiker.singularity'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'com.andrefiker.singularity'
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName '1.0.0'
+    }
+    sourceSets {
+        main.assets.srcDirs = ['../../web']
+    }
+}

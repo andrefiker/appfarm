@@ -1,0 +1,10 @@
+{
+  "name": "appfarm-singularity",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cinematic procedural gravitational arcade, WebGL2 plus Canvas2D fallback, offline first",
+  "scripts": {
+    "test": "node --test tests/physics.test.js",
+    "lint": "node --check web/physics.js && node --check web/shader.js && node --check web/game.js"
+  }
+}

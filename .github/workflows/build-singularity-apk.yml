@@ -1,0 +1,66 @@
+name: Build SINGULARITY APK
+on:
+  push:
+    branches: [ feature/singularity-showcase ]
+    paths:
+      - 'singularity/**'
+      - '.github/workflows/build-singularity-apk.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'singularity/**'
+      - '.github/workflows/build-singularity-apk.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: singularity
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test physics and JS syntax
+        run: |
+          npm test
+          npm run lint
+      - name: Verify offline asset policy
+        run: |
+          test -f web/index.html
+          test -f web/shader.js
+          ! grep -RniE '(https?://|fetch\(|XMLHttpRequest|WebSocket)' web --exclude='*.md'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Android SDK 35
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-35' 'build-tools;35.0.0' >/dev/null
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Assemble debug APK
+        working-directory: singularity/android
+        run: |
+          gradle --no-daemon :app:assembleDebug
+          mkdir -p ../dist
+          cp app/build/outputs/apk/debug/app-debug.apk ../dist/SINGULARITY-1.0.0-debug.apk
+      - name: Verify package, signature, assets, permissions
+        run: |
+          test -s dist/SINGULARITY-1.0.0-debug.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging dist/SINGULARITY-1.0.0-debug.apk | tee dist/badging.txt
+          grep -q "package: name='com.andrefiker.singularity' versionCode='1' versionName='1.0.0'" dist/badging.txt
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose dist/SINGULARITY-1.0.0-debug.apk
+          ! "$ANDROID_HOME/build-tools/35.0.0/aapt" dump permissions dist/SINGULARITY-1.0.0-debug.apk | grep -q android.permission.INTERNET
+          unzip -l dist/SINGULARITY-1.0.0-debug.apk | grep -q 'assets/index.html'
+          unzip -l dist/SINGULARITY-1.0.0-debug.apk | grep -q 'assets/game.js'
+          unzip -l dist/SINGULARITY-1.0.0-debug.apk | grep -q 'assets/shader.js'
+          sha256sum dist/SINGULARITY-1.0.0-debug.apk | tee dist/sha256.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SINGULARITY-APK
+          path: singularity/dist/SINGULARITY-1.0.0-debug.apk
+          retention-days: 7
+          if-no-files-found: error

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"/>
+<meta name="theme-color" content="#030510"/><meta name="color-scheme" content="dark"/>
+<title>SINGULARITY — Interactive Cosmic Arcade</title><link rel="stylesheet" href="style.css"/></head>
+<body>
+<div id="stage" aria-label="Interactive black hole simulation; aim and fire probes with a touch gesture">
+  <canvas id="cosmos" aria-hidden="true"></canvas><canvas id="effects" aria-hidden="true"></canvas>
+  <div id="grain" aria-hidden="true"></div>
+  <div class="top-strip"><div class="brand"><i class="brand-mark"></i><span>ASTRA / EXPERIMENT 001</span></div><div class="top-right"><span id="fps"></span><button id="sound" class="icon-button" aria-label="Toggle sound" title="Sound">♫</button></div></div>
+  <div id="hud" class="hud hide">
+    <div class="stat"><span class="stat-label">ENERGY CAPTURED</span><strong id="score">00000</strong></div>
+    <div class="stat right"><span class="stat-label">PROBES REMAINING</span><strong id="ammo">● ● ● ● ● ●</strong></div>
+  </div>
+  <div id="menu" class="center-overlay">
+    <div class="eyebrow"><span class="pulse"></span> INTERACTIVE COSMIC PHYSICS</div>
+    <h1>SINGULARITY<span class="period">.</span></h1>
+    <p class="subtitle">The universe is not a place.<br/>It's a set of rules you can break.</p>
+    <div class="menu-actions"><button id="start" class="primary">ENTER THE EVENT HORIZON <span>↗</span></button><p class="instructions">ORBIT THE IMPOSSIBLE <span class="middot">·</span> TOUCH TO LAUNCH</p></div>
+    <p class="best">PERSONAL RECORD <b id="best">00000</b></p>
+  </div>
+  <div id="play-tip" class="play-tip hide">AIM ANYWHERE <span>→</span> RELEASE TO LAUNCH</div>
+  <div id="end" class="center-overlay end hide"><span class="eyebrow">MISSION COMPLETE</span><h2>YOU BENT<br/><em>SPACETIME.</em></h2><div class="total"><span>ENERGY HARVESTED</span><strong id="total">0</strong></div><div class="menu-actions"><button id="again" class="primary">ANOTHER UNIVERSE <span>↗</span></button></div><p id="record" class="best"></p></div>
+  <div class="bottom-strip"><span>01 / THE ACCRETION ENGINE</span><span>BUILT FOR WONDER <span class="asterisk">✳</span></span></div>
+  <div id="flash" aria-hidden="true"></div>
+</div>
+<script src="physics.js"></script><script src="shader.js"></script><script src="game.js"></script>
+</body></html>

@@ -16,14 +16,15 @@
 - Node physics tests (8): PASS
 - JS syntax: PASS
 - Headless Chromium Canvas2D fallback: renders, start button works, launch decreases ammo, scoring updates, no JavaScript page errors
-- WebGL2 path: NOT VERIFIED (sandbox GPU unavailable)
-- GitHub Actions run #41483325797 succeeded (APK v1.0.0, build, signature, package/version, assets, no Internet permission): PASS
-- APK build SHA-256: `3056d4e50b4555cdfe602ab4d65a805aadbf41bd82664c750b7cebdf2a7038fd`
+- GLSL ES vertex and fragment shader static compilation (glslangValidator on GitHub Actions): PASS
+- WebGL2 visual execution on mobile GPU: NOT VERIFIED (sandbox GPU unavailable)
+- GitHub Actions run #41483890028 succeeded (APK v1.0.0, build, signature, package/version, assets, no Internet permission): PASS
+- APK build SHA-256: `7eb33794f37ceaff76322b57e6852935d24d176487322c7156aede890f3af31f`
 - Full six-shot browser round completion and restart: PASS
 - Physical-device install, launch, background/resume and GPU shader: NOT VERIFIED
-- GPU resolution-cap repair is present in APK and structurally checked in second successful CI run
+- GPU resolution-cap repair and safer shader identifier are included in validated APK; GLSL static compilation in CI passed
 
 ## Recovery and rollback
 - Preserve latest verified source; if packaging fails, repair build only.
-- Source build commit: `a8b9d60b29749a00853b8c47ad1c0b7739733619` on branch `feature/singularity-showcase`.
+- Source build commit: `9dc56848b27c03323b49df8b21438ecc3a421533` on branch `feature/singularity-showcase`.
 - Rollback source commit: `fbf14672d9cb06ff6a06db7912ee575f90ccc762` (first working APK); pre-feature main: `0db2815c14b727031d63e7c14ef0a75255690e90`.

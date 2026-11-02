@@ -24,3 +24,13 @@ const e=describeBoardMotion({b1:{color:'w',type:'k'},f1:{color:'w',type:'r'}},{g
 assert.equal(e.to,'g1');assert.equal(e.rook,undefined,'stationary rook must not jump from h1');
 const quiet=effect(undefined,'Nf3');assert.equal(quiet.actor.type,'n');assert.equal(quiet.captured,undefined);
 console.log('Board effects: en passant, all capture promotions, both castles, stationary Chess960 rook and quiet knight passed.');
+
+const recaptureGame=new Chess();let lastEffect=null;
+for (const san of ['e4','d5','exd5','Qxd5']) {
+ const before=position(recaptureGame),made=recaptureGame.move(san);
+ lastEffect=describeBoardMotion(before,position(recaptureGame),{from:made.from,to:made.to,san,serial:recaptureGame.history().length},lastEffect);
+}
+assert.equal(lastEffect.revenge,true,'immediate recapture is recognized');
+const previous=lastEffect;const before=position(recaptureGame),made=recaptureGame.move('Nc3');
+assert.equal(describeBoardMotion(before,position(recaptureGame),{from:made.from,to:made.to,san:made.san,serial:5},previous).revenge,false);
+console.log('Recapture presentation metadata passed.');

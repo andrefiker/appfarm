@@ -180,6 +180,7 @@ export function ChessBoard({
                     color={piece.color}
                     kind={piece.type}
                     scope={`board-${square}`}
+                    fitToSquare
                   />
                 </span>
               ) : null}

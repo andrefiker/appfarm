@@ -124,3 +124,52 @@ test('downloaded game postcard retains faceted pieces in its standalone PNG',asy
   await mkdir('output/playwright',{recursive:true});await writeFile('output/playwright/emerald-postcard.png',bytes);
  }finally{await other.close();}
 });
+
+test('larger pieces have matching army heights, centered silhouettes and no square overflow', async ({page}) => {
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto(url);await page.getByRole('button',{name:'Play White',exact:true}).click();
+ await mkdir('output/playwright',{recursive:true});
+ async function silhouettes(){
+  return page.locator('.board .square:has(svg)').evaluateAll(squares=>squares.map(square=>{
+   const svg=square.querySelector('svg'),box=svg.querySelector('clipPath path').getBBox(),matrix=svg.getScreenCTM();
+   const a=new DOMPoint(box.x,box.y).matrixTransform(matrix),b=new DOMPoint(box.x+box.width,box.y+box.height).matrixTransform(matrix);
+   const cell=square.getBoundingClientRect();
+   return {square:square.dataset.square,piece:square.dataset.piece,x:a.x,y:a.y,w:b.x-a.x,h:b.y-a.y,left:cell.left,top:cell.top,right:cell.right,bottom:cell.bottom,size:cell.width};
+  }));
+ }
+ for(const orientation of ['w','b']){
+  if(orientation==='b'){
+   await page.getByRole('button',{name:'Table controls',exact:true}).click();
+   await page.getByRole('button',{name:'Flip board',exact:true}).click();
+   await page.getByRole('button',{name:'Close table controls',exact:true}).click();
+  }
+  for(const width of [320,390,1280]){
+   await page.setViewportSize({width,height:width===1280?1000:866});await geometry(page);
+   const pieces=await silhouettes();expect(pieces).toHaveLength(32);
+   for(const p of pieces){
+    expect(Math.abs(p.x+p.w/2-(p.left+p.right)/2)).toBeLessThan(.15);
+    expect(p.x).toBeGreaterThanOrEqual(p.left-.1);expect(p.x+p.w).toBeLessThanOrEqual(p.right+.1);
+    expect(p.y).toBeGreaterThanOrEqual(p.top-.1);expect(p.y+p.h).toBeLessThanOrEqual(p.bottom+.1);
+    // Even the pawn fills at least 82% of its square vertically.
+    expect(p.h/p.size).toBeGreaterThan(.82);
+   }
+   for(const kind of ['p','r','n','b','q','k']){
+    const white=pieces.find(p=>p.piece==='w'+kind),black=pieces.find(p=>p.piece==='b'+kind);
+    expect(Math.abs(white.h-black.h)).toBeLessThan(.15);
+    expect(Math.abs((white.y+white.h-white.top)-(black.y+black.h-black.top))).toBeLessThan(.15);
+   }
+   await page.screenshot({path:`output/playwright/larger-pieces-${orientation}-${width}.png`,fullPage:true});
+  }
+ }
+ await page.setViewportSize({width:320,height:866});
+ await page.locator('[data-square=e2]').click();
+ await expect(page.locator('[data-square=e4]')).toHaveAttribute('aria-label',/legal destination/);
+ await page.locator('[data-square=e1]').click();
+ await expect(page.locator('[data-square=e1]')).toHaveAttribute('aria-pressed','true');
+ const selected=(await silhouettes()).find(p=>p.square==='e1');
+ expect(selected.y).toBeGreaterThanOrEqual(selected.top);
+ expect(selected.y+selected.h).toBeLessThanOrEqual(selected.bottom);
+ await page.emulateMedia({reducedMotion:'reduce'});
+ await expect(page.locator('[data-square=e1] .art-cell')).toHaveCSS('transform','none');
+ expect(errors).toEqual([]);
+});

@@ -8,6 +8,12 @@ body[data-atmosphere="emerald-enamel"]:has(.mobile-table) { background: #0b1b19;
 .mobile-table .player-meta { font-size: 12px; line-height: 17px; }
 .mobile-table .player-quip { font-style: normal; font-size: 12px; }
 .mobile-table .board-frame { padding: 5px; border-radius: 6px; }
+/* The SVG now fits the silhouette itself; extra scaling would cross square edges. */
+.board .art-cell .faceted-piece { transform: none; }
+.board .square-selected .art-cell { transform: translateY(-1%); }
+@media (prefers-reduced-motion: reduce) {
+  .board .square-selected .art-cell { transform: none; }
+}
 /* Square names remain accessible; study boards retain visible coordinates. */
 .mobile-table .square-coordinate { display: none; }
 .mobile-table .table-below { padding: 0 8px; }

@@ -7,6 +7,8 @@ import {makeSquare,parseUci,makeUci} from 'chessops/util';
 import {parseSan,makeSan} from 'chessops/san';
 import {ChessBoard,PromotionChoices,MaterialScore} from './chess-ui';
 import type {Position} from './chess-ui';
+import {describeBoardMotion} from './board-effects';
+import type {BoardMotion} from './board-effects';
 import type {Color,Kind} from './pieces';
 import {blankStudy,loadStudy,saveStudy,replay,positionFromFen,variantForFen,boardPosition,legalMoves,chess960Fen,studyPgn,importStudyPgn,outcome,repetitionCount,moveFeatures} from './local-rules';
 import type {StudySession} from './local-rules';
@@ -25,6 +27,7 @@ export function StudyRoom({owner,prefs,haptics,seed,onBack}:{owner:string;prefs:
  const[lines,setLines]=useState<EngineLine[]>([]),[evaluationFen,setEvaluationFen]=useState(''),[graph,setGraph]=useState<{fen:string;cp:number;mate?:number;depth:number;best?:string}[]>([]),[progress,setProgress]=useState(0);
  const search=useRef<AbortController|null>(null);
  const previousHaptic=useRef<{start:string;moves:string[];cursor:number}|null>(null);
+ const [motion,setMotion]=useState<BoardMotion|null>(null), motionSerial=useRef(0);
  const[fenText,setFenText]=useState(session.start),[pgnText,setPgnText]=useState(''),[variantIndex,setVariantIndex]=useState(518),[exercise,setExercise]=useState<{kind:'puzzle'|'endgame';index:number}|null>(null),[hint,setHint]=useState(false);
  const[editor,setEditor]=useState<Position>(()=>boardPosition(positionFromFen(session.start))),[brush,setBrush]=useState('wp'),[editTurn,setEditTurn]=useState('w'),[castling,setCastling]=useState('-'),[ep,setEp]=useState('-');
  const current=useMemo(()=>replay(session,session.cursor),[session.start,session.moves,session.cursor]),fen=makeFen(current.pos.toSetup()),board=boardPosition(current.pos),turn:Color=current.pos.turn==='white'?'w':'b',end=useMemo(()=>outcome(session),[session.start,session.moves]);
@@ -39,8 +42,10 @@ export function StudyRoom({owner,prefs,haptics,seed,onBack}:{owner:string;prefs:
  useEffect(()=>{
   const old=previousHaptic.current;
   previousHaptic.current={start:session.start,moves:session.moves,cursor:session.cursor};
-  if(!old||old.start!==session.start||old.cursor!==old.moves.length||session.cursor!==session.moves.length||session.moves.length!==old.moves.length+1||!old.moves.every((m,i)=>m===session.moves[i]))return;
+  if(!old||old.start!==session.start||old.cursor!==old.moves.length||session.cursor!==session.moves.length||session.moves.length!==old.moves.length+1||!old.moves.every((m,i)=>m===session.moves[i])){setMotion(null);return;}
   const before=replay(session,session.moves.length-1).pos;
+  const uci=session.moves[session.moves.length-1];
+  setMotion(describeBoardMotion(boardPosition(before),boardPosition(current.pos),{from:uci.slice(0,2),to:uci.slice(2,4),san:current.sans[current.sans.length-1]||'',serial:++motionSerial.current}));
   const captured=moveFeatures(before,session.moves[session.moves.length-1]).capture;
   playHaptic(current.pos.isCheck()?'check':captured?'capture':'move',haptics);
  },[session.start,session.moves,session.cursor,haptics]);
@@ -87,7 +92,7 @@ export function StudyRoom({owner,prefs,haptics,seed,onBack}:{owner:string;prefs:
  function importFen(){try{const p=positionFromFen(fenText);replace({...blankStudy(),start:makeFen(p.toSetup()),variant:variantForFen(fenText,session.variant)});setTab('play');}catch(e){setNotice('FEN rejected: '+(e as Error).message);}}
  function useEditor(){try{const ranks=[];for(let r=8;r>=1;r--){let rank='',empty=0;for(let f=0;f<8;f++){const p=editor[String.fromCharCode(97+f)+r];if(p){if(empty)rank+=empty;empty=0;rank+=p.color==='w'?p.type.toUpperCase():p.type;}else empty++;}if(empty)rank+=empty;ranks.push(rank);}const raw=makeBoardFen(parseBoardFen(ranks.join('/')).unwrap())+` ${editTurn} ${castling||'-'} ${ep||'-'} 0 1`;setFenText(raw);const p=positionFromFen(raw);replace({...blankStudy(),start:makeFen(p.toSetup()),variant:variantForFen(raw,session.variant)});setTab('play');}catch(e){setNotice('Position rejected: '+(e as Error).message);}}
  const check=current.pos.isCheck()?makeSquare(current.pos.board.kingOf(current.pos.turn)!):null;
- const body=<><ChessBoard position={tab==='editor'?editor:board} orientation={orientation} selected={selected} targets={targets} last={null} check={check} motion={null} locked={tab==='editor'?false:locked} onSquare={square} onMove={(from,to)=>propose(from,to)} drag={prefs.drag&&tab!=='editor'}/>
+ const body=<><ChessBoard position={tab==='editor'?editor:board} orientation={orientation} selected={selected} targets={targets} last={null} check={check} motion={prefs.animate&&tab==='play'&&session.cursor===session.moves.length?motion:null} playful={prefs.playful&&prefs.animate&&!prefs.quiet&&tab==='play'&&session.cursor===session.moves.length} winner={end&&archiveResult!=='1/2-1/2'?archiveResult==='1-0'?'w':archiveResult==='0-1'?'b':null:null} locked={tab==='editor'?false:locked} onSquare={square} onMove={(from,to)=>propose(from,to)} drag={prefs.drag&&tab!=='editor'}/>
   {promotion?<section className="study-promotion" aria-label="Promotion"><PromotionChoices color={turn} onChoose={k=>propose(promotion.from,promotion.to,k)}/></section>:null}
   {confirm?<div className="study-actions"><p>Confirm {confirm}?</p><button onClick={()=>commit(confirm)}>Confirm move</button><button onClick={()=>setConfirm(null)}>Cancel move</button></div>:null}
  </>;

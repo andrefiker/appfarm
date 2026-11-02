@@ -8,6 +8,8 @@ import { GameSoFar } from "./table-atmosphere";
 import * as React from "react";
 import { Piece, pieceNames } from "./pieces";
 import type { Color, Kind } from "./pieces";
+import type {BoardMotion} from './board-effects';
+import {CaptureEffect, LandingEffect, usePieceEffects} from './piece-effects';
 import {
   boardSquares,
   numberedMoves,
@@ -16,12 +18,7 @@ import {
 } from "./chess-view-model";
 import type { Losses } from "./chess-view-model";
 export type Position = Record<string, { color: Color; type: Kind }>;
-export type Motion = {
-  from: string;
-  to: string;
-  serial: number;
-  san: string;
-} | null;
+export type Motion = BoardMotion | null;
 export type BoardProps = {
   position: Position;
   orientation: Color;
@@ -30,10 +27,13 @@ export type BoardProps = {
   last: { from: string; to: string } | null;
   check: string | null;
   motion: Motion;
+  motionSequence?: number;
   locked: boolean;
   onSquare: (square: string) => void;
   onMove?: (from:string,to:string) => void;
   drag?: boolean;
+  playful?: boolean;
+  winner?: Color | null;
 };
 export function Icon({
   name,
@@ -97,20 +97,23 @@ export function ChessBoard({
   check,
   motion,
   locked,
-  onSquare, onMove, drag=true,
+  onSquare, onMove, drag=true, playful=false, winner=null, motionSequence=motion?.serial,
 }: BoardProps) {
   const squares = boardSquares(orientation);
+  const {events, victory} = usePieceEffects(motion, playful, orientation, winner, motionSequence);
   const gesture=React.useRef<{from:string;x:number;y:number}|null>(null);
   const suppressClick=React.useRef(false);
-  function moveOrigin(square: string): string | null {
-    if (!motion) return null;
-    if (motion.to === square) return motion.from;
-    const rank = motion.from[1];
-    if (motion.san.startsWith("O-O-O") && square === `d${rank}`)
+  function moveOrigin(square: string, movement: Motion): string | null {
+    if (!movement) return null;
+    if (movement.to === square) return movement.from;
+    if (movement.rook?.to === square) return movement.rook.from;
+    if (movement.actor) return null;
+    const rank = movement.from[1];
+    if (movement.san.startsWith("O-O-O") && square === `d${rank}`)
       return `a${rank}`;
     if (
-      motion.san.startsWith("O-O") &&
-      !motion.san.startsWith("O-O-O") &&
+      movement.san.startsWith("O-O") &&
+      !movement.san.startsWith("O-O-O") &&
       square === `f${rank}`
     )
       return `h${rank}`;
@@ -128,7 +131,16 @@ export function ChessBoard({
           const target = targets.includes(square);
           const dark =
             (square.charCodeAt(0) - 97 + Number(square[1])) % 2 === 1;
-          const origin = moveOrigin(square);
+          const active = events.find(event => event.to === square || event.rook?.to === square) || null;
+          const capture = events.find(event => event.captured?.square === square);
+          const latest = events[events.length-1];
+          const movement = playful ? active : motion;
+          const origin = moveOrigin(square, movement);
+          const landing = active?.to === square;
+          const travel = active && origin ? active.san.startsWith('O-O') ? 'castle' : active.actor?.type === 'n' ? 'leap' : active.captured ? 'attack' : 'glide' : '';
+          const gestureEffect = piece?.type === 'k' && victory ? (piece.color === victory ? 'bow' : 'topple')
+            : latest && check === square ? 'startle' : landing && active.promotion ? 'promote'
+            : landing && active.captured ? `hit-${active.actor?.type || 'p'}` : '';
           const originIndex = origin ? squares.indexOf(origin) : index;
           const style = origin
             ? ({
@@ -172,18 +184,22 @@ export function ChessBoard({
             >
               {piece ? (
                 <span
-                  key={`${square}-${piece.color}${piece.type}-${origin ? motion?.serial : "still"}`}
-                  className={`art-cell${origin ? " art-moving" : ""}`}
+                  key={`${square}-${piece.color}${piece.type}-${origin ? movement?.serial : "still"}`}
+                  className={`art-cell${origin ? " art-moving" : ""}${travel ? ` playful-travel travel-${travel}` : ''}`}
                   style={style}
                 >
+                  <span key={`${active?.serial || (check === square ? latest?.serial : 'rest')}-${victory || ''}`} className={`piece-performance${gestureEffect ? ` perform-${gestureEffect}` : ''}`} data-effect={gestureEffect || undefined}>
                   <Piece
                     color={piece.color}
                     kind={piece.type}
                     scope={`board-${square}`}
                     fitToSquare
                   />
+                  </span>
                 </span>
               ) : null}
+              {capture ? <CaptureEffect key={`capture-${capture.serial}`} motion={capture}/> : null}
+              {landing ? <LandingEffect key={`landing-${active.serial}`} motion={active}/> : null}
               {index%8===0?<span className="square-coordinate rank-coordinate" aria-hidden="true">{square[1]}</span>:null}
               {index>=56?<span className="square-coordinate file-coordinate" aria-hidden="true">{square[0]}</span>:null}
               {target ? (
@@ -482,8 +498,8 @@ export function GameSurface(p: GameSurfaceProps) {
   }
   const shownBoard: BoardProps = review ? {
     ...p.board, position: review.position, last: review.last, check: review.check,
-    selected: null, targets: [], motion: null, locked: true, drag: false,
-    onSquare: () => {}, onMove: undefined,
+    selected: null, targets: [], motion: null, motionSequence:p.board.motion?.serial, locked: true, drag: false,
+    onSquare: () => {}, onMove: undefined, playful: false,
   } : p.board;
   const bottom = p.board.orientation;
   const top = bottom === "w" ? "b" : "w";

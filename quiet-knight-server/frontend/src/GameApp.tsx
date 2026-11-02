@@ -1199,6 +1199,9 @@ export default function GameApp() {
         />
       ) : screen === "game" ? (
         <GameSurface
+          key={record.id}
+          gameId={record.id}
+          onReviewStart={() => { setSelected(null); setPendingMove(null); setPromotion(null); }}
           clock={room||undefined}
           pauseControls={room && room.status === 'active' ? <ClockControls state={room} me={me} busy={busy || connection !== 'Live'} onAction={(action) => void changePause(action)} /> : null}
           viewerLost={viewerLost(

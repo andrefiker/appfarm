@@ -17,9 +17,23 @@ body[data-atmosphere="emerald-enamel"]:has(.mobile-table) { background: #0b1b19;
 .mobile-table .table-controls-toggle { font-size: 12px; }
 .mobile-table .table-context .primary { min-height: 44px; padding: 11px 14px; border-radius: 13px; font-size: 14px; }
 .mobile-table .live-material { padding: 14px 0 8px; font-size: 13px; }
-.mobile-table .live-captures .loss-row { min-height: 36px; grid-template-columns: 108px minmax(0,1fr); }
-.mobile-table .live-captures .loss-label { font-size: 13px; }
-.mobile-table .live-captures .loss-empty { font-size: 12px; }
+.mobile-table .board-stage > .loss-row { min-height: 32px; margin: 0 10px 4px; grid-template-columns: 88px minmax(0,1fr); }
+.mobile-table .board-stage .loss-label { font-size: 12px; }
+.mobile-table .board-stage .loss-empty { font-size: 12px; color: var(--muted); }
+.mobile-table .board-stage .captured-piece { width: 24px; height: 28px; flex-basis: 24px; }
+.mobile-table .board-history { opacity: 1; border-top: 1px solid var(--line); }
+.board-history .move-list li { align-items: center; padding: 2px 6px; gap: 8px; }
+.board-history button, .review-banner button { min-height: 44px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--text); padding: 6px 8px; font-size: 13px; }
+.board-history button[aria-current="step"] { border-color: var(--accent); background: #dfbd8329; color: var(--accent); }
+.review-navigation { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)) minmax(92px,1.6fr); gap: 4px; }
+.qk .review-description { margin: 8px 0; font-size: 13px; line-height: 1.5; color: var(--muted); }
+.review-banner { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 0; font-size: 13px; color: var(--accent); }
+.review-banner button { flex-shrink: 0; }
+/* Reserve room for both loss trays without pushing the live action offscreen. */
+@media (min-width: 900px) {
+  .mobile-table .game-layout, .mobile-table .game-header { max-width: min(680px, calc(100dvh - 372px)); }
+  .mobile-table.zen-table .game-layout, .mobile-table.zen-table .game-header { max-width: min(740px, calc(100dvh - 342px)); }
+}
 @media (max-width: 359px) {
   .mobile-table .game-title h1 { font-size: 17px; }
   .mobile-table .game-title { gap: 7px; }

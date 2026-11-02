@@ -1,3 +1,5 @@
+import { positionAtPly, reviewStillValid } from "./move-review";
+import type { ReviewSelection } from "./move-review";
 import { LOSS_MESSAGE } from "./post-game";
 import {ChessClock} from './chess-clock';
 import {enamelStyle} from './board-surface';
@@ -284,80 +286,80 @@ export function MaterialScore({
     </section>
   );
 }
-export function CapturedPieces({ losses }: { losses: Losses | null }) {
+export function LostPieces({ losses, color }: { losses: Losses | null; color: Color }) {
+  const name = color === "w" ? "White" : "Black";
   return (
-    <section className="captured-panel" aria-label="Captured pieces">
-      {(["w", "b"] as Color[]).map((color) => (
-        <div className="loss-row" key={color} data-lost-color={color}>
-          <span className="loss-label">
-            <i className={`color-dot dot-${color}`} aria-hidden="true" />
-            {color === "w" ? "White lost" : "Black lost"}
-          </span>
-          <div
-            className={`loss-tray tray-${color}`}
-            aria-label={`${color === "w" ? "White" : "Black"} lost pieces`}
-          >
-            {!losses ? (
-              <span className="loss-empty">History unavailable</span>
-            ) : losses[color].length ? (
-              losses[color].map((kind, i) => (
-                <span
-                  key={`${kind}-${i}`}
-                  className="captured-piece"
-                  data-captured={kind}
-                  title={pieceNames[kind]}
-                >
-                  <Piece
-                    color={color}
-                    kind={kind}
-                    scope={`lost-${color}-${i}`}
-                    label={`${color === "w" ? "White" : "Black"} ${pieceNames[kind]}`}
-                  />
-                </span>
-              ))
-            ) : (
-              <span className="loss-empty">None</span>
-            )}
-          </div>
-        </div>
-      ))}
-    </section>
+    <div className="loss-row" data-lost-color={color}>
+      <span className="loss-label">
+        <i className={`color-dot dot-${color}`} aria-hidden="true" />
+        {name} lost
+      </span>
+      <div className={`loss-tray tray-${color}`} role="list" aria-label={`${name} lost pieces`}>
+        {!losses ? <span className="loss-empty">History unavailable</span> :
+          losses[color].length ? losses[color].map((kind, i) => (
+            <span key={`${kind}-${i}`} className="captured-piece" data-captured={kind}
+              role="listitem" aria-label={`${name} ${pieceNames[kind]}`} title={pieceNames[kind]}>
+              <Piece color={color} kind={kind} scope={`lost-${color}-${i}`} />
+            </span>
+          )) : <span className="loss-empty">None</span>}
+      </div>
+    </div>
   );
 }
-export function MoveHistory({
-  sans,
-  children,
-}: {
+export function MoveHistory({ sans, cursor, available, onBrowse }: {
   sans: string[];
-  children?: React.ReactNode;
+  cursor: number | null;
+  available: boolean;
+  onBrowse: (ply: number | null) => void;
 }) {
   const rows = numberedMoves(sans);
   const latest = rows[rows.length - 1];
+  const current = cursor ?? sans.length;
+  const activeMove = React.useRef<HTMLButtonElement>(null);
+  React.useEffect(() => {
+    // Keep long games usable without moving the page away from the board.
+    const button = activeMove.current, list = button?.closest<HTMLOListElement>("ol");
+    if (button && list) {
+      const item = button.getBoundingClientRect(), viewport = list.getBoundingClientRect();
+      if (item.top < viewport.top) list.scrollTop -= viewport.top - item.top;
+      else if (item.bottom > viewport.bottom) list.scrollTop += item.bottom - viewport.bottom;
+    }
+  }, [cursor, sans.length]);
   return (
-    <details className="move-history">
+    <details className="move-history board-history" onToggle={e => {
+      if (!e.currentTarget.open) onBrowse(null);
+    }}>
       <summary>
         <span>Move history</span>
-        <span className="latest-move">
-          {latest
-            ? `${latest.number}. ${latest.white} ${latest.black}`
-            : "New game"}
-        </span>
+        <span className="latest-move">{latest ? `${latest.number}. ${latest.white} ${latest.black}` : "New game"}</span>
         <Icon name="chevron" />
       </summary>
-      {rows.length ? (
+      {rows.length ? <>
+        <nav className="review-navigation" aria-label="Review moves">
+          <button type="button" disabled={!available || current === 0} onClick={() => onBrowse(0)}>First</button>
+          <button type="button" disabled={!available || current === 0} onClick={() => onBrowse(current - 1)}>Previous</button>
+          <button type="button" disabled={!available || current === sans.length} onClick={() => onBrowse(current + 1)}>Next</button>
+          <button type="button" disabled={cursor === null} onClick={() => onBrowse(null)}>Return to game</button>
+        </nav>
+        <p className="review-description" role="status">
+          {!available ? "Position review unavailable for this history." : cursor === null ? "Current position. Select a move to review it." :
+            `Reviewing position ${cursor} of ${sans.length}${cursor === 0 ? " · Starting position" : ""}. Return to game to play.`}
+        </p>
         <ol className="move-list" aria-label="Moves">
-          {rows.map((row) => (
+          {rows.map(row => (
             <li key={row.number}>
               <span className="move-number">{row.number}.</span>
-              <span>{row.white}</span>
-              <span>{row.black || "—"}</span>
+              {[row.white, row.black].map((san, side) => {
+                const ply = (row.number - 1) * 2 + side + 1;
+                return san ? <button type="button" key={side} disabled={!available}
+                  ref={cursor === ply ? activeMove : undefined}
+                  aria-label={`${row.number}. ${side === 0 ? "White" : "Black"}: ${san}`}
+                  aria-current={cursor === ply ? "step" : undefined} onClick={() => onBrowse(ply)}>{san}</button> : <span key={side}>—</span>;
+              })}
             </li>
           ))}
         </ol>
-      ) : (
-        <p className="history-empty">Your moves will appear here.</p>
-      )}
-      {children}
+      </> : <p className="history-empty">Your moves will appear here.</p>}
     </details>
   );
 }
@@ -414,6 +416,8 @@ function PlayerBar({
   );
 }
 export type GameSurfaceProps = {
+  gameId: string;
+  onReviewStart: () => void;
   clock?: ClockState;
   pauseControls?: React.ReactNode;
   viewerLost?: boolean;
@@ -462,6 +466,23 @@ export type GameSurfaceProps = {
   onSound: () => void;
 };
 export function GameSurface(p: GameSurfaceProps) {
+  const [selection, setSelection] = React.useState<ReviewSelection | null>(null);
+  const validSelection = selection && reviewStillValid(selection, p.gameId, p.sans) ? selection : null;
+  const review = React.useMemo(() => validSelection ? positionAtPly(validSelection.line, validSelection.ply) : null, [validSelection]);
+  const reviewing = review !== null;
+  const shownLosses = review ? review.losses : p.losses;
+  React.useEffect(() => {
+    if (selection && !validSelection) setSelection(null);
+  }, [selection, validSelection]);
+  function browse(ply: number | null) {
+    if (ply !== null) p.onReviewStart();
+    setSelection(ply === null ? null : { gameId: p.gameId, line: [...p.sans], ply });
+  }
+  const shownBoard: BoardProps = review ? {
+    ...p.board, position: review.position, last: review.last, check: review.check,
+    selected: null, targets: [], motion: null, locked: true, drag: false,
+    onSquare: () => {}, onMove: undefined,
+  } : p.board;
   const bottom = p.board.orientation;
   const top = bottom === "w" ? "b" : "w";
   const sheet = React.useRef<HTMLDialogElement>(null);
@@ -573,20 +594,26 @@ export function GameSurface(p: GameSurfaceProps) {
             name={playerName(top)}
             detail={detail(top)}
             presence={top !== p.me ? p.presenceLabel : undefined}
-            active={!p.ended && !p.waiting && !p.clock?.clock_paused && p.turn === top}
+            active={!reviewing && !p.ended && !p.waiting && !p.clock?.clock_paused && p.turn === top}
             yours={top === p.me}
           />
-          <ChessBoard {...p.board} />
+          <LostPieces color={top} losses={shownLosses} />
+          <ChessBoard {...shownBoard} />
+          <LostPieces color={bottom} losses={shownLosses} />
           <PlayerBar
             color={bottom}
             clock={p.clock}
             name={playerName(bottom)}
             detail={detail(bottom)}
-            active={!p.ended && !p.waiting && !p.clock?.clock_paused && p.turn === bottom}
+            active={!reviewing && !p.ended && !p.waiting && !p.clock?.clock_paused && p.turn === bottom}
             yours={bottom === p.me}
           />
         </section>
         <section className="table-below" aria-label="Current game">
+          {reviewing ? <div className="review-banner" role="status">
+            <span>Review · Position {validSelection!.ply} of {p.sans.length}</span>
+            <button type="button" onClick={() => browse(null)}>Return to game</button>
+          </div> : null}
           <div
             className={`game-status${p.board.check ? " status-check" : ""}`}
             role="status"
@@ -594,7 +621,7 @@ export function GameSurface(p: GameSurfaceProps) {
             aria-atomic="true"
           >
             <span className="state-dot" aria-hidden="true" />
-            <h2>{p.status}</h2>
+            <h2>{reviewing ? `Live game: ${p.status}` : p.status}</h2>
             {p.ended ? <span className="end-reason">{p.hint}</span> : null}
           </div>
           {p.animalReaction ? <p className="animal-reaction" role="status" aria-live="polite" aria-atomic="true">{p.animalReaction}</p> : null}
@@ -641,9 +668,10 @@ export function GameSurface(p: GameSurfaceProps) {
             </button>
             <div className="table-context">{contextual}</div>
           </div>
+          <MoveHistory sans={p.sans} cursor={reviewing ? validSelection!.ply : null}
+            available={p.losses !== null} onBrowse={browse} />
           <div className="live-captures">
-            <MaterialScore position={p.board.position} compact />
-            <CapturedPieces losses={p.losses} />
+            <MaterialScore position={shownBoard.position} compact />
           </div>
         </section>
       </div>
@@ -734,7 +762,6 @@ export function GameSurface(p: GameSurfaceProps) {
             {p.tableExtra}
             <MaterialScore position={p.board.position} />
             {p.historyTools}
-            <MoveHistory sans={p.sans} />
             {p.postGame}
             <GameSoFar
               position={p.board.position}

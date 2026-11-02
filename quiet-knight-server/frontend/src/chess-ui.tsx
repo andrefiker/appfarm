@@ -421,6 +421,7 @@ export type GameSurfaceProps = {
   onReviewStart: () => void;
   clock?: ClockState;
   pauseControls?: React.ReactNode;
+  drawControls?: React.ReactNode;
   viewerLost?: boolean;
   tableSettings?: React.ReactNode;
   onCloseControls?: () => void;
@@ -669,6 +670,7 @@ export function GameSurface(p: GameSurfaceProps) {
             </button>
             <div className="table-context">{contextual}</div>
           </div>
+          {p.drawControls}
           <MoveHistory sans={p.sans} cursor={reviewing ? validSelection!.ply : null}
             available={p.losses !== null} onBrowse={browse} />
           <div className="live-captures">

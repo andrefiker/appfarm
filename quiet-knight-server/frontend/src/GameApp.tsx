@@ -84,7 +84,7 @@ type Modal =
   | "invite"
   | null;
 const REACTIONS:Record<string,string>={hello:"👋", "well-played":"👏",thanks:"🙏",fox:"🦊",owl:"🦉",tortoise:"🐢"};
-const BUILD = "Quiet Knight 1.1.11 · Emerald Enamel";
+const BUILD = "Quiet Knight 1.3.0 · Emerald Enamel";
 function roleColor(role: Role | null): Color | null {
   return role === "white" ? "w" : role === "black" ? "b" : null;
 }
@@ -176,7 +176,7 @@ export default function GameApp() {
     const saved = Number(stored("qk-volume") || "80");
     return Number.isFinite(saved) ? Math.max(20, Math.min(100, saved)) : 80;
   });
-  const chessAudio = useChessAudio(sound && !prefs.quiet, volume);
+  const chessAudio = useChessAudio(sound && !prefs.quiet, volume, prefs.soundTheme);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [motion, setMotion] = useState<Motion>(null);
@@ -345,7 +345,7 @@ export default function GameApp() {
       void joinRoom(normalized, stored(`qk-seat-${normalized}`));
     }
   }, [accountId, gameOwner]);
-  const previousMove = useRef<{ key: string; count: number; position: Position; roomCode?: string } | null>(null);
+  const previousMove = useRef<{ key: string; count: number; position: Position; check: string | null; roomCode?: string } | null>(null);
   const motionSerial = useRef(0);
   const gameKey = room
     ? `room-${room.code}-${room.game_number || 1}`
@@ -353,7 +353,7 @@ export default function GameApp() {
   useEffect(() => {
     const previous = previousMove.current;
     const count = sans.length;
-    previousMove.current = { key: gameKey, count, position, roomCode: room?.code };
+    previousMove.current = { key: gameKey, count, position, check, roomCode: room?.code };
     if (previous && screen === "game" && count === 0 && ((room && previous.roomCode === room.code && previous.key !== gameKey) || (!room && !previous.roomCode && previous.count > 0))) setEntrance(Date.now());
     if (previous?.key !== gameKey || count !== previous.count + 1 || !last) {
       setMotion(null);
@@ -364,6 +364,7 @@ export default function GameApp() {
       to: last.to,
       san: sans[count - 1] || "",
       serial: ++motionSerial.current,
+      escapedCheck: previous.check === last.from && previous.position[last.from]?.type === "k",
     }, old));
     if (screen === "game") playHaptic(check ? "check" : history?.[count - 1]?.captured ? "capture" : "move", preferences.current.haptics);
     const actor=previous.position[last.from];
@@ -1156,6 +1157,7 @@ export default function GameApp() {
       ) : null}
       {screen === "home" ? (
         <HomeSurface
+          mascotEnabled={prefs.fun.easter && prefs.playful && prefs.animate && !prefs.quiet} sound={sound && !prefs.quiet} volume={volume} soundTheme={prefs.soundTheme}
           extras={<section className="studio-entry"><button className="secondary" onClick={()=>{setTableControls(false);setModal("archive");}}>Move archive & export</button>{archiveError?<p role="alert">{archiveError}</p>:null}<h2>Continue the position</h2><button className="secondary" onClick={()=>openStudy(localMoves.length?{sans:localMoves.map(m=>m.san||"")}:undefined)}>Continue the position · analyse</button><button className="secondary" onClick={()=>openStudy({mode:"pass"})}>Pass and play · offline</button><button className="secondary" onClick={()=>openStudy()}>Study, puzzles & Chess960</button><p role="status" className="server-compatibility">{compatibility.message}</p><details className="friend-setup"><summary>Friend options & invite link</summary><label>Friend-game side<select aria-label="Friend-game side" value={friendSide} onChange={e=>setFriendSide(e.target.value)}><option value="white">White</option><option value="black">Black</option></select></label><label>Friend-game style<select aria-label="Friend-game style" value={friendKind} onChange={e=>setFriendKind(e.target.value)}><option value="live">Live · untimed</option><option value="correspondence">Correspondence · no deadlines</option></select></label><label>Paste invite link<input aria-label="Paste invite link" value={inviteInput} maxLength={1000} onChange={e=>setInviteInput(e.target.value)}/></label><button className="secondary" onClick={()=>{const code=parseInvitation(inviteInput);if(code)void joinRoom(code);else setMessage("Paste a valid room link or six-character code.");}}>Open invitation</button></details></section>}
           identity={
             <>
@@ -1227,7 +1229,7 @@ export default function GameApp() {
           )}
           historyTools={<><button className="secondary" onClick={()=>{setTableControls(false);setModal("archive");}}>Move archive & export</button>{archiveError?<p role="alert">{archiveError}</p>:null}<GameExports key={record.id} record={record} /><button className="secondary" onClick={()=>openStudy({sans:[...sans]})}>Review / analyse game</button><button className="secondary" onClick={()=>setFlipped(v=>!v)}>Flip board</button>{!room?<div className="study-actions"><button disabled={!localMoves.length} onClick={()=>{setEnginePaused(true);const cut=localGame.turn()===humanColor?2:1;setRedoMoves(localMoves.slice(-cut));setLocalMoves(v=>v.slice(0,-cut));}}>Undo computer turn</button><button disabled={!redoMoves.length} onClick={()=>{setLocalMoves(v=>[...v,...redoMoves]);setRedoMoves([]);setEnginePaused(false);}}>Redo computer turn</button>{enginePaused?<button onClick={()=>setEnginePaused(false)}>Resume computer</button>:null}</div>:null}</>}
           postGame={
-            ended ? <GamePostcard key={record.id} record={record} /> : null
+            ended && prefs.fun.photo ? <GamePostcard key={record.id} record={record} photograph /> : null
           }
           zen={table.zen}
           tableSettings={tableSettings}
@@ -1313,7 +1315,7 @@ export default function GameApp() {
             motion:prefs.animate?motion:null,
             motionSequence:motion?.serial,
             playful:prefs.playful && prefs.animate && !prefs.quiet,
-            fun:prefs.fun, soundEnabled:sound, soundVolume:volume, draw:room?.status === "draw", entrance,
+            fun:prefs.fun, weather:prefs.weather, soundEnabled:sound, soundVolume:volume, draw:room?.status === "draw", entrance,
             winner:ended ? room ? room.winner : game.isCheckmate() ? turn === 'w' ? 'b' : 'w' : null : null,
             locked,
             onSquare, drag:prefs.drag,

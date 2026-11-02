@@ -33,7 +33,8 @@ public class MainActivity extends Activity {
     private WebView webView;
     private WebViewAssetLoader assetLoader;
     private long lastHapticAt;
-    private String pendingArchive;
+    private byte[] pendingArchive;
+    private String pendingArchiveKind = "archive";
     private static final int ARCHIVE_DOCUMENT = 7341;
     private boolean quietKnight() { return "quietKnight".equals(BuildConfig.FLAVOR); }
     private String launchUrl(Intent intent) {
@@ -144,20 +145,32 @@ public class MainActivity extends Activity {
                                 || !"quiet-knight-server-production.up.railway.app".equals(sourceOrigin.getHost())
                                 || url == null || !url.startsWith(BuildConfig.HOME_URL)
                                 || !view.hasWindowFocus() || isFinishing()) return;
+                        if (pendingArchive != null) return;
                         try {
-                            if (pendingArchive != null) throw new IllegalStateException("Export already open");
                             JSONObject data = new JSONObject(message.getData());
-                            String name = data.getString("name"), mime = data.getString("mime"), text = data.getString("text");
-                            if (!name.matches("Quiet-Knight-games-[0-9-]+\\.(json|pgn)")
-                                    || !("application/json".equals(mime) || "application/x-chess-pgn".equals(mime))
-                                    || text.length() > 32 * 1024 * 1024) throw new IllegalArgumentException("Invalid archive");
-                            pendingArchive = text;
+                            String name = data.getString("name"), mime = data.getString("mime");
+                            pendingArchiveKind = "image/png".equals(mime) ? "image" : "archive";
+                            if ("image".equals(pendingArchiveKind)) {
+                                String encoded = data.getString("base64");
+                                if (!name.matches("Quiet-Knight-photo-[0-9-]+\\.png") || encoded.length() > 12 * 1024 * 1024) throw new IllegalArgumentException("Invalid photograph");
+                                byte[] bytes = android.util.Base64.decode(encoded, android.util.Base64.DEFAULT);
+                                byte[] magic = {(byte)137, 80, 78, 71, 13, 10, 26, 10};
+                                if (bytes.length < 8 || bytes.length > 8 * 1024 * 1024) throw new IllegalArgumentException("Invalid photograph size");
+                                for (int i = 0; i < magic.length; i++) if (bytes[i] != magic[i]) throw new IllegalArgumentException("Invalid PNG");
+                                pendingArchive = bytes;
+                            } else {
+                                String text = data.getString("text");
+                                if (!name.matches("Quiet-Knight-games-[0-9-]+\\.(json|pgn)")
+                                        || !("application/json".equals(mime) || "application/x-chess-pgn".equals(mime))
+                                        || text.length() > 32 * 1024 * 1024) throw new IllegalArgumentException("Invalid archive");
+                                pendingArchive = text.getBytes(StandardCharsets.UTF_8);
+                            }
                             Intent save = new Intent(Intent.ACTION_CREATE_DOCUMENT);
                             save.addCategory(Intent.CATEGORY_OPENABLE);
                             save.setType(mime);
                             save.putExtra(Intent.EXTRA_TITLE, name);
                             startActivityForResult(save, ARCHIVE_DOCUMENT);
-                        } catch (Exception error) { pendingArchive = null; archiveResult(false, false); }
+                        } catch (Exception error) { pendingArchive = null; archiveResult(false, false, pendingArchiveKind); }
                     });
         }
 
@@ -167,7 +180,7 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new WebViewClient() {
             @Override public void onPageFinished(WebView view, String url) {
                 if (!quietKnight() || !url.startsWith(BuildConfig.HOME_URL)) return;
-                try { JSONObject metadata = new JSONObject(); metadata.put("package", BuildConfig.APPLICATION_ID); metadata.put("version", BuildConfig.VERSION_NAME); metadata.put("code", BuildConfig.VERSION_CODE); metadata.put("commit", BuildConfig.SOURCE_COMMIT); view.evaluateJavascript("window.__QK_ANDROID=" + metadata.toString(), null); } catch (Exception ignored) { }
+                try { JSONObject metadata = new JSONObject(); metadata.put("package", BuildConfig.APPLICATION_ID); metadata.put("version", BuildConfig.VERSION_NAME); metadata.put("code", BuildConfig.VERSION_CODE); metadata.put("commit", BuildConfig.SOURCE_COMMIT); metadata.put("imageExport", true); view.evaluateJavascript("window.__QK_ANDROID=" + metadata.toString(), null); } catch (Exception ignored) { }
             }
             @Override
             public android.webkit.WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
@@ -197,30 +210,31 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void archiveResult(boolean ok, boolean cancelled) {
+    private void archiveResult(boolean ok, boolean cancelled, String kind) {
         if (webView != null && !isFinishing()) webView.evaluateJavascript(
-                "window.dispatchEvent(new CustomEvent('qk-export-result',{detail:{ok:" + ok + ",cancelled:" + cancelled + "}}))", null);
+                "window.dispatchEvent(new CustomEvent('qk-export-result',{detail:{kind:\"" + kind + "\",ok:" + ok + ",cancelled:" + cancelled + "}}))", null);
     }
 
     @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode != ARCHIVE_DOCUMENT) return;
-        final String archive = pendingArchive;
+        final byte[] archive = pendingArchive;
+        final String kind = pendingArchiveKind;
         pendingArchive = null;
-        if (resultCode != RESULT_OK || data == null || data.getData() == null) { archiveResult(false, true); return; }
+        if (resultCode != RESULT_OK || data == null || data.getData() == null) { archiveResult(false, true, kind); return; }
         final Uri destination = data.getData();
-        if (archive == null) { archiveResult(false, false); return; }
+        if (archive == null) { archiveResult(false, false, kind); return; }
         new Thread(() -> {
             boolean saved = false;
             try {
                 try (OutputStream output = getContentResolver().openOutputStream(destination, "wt")) {
                     if (output == null) throw new IllegalStateException("Cannot open destination");
-                    output.write(archive.getBytes(StandardCharsets.UTF_8)); output.flush();
+                    output.write(archive); output.flush();
                 }
                 saved = true;
             } catch (Exception ignored) { }
             final boolean ok = saved;
-            runOnUiThread(() -> archiveResult(ok, false));
+            runOnUiThread(() -> archiveResult(ok, false, kind));
         }, "quiet-knight-export").start();
     }
 

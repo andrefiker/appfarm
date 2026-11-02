@@ -8,6 +8,7 @@ export type BoardMotion = {
   captured?: ArmyPiece & { square: string };
   promotion?: Kind;
   revenge?: boolean;
+  escapedCheck?: boolean;
   rook?: { from: string; to: string };
 };
 

@@ -4,8 +4,8 @@ The opt-in `-PqkStandaloneEmerald` build packages the current Emerald Enamel fro
 
 - Package: `com.andrefiker.quietknight.emerald`
 - Launcher: Quiet Knight Emerald
-- Android version: 1.2.0 (17); Android 8+; target SDK 35; portrait
-- Bundled frontend: production commit `4f8c84b9df80c68ea0963df8069054f2e8516499` (web UI still identifies as 1.1.11 Emerald Enamel)
+- Android version: 1.3.0 (18); Android 8+; target SDK 35; portrait
+- Bundled frontend: 1.3.0 Emerald Enamel; the exact source commit is embedded in the app and recorded in its verification report.
 - Computer play and assets are bundled; online rooms use the existing Railway service.
 - Existing Studio and browser saves remain in their original installations. Data is not automatically migrated.
 - The signing identity is separate from Studio and is retained in the owner's private signing backup, never in this repository.
@@ -24,6 +24,6 @@ Never generate a replacement key for this package once its signing backup exists
 
 ## Release evidence
 
-The frontend was rebuilt from the live source revision. All 11 focused fun-option browser scenarios passed, including capture replay, en passant, underpromotion, checkmate, draw/rematch transitions, persistence, and audio/motion suppression. The actual rendered mobile Emerald capture screen was inspected. Earlier source validation covers 39 interaction scenarios for this frontend revision.
+The frontend includes the twelve additional optional features described in `quiet-knight-server/docs/extra-fun-20261102.md`. Release checks cover existing effects, move review, board geometry, draw consent and archives, plus new movie isolation, PNG export, audio themes, weather and reduced-motion behavior. The package uses the same Emerald signing certificate as 1.2.0, so it updates that installation and retains its app data. The existing Studio installation remains separate.
 
 Android package verification is recorded in the accompanying APK verification report. No installation on a physical phone or Android emulator is claimed. No production service or database changes are required for this APK.

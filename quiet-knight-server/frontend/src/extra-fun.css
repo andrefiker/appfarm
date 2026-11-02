@@ -1,0 +1,53 @@
+.board { position:relative; }
+.board-frame { position:relative; }
+.pawn-headband { position:absolute;left:39%;top:40%;width:23%;height:5%;border-radius:40%;background:#a64831;box-shadow:0 1px 0 #efce91;pointer-events:none; }
+.pawn-headband i { position:absolute;right:-18%;top:10%;width:30%;height:200%;background:#a64831;transform:rotate(-25deg); }
+.pawn-medals { position:absolute;left:25%;bottom:9%;width:50%;line-height:.6;letter-spacing:1px;color:#ffe8a0;text-shadow:0 1px 2px #35230a;font-size:clamp(9px,2vw,15px);text-align:center;pointer-events:none; }
+.move-trails { position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;overflow:hidden; }
+.long-trail { fill:none;stroke:#fae5ad;stroke-width:.045;stroke-linecap:round;stroke-dasharray:.10 .09;filter:drop-shadow(0 0 .03px #19332a);animation:route-fade 1000ms both; }
+.trail-b { stroke:#b9f1d4; }
+.hoof-route { fill:none;stroke:#e2c084;stroke-width:.018;stroke-dasharray:.06 .10;opacity:.7; }
+.hoof-print { fill:none;stroke:#332718;stroke-width:.045;stroke-linecap:round;paint-order:stroke;filter:drop-shadow(0 0 .05px #ffe8ad); }
+.hoof-trail { animation:route-fade 1000ms both; }
+.perform-dodge { animation:king-dodge 1000ms both; }
+.perform-indignant { animation:king-indignant 1000ms both; }
+.indignant-crown { position:absolute;left:36%;top:4%;color:#f8d987;font-size:clamp(12px,3vw,22px);line-height:1;text-shadow:0 1px #3d2811;animation:crown-adjust 1000ms both;pointer-events:none; }
+.board-weather { position:absolute;inset:0;z-index:7;pointer-events:none;overflow:hidden;border-radius:inherit; }
+.board-weather i { position:absolute;top:var(--weather-y);width:3px;height:3px;border-radius:50%;animation:edge-drift 5s var(--weather-delay) linear infinite;background:#ecd9ac; }
+.weather-rain i { height:10px;border-radius:2px;background:#a9d6e1b0;animation:edge-rain 1.5s var(--weather-delay) linear infinite; }
+.weather-fireflies i { background:#e4ee83;box-shadow:0 0 5px 2px #dee68888;animation:edge-glow 4s var(--weather-delay) ease-in-out infinite; }
+.audience-react { animation:audience-welcome 1000ms both;transform-origin:50% 90%; }
+.audience-react:nth-child(even) { animation-name:audience-nod; }
+.wordmark>a { color:inherit;text-decoration:none; }
+.mascot-wrap { display:inline-flex;position:relative;flex-shrink:0; }
+.home-knight { cursor:pointer;min-width:44px;min-height:44px;color:inherit; }
+.home-knight .chess-art { transform-origin:50% 90%; }
+.mascot-neigh .chess-art { animation:mascot-neigh 1000ms both; }
+.mascot-bow .chess-art { animation:mascot-bow 1000ms both; }
+.mascot-refuse .chess-art { animation:mascot-refuse 1000ms both; }
+.mascot-caption { position:absolute;left:0;top:100%;width:160px;z-index:20;color:#ead3a5;font:12px/1.4 system-ui;letter-spacing:normal;pointer-events:none;background:#0c1918; }
+.game-movie-action { margin-top:12px; }
+.game-movie-dialog { width:min(540px,calc(100vw - 20px));max-height:92dvh;overflow:auto;padding:16px; }
+.game-movie-dialog p { margin:10px 0;font-size:13px;line-height:1.5; }
+.game-movie-dialog .board-frame { width:100%;margin:0; }
+.movie-controls { display:flex;gap:6px;flex-wrap:wrap; }
+.movie-controls button { flex:1 1 70px;min-height:44px;padding:8px;font-size:12px; }
+.game-movie-dialog label { display:flex;align-items:center;gap:12px;font-size:13px;margin-top:12px; }
+.game-movie-dialog input { flex:1;min-width:0; }
+.game-movie-dialog select { min-height:44px; }
+.extra-fun-settings { margin:12px 0; }
+.table-below>.post-game-tools { padding:12px 0;border-top:1px solid var(--line); }
+@keyframes route-fade { 0%{opacity:0}15%,65%{opacity:.9}100%{opacity:0} }
+@keyframes king-dodge { 0%,100%{transform:none}35%{transform:translateX(-10%) scaleY(.76) rotate(-9deg)}65%{transform:translateX(5%) scaleY(1.04) rotate(4deg)} }
+@keyframes king-indignant { 0%,100%{transform:none}25%{transform:rotate(-6deg)}45%{transform:rotate(5deg)}65%{transform:translateY(-4%)} }
+@keyframes crown-adjust { 0%,100%{opacity:0;transform:none}25%{opacity:1;transform:translateY(-15%) rotate(-15deg)}65%{opacity:1;transform:rotate(8deg)} }
+@keyframes edge-drift { from{transform:translateY(12px);opacity:0}30%,70%{opacity:.65}to{transform:translateY(-16px);opacity:0} }
+@keyframes edge-rain { from{transform:translateY(-20px);opacity:0}20%,70%{opacity:.8}to{transform:translateY(50px);opacity:0} }
+@keyframes edge-glow { 0%,100%{opacity:.12;transform:translateY(2px)}50%{opacity:.9;transform:translateY(-7px)} }
+@keyframes audience-welcome { 0%,100%{transform:none}30%{transform:translateY(-5px) rotate(-8deg)}65%{transform:rotate(5deg)} }
+@keyframes audience-nod { 0%,100%{transform:none}35%{transform:scaleY(.8) rotate(7deg)}65%{transform:scaleY(1.05)} }
+@keyframes mascot-neigh { 0%,100%{transform:none}30%,60%{transform:translateY(-4px) rotate(-10deg)}45%{transform:translateY(-2px)} }
+@keyframes mascot-bow { 0%,100%{transform:none}40%,60%{transform:rotate(18deg) scaleY(.83)} }
+@keyframes mascot-refuse { 0%,100%{transform:none}25%,65%{transform:translateX(-3px) rotate(-5deg)}45%,80%{transform:translateX(3px) rotate(5deg)} }
+@media(prefers-reduced-motion:reduce) { .board-weather,.move-trails,.pawn-headband,.pawn-medals,.indignant-crown { display:none!important; }.audience-react,.home-knight .chess-art,.perform-dodge,.perform-indignant { animation:none!important; } }
+body[data-quiet=true] .board-weather,body[data-motion=false] .board-weather { display:none; }

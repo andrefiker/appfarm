@@ -86,7 +86,7 @@ test('check startle and victory bow/topple play once, never on review or reload'
 });
 
 test('check without mate startles the king; animation never blocks the next move',async({page})=>{
-  await study(page,'4k3/8/8/8/8/8/8/R3K3 w - - 0 1');
+  await study(page,'4k3/8/8/8/8/8/8/R3K3 w - - 0 1',{fun:{indignation:false}});
   await tap(page,'a1','a8');
   await expect(square(page,'e8').locator('[data-effect=startle]')).toHaveCount(1);
   // Move while effects are still running. No overlay may intercept input.

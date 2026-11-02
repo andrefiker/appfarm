@@ -113,12 +113,13 @@ test('faceted model atlas is complete, shares unique clipping and survives offli
 });
 
 test('downloaded game postcard retains faceted pieces in its standalone PNG',async({page,browser})=>{
+ test.skip(process.env.QK_VISUAL_FIXTURE==='1','Requires a real two-client server; local PNG export is covered by extra-fun.spec.js.');
  const other=await browser.newContext();
  try{
   await page.goto(url);await page.getByRole('button',{name:'Create live game',exact:true}).click();const q=await other.newPage();await q.goto(page.url());await expect(page.getByRole('heading',{name:'Your move',exact:true})).toBeVisible();
-  await page.getByRole('button',{name:'Resign',exact:true}).click();await page.getByRole('button',{name:'Confirm resign',exact:true}).click();await page.getByRole('button',{name:'Table controls',exact:true}).click();await page.getByRole('button',{name:'Preview postcard',exact:true}).click();
+  await page.getByRole('button',{name:'Resign',exact:true}).click();await page.getByRole('button',{name:'Confirm resign',exact:true}).click();await page.getByRole('button',{name:'Victory photograph',exact:true}).click();
   await expect(page.locator('.postcard-preview image[href*="emerald-enamel-reference"]')).toHaveCount(64);
-  const event=page.waitForEvent('download');await page.getByRole('button',{name:'Download postcard',exact:true}).click();const file=await event;const bytes=await readFile(await file.path());expect(bytes.length).toBeGreaterThan(30000);
+  const event=page.waitForEvent('download');await page.getByRole('button',{name:'Save photograph',exact:true}).click();const file=await event;const bytes=await readFile(await file.path());expect(bytes.length).toBeGreaterThan(30000);
   const pixel=await page.evaluate(async data=>{const im=new Image();im.src=data;await im.decode();const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const ctx=c.getContext('2d');ctx.drawImage(im,0,0);return{size:[c.width,c.height],rook:[...ctx.getImageData(128,290,1,1).data]};},'data:image/png;base64,'+bytes.toString('base64'));
   expect(pixel.size).toEqual([760,1000]);expect(pixel.rook[2]).toBeGreaterThan(pixel.rook[0]*.9);
   await mkdir('output/playwright',{recursive:true});await writeFile('output/playwright/emerald-postcard.png',bytes);

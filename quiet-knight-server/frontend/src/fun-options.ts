@@ -3,6 +3,9 @@ export const funDefaults = {
   revenge: true, poses: true, handshake: true, entrance: true,
   sounds: false, soundP: true, soundN: true, soundB: true,
   soundR: true, soundQ: true, soundK: true,
+  survivor: true, dodge: true, trails: true, hoofprints: true,
+  graduation: true, indignation: true, photo: true, movie: true,
+  audience: true, easter: true,
 };
 export type FunOptions = typeof funDefaults;
 export function readFunOptions(value: unknown): FunOptions {

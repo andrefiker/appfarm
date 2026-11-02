@@ -7,6 +7,8 @@ import {makeSquare,parseUci,makeUci} from 'chessops/util';
 import {parseSan,makeSan} from 'chessops/san';
 import {ChessBoard,PromotionChoices,MaterialScore} from './chess-ui';
 import type {Position} from './chess-ui';
+import {useChessAudio} from './chess-audio';
+import {GameMovie} from './game-movie';
 import {describeBoardMotion} from './board-effects';
 import type {BoardMotion} from './board-effects';
 import type {Color,Kind} from './pieces';
@@ -25,6 +27,7 @@ export function StudyRoom({owner,prefs,haptics,sound,volume,seed,onBack}:{owner:
  const[selected,setSelected]=useState<string|null>(null),[flip,setFlip]=useState(false),[autoFlip,setAutoFlip]=useState(true),[notice,setNotice]=useState(''),[thinking,setThinking]=useState(false),[visible,setVisible]=useState(document.visibilityState!=='hidden');
  const[tab,setTab]=useState<'play'|'analysis'|'training'|'openings'|'editor'|'files'>('play'),[promotion,setPromotion]=useState<{from:string;to:string}|null>(null),[confirm,setConfirm]=useState<string|null>(null),[redo,setRedo]=useState<string[]>([]),[claim,setClaim]=useState(false);
  const[lines,setLines]=useState<EngineLine[]>([]),[evaluationFen,setEvaluationFen]=useState(''),[graph,setGraph]=useState<{fen:string;cp:number;mate?:number;depth:number;best?:string}[]>([]),[progress,setProgress]=useState(0);
+ const audio=useChessAudio(sound&&!prefs.quiet,volume,prefs.soundTheme);
  const search=useRef<AbortController|null>(null);
  const previousHaptic=useRef<{start:string;moves:string[];cursor:number}|null>(null);
  const [motion,setMotion]=useState<BoardMotion|null>(null), motionSerial=useRef(0);
@@ -45,8 +48,10 @@ export function StudyRoom({owner,prefs,haptics,sound,volume,seed,onBack}:{owner:
   if(!old||old.start!==session.start||old.cursor!==old.moves.length||session.cursor!==session.moves.length||session.moves.length!==old.moves.length+1||!old.moves.every((m,i)=>m===session.moves[i])){setMotion(null);return;}
   const before=replay(session,session.moves.length-1).pos;
   const uci=session.moves[session.moves.length-1];
-  setMotion(old => describeBoardMotion(boardPosition(before),boardPosition(current.pos),{from:uci.slice(0,2),to:uci.slice(2,4),san:current.sans[current.sans.length-1]||'',serial:++motionSerial.current},old));
+  setMotion(old => describeBoardMotion(boardPosition(before),boardPosition(current.pos),{from:uci.slice(0,2),to:uci.slice(2,4),san:current.sans[current.sans.length-1]||'',serial:++motionSerial.current,escapedCheck:before.isCheck()&&boardPosition(before)[uci.slice(0,2)]?.type==='k'},old));
   const captured=moveFeatures(before,session.moves[session.moves.length-1]).capture;
+  const actor=boardPosition(before)[uci.slice(0,2)];
+  if(actor&&!prefs.fun.sounds)void audio.play(Boolean(captured),current.pos.isCheck(),false,true);
   playHaptic(current.pos.isCheck()?'check':captured?'capture':'move',haptics);
  },[session.start,session.moves,session.cursor,haptics]);
  useEffect(()=>{if(!saveStudy(session,owner))setNotice('Storage unavailable. Export PGN before leaving; this position may not survive closing.');},[session,owner]);
@@ -92,7 +97,8 @@ export function StudyRoom({owner,prefs,haptics,sound,volume,seed,onBack}:{owner:
  function importFen(){try{const p=positionFromFen(fenText);replace({...blankStudy(),start:makeFen(p.toSetup()),variant:variantForFen(fenText,session.variant)});setTab('play');}catch(e){setNotice('FEN rejected: '+(e as Error).message);}}
  function useEditor(){try{const ranks=[];for(let r=8;r>=1;r--){let rank='',empty=0;for(let f=0;f<8;f++){const p=editor[String.fromCharCode(97+f)+r];if(p){if(empty)rank+=empty;empty=0;rank+=p.color==='w'?p.type.toUpperCase():p.type;}else empty++;}if(empty)rank+=empty;ranks.push(rank);}const raw=makeBoardFen(parseBoardFen(ranks.join('/')).unwrap())+` ${editTurn} ${castling||'-'} ${ep||'-'} 0 1`;setFenText(raw);const p=positionFromFen(raw);replace({...blankStudy(),start:makeFen(p.toSetup()),variant:variantForFen(raw,session.variant)});setTab('play');}catch(e){setNotice('Position rejected: '+(e as Error).message);}}
  const check=current.pos.isCheck()?makeSquare(current.pos.board.kingOf(current.pos.turn)!):null;
- const body=<><ChessBoard position={tab==='editor'?editor:board} orientation={orientation} selected={selected} targets={targets} last={null} check={check} motion={prefs.animate&&tab==='play'&&session.cursor===session.moves.length?motion:null} playful={prefs.playful&&prefs.animate&&!prefs.quiet&&tab==='play'&&session.cursor===session.moves.length} fun={prefs.fun} soundEnabled={sound} soundVolume={volume} motionSequence={motion?.serial} winner={end&&archiveResult!=='1/2-1/2'?archiveResult==='1-0'?'w':archiveResult==='0-1'?'b':null:null} locked={tab==='editor'?false:locked} onSquare={square} onMove={(from,to)=>propose(from,to)} drag={prefs.drag&&tab!=='editor'}/>
+ const body=<><ChessBoard position={tab==='editor'?editor:board} orientation={orientation} selected={selected} targets={targets} last={null} check={check} motion={prefs.animate&&tab==='play'&&session.cursor===session.moves.length?motion:null} playful={prefs.playful&&prefs.animate&&!prefs.quiet&&tab==='play'&&session.cursor===session.moves.length} fun={prefs.fun} weather={prefs.weather} soundEnabled={sound} soundVolume={volume} motionSequence={motion?.serial} winner={end&&archiveResult!=='1/2-1/2'?archiveResult==='1-0'?'w':archiveResult==='0-1'?'b':null:null} locked={tab==='editor'?false:locked} onSquare={square} onMove={(from,to)=>propose(from,to)} drag={prefs.drag&&tab!=='editor'}/>
+  {prefs.fun.movie&&session.moves.length>0?<GameMovie key={session.archiveId} gameId={session.archiveId||session.start} sans={archivedLine.sans} startFen={session.start} orientation={orientation} motionAllowed={!prefs.quiet&&prefs.animate}/>:null}
   {promotion?<section className="study-promotion" aria-label="Promotion"><PromotionChoices color={turn} onChoose={k=>propose(promotion.from,promotion.to,k)}/></section>:null}
   {confirm?<div className="study-actions"><p>Confirm {confirm}?</p><button onClick={()=>commit(confirm)}>Confirm move</button><button onClick={()=>setConfirm(null)}>Cancel move</button></div>:null}
  </>;

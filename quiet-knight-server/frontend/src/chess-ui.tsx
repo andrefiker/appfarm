@@ -13,6 +13,10 @@ import {CaptureEffect, LandingEffect, usePieceEffects} from './piece-effects';
 import {funDefaults} from './fun-options';
 import type {FunOptions} from './fun-options';
 import {usePersonalityAudio} from './fun-audio';
+import {PawnDetails,MoveTrails,BoardWeather,useAudience,HomeKnight,useVisualPermission} from './extra-fun';
+import type {Weather} from './extra-fun';
+import type {SoundTheme} from './sound-themes';
+import {GameMovie} from './game-movie';
 import {CaptureFlight} from './capture-flight';
 import {
   boardSquares,
@@ -44,6 +48,7 @@ export type BoardProps = {
   soundEnabled?: boolean;
   soundVolume?: number;
   replayMode?: boolean;
+  weather?: Weather;
 };
 export function Icon({
   name,
@@ -108,10 +113,12 @@ export function ChessBoard({
   motion,
   locked,
   onSquare, onMove, drag=true, playful=false, winner=null, motionSequence=motion?.serial,
-  fun=funDefaults, draw=false, entrance=0, soundEnabled=false, soundVolume=80, replayMode=false,
+  fun=funDefaults, draw=false, entrance=0, soundEnabled=false, soundVolume=80, replayMode=false, weather='off',
 }: BoardProps) {
   const squares = boardSquares(orientation);
-  const {events, victory, handshake, arriving, allowed} = usePieceEffects(motion, playful, orientation, winner, motionSequence, draw, entrance);
+  const visualAllowed=useVisualPermission(playful);
+  const pawnCounts={w:Object.values(position).filter(p=>p.color==='w'&&p.type==='p').length,b:Object.values(position).filter(p=>p.color==='b'&&p.type==='p').length};
+  const {events, victory, handshake, arriving, allowed} = usePieceEffects(motion, visualAllowed, orientation, winner, motionSequence, draw, entrance);
   usePersonalityAudio(motion,allowed && soundEnabled && !replayMode,soundVolume,fun,motionSequence);
   const [captureReplay,setCaptureReplay]=React.useState<{position:Position;motion:BoardMotion;check:string|null}|null>(null);
   const [replaying,setReplaying]=React.useState(false),[replayNumber,setReplayNumber]=React.useState(0);
@@ -167,7 +174,7 @@ export function ChessBoard({
           const gestureEffect = piece?.type === 'k' && handshake && fun.handshake ? 'handshake'
             : victory && fun.poses && motion?.san.endsWith('#') && motion.to === square && piece?.color === victory && piece.type !== 'k' ? `pose-${piece.type}`
             : piece?.type === 'k' && victory ? (piece.color === victory ? 'bow' : 'topple')
-            : latest && check === square ? 'startle' : landing && active.promotion ? 'promote'
+            : latest && check === square ? (fun.indignation?'indignant':'startle') : landing && active.escapedCheck && fun.dodge ? 'dodge' : landing && active.promotion ? 'promote'
             : landing && active.captured ? `hit-${active.actor?.type || 'p'}` : '';
           const originIndex = origin ? squares.indexOf(origin) : index;
           const style = origin
@@ -223,6 +230,8 @@ export function ChessBoard({
                     scope={`board-${square}`}
                     fitToSquare
                   />
+                  {allowed&&piece.type==='p'?<PawnDetails square={square} color={piece.color} last={pawnCounts[piece.color]===1} fun={fun}/>:null}
+                  {gestureEffect==='indignant'?<span className="indignant-crown" aria-hidden="true">♛</span>:null}
                   </span>
                 </span>
               ) : null}
@@ -239,7 +248,9 @@ export function ChessBoard({
             </button>
           );
         })}
+        {allowed?<MoveTrails events={events} orientation={orientation} fun={fun}/>:null}
       </div>
+      <BoardWeather weather={weather} enabled={allowed&&!replayMode}/>
     </div>
     {!replayMode && allowed && fun.replay && captureReplay ? <div className="capture-replay-action"><button type="button" className="secondary" onClick={()=>{setReplayNumber(n=>n+1);setReplaying(true);}}>Replay last capture</button></div> : null}
     {!replayMode ? <dialog ref={replayDialog} className="qk-dialog capture-replay-dialog" aria-labelledby="capture-replay-title" onCancel={()=>setReplaying(false)} onClose={()=>setReplaying(false)}>
@@ -338,7 +349,8 @@ export function MaterialScore({
     </section>
   );
 }
-export function LostPieces({ losses, color }: { losses: Losses | null; color: Color }) {
+export function LostPieces({ losses, color, audience=false }: { losses: Losses | null; color: Color; audience?:boolean }) {
+  const reacting=useAudience(losses?.[color].length||0,audience);
   const name = color === "w" ? "White" : "Black";
   return (
     <div className="loss-row" data-lost-color={color}>
@@ -349,7 +361,7 @@ export function LostPieces({ losses, color }: { losses: Losses | null; color: Co
       <div className={`loss-tray tray-${color}`} role="list" aria-label={`${name} lost pieces`}>
         {!losses ? <span className="loss-empty">History unavailable</span> :
           losses[color].length ? losses[color].map((kind, i) => (
-            <span key={`${kind}-${i}`} className="captured-piece" data-captured={kind}
+            <span key={`${kind}-${i}`} className={`captured-piece${reacting?' audience-react':''}`} data-effect={reacting?'audience':undefined} data-captured={kind}
               role="listitem" aria-label={`${name} ${pieceNames[kind]}`} title={pieceNames[kind]}>
               <Piece color={color} kind={kind} scope={`lost-${color}-${i}`} />
             </span>
@@ -651,10 +663,10 @@ export function GameSurface(p: GameSurfaceProps) {
             active={!reviewing && !p.ended && !p.waiting && !p.clock?.clock_paused && p.turn === top}
             yours={top === p.me}
           />
-          <LostPieces color={top} losses={shownLosses} />
+          <LostPieces color={top} losses={shownLosses} audience={Boolean(!reviewing&&p.board.playful&&p.board.fun?.audience)} />
           <ChessBoard {...shownBoard} />
           <CaptureFlight stage={stage} motion={reviewing ? null : p.board.motion} observedSerial={p.board.motionSequence ?? p.board.motion?.serial} enabled={Boolean(!reviewing && p.board.playful && p.board.fun?.tray)} orientation={p.board.orientation}/>
-          <LostPieces color={bottom} losses={shownLosses} />
+          <LostPieces color={bottom} losses={shownLosses} audience={Boolean(!reviewing&&p.board.playful&&p.board.fun?.audience)} />
           <PlayerBar
             color={bottom}
             clock={p.clock}
@@ -724,8 +736,10 @@ export function GameSurface(p: GameSurfaceProps) {
             <div className="table-context">{contextual}</div>
           </div>
           {p.drawControls}
+          {p.ended?p.postGame:null}
           <MoveHistory sans={p.sans} cursor={reviewing ? validSelection!.ply : null}
             available={p.losses !== null} onBrowse={browse} />
+          {p.board.fun?.movie&&p.sans.length>0?<GameMovie gameId={p.gameId} sans={p.sans} orientation={p.board.orientation} motionAllowed={p.board.playful}/>:null}
           <div className="live-captures">
             <MaterialScore position={shownBoard.position} compact />
           </div>
@@ -818,7 +832,6 @@ export function GameSurface(p: GameSurfaceProps) {
             {p.tableExtra}
             <MaterialScore position={p.board.position} />
             {p.historyTools}
-            {p.postGame}
             <GameSoFar
               position={p.board.position}
               sans={p.sans}
@@ -845,7 +858,7 @@ export function GameSurface(p: GameSurfaceProps) {
   );
 }
 export function HomeSurface({
-  identity, extras,
+  identity, extras, mascotEnabled=false, sound=false, volume=80, soundTheme='classic',
   level,
   joinCode,
   busy,
@@ -858,6 +871,7 @@ export function HomeSurface({
   resumeLive,
   onResumeLive,
 }: {
+  mascotEnabled?:boolean; sound?:boolean; volume?:number; soundTheme?:SoundTheme;
   identity?: React.ReactNode;
   extras?: React.ReactNode;
   resumeLive?: string | null;
@@ -875,14 +889,10 @@ export function HomeSurface({
   return (
     <main className="qk home-shell">
       <header className="home-header">
-        <a className="wordmark" href="./" aria-label="Quiet Knight home">
-          <span className="brand-seal" aria-hidden="true">
-            <Piece color="w" kind="n" scope="brand" />
-          </span>
-          <span>
-            Quiet Knight<span className="brand-stop">.</span>
-          </span>
-        </a>
+        <div className="wordmark">
+          <HomeKnight enabled={mascotEnabled} sound={sound} volume={volume} theme={soundTheme}/>
+          <a href="./" aria-label="Quiet Knight home">Quiet Knight<span className="brand-stop">.</span></a>
+        </div>
         <button
           type="button"
           className="icon-button"

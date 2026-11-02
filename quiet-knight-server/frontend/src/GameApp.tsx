@@ -31,6 +31,7 @@ import { diagnosticReport } from "./diagnostics";
 import { lastLiveRoom, rememberLiveRoom, forgetLiveRoom } from "./live-resume";
 import { useChessAudio } from "./chess-audio";
 import { GameSurface, HomeSurface, Icon, PromotionChoices } from "./chess-ui";
+import { DrawControls } from './draw-controls';
 import { useRoomRealtime } from "./use-room-realtime";
 import { useMoveNotifications } from "./push-notifications";
 import type { Position, Motion } from "./chess-ui";
@@ -1203,6 +1204,7 @@ export default function GameApp() {
           gameId={record.id}
           onReviewStart={() => { setSelected(null); setPendingMove(null); setPromotion(null); }}
           clock={room||undefined}
+          drawControls={room && room.status === 'active' && room.black_joined && me ? <DrawControls me={me} proposal={room.proposal} busy={busy} connected={connection === 'Live'} paused={Boolean(room.clock_paused)} onAction={action => void consent(action, action === 'request' ? 'draw' : undefined)} /> : null}
           pauseControls={room && room.status === 'active' ? <ClockControls state={room} me={me} busy={busy || connection !== 'Live'} onAction={(action) => void changePause(action)} /> : null}
           viewerLost={viewerLost(
             me,
@@ -1244,7 +1246,7 @@ export default function GameApp() {
           }
           tableExtra={
             <>
-            {room?<section className="room-lobby" aria-label="Game lobby"><p>Room {room.code} · {room.kind==='correspondence'?'Correspondence · no deadlines':'Live'} · {room.time_control?'Historical 10+0':'Untimed'} · Standard · {presence?.spectators??0} spectators</p><button className="secondary" onClick={()=>{setTableControls(false);setModal('invite');}}>Show invitation QR</button>{role!=='spectator'&&room.status==='active'?<><div className="study-actions"><button disabled={busy||Boolean(room.proposal)} onClick={()=>void consent('request','draw')}>Offer draw</button>{!room.time_control&&!room.points_policy?.eligible?<button disabled={busy||Boolean(room.proposal)||!room.moves.length} onClick={()=>void consent('request','takeback')}>Request takeback</button>:null}</div>{room.proposal?<div role="status"><p>{room.proposal.kind} requested by {room.proposal.by==='w'?'White':'Black'}</p>{room.proposal.by===me?<button onClick={()=>void consent('cancel')}>Cancel proposal</button>:<><button onClick={()=>void consent('accept')}>Accept proposal</button><button onClick={()=>void consent('decline')}>Decline proposal</button></>}</div>:null}{prefs.reactions?<div className="study-actions" aria-label="Quiet reactions">{['hello','well-played','thanks','fox','owl','tortoise'].map(kind=><button key={kind} aria-label={kind} title={kind} disabled={busy} onClick={()=>void reaction(kind)}>{REACTIONS[kind]}</button>)}</div>:null}</>:null}{prefs.reactions&&room.reaction&&Date.now()-room.reaction.at<15000?<p role="status">{room.reaction.by==='w'?'White':'Black'}: {REACTIONS[room.reaction.kind]||'•'}</p>:null}</section>:null}
+            {room?<section className="room-lobby" aria-label="Game lobby"><p>Room {room.code} · {room.kind==='correspondence'?'Correspondence · no deadlines':'Live'} · {room.time_control?'Historical 10+0':'Untimed'} · Standard · {presence?.spectators??0} spectators</p><button className="secondary" onClick={()=>{setTableControls(false);setModal('invite');}}>Show invitation QR</button>{role!=='spectator'&&room.status==='active'?<><div className="study-actions">{!room.time_control&&!room.points_policy?.eligible?<button disabled={busy||Boolean(room.proposal)||!room.moves.length} onClick={()=>void consent('request','takeback')}>Request takeback</button>:null}</div>{room.proposal?.kind==='takeback'?<div role="status"><p>{room.proposal.kind} requested by {room.proposal.by==='w'?'White':'Black'}</p>{room.proposal.by===me?<button onClick={()=>void consent('cancel')}>Cancel proposal</button>:<><button onClick={()=>void consent('accept')}>Accept proposal</button><button onClick={()=>void consent('decline')}>Decline proposal</button></>}</div>:null}{prefs.reactions?<div className="study-actions" aria-label="Quiet reactions">{['hello','well-played','thanks','fox','owl','tortoise'].map(kind=><button key={kind} aria-label={kind} title={kind} disabled={busy} onClick={()=>void reaction(kind)}>{REACTIONS[kind]}</button>)}</div>:null}</>:null}{prefs.reactions&&room.reaction&&Date.now()-room.reaction.at<15000?<p role="status">{room.reaction.by==='w'?'White':'Black'}: {REACTIONS[room.reaction.kind]||'•'}</p>:null}</section>:null}
             {room && (room.white_player || room.black_player) ? (
               <div className="quiet-score" aria-label="Quiet Points">
                 {ended ? (

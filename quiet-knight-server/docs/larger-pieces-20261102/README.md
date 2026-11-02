@@ -13,6 +13,8 @@ Pawns occupy 84% of square height (about 20% taller than before); rooks 88% (abo
 - Real SVG silhouette bounds were checked at 320, 390 and 1280 pixels in both orientations: 32 pieces, matching white/black heights and baselines, horizontal centering, no piece overflow, equal 8x8 cells, no horizontal page overflow.
 - Legal destination selection and selected-king bounds were checked; reduced-motion selection has no transform.
 - Rendered mobile screenshots were visually inspected.
-- No physical Android-device test or new APK. This change has not yet been published to production.
+- No physical Android-device test or new APK. Published after user approval on 2 November 2026. Railway deployment d2e9ac3f-ebd3-4ba8-b646-dfe2cac72326 succeeded; /health returned commit 898f7c0f6a788996233eea9d56119b423a80495a. Live browser inspection confirmed the fitted piece viewboxes and centered, enlarged artwork. Previous deployment 3894a6b7-9e49-4b99-adca-bf2cfe1cd896 remains available for rollback.
 
 ![390px mobile preview](mobile-preview.png)
+
+![Published board](production.jpg)

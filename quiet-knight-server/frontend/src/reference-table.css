@@ -47,3 +47,11 @@ body[data-atmosphere="emerald-enamel"]:has(.mobile-table) { background: #0b1b19;
   .mobile-table .table-controls-toggle { padding-left: 3px; padding-right: 3px; }
   .mobile-table .live-material { gap: 4px 10px; font-size: 12px; }
 }
+.draw-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 4px 0 16px; }
+.draw-controls > small { color: var(--muted); flex-basis: 100%; }
+.draw-controls button { min-height: 44px; }
+.draw-pending { padding: 14px; border: 1px solid var(--accent); border-radius: 12px; }
+.draw-pending > [role="status"] { flex-basis: 100%; }
+.draw-pending p { margin: 6px 0 0; }
+.draw-actions { display: flex; gap: 10px; flex-wrap: wrap; width: 100%; }
+.draw-actions button { flex: 1 1 110px; }

@@ -52,7 +52,7 @@
     initShards();
   }
   function backgroundResize(){
-    const next=Math.max(.5,Math.min(1.1,state.quality*(window.devicePixelRatio||1)));
+    const next=Math.max(.50,Math.min(1.15,state.quality*Math.min(window.devicePixelRatio||1,1.35)));
     background.width=Math.max(1,Math.floor(state.w*next));background.height=Math.max(1,Math.floor(state.h*next));
     state.renderScale=next;
   }

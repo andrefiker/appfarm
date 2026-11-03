@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {blankStudy,studyLosses} from '../src/local-rules.ts';
+const session=moves=>({...blankStudy(),moves,cursor:moves.length});
+assert.deepEqual(studyLosses(session([])),{w:[],b:[]});
+const captured=session(['e2e4','d7d5','e4d5']);
+assert.deepEqual(studyLosses(captured),{w:[],b:['p']});
+assert.deepEqual(studyLosses(captured,2),{w:[],b:[]});
+assert.deepEqual(studyLosses(session(['e2e4','a7a6','e4e5','d7d5','e5d6'])),{w:[],b:['p']});
+assert.deepEqual(studyLosses({...session(['a7b8q']),start:'1r2k3/P7/8/8/8/8/8/4K3 w - - 0 1'}),{w:[],b:['r']});
+assert.deepEqual(studyLosses({...session(['e1a1']),start:'4k3/8/8/8/8/8/8/R3K3 w Q - 0 1'}),{w:[],b:[]});
+assert.deepEqual(studyLosses({...session([]),start:'4k3/8/8/8/8/8/8/4K3 w - - 0 1'}),{w:[],b:[]});
+assert.throws(()=>studyLosses(session(['e2e5'])));
+console.log('Study captures: normal, en passant, promotion, castling, custom setup, review cursor and invalid history passed.');

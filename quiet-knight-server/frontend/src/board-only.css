@@ -1,0 +1,51 @@
+/* One square board, one Options button. Layout scales uniformly in either orientation. */
+body:has(.board-only) { overflow: hidden; background: #0b1b19; }
+.qk.board-only {
+  --board-size: min(calc(100dvw - 12px - env(safe-area-inset-left) - env(safe-area-inset-right)), calc(100dvh - 112px - env(safe-area-inset-top) - env(safe-area-inset-bottom)));
+  position: fixed; inset: 0; width: 100%; max-width: none; height: 100dvh;
+  margin: 0; padding: 6px; display: grid; place-items: center; overflow: hidden;
+  padding: max(6px, env(safe-area-inset-top)) max(6px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left));
+}
+.board-only > .board-stage { width: var(--board-size); max-width: none; min-width: 0; position: relative; margin: 0; }
+.board-only > .board-stage > .board-frame { width: 100%; margin: 0; padding: 4px; }
+.board-only .board { aspect-ratio: 1; }
+.board-only > .board-options-button {
+  position: fixed; z-index: 12; top: max(8px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right));
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  min-height: 44px; padding: 8px 12px; margin: 0; font-size: 14px; line-height: 20px;
+  border: 1px solid #dfbd8366; border-radius: 12px; background: #142b27; color: #f2ecdf;
+}
+.board-options-button i { width: 7px; height: 7px; border-radius: 50%; background: #dfbd83; }
+.board-sr-status { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.board-only .table-sheet { inset: 8px; margin: auto; width: min(560px, calc(100% - 16px)); max-width: calc(100% - 16px); max-height: calc(100dvh - 16px); height: auto; border-radius: 16px; overflow: auto; }
+.board-only .table-sheet .game-header { display: flex; max-width: none; padding: 0; margin: 0 0 12px; }
+.board-only .table-sheet .game-title { flex: 1; }
+.board-only .table-sheet .table-below { padding: 0; }
+.board-only .table-sheet .game-status { display: flex; }
+.board-only .table-sheet .table-toolbar { display: flex; flex-wrap: wrap; }
+.board-only .table-sheet .player-bar { height: auto; min-height: 59px; }
+.board-only .table-sheet .table-preferences { margin-top: 16px; }
+.board-extra-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-block: 12px; }
+.board-only .table-sheet :is(button, summary, select) { min-height: 44px; }
+.board-only .study-promotion, .board-only .board-stage > .study-actions { position: absolute; z-index: 15; inset: auto 8px 8px; background: var(--surface); border: 1px solid var(--accent); border-radius: 12px; padding: 12px; }
+/* Near-square windows need a separate strip so Options never covers a square. */
+@media (min-aspect-ratio: 4/5) and (max-aspect-ratio: 4/3) {
+  .qk.board-only { --board-size: min(calc(100dvw - 12px - env(safe-area-inset-left) - env(safe-area-inset-right)), calc(100dvh - 168px - env(safe-area-inset-top) - env(safe-area-inset-bottom))); padding-top: 60px; }
+}
+/* New silhouette already occupies its square; no extra stretching or magnification. */
+.board .art-cell .clear-piece { width: 100%; height: 100%; transform: none; filter: drop-shadow(0 1px 1px #0007); }
+
+.board-only .square-coordinate { display: none; }
+.board-only .square .art-cell { width: 100%; height: 100%; inset: 0; }
+
+.board-side-strip { min-height:44px; padding:5px 4px; display:flex; align-items:center; gap:10px; justify-content:space-between; color:var(--muted); font-size:12px; }
+.board-side-score { display:flex; align-items:center; gap:5px; flex-shrink:0; white-space:nowrap; }
+.board-side-score .color-dot { width:10px; height:10px; flex-basis:10px; }
+.board-side-score strong { color:var(--text); font-size:15px; font-variant-numeric:tabular-nums; }
+.board-side-score small { font-size:11px; }
+.board-side-losses { display:flex; flex-wrap:wrap; justify-content:flex-end; align-items:center; column-gap:4px; row-gap:2px; min-width:0; }
+.board-lost-label { font-size:11px; }
+.board-loss-piece { display:flex; align-items:center; height:28px; }
+.board-loss-piece .chess-art { width:24px; height:28px; }
+.board-loss-piece small { font-size:10px; margin-left:-3px; }
+.board-loss-empty { min-width:12px; }

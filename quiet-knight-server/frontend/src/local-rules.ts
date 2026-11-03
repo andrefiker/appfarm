@@ -49,3 +49,18 @@ export function importStudyPgn(input:string):StudySession{
 }
 export function uciFor(from:string,to:string,promotion='q'):string{return from+to+(promotion||'');}
 export function legalUci(pos:Chess,move:Move){return makeUci(normalizeMove(pos,move));}
+
+// Count actual captures along the selected line; missing setup pieces are not losses.
+export function studyLosses(session:StudySession,cursor=session.cursor):{w:import('./pieces').Kind[];b:import('./pieces').Kind[]} {
+ const losses:{w:import('./pieces').Kind[];b:import('./pieces').Kind[]}={w:[],b:[]};
+ const pos=positionFromFen(session.start);
+ for(const uci of session.moves.slice(0,cursor)) {
+  const parsed=parseUci(uci);if(!parsed)throw Error('Invalid history');
+  const move=normalizeMove(pos,parsed);if(!pos.isLegal(move)||!('from' in move))throw Error('Invalid history');
+  const actor=pos.board.get(move.from);let victim=pos.board.get(move.to);
+  if(actor?.role==='pawn'&&!victim&&move.from%8!==move.to%8)victim=pos.board.get(move.to+(pos.turn==='white'?-8:8));
+  if(victim&&victim.color!==pos.turn)losses[victim.color==='white'?'w':'b'].push(roleToChar(victim.role) as import('./pieces').Kind);
+  pos.play(move);
+ }
+ return losses;
+}

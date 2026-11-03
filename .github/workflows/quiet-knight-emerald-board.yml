@@ -1,0 +1,55 @@
+name: Quiet Knight Emerald board APK
+on:
+  push:
+    branches: [codex/quiet-knight-clear-board-20261103]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: quiet-knight-server/frontend/package-lock.json
+      - name: Check and build game
+        working-directory: quiet-knight-server/frontend
+        run: |
+          npm ci
+          npx tsc --noEmit
+          npm run test:review
+          npm run test:effects
+          node --experimental-strip-types tests/study-losses.test.mjs
+          npm run build -- --base=./
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.10.2
+      - name: Bundle only this build
+        run: |
+          mkdir -p android-store/app/src/main/assets/quiet-knight
+          cp -R quiet-knight-server/frontend/dist/. android-store/app/src/main/assets/quiet-knight/
+      - name: Compile Android release
+        working-directory: android-store
+        run: gradle --no-daemon --console=plain -PqkStandaloneEmerald :app:assembleQuietKnightRelease
+      - name: Prepare unsigned package and public verification tools
+        run: |
+          mkdir -p release
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -f -p 4 android-store/app/build/outputs/apk/quietKnight/release/app-quietKnight-release-unsigned.apk release/Quiet-Knight-Emerald-1.4.0-unsigned.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging release/Quiet-Knight-Emerald-1.4.0-unsigned.apk > release/badging.txt
+          cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" release/apksigner.jar
+          cp "$ANDROID_HOME/build-tools/35.0.0/zipalign" release/zipalign
+          cp -R quiet-knight-server/frontend/dist release/web
+          printf '%s\n' "$GITHUB_SHA" > release/source-commit.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: quiet-knight-emerald-1.4.0-unsigned
+          path: release/
+          retention-days: 7

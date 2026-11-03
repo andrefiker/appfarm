@@ -11,6 +11,7 @@ import android.os.Bundle;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import android.view.ViewGroup;
+import android.view.View;
 import android.widget.FrameLayout;
 import android.os.Build;
 import android.os.SystemClock;
@@ -31,6 +32,7 @@ import androidx.webkit.WebViewAssetLoader;
 
 public class MainActivity extends Activity {
     private WebView webView;
+    private boolean boardFullscreen;
     private WebViewAssetLoader assetLoader;
     private long lastHapticAt;
     private byte[] pendingArchive;
@@ -45,7 +47,7 @@ public class MainActivity extends Activity {
         return code != null && code.matches("[A-Za-z0-9]{6}") ? BuildConfig.HOME_URL + "?room=" + code.toUpperCase(java.util.Locale.ROOT) : BuildConfig.HOME_URL;
     }
     @Override protected void onNewIntent(Intent intent) { super.onNewIntent(intent); setIntent(intent); if (quietKnight()) webView.loadUrl(launchUrl(intent)); }
-    @Override protected void onResume() { super.onResume(); if (webView != null && quietKnight()) { webView.onResume(); webView.evaluateJavascript("window.dispatchEvent(new Event('qk-resume'))", null); } }
+    @Override protected void onResume() { super.onResume(); if (webView != null && quietKnight()) { applyBoardFullscreen(); webView.onResume(); webView.evaluateJavascript("window.dispatchEvent(new Event('qk-resume'))", null); } }
 
 
     @Override
@@ -174,6 +176,22 @@ public class MainActivity extends Activity {
                     });
         }
 
+        if (quietKnight() && WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
+            WebViewCompat.addWebMessageListener(webView, "QuietKnightDisplay",
+                    Collections.singleton("https://quiet-knight-server-production.up.railway.app"),
+                    (view, message, sourceOrigin, isMainFrame, reply) -> {
+                        String url = view.getUrl();
+                        if (!isMainFrame || message.getType() != WebMessageCompat.TYPE_STRING
+                                || !"https".equals(sourceOrigin.getScheme())
+                                || !"quiet-knight-server-production.up.railway.app".equals(sourceOrigin.getHost())
+                                || url == null || !url.startsWith(BuildConfig.HOME_URL) || isFinishing()) return;
+                        String mode = message.getData();
+                        if (!"board".equals(mode) && !"normal".equals(mode)) return;
+                        boardFullscreen = "board".equals(mode);
+                        applyBoardFullscreen();
+                    });
+        }
+
         CookieManager.getInstance().setAcceptCookie(true);
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, true);
         webView.setWebChromeClient(new WebChromeClient());
@@ -251,13 +269,38 @@ public class MainActivity extends Activity {
         super.onSaveInstanceState(outState);
     }
 
-    @Override
-    public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) {
-            webView.goBack();
+    private void applyBoardFullscreen() {
+        if (!quietKnight()) return;
+        if (Build.VERSION.SDK_INT >= 30) {
+            WindowInsetsController controller = getWindow().getInsetsController();
+            if (controller == null) return;
+            controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+            if (boardFullscreen) controller.hide(WindowInsets.Type.systemBars());
+            else controller.show(WindowInsets.Type.systemBars());
         } else {
-            super.onBackPressed();
+            getWindow().getDecorView().setSystemUiVisibility(boardFullscreen
+                    ? View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN
+                      | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                      | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    : View.SYSTEM_UI_FLAG_VISIBLE);
         }
+    }
+
+    @Override public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) applyBoardFullscreen();
+    }
+
+    private void navigateBack() {
+        if (webView != null && webView.canGoBack()) webView.goBack();
+        else super.onBackPressed();
+    }
+
+    @Override public void onBackPressed() {
+        if (quietKnight() && webView != null) {
+            webView.evaluateJavascript("(()=>{const ds=[...document.querySelectorAll('dialog[open]')];const d=ds[ds.length-1];if(d){if(d.dispatchEvent(new Event('cancel',{cancelable:true})))d.close();return true;}const b=document.querySelector('.board-options-button');if(b){b.click();return true;}return false;})()",
+                    handled -> { if (!"true".equals(handled)) navigateBack(); });
+        } else navigateBack();
     }
 
     @Override

@@ -65,3 +65,18 @@ body[data-text-size=large] .player-material-row{align-items:flex-start}
 body[data-text-size=large] .loss-row{flex-wrap:wrap}
 body[data-battery=true] .qk *,body[data-battery=true] .qk *::before,body[data-battery=true] .qk *::after{animation:none!important;transition:none!important}
 @media(max-width:600px){.table-sheet{margin:auto 0 0;width:100%;max-width:none;max-height:88dvh;border-radius:20px 20px 0 0}.mobile-table .player-quip{display:none}.move-confirmation{flex-wrap:wrap}.review-navigation{grid-template-columns:repeat(3,minmax(0,1fr))}.review-navigation button:last-child{grid-column:1/-1}}
+
+/* Matching, legible player panels and captured-piece trays. */
+.mobile-table .player-handle{font-size:20px;line-height:1.25;white-space:normal}
+.mobile-table .player-meta,.mobile-table .turn-label{font-size:14px;line-height:1.4}
+.mobile-table .player-bar{min-height:52px;flex-wrap:wrap}
+.player-material-row{align-items:center;gap:6px;padding:2px 8px 5px}
+.player-material-row .loss-row{flex-wrap:wrap;align-items:center;min-height:40px;gap:4px 8px}
+.player-material-row .loss-label,.player-material-row .loss-empty,.player-material{font-size:14px}
+.mobile-table .board-stage .player-material-row .captured-piece{width:32px;height:38px;flex:0 0 32px}
+.player-material-row .loss-tray{gap:2px;max-width:100%}
+.mobile-table .review-banner{flex-wrap:wrap;gap:8px}
+.mobile-table .review-banner button{min-height:44px}
+
+.board .target-dot{background:#ff3038;box-shadow:0 0 0 2px #fff2df,0 0 0 3px #70151a;width:24%;height:24%;opacity:1}
+.board .capture-ring{border:4px solid #ff3038;box-shadow:inset 0 0 0 2px #fff2df,0 0 0 1px #70151a;opacity:1}

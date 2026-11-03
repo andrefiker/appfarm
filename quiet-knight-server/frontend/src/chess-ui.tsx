@@ -687,6 +687,8 @@ export function GameSurface(p: GameSurfaceProps) {
           <FirstGameTips/>
           {reviewing ? <div className="review-banner" role="status">
             <span>Review · Position {validSelection!.ply} of {p.sans.length}</span>
+            <button type="button" disabled={validSelection!.ply===0} onClick={()=>browse(validSelection!.ply-1)}>Previous</button>
+            <button type="button" disabled={validSelection!.ply===validSelection!.line.length} onClick={()=>browse(validSelection!.ply+1)}>Next</button>
             <button type="button" onClick={() => browse(null)}>Return to game</button>
           </div> : null}
           <div
@@ -748,12 +750,7 @@ export function GameSurface(p: GameSurfaceProps) {
           </div>
           {p.drawPending && !p.controlsOpen ? p.drawControls : null}
           {p.ended?p.postGame:null}
-          <MoveHistory sans={p.sans} cursor={reviewing ? validSelection!.ply : null}
-            available={p.losses !== null} onBrowse={browse} />
-          {p.board.fun?.movie&&p.sans.length>0?<GameMovie gameId={p.gameId} sans={p.sans} orientation={p.board.orientation} motionAllowed={p.board.playful}/>:null}
-          <div className="live-captures">
-            <MaterialScore position={shownBoard.position} compact />
-          </div>
+
         </section>
       </div>
       <dialog
@@ -845,7 +842,10 @@ export function GameSurface(p: GameSurfaceProps) {
               <button className="secondary" onClick={p.onSound}>{p.sound?'Mute move sounds':'Enable move sounds'}</button>
             </section>
             {p.tableExtra}
-            <MaterialScore position={p.board.position} />
+            <MoveHistory sans={p.sans} cursor={reviewing ? validSelection!.ply : null}
+              available={p.losses !== null} onBrowse={ply=>{browse(ply);if(ply!==null)p.onCloseControls?.();}} />
+            {p.board.fun?.movie&&p.sans.length>0?<GameMovie gameId={p.gameId} sans={p.sans} orientation={p.board.orientation} motionAllowed={p.board.playful}/>:null}
+            <MaterialScore position={shownBoard.position} />
             {p.historyTools}
             <GameSoFar
               position={p.board.position}

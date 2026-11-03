@@ -757,8 +757,9 @@ export function GameSurface(p: GameSurfaceProps) {
         ref={sheet}
         className="qk-dialog table-sheet"
         aria-labelledby="table-controls-title"
-        onClose={p.onCloseControls}
+        onClose={e=>{if(e.target===e.currentTarget)p.onCloseControls?.();}}
         onCancel={(e) => {
+          if(e.target!==e.currentTarget)return;
           e.preventDefault();
           p.onCloseControls?.();
         }}

@@ -33,8 +33,8 @@ android {
             // Opt-in, separately signed installation; never replaces Studio.
             def emeraldInstall = project.hasProperty('qkStandaloneEmerald')
             applicationId emeraldInstall ? 'com.andrefiker.quietknight.emerald' : 'com.andrefiker.quietknight.appfarm.studio'
-            versionCode emeraldInstall ? 20 : 16
-            versionName emeraldInstall ? '1.4.1' : '1.1.11'
+            versionCode emeraldInstall ? 21 : 16
+            versionName emeraldInstall ? '1.5.0' : '1.1.11'
             resValue 'string', 'app_name', emeraldInstall ? 'Quiet Knight Emerald' : 'Quiet Knight'
             buildConfigField 'String', 'SOURCE_COMMIT', '"' + (System.getenv('GITHUB_SHA') ?: 'local-unverified') + '"'
             buildConfigField 'String', 'HOME_URL', '"https://quiet-knight-server-production.up.railway.app/assets/quiet-knight/index.html"'

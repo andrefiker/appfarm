@@ -5,15 +5,16 @@ import {readSoundTheme} from './sound-themes';
 import type {SoundTheme} from './sound-themes';
 import type {Weather} from './extra-fun';
 import type {Style} from './offline-engine';
-export type PlayPreferences={schema:1;fun:FunOptions;weather:Weather;soundTheme:SoundTheme;quiet:boolean;reactions:boolean;left:boolean;drag:boolean;confirm:boolean;animate:boolean;playful:boolean;hints:boolean;contrast:boolean;style:Style;think:number;adaptive:boolean;nickname:string};
-const defaults:PlayPreferences={schema:1,fun:funDefaults,weather:'off',soundTheme:'classic',quiet:false,reactions:false,left:false,drag:true,confirm:false,animate:true,playful:true,hints:true,contrast:false,style:'balanced',think:250,adaptive:false,nickname:''};
+export type PlayPreferences={schema:1;battery:boolean;rematchColors:'same'|'swap';textSize:'standard'|'large';coordinates:boolean;fun:FunOptions;weather:Weather;soundTheme:SoundTheme;quiet:boolean;reactions:boolean;left:boolean;drag:boolean;confirm:boolean;animate:boolean;playful:boolean;hints:boolean;contrast:boolean;style:Style;think:number;adaptive:boolean;nickname:string};
+const defaults:PlayPreferences={schema:1,battery:false,rematchColors:'swap',textSize:'standard',coordinates:false,fun:funDefaults,weather:'off',soundTheme:'classic',quiet:false,reactions:false,left:false,drag:true,confirm:false,animate:true,playful:true,hints:true,contrast:false,style:'balanced',think:250,adaptive:false,nickname:''};
 export function usePlayPreferences(){
   const [prefs,setPrefs]=useState<PlayPreferences>(()=>{
     try{const p=JSON.parse(localStorage.getItem('qk-play-preferences-v1')||'null');if(!p||p.schema!==1)return defaults;
-      return {...defaults,...Object.fromEntries(Object.keys(defaults).filter(k=>typeof p[k]===typeof defaults[k as keyof PlayPreferences]).map(k=>[k,p[k]])),fun:readFunOptions(p.fun),weather:['rain','dust','fireflies'].includes(p.weather)?p.weather:'off',soundTheme:readSoundTheme(p.soundTheme),think:Math.max(50,Math.min(1500,Number(p.think)||250)),style:['balanced','fox','tortoise','owl','beginner'].includes(p.style)?p.style:'balanced',nickname:String(p.nickname||'').replace(/[^\p{L}\p{N} ._-]/gu,'').slice(0,24)};
+      return {...defaults,...Object.fromEntries(Object.keys(defaults).filter(k=>typeof p[k]===typeof defaults[k as keyof PlayPreferences]).map(k=>[k,p[k]])),rematchColors:p.rematchColors==='same'?'same':'swap',textSize:p.textSize==='large'?'large':'standard',fun:readFunOptions(p.fun),weather:['rain','dust','fireflies'].includes(p.weather)?p.weather:'off',soundTheme:readSoundTheme(p.soundTheme),think:Math.max(50,Math.min(1500,Number(p.think)||250)),style:['balanced','fox','tortoise','owl','beginner'].includes(p.style)?p.style:'balanced',nickname:String(p.nickname||'').replace(/[^\p{L}\p{N} ._-]/gu,'').slice(0,24)};
     }catch{return defaults;}
   });
   useEffect(()=>{
+    document.body.dataset.battery=String(prefs.battery);document.body.dataset.textSize=prefs.textSize;document.body.dataset.coordinates=String(prefs.coordinates);
     document.body.dataset.quiet=String(prefs.quiet);document.body.dataset.left=String(prefs.left);
     document.body.dataset.motion=String(prefs.animate);document.body.dataset.contrast=String(prefs.contrast);
     try{localStorage.setItem('qk-play-preferences-v1',JSON.stringify(prefs));}catch{}
@@ -22,7 +23,10 @@ export function usePlayPreferences(){
 }
 export function PlaySettings({prefs,update}:{prefs:PlayPreferences;update:(p:Partial<PlayPreferences>)=>void}){
   return <section aria-label="Play preferences"><h3>Play your way</h3>
-    {([['quiet','Quiet Mode'],['reactions','Receive / send quiet reactions'],['left','Left-handed controls'],['drag','Drag to move (tap always works)'],['confirm','Confirm each move'],['animate','Move animations'],['playful','Playful piece effects'],['hints','Legal destination previews'],['contrast','High contrast'],['adaptive','Adaptive difficulty for local computer games']] as const).map(([key,label])=><label className="preference-row" key={key}><span>{label}</span><input type="checkbox" checked={prefs[key]} onChange={e=>update({[key]:e.target.checked})}/></label>)}
+    {([['quiet','Quiet Mode'],['battery','Battery saver'],['reactions','Receive / send quiet reactions'],['left','Left-handed controls'],['drag','Drag to move (tap always works)'],['confirm','Confirm each move'],['animate','Move animations'],['playful','Playful piece effects'],['hints','Legal destination previews'],['contrast','High contrast'],['coordinates','Square coordinates'],['adaptive','Adaptive difficulty for local computer games']] as const).map(([key,label])=><label className="preference-row" key={key}><span>{label}</span><input type="checkbox" checked={prefs[key]} onChange={e=>update({[key]:e.target.checked})}/></label>)}
+    <label className="preference-row">Text size<select aria-label="Text size" value={prefs.textSize} onChange={e=>update({textSize:e.target.value as PlayPreferences['textSize']})}><option value="standard">Standard</option><option value="large">Large</option></select></label>
+    <label className="preference-row">Rematch colors<select aria-label="Rematch colors" value={prefs.rematchColors} onChange={e=>update({rematchColors:e.target.value as 'same'|'swap'})}><option value="swap">Swap sides</option><option value="same">Keep sides</option></select></label>
+    <p className="settings-note">Battery saver pauses decorative effects and limits computer searches to 100 ms. Your separate animation and thinking preferences are restored when it is switched off.</p>
     <details className="fun-settings"><summary>Fun extras</summary>
       {([['comic','Comic capture labels'],['replay','Capture replay button'],['tray','Captured-piece landing'],['sneak','En passant sneak'],['crown','Promotion crown'],['revenge','Recapture spark'],['poses','Checkmate piece poses'],['handshake','Draw handshake'],['entrance','Rematch entrance'],['sounds','Personality sounds']] as const).map(([key,label])=><label className="preference-row" key={key}><span>{label}</span><input type="checkbox" checked={prefs.fun[key]} onChange={e=>update({fun:{...prefs.fun,[key]:e.target.checked}})}/></label>)}
       <details className="extra-fun-settings"><summary>More character</summary>

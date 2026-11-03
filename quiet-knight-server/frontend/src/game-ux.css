@@ -1,0 +1,67 @@
+/* Portrait-first refinements; original Emerald artwork and piece proportions stay intact. */
+.mobile-table .player-strip{margin:4px 8px;border:1px solid transparent;border-radius:10px;padding:3px 0;background:#ffffff03}
+.mobile-table .player-strip.player-active{border-left:3px solid #e6c78f;background:#e6c78f09}
+.mobile-table .player-bar{height:auto;min-height:42px;padding:2px 8px;gap:8px}
+.mobile-table .player-identity,.mobile-table .player-copy{min-width:0}
+.mobile-table .player-handle{overflow-wrap:anywhere}
+.mobile-table .player-meta{font-size:12px}
+.mobile-table .player-signals{flex-shrink:0}
+.mobile-table .turn-label{color:#f1d496;white-space:nowrap;font-size:12px}
+.player-material-row{display:flex;align-items:center;gap:8px;padding:0 8px 3px}
+.player-material-row .loss-row{display:flex;min-width:0;flex:1;gap:8px;margin:0;min-height:28px}
+.player-material-row .loss-label{white-space:nowrap;font-size:11px}
+.player-material-row .loss-label .color-dot{display:none}
+.player-material-row .loss-tray{display:flex;flex-wrap:wrap;min-width:0;gap:1px}
+.player-material-row .captured-piece{width:22px;height:26px;flex-basis:22px}
+.player-material{font-size:12px;color:var(--muted);white-space:nowrap}
+.player-material strong{color:var(--accent)}
+.mobile-table .board-frame{padding:3px;margin:4px 2px}
+.square-last::after{box-shadow:inset 0 0 0 2px #d8b967a8}
+.square-selected::after{background:#ffe4a132;border:3px solid #ffe9ac}
+.board .square-check{outline:3px dashed #f9bdac;outline-offset:-4px}
+.check-badge{position:absolute;right:3px;top:3px;border-radius:50%;width:16px;height:16px;font:bold 13px/16px system-ui;text-align:center;color:#fff;background:#9f3023;z-index:16;pointer-events:none}
+.board .square-drop-valid{outline:4px solid #fff2ac;outline-offset:-4px}
+.board .square-drop-invalid{outline:3px dashed #eb9c88;outline-offset:-4px}
+.board .target-dot{background:#183f35;box-shadow:0 0 0 2px #fff5cb}
+.board .capture-ring{border:3px double #fff4b5;box-shadow:0 0 0 1px #19392d}
+.review-timeline{display:flex;flex-direction:column;gap:2px;font-size:13px;color:var(--accent);margin:8px 0}
+.review-timeline input{width:100%;min-height:44px;accent-color:#dfbd83}
+.connection-notice{padding:10px 12px;border:1px solid #cfaa70;border-radius:8px;color:#f2d9b0;font-size:14px;line-height:1.45}
+.qk .engine-status,.qk .resume-detail{font-size:12px;line-height:1.5;color:var(--muted);margin:4px 0 8px;overflow-wrap:anywhere}
+.resume-detail{text-align:center;font-size:13px;color:#c3cfc9;padding:0 16px}
+.game-end-actions,.sheet-section{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.game-end-actions>button{flex:1 1 110px;min-height:44px}
+.sheet-section>h3{width:100%;margin:0}
+.sheet-section .draw-controls{margin:0}
+.table-sheet .dialog-head{position:sticky;top:0;background:var(--surface);z-index:2}
+.table-sheet{padding-bottom:max(20px,env(safe-area-inset-bottom))}
+.first-game-tips{padding:10px 12px;border:1px solid var(--line);border-radius:10px;margin:8px 0;font-size:13px;color:var(--muted)}
+.first-game-tips p{margin:0 0 4px;line-height:1.5}
+.first-game-tips div{display:flex;gap:12px}
+.first-game-tips button,.board-lock button{min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;color:var(--text);background:var(--surface)}
+.board-lock{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;padding:6px;font-size:13px}
+.board-lock:has(.unlock-holding){background:#e2c18c22}
+.board-lock button{touch-action:none}
+.promotion-preview{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 0}
+.promotion-preview>div{width:64px;height:64px;background:#d5c8a3;border-radius:8px}
+.promotion-preview .chess-art{width:100%;height:100%}
+.promotion-preview p{flex:1;min-width:140px}
+.promotion-options [aria-pressed=true]{outline:3px solid var(--accent);outline-offset:-3px}
+.promotion-preview>button{flex-basis:100%;min-height:48px}
+.practice-ladder{padding:8px 0;line-height:1.5}
+.practice-ladder li{margin:8px 0}
+.practice-ladder button{margin:4px 4px 4px 0}
+.archive-search{display:grid;gap:8px;margin:14px 0}
+.archive-search input,.archive-search select{width:100%;min-height:44px;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px}
+.archive-results{max-height:420px;overflow:auto;list-style:none;padding:0}
+.archive-results li{border-bottom:1px solid var(--line);padding:12px 0;overflow-wrap:anywhere}
+.archive-results p{font-size:13px}
+body[data-coordinates=true] .mobile-table .square-coordinate{display:block;background:#0c241dcc;color:#fff4cb;padding:1px 2px;border-radius:2px}
+body[data-text-size=large] .qk :is(p,label,summary,.player-meta,.turn-label,.loss-label,.loss-empty,.player-material,.engine-status){font-size:16px!important;line-height:1.5}
+body[data-text-size=large] .qk :is(button,select,input):not(.square){font-size:16px!important}
+body[data-text-size=large] .qk .player-handle{font-size:18px}
+body[data-text-size=large] .player-bar{flex-wrap:wrap}
+body[data-text-size=large] .player-material-row{align-items:flex-start}
+body[data-text-size=large] .loss-row{flex-wrap:wrap}
+body[data-battery=true] .qk *,body[data-battery=true] .qk *::before,body[data-battery=true] .qk *::after{animation:none!important;transition:none!important}
+@media(max-width:600px){.table-sheet{margin:auto 0 0;width:100%;max-width:none;max-height:88dvh;border-radius:20px 20px 0 0}.mobile-table .player-quip{display:none}.move-confirmation{flex-wrap:wrap}.review-navigation{grid-template-columns:repeat(3,minmax(0,1fr))}.review-navigation button:last-child{grid-column:1/-1}}

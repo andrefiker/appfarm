@@ -63,7 +63,7 @@ test('en passant uses the victim square and a sidestep; underpromotion gets its 
    await study(p,promotion?'4k3/P7/8/8/8/8/8/4K3 w - - 0 1':'4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1');
    await button(p,'Flip board').click();
    await tap(p,promotion?'a7':'e5',promotion?'a8':'d6');
-   if(promotion){await button(p,'Promote to knight').click();await expect(sq(p,'a8')).toHaveAttribute('data-piece','wn');await expect(p.locator('[data-effect=crown]')).toHaveCount(1);}
+   if(promotion){await button(p,'Promote to knight').click();await button(p,'Confirm promotion').click();await expect(sq(p,'a8')).toHaveAttribute('data-piece','wn');await expect(p.locator('[data-effect=crown]')).toHaveCount(1);}
    else{await expect(sq(p,'d5').locator('.capture-sneak')).toHaveCount(1);await expect(p.locator('.travel-sneak,[data-effect=sneak]')).toHaveCount(2);}
    await p.waitForTimeout(500);await p.screenshot({path:`output/playwright/fun-${promotion?'promotion':'en-passant'}.png`,fullPage:true,animations:'allow'});
    await expect(p.locator('[data-effect=crown],[data-effect=sneak]')).toHaveCount(0);

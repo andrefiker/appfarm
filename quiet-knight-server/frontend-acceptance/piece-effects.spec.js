@@ -61,7 +61,7 @@ test('quiet knight leaps, paired castling and promotion support special moves',a
   for(const c of cases){
     const context=await browser.newContext(),p=await context.newPage();
     try{await study(p,c.fen,{},c.variant);await tap(p,c.from,c.to);
-      if(c.promote)await button(p,'Promote to knight').click();
+      if(c.promote){await button(p,'Promote to knight').click();await button(p,'Confirm promotion').click();}
       await expect(p.locator(c.selector)).toHaveCount(c.count);
       if(c.promote)await expect(square(p,'a8')).toHaveAttribute('data-piece','wn');
       if(c.selector==='.travel-castle'){
@@ -99,7 +99,7 @@ for(const mode of ['reduced','disabled','quiet','no-motion'])test(`${mode} suppr
   if(mode==='reduced')await page.emulateMedia({reducedMotion:'reduce'});
   const prefs=mode==='disabled'?{playful:false}:mode==='quiet'?{quiet:true}:mode==='no-motion'?{animate:false}:{};
   await study(page,'4k3/P7/8/8/8/8/8/4K3 w - - 0 1',prefs);
-  await tap(page,'a7','a8');await button(page,'Promote to rook').click();
+  await tap(page,'a7','a8');await button(page,'Promote to rook').click();await button(page,'Confirm promotion').click();
   await expect(square(page,'a8')).toHaveAttribute('data-piece','wr');
   await expect(page.locator('.capture-ghost,.promotion-effect,.playful-travel,[data-effect=bow]')).toHaveCount(0);
   await expect(square(page,'a8').locator('.piece-performance')).toHaveCSS('opacity','1');

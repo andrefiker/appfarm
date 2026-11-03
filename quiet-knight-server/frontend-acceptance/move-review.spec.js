@@ -54,9 +54,9 @@ const square = (page, name) => page.locator(`[data-square=${name}]`);
 for (const role of ['white', 'black']) test(`lost pieces follow ${role} orientation; review stays read-only during live updates`, async ({page}) => {
   const fixture = await table(page,{role});
   const colors = role === 'white' ? ['b','w'] : ['w','b'];
-  await expect(page.locator('.board-stage > .loss-row')).toHaveCount(2);
+  await expect(page.locator('.board-stage .player-strip .loss-row')).toHaveCount(2);
   for (let i = 0; i < 2; i++) {
-    const tray = page.locator('.board-stage > .loss-row').nth(i);
+    const tray = page.locator('.board-stage .player-strip .loss-row').nth(i);
     await expect(tray).toHaveAttribute('data-lost-color',colors[i]);
     await expect(tray.locator('[data-captured=p]')).toHaveCount(1);
   }
@@ -90,7 +90,7 @@ for (const role of ['white', 'black']) test(`lost pieces follow ${role} orientat
   await page.getByRole('button',{name:'Table controls',exact:true}).click();
   await page.getByRole('button',{name:'Flip board',exact:true}).click();
   await page.getByRole('button',{name:'Close table controls',exact:true}).click();
-  await expect(page.locator('.board-stage > .loss-row').first()).toHaveAttribute('data-lost-color',colors[1]);
+  await expect(page.locator('.board-stage .player-strip .loss-row').first()).toHaveAttribute('data-lost-color',colors[1]);
   expect(fixture.errors).toEqual([]);
 });
 

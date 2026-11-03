@@ -8,6 +8,7 @@ import './studio.css';
 import './reference-table.css';
 import './piece-effects.css';
 import './extra-fun.css';
+import './game-ux.css';
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>

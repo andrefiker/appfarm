@@ -127,6 +127,7 @@ export default function GameApp() {
   const {prefs,update:updatePrefs}=usePlayPreferences();
   const [studySeed,setStudySeed]=useState<StudySeed|undefined>();
   const [flipped,setFlipped]=useState(false);
+  const [pendingOnlineMove,setPendingOnlineMove]=useState(false);
   const [pendingMove,setPendingMove]=useState<{from:string;to:string;promotion:string}|null>(null);
   const [enginePaused,setEnginePaused]=useState(false);
   const [redoMoves,setRedoMoves]=useState<LocalMove[]>([]);
@@ -187,8 +188,8 @@ export default function GameApp() {
   const requestGeneration = useRef(0);
   const resumeStarted = useRef(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const preferences = useRef({ sound, haptics, fun:prefs.fun, playful:prefs.playful && prefs.animate && !prefs.quiet });
-  preferences.current = { sound:sound && !prefs.quiet, haptics, fun:prefs.fun, playful:prefs.playful && prefs.animate && !prefs.quiet };
+  const preferences = useRef({ sound, haptics, fun:prefs.fun, playful:prefs.playful && prefs.animate && !prefs.quiet && !prefs.battery });
+  preferences.current = { sound:sound && !prefs.quiet, haptics, fun:prefs.fun, playful:prefs.playful && prefs.animate && !prefs.quiet && !prefs.battery };
   const accountId = knight.player?.id ?? "guest";
   const activeAccount = useRef<string>("guest");
   const [gameOwner, setGameOwner] = useState<string>("guest");
@@ -405,7 +406,7 @@ export default function GameApp() {
     level,
     setLocalMoves,
     setMessage,
-    {style:prefs.style,think:prefs.think},
+    {style:prefs.style,think:prefs.battery?100:prefs.think},
   );
   useEffect(() => {
     if (!knight.player || gameOwner !== accountId || room || mode !== "local" || !localGame.isGameOver()) return;
@@ -633,6 +634,7 @@ export default function GameApp() {
   ) {
     if (!room || !seatToken || !beginRequest()) return;
     const generation = requestGeneration.current;
+    setPendingOnlineMove(true);
     try {
       const { data } = await api.post(`/api/rooms/${room.code}/move`, {
         seat_token: seatToken,
@@ -666,6 +668,7 @@ export default function GameApp() {
         }
       }
     } finally {
+      setPendingOnlineMove(false);
       endRequest();
     }
   }
@@ -829,14 +832,15 @@ export default function GameApp() {
       endRequest();
     }
   }
-  async function rematch(colors: "same" | "swap" = "same") {
+  async function rematch(colors: "same" | "swap" = prefs.rematchColors) {
     setTableControls(false);
     closeModal();
     setSelected(null);
     setMotion(null);
     if (mode === "local") {
       newLocalTable();
-      setLocalMoves([]);
+      setLocalMoves([]);setEnginePaused(false);setRedoMoves([]);
+      if(colors==='swap')setHumanColor(c=>c==='w'?'b':'w');
       return;
     }
     if (!room || !seatToken || !beginRequest()) return;
@@ -897,7 +901,7 @@ export default function GameApp() {
                 ? `${turn === "w" ? "White" : "Black"} to move`
                 : room
                   ? "Opponent’s move"
-                  : "Computer thinking";
+                  : enginePaused ? "Computer paused" : computerEngine.startsWith("Unavailable") ? "Computer unavailable" : "Computer thinking";
   const hint = waiting
     ? "Copy the invite to bring your opponent in."
     : room?.status === "timeout_draw"
@@ -909,7 +913,11 @@ export default function GameApp() {
       : game.isCheckmate()
         ? "Checkmate. Well played."
         : ended
-          ? "The game has finished."
+          ? game.isStalemate() ? "Stalemate · no legal move, but the king is not in check."
+            : game.isInsufficientMaterial() ? "Draw · insufficient material to checkmate."
+            : game.isThreefoldRepetition() ? "Draw · the same position occurred three times."
+            : game.isDrawByFiftyMoves() ? "Draw · fifty moves without a pawn move or capture."
+            : "Draw agreed by both players."
           : check
             ? "The king must get out of check."
             : me === turn
@@ -1152,7 +1160,7 @@ export default function GameApp() {
             }}
           >
             Resume saved computer game
-          </button>
+          </button><p className="resume-detail">You ({humanColor==='w'?'White':'Black'}) vs Computer · Level {level} · Move {Math.floor(localMoves.length/2)+1} · {localGame.isGameOver()?'Finished · review available':localGame.turn()===humanColor?'Your turn':'Computer to move'}</p>
         </div>
       ) : null}
       {screen === "home" ? (
@@ -1305,6 +1313,10 @@ export default function GameApp() {
             </>
           }
           computerEngine={computerEngine}
+          pendingOnlineMove={pendingOnlineMove}
+          drawPending={room?.proposal?.kind==='draw'}
+          onReviewGame={()=>openStudy({sans:[...sans]})}
+          onNewOpponent={leaveGame}
           board={{
             position,
             orientation,
@@ -1314,11 +1326,12 @@ export default function GameApp() {
             check,
             motion:prefs.animate?motion:null,
             motionSequence:motion?.serial,
-            playful:prefs.playful && prefs.animate && !prefs.quiet,
-            fun:prefs.fun, weather:prefs.weather, soundEnabled:sound, soundVolume:volume, draw:room?.status === "draw", entrance,
+            playful:prefs.playful && prefs.animate && !prefs.quiet && !prefs.battery,
+            fun:prefs.fun, weather:prefs.battery?'off':prefs.weather, soundEnabled:sound, soundVolume:volume, draw:room?.status === "draw", entrance,
             winner:ended ? room ? room.winner : game.isCheckmate() ? turn === 'w' ? 'b' : 'w' : null : null,
-            locked,
+            locked:locked || Boolean(pendingMove),
             onSquare, drag:prefs.drag,
+            dragTargets:from=>locked || game.get(from as Square)?.color!==me ? [] : game.moves({square:from as Square,verbose:true}).map(m=>m.to),
             onMove:(from,to)=>{if(locked||game.get(from as Square)?.color!==me)return;const moves=game.moves({square:from as Square,verbose:true}).filter(m=>m.to===to);if(!moves.length)return;if(moves.some(m=>m.promotion))setPromotion({from,to});else proposeMove(from,to);},
           }}
           online={mode === "online"}
@@ -1339,11 +1352,12 @@ export default function GameApp() {
           onBack={() => setModal("leave")}
           onSettings={() => setModal("settings")}
           onNew={() => {
-            if (room) void rematch("swap");
-            else if (localMoves.length === 0) void rematch();
+            setTableControls(false);
+            if (room || ended) void rematch();
+            else if (localMoves.length === 0) void rematch("same");
             else setModal("restart");
           }}
-          onResign={() => setModal("resign")}
+          onResign={() => {setTableControls(false);setModal("resign");}}
           onCopy={() => void copyInvite()}
           onShare={
             typeof navigator.share === "function"
@@ -1358,7 +1372,7 @@ export default function GameApp() {
           }}
         />
       ) : null}
-      {pendingMove?<section className="move-confirmation" role="dialog" aria-label="Confirm move"><p>{pendingMove.from} → {pendingMove.to}</p><button onClick={()=>performMove(pendingMove.from,pendingMove.to,pendingMove.promotion)}>Confirm move</button><button onClick={()=>setPendingMove(null)}>Cancel move</button></section>:null}
+      {pendingMove?<section className="move-confirmation" role="dialog" aria-label="Confirm move"><p>{pendingMove.from} → {pendingMove.to}</p><button onClick={()=>performMove(pendingMove.from,pendingMove.to,pendingMove.promotion)}>Confirm move</button><button onClick={()=>{setPendingMove(null);setSelected(null);}}>Cancel move</button></section>:null}
       {screen === "home" ? (
         <p className="network-build">
           {BUILD}
@@ -1467,7 +1481,7 @@ export default function GameApp() {
                       type="button"
                       onClick={() => {
                         if (modal === "leave") leaveGame();
-                        else if (modal === "restart") void rematch();
+                        else if (modal === "restart") void rematch("same");
                         else void resign();
                       }}
                     >

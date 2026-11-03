@@ -1211,7 +1211,6 @@ export default function GameApp() {
         <GameSurface
           key={record.id}
           gameId={record.id}
-          attention={Boolean(room?.proposal && room.proposal.by !== me)}
           onReviewStart={() => { setSelected(null); setPendingMove(null); setPromotion(null); }}
           clock={room||undefined}
           drawControls={room && room.status === 'active' && room.black_joined && me ? <DrawControls me={me} proposal={room.proposal} busy={busy} connected={connection === 'Live'} paused={Boolean(room.clock_paused)} onAction={action => void consent(action, action === 'request' ? 'draw' : undefined)} /> : null}

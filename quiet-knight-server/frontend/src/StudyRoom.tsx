@@ -1,4 +1,3 @@
-import {useBoardFullscreen} from './board-only';
 import {useMoveArchive} from './archive-ui';
 import {playHaptic} from './haptics';
 import {reviewAssessment} from './review-assessment';
@@ -6,14 +5,14 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {makeFen,parseBoardFen,makeBoardFen} from 'chessops/fen';
 import {makeSquare,parseUci,makeUci} from 'chessops/util';
 import {parseSan,makeSan} from 'chessops/san';
-import {ChessBoard,PromotionChoices,MaterialScore,BoardSide} from './chess-ui';
+import {ChessBoard,PromotionChoices,MaterialScore} from './chess-ui';
 import type {Position} from './chess-ui';
 import {useChessAudio} from './chess-audio';
 import {GameMovie} from './game-movie';
 import {describeBoardMotion} from './board-effects';
 import type {BoardMotion} from './board-effects';
 import type {Color,Kind} from './pieces';
-import {studyLosses,blankStudy,loadStudy,saveStudy,replay,positionFromFen,variantForFen,boardPosition,legalMoves,chess960Fen,studyPgn,importStudyPgn,outcome,repetitionCount,moveFeatures} from './local-rules';
+import {blankStudy,loadStudy,saveStudy,replay,positionFromFen,variantForFen,boardPosition,legalMoves,chess960Fen,studyPgn,importStudyPgn,outcome,repetitionCount,moveFeatures} from './local-rules';
 import type {StudySession} from './local-rules';
 import {engineSearch,selectStyle,ENGINE_NAME} from './offline-engine';
 import type {EngineLine} from './offline-engine';
@@ -23,10 +22,6 @@ export type StudySeed={fen?:string;sans?:string[];mode?:StudySession['mode']};
 function seeded(seed:StudySeed):StudySession{const s={...blankStudy(),start:seed.fen||blankStudy().start,mode:seed.mode||'analysis'};const pos=positionFromFen(s.start);for(const san of seed.sans||[]){const move=parseSan(pos,san);if(!move)throw Error('Cannot replay source game');s.moves.push(makeUci(move));pos.play(move);}s.cursor=s.moves.length;return s;}
 function download(text:string,name:string){const url=URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 export function StudyRoom({owner,prefs,haptics,sound,volume,seed,onBack}:{owner:string;prefs:PlayPreferences;haptics:boolean;sound:boolean;volume:number;seed?:StudySeed;onBack:()=>void}){
- useBoardFullscreen();
- const [optionsOpen,setOptionsOpen]=useState(false),[actionsTarget,setActionsTarget]=useState<HTMLDivElement|null>(null);
- const optionsDialog=useRef<HTMLDialogElement>(null);
- useEffect(()=>{const d=optionsDialog.current;if(!d)return;if(optionsOpen&&!d.open)d.showModal();else if(!optionsOpen&&d.open)d.close();},[optionsOpen]);
  const identify=(s:StudySession):StudySession=>({...s,archiveId:s.archiveId||crypto.randomUUID(),archiveMode:s.mode==='analysis'?s.archiveMode:s.mode});
  const[session,setSession]=useState<StudySession>(()=>{try{return identify(seed?seeded(seed):loadStudy(owner));}catch{return identify(blankStudy());}});
  const[selected,setSelected]=useState<string|null>(null),[flip,setFlip]=useState(false),[autoFlip,setAutoFlip]=useState(true),[notice,setNotice]=useState(''),[thinking,setThinking]=useState(false),[visible,setVisible]=useState(document.visibilityState!=='hidden');
@@ -71,8 +66,8 @@ export function StudyRoom({owner,prefs,haptics,sound,volume,seed,onBack}:{owner:
   }).catch(e=>{if(e.name!=='AbortError')setNotice('Offline engine unavailable. Change to pass-and-play or retry.');}).finally(()=>{if(search.current===controller)setThinking(false);});
   return()=>controller.abort();
  },[fen,session.mode,session.variant,session.cursor,session.moves.length,session.human,session.level,turn,end,visible,prefs.style,prefs.think]);
- function replace(next:StudySession){setOptionsOpen(false);previousHaptic.current=null;search.current?.abort();setThinking(false);setSession(identify(next));setSelected(null);setRedo([]);setExercise(null);setGraph([]);setNotice('');setLines([]);setClaim(false);}
- function commit(uci:string){setOptionsOpen(false);setConfirm(null);setPromotion(null);try{const pos=current.pos.clone(),move=parseUci(uci);if(!move||!pos.isLegal(move))throw Error('Illegal move');
+ function replace(next:StudySession){previousHaptic.current=null;search.current?.abort();setThinking(false);setSession(identify(next));setSelected(null);setRedo([]);setExercise(null);setGraph([]);setNotice('');setLines([]);setClaim(false);}
+ function commit(uci:string){setConfirm(null);setPromotion(null);try{const pos=current.pos.clone(),move=parseUci(uci);if(!move||!pos.isLegal(move))throw Error('Illegal move');
   if(exercise?.kind==='puzzle'&&uci!==puzzles[exercise.index].solution[session.moves.length]){setNotice('Try another move. Your exercise position is unchanged.');return;}
   pos.play(move);setSession(s=>({...s,result:undefined,moves:[...s.moves,uci],cursor:s.moves.length+1}));setRedo([]);setSelected(null);
   if(exercise?.kind==='puzzle')setNotice('Solved. '+puzzles[exercise.index].explanation);
@@ -89,7 +84,7 @@ export function StudyRoom({owner,prefs,haptics,sound,volume,seed,onBack}:{owner:
   if(board[s]?.color===turn&&selected!==s)playHaptic('select',haptics);
   setSelected(board[s]?.color===turn?(selected===s?null:s):null);
  }
- function browse(cursor:number){setOptionsOpen(false);previousHaptic.current=null;search.current?.abort();setThinking(false);setSession(s=>({...s,cursor:Math.max(0,Math.min(s.moves.length,cursor))}));setSelected(null);}
+ function browse(cursor:number){previousHaptic.current=null;search.current?.abort();setThinking(false);setSession(s=>({...s,cursor:Math.max(0,Math.min(s.moves.length,cursor))}));setSelected(null);}
  function startTraining(kind:'puzzle'|'endgame',index:number){const item=kind==='puzzle'?puzzles[index]:endgames[index];replace({...blankStudy(),start:item.fen,mode:kind==='puzzle'?'analysis':'computer'});setExercise({kind,index});setHint(false);setTab('play');}
  async function analyse(all=false){search.current?.abort();const controller=new AbortController();search.current=controller;setThinking(true);setProgress(0);setNotice('');const fens=all?replay(session).fens:[fen],samples:typeof graph=[];
   try{for(let i=0;i<fens.length;i++){const p=positionFromFen(fens[i]);if(p.isEnd()){samples.push({fen:fens[i],cp:p.isCheckmate()?(p.turn==='white'?-100000:100000):0,depth:0});continue;}
@@ -101,26 +96,19 @@ export function StudyRoom({owner,prefs,haptics,sound,volume,seed,onBack}:{owner:
  }
  function importFen(){try{const p=positionFromFen(fenText);replace({...blankStudy(),start:makeFen(p.toSetup()),variant:variantForFen(fenText,session.variant)});setTab('play');}catch(e){setNotice('FEN rejected: '+(e as Error).message);}}
  function useEditor(){try{const ranks=[];for(let r=8;r>=1;r--){let rank='',empty=0;for(let f=0;f<8;f++){const p=editor[String.fromCharCode(97+f)+r];if(p){if(empty)rank+=empty;empty=0;rank+=p.color==='w'?p.type.toUpperCase():p.type;}else empty++;}if(empty)rank+=empty;ranks.push(rank);}const raw=makeBoardFen(parseBoardFen(ranks.join('/')).unwrap())+` ${editTurn} ${castling||'-'} ${ep||'-'} 0 1`;setFenText(raw);const p=positionFromFen(raw);replace({...blankStudy(),start:makeFen(p.toSetup()),variant:variantForFen(raw,session.variant)});setTab('play');}catch(e){setNotice('Position rejected: '+(e as Error).message);}}
- const losses=useMemo(()=>studyLosses(session),[session.start,session.moves,session.cursor]);
  const check=current.pos.isCheck()?makeSquare(current.pos.board.kingOf(current.pos.turn)!):null;
- const body=<><ChessBoard actionsTarget={actionsTarget} position={tab==='editor'?editor:board} orientation={orientation} selected={selected} targets={targets} last={null} check={check} motion={prefs.animate&&tab==='play'&&session.cursor===session.moves.length?motion:null} playful={prefs.playful&&prefs.animate&&!prefs.quiet&&tab==='play'&&session.cursor===session.moves.length} fun={prefs.fun} weather={prefs.weather} soundEnabled={sound} soundVolume={volume} motionSequence={motion?.serial} winner={end&&archiveResult!=='1/2-1/2'?archiveResult==='1-0'?'w':archiveResult==='0-1'?'b':null:null} locked={tab==='editor'?false:locked} onSquare={square} onMove={(from,to)=>propose(from,to)} drag={prefs.drag&&tab!=='editor'}/>
+ const body=<><ChessBoard position={tab==='editor'?editor:board} orientation={orientation} selected={selected} targets={targets} last={null} check={check} motion={prefs.animate&&tab==='play'&&session.cursor===session.moves.length?motion:null} playful={prefs.playful&&prefs.animate&&!prefs.quiet&&tab==='play'&&session.cursor===session.moves.length} fun={prefs.fun} weather={prefs.weather} soundEnabled={sound} soundVolume={volume} motionSequence={motion?.serial} winner={end&&archiveResult!=='1/2-1/2'?archiveResult==='1-0'?'w':archiveResult==='0-1'?'b':null:null} locked={tab==='editor'?false:locked} onSquare={square} onMove={(from,to)=>propose(from,to)} drag={prefs.drag&&tab!=='editor'}/>
+  {prefs.fun.movie&&session.moves.length>0?<GameMovie key={session.archiveId} gameId={session.archiveId||session.start} sans={archivedLine.sans} startFen={session.start} orientation={orientation} motionAllowed={!prefs.quiet&&prefs.animate}/>:null}
   {promotion?<section className="study-promotion" aria-label="Promotion"><PromotionChoices color={turn} onChoose={k=>propose(promotion.from,promotion.to,k)}/></section>:null}
   {confirm?<div className="study-actions"><p>Confirm {confirm}?</p><button onClick={()=>commit(confirm)}>Confirm move</button><button onClick={()=>setConfirm(null)}>Cancel move</button></div>:null}
  </>;
- return <main className="qk study-room board-only">
- <span className="board-sr-status" role="status">{end || notice || (thinking ? "Engine working" : `${turn === "w" ? "White" : "Black"} to move`)}</span>
- <button className="board-options-button" type="button" aria-label="Options" aria-haspopup="dialog" aria-expanded={optionsOpen} onClick={()=>setOptionsOpen(true)}>☷ <span>Options</span></button>
- <section className="board-stage" aria-label="Playing area"><BoardSide color={orientation==='w'?'b':'w'} position={tab==='editor'?editor:board} losses={tab==='editor'?null:losses}/>{body}<BoardSide color={orientation} position={tab==='editor'?editor:board} losses={tab==='editor'?null:losses}/></section>
- <dialog ref={optionsDialog} className="qk-dialog table-sheet" aria-label="Options" onClose={()=>setOptionsOpen(false)} onCancel={()=>setOptionsOpen(false)}>
- <div className="dialog-head"><h2>Options</h2><button autoFocus aria-label="Close options" onClick={()=>setOptionsOpen(false)}>Close</button></div>
- <div className="dialog-body table-sheet-body"><header className="game-header"><button className="secondary" onClick={()=>{search.current?.abort();onBack();}}>Back to table</button><h1>Local chess studio</h1></header>
+ return <main className="qk study-room"><header className="game-header"><button className="secondary" onClick={()=>{search.current?.abort();onBack();}}>Back to table</button><h1>Local chess studio</h1></header>
  {archiveError?<p role="alert">{archiveError}</p>:null}<p className="study-status" role="status">{tab==='editor'?'Position editor':end|| (claim?'Draw claimed':thinking?'Engine working…':`${turn==='w'?'White':'Black'} to move`)} · {session.variant==='chess960'?'Chess960':'Standard'} · Untimed</p>
  <nav aria-label="Studio sections" className="study-tabs">{(['play','analysis','training','openings','editor','files'] as const).map(t=><button key={t} aria-pressed={tab===t} onClick={()=>{setTab(t);if(t==='editor'){setEditor(board);setEditTurn(turn);setCastling(fen.split(' ')[2]);setEp(fen.split(' ')[3]);}}}>{t}</button>)}</nav>
-   {prefs.fun.movie&&session.moves.length>0?<GameMovie key={session.archiveId} gameId={session.archiveId||session.start} sans={archivedLine.sans} startFen={session.start} orientation={orientation} motionAllowed={!prefs.quiet&&prefs.animate}/>:null}
-<div ref={setActionsTarget} className="board-extra-actions" />
+ {body}
  <p role="status">{notice}</p>
  {exercise?<aside className="study-exercise"><strong>{exercise.kind==='puzzle'?puzzles[exercise.index].name:endgames[exercise.index].name}</strong><button onClick={()=>setHint(!hint)}>{hint?'Hide hint':'Hint'}</button>{hint?<p>{exercise.kind==='puzzle'?puzzles[exercise.index].hint:endgames[exercise.index].hint}</p>:null}<button onClick={()=>startTraining(exercise.kind,exercise.index)}>Replay exercise</button><button onClick={()=>{setExercise(null);setTab('training');}}>Choose exercise</button></aside>:null}
- <div className="study-actions"><button onClick={()=>{setFlip(!flip);setOptionsOpen(false);}}>Flip board</button><button disabled={session.cursor===0} onClick={()=>browse(session.cursor-1)}>Previous position</button><button disabled={session.cursor===session.moves.length} onClick={()=>browse(session.cursor+1)}>Next position</button><button onClick={()=>browse(session.moves.length)}>Live local position</button></div>
+ <div className="study-actions"><button onClick={()=>setFlip(!flip)}>Flip board</button><button disabled={session.cursor===0} onClick={()=>browse(session.cursor-1)}>Previous position</button><button disabled={session.cursor===session.moves.length} onClick={()=>browse(session.cursor+1)}>Next position</button><button onClick={()=>browse(session.moves.length)}>Live local position</button></div>
  <p>Position {session.cursor} / {session.moves.length}. Reviewing never changes the original live match. Castling in Chess960: select the king, then its rook.</p>
  {tab==='play'?<section className="study-panel"><h2>Local play</h2><label>Mode<select aria-label="Local game mode" value={session.mode} onChange={e=>{const mode=e.target.value as StudySession['mode'];setSession(s=>({...s,mode,archiveMode:mode==='analysis'?s.archiveMode:mode}));}}><option value="analysis">Explore both sides</option><option value="pass">Pass and play · two people</option><option value="computer">Offline computer</option></select></label>
  <label>Your side<select aria-label="Local human side" value={session.human} onChange={e=>setSession(s=>({...s,human:e.target.value as Color}))}><option value="w">White</option><option value="b">Black</option></select></label>
@@ -139,5 +127,5 @@ export function StudyRoom({owner,prefs,haptics,sound,volume,seed,onBack}:{owner:
  {tab==='editor'?<section className="study-panel"><h2>Position editor</h2><label>Place piece<select aria-label="Editor piece" value={brush} onChange={e=>setBrush(e.target.value)}>{['erase',...['w','b'].flatMap(c=>['k','q','r','b','n','p'].map(p=>c+p))].map(p=><option key={p}>{p}</option>)}</select></label><p>Tap squares to place or erase. Validation checks both kings, checks, pawns, castling and en passant.</p><label>Turn<select aria-label="Editor turn" value={editTurn} onChange={e=>setEditTurn(e.target.value)}><option value="w">White</option><option value="b">Black</option></select></label><label>Castling<input aria-label="Editor castling" value={castling} maxLength={8} onChange={e=>setCastling(e.target.value)}/></label><label>En passant<input aria-label="Editor en passant" value={ep} maxLength={2} onChange={e=>setEp(e.target.value)}/></label><button onClick={useEditor}>Validate and use position</button><button onClick={()=>setEditor({})}>Clear editor</button></section>:null}
  {tab==='files'?<section className="study-panel"><h2>FEN and PGN</h2><p>Imports replace only this studio session. The ordinary computer save, account history and live room are kept.</p><label>FEN<textarea aria-label="FEN input" rows={3} maxLength={200} value={fenText} onChange={e=>setFenText(e.target.value)}/></label><button onClick={importFen}>Import FEN</button><button onClick={()=>{setFenText(fen);setNotice('Current position copied into the FEN field.');}}>Export current FEN</button><button onClick={()=>download(fen,'Quiet-Knight-position.fen')}>Save FEN file</button><label>PGN<textarea aria-label="PGN input" rows={7} maxLength={100000} value={pgnText} onChange={e=>setPgnText(e.target.value)}/></label><button onClick={()=>{try{replace(importStudyPgn(pgnText));setTab('play');}catch(e){setNotice('PGN rejected: '+(e as Error).message);}}}>Import PGN</button><button onClick={()=>setPgnText(studyPgn(session))}>Export PGN to field</button><button onClick={()=>download(studyPgn(session),'Quiet-Knight-game.pgn')}>Save PGN file</button><button onClick={()=>{const next={...blankStudy(),start:fen,mode:'computer' as const,human:turn};replace(next);setTab('play');}}>Play computer from current position</button></section>:null}
  <footer className="settings-note">Saved separately for {owner==='guest'?'this guest':'this account'}. No clocks, ratings, trackers or remote analysis service. Studio rules: chessops 0.15.1 (GPL-3.0-or-later). <a href="./licenses/GPL-3.0.txt">License</a></footer>
- </div></dialog></main>;
+ </main>;
 }

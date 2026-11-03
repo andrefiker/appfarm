@@ -17,9 +17,7 @@ import {PawnDetails,MoveTrails,BoardWeather,useAudience,HomeKnight,useVisualPerm
 import type {Weather} from './extra-fun';
 import type {SoundTheme} from './sound-themes';
 import {GameMovie} from './game-movie';
-import {createPortal} from 'react-dom';
 import {CaptureFlight} from './capture-flight';
-import {useBoardFullscreen} from './board-only';
 import {
   boardSquares,
   numberedMoves,
@@ -51,7 +49,6 @@ export type BoardProps = {
   soundVolume?: number;
   replayMode?: boolean;
   weather?: Weather;
-  actionsTarget?: HTMLElement | null;
 };
 export function Icon({
   name,
@@ -116,7 +113,7 @@ export function ChessBoard({
   motion,
   locked,
   onSquare, onMove, drag=true, playful=false, winner=null, motionSequence=motion?.serial,
-  fun=funDefaults, draw=false, entrance=0, soundEnabled=false, soundVolume=80, replayMode=false, weather='off', actionsTarget,
+  fun=funDefaults, draw=false, entrance=0, soundEnabled=false, soundVolume=80, replayMode=false, weather='off',
 }: BoardProps) {
   const squares = boardSquares(orientation);
   const visualAllowed=useVisualPermission(playful);
@@ -255,7 +252,7 @@ export function ChessBoard({
       </div>
       <BoardWeather weather={weather} enabled={allowed&&!replayMode}/>
     </div>
-    {!replayMode && allowed && fun.replay && captureReplay && actionsTarget !== null ? (actionsTarget ? createPortal(<button type="button" className="secondary" onClick={()=>{setReplayNumber(n=>n+1);setReplaying(true);}}>Replay last capture</button>,actionsTarget) : <div className="capture-replay-action"><button type="button" className="secondary" onClick={()=>{setReplayNumber(n=>n+1);setReplaying(true);}}>Replay last capture</button></div>) : null}
+    {!replayMode && allowed && fun.replay && captureReplay ? <div className="capture-replay-action"><button type="button" className="secondary" onClick={()=>{setReplayNumber(n=>n+1);setReplaying(true);}}>Replay last capture</button></div> : null}
     {!replayMode ? <dialog ref={replayDialog} className="qk-dialog capture-replay-dialog" aria-labelledby="capture-replay-title" onCancel={()=>setReplaying(false)} onClose={()=>setReplaying(false)}>
       <div className="dialog-head"><h2 id="capture-replay-title">Capture replay</h2><button type="button" autoFocus onClick={()=>setReplaying(false)}>Close replay</button></div>
       <p>Historical capture · the match is unchanged. New moves close this preview.</p>
@@ -373,19 +370,6 @@ export function LostPieces({ losses, color, audience=false }: { losses: Losses |
     </div>
   );
 }
-export function BoardSide({color, position, losses, audience=false}: {color:Color;position:Position;losses:Losses|null;audience?:boolean}) {
-  const name=color==='w'?'White':'Black',total=materialTotals(position)[color];
-  const reacting=useAudience(losses?.[color].length||0,audience);
-  const kinds:Kind[]=['p','n','b','r','q'];
-  return <section className="board-side-strip" data-lost-color={color} aria-label={`${name} material and lost pieces`}>
-    <span className="board-side-score" title="Material remaining on the board"><i className={`color-dot dot-${color}`} aria-hidden="true"/>{name} <strong data-score={color}>{total}</strong><small>pts</small></span>
-    <div className="board-side-losses" role="list" aria-label={`${name} lost pieces`}><span className="board-lost-label">Lost</span>
-      {!losses?<span>—</span>:losses[color].length?kinds.map(kind=>{const count=losses[color].filter(k=>k===kind).length;return count?<span className={`board-loss-piece${reacting?' audience-react':''}`} key={kind} data-captured={kind} role="listitem" aria-label={`${count} ${name} ${pieceNames[kind]}`}>
-        <Piece color={color} kind={kind} scope={`side-${color}-${kind}`}/>{count>1?<small>×{count}</small>:null}
-      </span>:null}):<span className="board-loss-empty">—</span>}
-    </div>
-  </section>;
-}
 export function MoveHistory({ sans, cursor, available, onBrowse }: {
   sans: string[];
   cursor: number | null;
@@ -501,7 +485,6 @@ export type GameSurfaceProps = {
   clock?: ClockState;
   pauseControls?: React.ReactNode;
   drawControls?: React.ReactNode;
-  attention?: boolean;
   viewerLost?: boolean;
   tableSettings?: React.ReactNode;
   onCloseControls?: () => void;
@@ -548,9 +531,7 @@ export type GameSurfaceProps = {
   onSound: () => void;
 };
 export function GameSurface(p: GameSurfaceProps) {
-  useBoardFullscreen();
   const stage=React.useRef<HTMLElement>(null);
-  const [actionsTarget,setActionsTarget]=React.useState<HTMLDivElement|null>(null);
   const [selection, setSelection] = React.useState<ReviewSelection | null>(null);
   const validSelection = selection && reviewStillValid(selection, p.gameId, p.sans) ? selection : null;
   const review = React.useMemo(() => validSelection ? positionAtPly(validSelection.line, validSelection.ply) : null, [validSelection]);
@@ -561,7 +542,6 @@ export function GameSurface(p: GameSurfaceProps) {
   }, [selection, validSelection]);
   function browse(ply: number | null) {
     if (ply !== null) p.onReviewStart();
-    p.onCloseControls?.();
     setSelection(ply === null ? null : { gameId: p.gameId, line: [...p.sans], ply });
   }
   const shownBoard: BoardProps = review ? {
@@ -633,56 +613,8 @@ export function GameSurface(p: GameSurfaceProps) {
   );
   return (
     <main
-      className={`qk game-shell mobile-table board-only${p.zen ? " zen-table" : ""}${p.idle ? " quiet-idle" : ""}`}
+      className={`qk game-shell mobile-table${p.zen ? " zen-table" : ""}${p.idle ? " quiet-idle" : ""}`}
     >
-      <button type="button" className="board-options-button" aria-label="Options" aria-haspopup="dialog" aria-expanded={p.controlsOpen === true} aria-describedby="board-live-status" onClick={p.onToggleControls}>
-        <Icon name="settings" /><span>Options</span>{reviewing || p.attention || p.ended || p.waiting || (p.online && p.connection !== 'Live') ? <i aria-hidden="true" /> : null}
-      </button>
-      <span id="board-live-status" className="board-sr-status" role="status">{reviewing ? `Reviewing position ${validSelection!.ply}. Open Options to return to the live game.` : p.status}</span>
-      <section ref={stage} className="board-stage" aria-label="Playing area">
-        <BoardSide color={top} position={shownBoard.position} losses={shownLosses} audience={Boolean(!reviewing&&p.board.playful&&p.board.fun?.audience)}/>
-        <ChessBoard {...shownBoard} actionsTarget={actionsTarget} />
-        <BoardSide color={bottom} position={shownBoard.position} losses={shownLosses} audience={Boolean(!reviewing&&p.board.playful&&p.board.fun?.audience)}/>
-        <CaptureFlight stage={stage} motion={reviewing?null:p.board.motion} observedSerial={p.board.motionSequence??p.board.motion?.serial} enabled={Boolean(!reviewing&&p.board.playful&&p.board.fun?.tray)} orientation={p.board.orientation}/>
-      </section>
-      <dialog
-        ref={sheet}
-        className="qk-dialog table-sheet"
-        aria-labelledby="table-controls-title"
-        onClose={p.onCloseControls}
-        onCancel={(e) => {
-          e.preventDefault();
-          p.onCloseControls?.();
-        }}
-        onClick={(e) => {
-          if (e.target !== e.currentTarget) return;
-          const r = e.currentTarget.getBoundingClientRect();
-          if (
-            e.clientX < r.left ||
-            e.clientX > r.right ||
-            e.clientY < r.top ||
-            e.clientY > r.bottom
-          )
-            p.onCloseControls?.();
-        }}
-      >
-        <div className="dialog-head">
-          <div>
-            <h2 id="table-controls-title">Options</h2>
-            <p>{p.online ? `Room ${p.code}` : `Computer · Level ${p.level}`}</p>
-          </div>
-          <button
-            type="button"
-            className="icon-button"
-            aria-label="Close options"
-            autoFocus
-            onClick={p.onCloseControls}
-          >
-            <Icon name="close" />
-          </button>
-        </div>
-        {p.controlsOpen ? (
-          <div className="dialog-body table-sheet-body">
       <header className="game-header">
         <button
           type="button"
@@ -709,8 +641,19 @@ export function GameSurface(p: GameSurfaceProps) {
             </button>
           ) : null}
         </div>
+        <button
+          type="button"
+          className="icon-button"
+          aria-label="Open table controls"
+          aria-haspopup="dialog"
+          aria-expanded={p.controlsOpen === true}
+          onClick={p.onToggleControls}
+        >
+          <Icon name="settings" />
+        </button>
       </header>
-<section aria-label="Players and captured pieces">
+      <div className="game-layout">
+        <section ref={stage} className="board-stage" aria-label="Playing area">
           <PlayerBar
             color={top}
             clock={p.clock}
@@ -720,6 +663,10 @@ export function GameSurface(p: GameSurfaceProps) {
             active={!reviewing && !p.ended && !p.waiting && !p.clock?.clock_paused && p.turn === top}
             yours={top === p.me}
           />
+          <LostPieces color={top} losses={shownLosses} audience={Boolean(!reviewing&&p.board.playful&&p.board.fun?.audience)} />
+          <ChessBoard {...shownBoard} />
+          <CaptureFlight stage={stage} motion={reviewing ? null : p.board.motion} observedSerial={p.board.motionSequence ?? p.board.motion?.serial} enabled={Boolean(!reviewing && p.board.playful && p.board.fun?.tray)} orientation={p.board.orientation}/>
+          <LostPieces color={bottom} losses={shownLosses} audience={Boolean(!reviewing&&p.board.playful&&p.board.fun?.audience)} />
           <PlayerBar
             color={bottom}
             clock={p.clock}
@@ -728,7 +675,7 @@ export function GameSurface(p: GameSurfaceProps) {
             active={!reviewing && !p.ended && !p.waiting && !p.clock?.clock_paused && p.turn === bottom}
             yours={bottom === p.me}
           />
-</section>
+        </section>
         <section className="table-below" aria-label="Current game">
           {reviewing ? <div className="review-banner" role="status">
             <span>Review · Position {validSelection!.ply} of {p.sans.length}</span>
@@ -750,6 +697,16 @@ export function GameSurface(p: GameSurfaceProps) {
           ) : null}
           {p.pauseControls}
           <div className="table-toolbar">
+            <button
+              type="button"
+              className="table-controls-toggle"
+              aria-haspopup="dialog"
+              aria-expanded={p.controlsOpen === true}
+              onClick={p.onToggleControls}
+            >
+              <Icon name="settings" />
+              Table controls
+            </button>
             <button
               type="button"
               className="table-sound"
@@ -787,8 +744,45 @@ export function GameSurface(p: GameSurfaceProps) {
             <MaterialScore position={shownBoard.position} compact />
           </div>
         </section>
-<div ref={setActionsTarget} className="board-extra-actions" />
-
+      </div>
+      <dialog
+        ref={sheet}
+        className="qk-dialog table-sheet"
+        aria-labelledby="table-controls-title"
+        onClose={p.onCloseControls}
+        onCancel={(e) => {
+          e.preventDefault();
+          p.onCloseControls?.();
+        }}
+        onClick={(e) => {
+          if (e.target !== e.currentTarget) return;
+          const r = e.currentTarget.getBoundingClientRect();
+          if (
+            e.clientX < r.left ||
+            e.clientX > r.right ||
+            e.clientY < r.top ||
+            e.clientY > r.bottom
+          )
+            p.onCloseControls?.();
+        }}
+      >
+        <div className="dialog-head">
+          <div>
+            <h2 id="table-controls-title">Table controls</h2>
+            <p>{p.online ? `Room ${p.code}` : `Computer · Level ${p.level}`}</p>
+          </div>
+          <button
+            type="button"
+            className="icon-button"
+            aria-label="Close table controls"
+            autoFocus
+            onClick={p.onCloseControls}
+          >
+            <Icon name="close" />
+          </button>
+        </div>
+        {p.controlsOpen ? (
+          <div className="dialog-body table-sheet-body">
             {p.online ? (
               <div className="sheet-invite">
                 <button

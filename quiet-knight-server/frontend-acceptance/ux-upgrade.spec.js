@@ -104,7 +104,7 @@ test('saved game search finds opponent and result without changing archive',asyn
  test('resign opens a separate confirmation and cancel keeps the game',async({page})=>{const f=await table(page);await options(page);await btn(page,'Resign').click();await expect(page.getByRole('dialog',{name:'Table controls',exact:true})).not.toBeVisible();await expect(page.getByRole('heading',{name:/Resign/})).toBeVisible();await btn(page,'Keep playing').click();await expect(sq(page,'g1')).toHaveAttribute('data-piece','wn');expect(f.writes).toHaveLength(0);});
 
 test('larger symmetric captured trays and secondary panels live in options',async({page})=>{
- const f=await table(page);
+ const f=await table(page);await expect(page.locator('.status-your-turn h2')).toHaveCSS('font-size','24px');await expect(page.locator('.status-your-turn h2')).toHaveCSS('font-weight','800');
  for(const width of [320,390,1280]){
   await page.setViewportSize({width,height:900});
   await expect(page.locator('.table-below .board-history,.table-below .live-captures')).toHaveCount(0);

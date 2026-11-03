@@ -692,7 +692,7 @@ export function GameSurface(p: GameSurfaceProps) {
             <button type="button" onClick={() => browse(null)}>Return to game</button>
           </div> : null}
           <div
-            className={`game-status${p.board.check ? " status-check" : ""}`}
+            className={`game-status${p.board.check ? " status-check" : ""}${!reviewing && !p.ended && !p.waiting && !p.spectator && p.turn===p.me ? " status-your-turn" : ""}`}
             role="status"
             aria-live="polite"
             aria-atomic="true"

@@ -114,7 +114,7 @@ test('larger symmetric captured trays and secondary panels live in options',asyn
   expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);
  }
  await page.setViewportSize({width:390,height:844});await mkdir('output/playwright',{recursive:true});await page.screenshot({path:'output/playwright/larger-trays-390.png',fullPage:true});
- await sq(page,'g1').click();await expect(page.locator('.target-dot').first()).toHaveCSS('background-color','rgb(255, 48, 56)');await sq(page,'g1').click();
+ await sq(page,'g1').click();await expect(page.locator('.target-dot').first()).toHaveCSS('background-color','rgb(255, 48, 56)');await page.screenshot({path:'output/playwright/discreet-red-dots-390.png',fullPage:true});await sq(page,'g1').click();
  await options(page);await expect(page.locator('.table-sheet .board-history')).toBeVisible();await expect(page.locator('.table-sheet .material-panel')).toBeVisible();
  await btn(page,'Watch game movie').click();await expect(page.getByRole('dialog',{name:'Game movie',exact:true})).toBeVisible();await btn(page,'Close movie').click();if(!await page.locator('.table-sheet').isVisible())await options(page);
  await page.locator('.board-history summary').click();await page.getByLabel('Review timeline').fill('2');

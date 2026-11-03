@@ -78,8 +78,8 @@ body[data-battery=true] .qk *,body[data-battery=true] .qk *::before,body[data-ba
 .mobile-table .review-banner{flex-wrap:wrap;gap:8px}
 .mobile-table .review-banner button{min-height:44px}
 
-.board .target-dot{background:#ff3038;box-shadow:0 0 0 2px #fff2df,0 0 0 3px #70151a;width:24%;height:24%;opacity:1}
-.board .capture-ring{border:4px solid #ff3038;box-shadow:inset 0 0 0 2px #fff2df,0 0 0 1px #70151a;opacity:1}
+.board .target-dot{background:#ff3038;box-shadow:none;width:13%;height:13%;opacity:.8}
+.board .capture-ring{border:2px solid #ff3038;box-shadow:none;opacity:.75}
 
 .mobile-table .game-status h2{font-size:24px;font-weight:800;line-height:1.3}
 .mobile-table .game-status.status-your-turn{padding:10px 12px;border-radius:10px;background:#e6c78f14}

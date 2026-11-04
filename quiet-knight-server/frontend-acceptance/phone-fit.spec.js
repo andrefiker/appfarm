@@ -82,3 +82,9 @@ test('authenticated pair displays their recorded win totals instead of only this
  await page.addInitScript(()=>localStorage.setItem('qk-player-token-v1','x'.repeat(43)));let auth='';await page.route(/\/players\/.*\/head-to-head\//,route=>{auth=route.request().headers().authorization||'';return route.fulfill({json:{wins:7,losses:5,draws:3}});});
  const f=await table(page,{accounts:true});await expect(page.getByLabel('Wins together')).toContainText('Alice 7');await expect(page.getByLabel('Wins together')).toContainText('Bob 5');await expect(page.getByLabel('Wins together')).toContainText('Draws 3');expect(auth).toBe('Bearer '+ 'x'.repeat(43));await fits(page);expect(f.errors).toEqual([]);
 });
+
+test('discrete legal move dots return for older preferences and can still be disabled later',async({page})=>{
+ await page.addInitScript(()=>{if(!sessionStorage.getItem('seeded')){localStorage.setItem('qk-play-preferences-v1',JSON.stringify({schema:1,hints:false}));sessionStorage.setItem('seeded','1');}});
+ const f=await table(page);await sq(page,'d2').click();await expect(sq(page,'d3').locator('.target-dot')).toBeVisible();await expect(sq(page,'d4').locator('.target-dot')).toBeVisible();await expect(sq(page,'d3').locator('.target-dot')).toHaveCSS('background-color','rgb(255, 48, 56)');
+ await options(page);await page.getByText('Preferences & diagnostics',{exact:true}).click();await page.getByLabel('Legal destination previews',{exact:true}).uncheck();await btn(page,'Close table controls').click();await expect(page.locator('.target-dot')).toHaveCount(0);await page.reload();await options(page);await page.getByText('Preferences & diagnostics',{exact:true}).click();await expect(page.getByLabel('Legal destination previews',{exact:true})).not.toBeChecked();expect(f.errors).toEqual([]);
+});

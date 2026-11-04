@@ -78,7 +78,7 @@ body[data-battery=true] .qk *,body[data-battery=true] .qk *::before,body[data-ba
 .mobile-table .review-banner{flex-wrap:wrap;gap:8px}
 .mobile-table .review-banner button{min-height:44px}
 
-.board .target-dot{background:#ff3038;box-shadow:none;width:13%;height:13%;opacity:.8}
+.board .target-dot{background:#ff3038;box-shadow:none;width:13%;height:13%;left:43.5%;top:43.5%;opacity:.9}
 .board .capture-ring{border:2px solid #ff3038;box-shadow:none;opacity:.75}
 
 .mobile-table .game-status h2{font-size:20px;font-weight:800;line-height:1.3}

@@ -56,7 +56,7 @@ async function preferences(p){await options(p);await p.getByText('Preferences & 
 test('saved computer games recover capture counters without stored SAN',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('qk-local-save-v1:guest',JSON.stringify({moves:[{from:'e2',to:'e4'},{from:'d7',to:'d5'},{from:'e4',to:'d5'},{from:'d8',to:'d5'}],color:'w',level:2})));
  await page.goto(url);await btn(page,'Resume saved computer game').click();
- await expect(sq(page,'d5').locator('.piece-capture-mark')).toHaveText('1');
+ await expect(sq(page,'d5')).toHaveAttribute('data-piece','bq');
  await fits(page);
 });
 
@@ -95,19 +95,11 @@ test('discrete legal move dots return for older preferences and can still be dis
  const f=await table(page);await sq(page,'d2').click();await expect(sq(page,'d3').locator('.target-dot')).toBeVisible();await expect(sq(page,'d4').locator('.target-dot')).toBeVisible();await expect(sq(page,'d3').locator('.target-dot')).toHaveCSS('background-color','rgb(255, 48, 56)');
  await options(page);await page.getByText('Preferences & diagnostics',{exact:true}).click();await page.getByLabel('Legal destination previews',{exact:true}).uncheck();await btn(page,'Close table controls').click();await expect(page.locator('.target-dot')).toHaveCount(0);await page.reload();await options(page);await page.getByText('Preferences & diagnostics',{exact:true}).click();await expect(page.getByLabel('Legal destination previews',{exact:true})).not.toBeChecked();expect(f.errors).toEqual([]);
 });
-test('capture dot follows the actual piece and updates while reviewing',async({page})=>{
- const f=await table(page);await page.setViewportSize({width:393,height:780});
- await expect(sq(page,'d5').locator('.piece-capture-mark')).toHaveText('1');await expect(sq(page,'d5')).toHaveAttribute('aria-label',/1 captures/);
- f.update(['e4','d5','exd5','Qxd5','Nc3','Qe5+']);await expect(sq(page,'e5').locator('.piece-capture-mark')).toHaveText('1');await expect(sq(page,'d5').locator('.piece-capture-mark')).toHaveCount(0);await fits(page);
- await options(page);await page.locator('.board-history summary').click();await page.getByLabel('Review timeline').fill('3');await expect(sq(page,'d5').locator('.piece-capture-mark')).toHaveText('1');await expect(sq(page,'e5').locator('.piece-capture-mark')).toHaveCount(0);await page.locator('.review-banner').getByRole('button',{name:'Return to game'}).click();await expect(sq(page,'e5').locator('.piece-capture-mark')).toHaveText('1');
- await page.screenshot({path:'output/playwright/piece-capture-mark.png'});f.update(['e4','d5','exd5','c6','dxc6']);await expect(sq(page,'c6').locator('.piece-capture-mark')).toHaveText('2');await options(page);await btn(page,'Flip board').click();await btn(page,'Close table controls').click();await expect(sq(page,'c6').locator('.piece-capture-mark')).toHaveText('2');await fits(page);expect(f.writes).toHaveLength(0);expect(f.errors).toEqual([]);
-});
-
 test('captured piece points appear for each player and update',async({page})=>{
  const f=await table(page);await page.setViewportSize({width:393,height:780});
  await expect(page.locator('.player-material')).toHaveCount(0);
  f.update(['e4','d5','exd5','c6','dxc6']);
  await expect(page.getByLabel('White leads by 2 captured points')).toBeVisible();
  await expect(page.locator('.player-material')).toHaveCount(1);
- await fits(page);await page.screenshot({path:'output/playwright/captured-points.png'});
+ await expect(page.locator('.piece-capture-mark')).toHaveCount(0);await fits(page);await page.screenshot({path:'output/playwright/captured-points.png'});
 });

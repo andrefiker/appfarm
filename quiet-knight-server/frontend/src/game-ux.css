@@ -88,3 +88,38 @@ body[data-battery=true] .qk *,body[data-battery=true] .qk *::before,body[data-ba
 
 .main-game-actions{display:flex;justify-content:center;margin:8px 0}
 .main-game-actions button{min-height:44px;padding:10px 24px}
+/* Fit the table to the phone viewport, including its system insets. */
+@media(max-width:600px){
+ body:has(.mobile-table){overflow:hidden}
+ .mobile-table.game-shell{height:100dvh;min-height:0;padding:env(safe-area-inset-top) max(4px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(4px,env(safe-area-inset-left));display:grid;grid-template-rows:44px minmax(0,1fr);gap:2px}
+ .mobile-table .game-header{min-height:44px;height:44px;width:100%;max-width:none;padding:0 4px;margin:0;gap:4px}
+ .mobile-table .game-layout{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;width:100%;height:100%;max-width:none;min-height:0;gap:4px;margin:0}
+ .mobile-table .board-stage{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:0;position:relative}
+ .mobile-table .board-stage>.player-strip{width:100%;margin:0;padding:0;flex-shrink:0}
+ .mobile-table .board-stage>.board-frame{width:var(--fit-board-size,100%);max-width:100%;margin:0;padding:3px;flex-shrink:0}
+ .mobile-table .player-bar{min-height:36px;height:auto;padding:1px 8px;flex-wrap:nowrap;gap:4px}
+ .mobile-table .player-handle{font-size:18px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .mobile-table .player-meta{font-size:12px;line-height:1.25}
+ .mobile-table .player-material-row{padding:0 8px 2px;gap:4px}
+ .mobile-table .player-material-row .loss-row{min-height:38px;gap:2px 6px;flex-wrap:nowrap}
+ .mobile-table .player-material-row .loss-label{font-size:12px}
+ .mobile-table .player-material-row .loss-tray{gap:0;flex:0 1 auto;flex-wrap:wrap}
+ .mobile-table .board-stage .player-material-row .captured-piece{width:32px;height:38px;flex-basis:32px}
+ .mobile-table .player-material,.mobile-table .turn-label{font-size:12px}
+ .mobile-table .table-below{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px;align-items:center;padding:0 4px 4px;min-width:0}
+ .mobile-table .game-status,.mobile-table .game-status.status-your-turn{min-height:44px;padding:4px 6px;margin:0;gap:4px}
+ .mobile-table .game-status h2{font-size:20px;overflow-wrap:anywhere}
+ .mobile-table .main-game-actions{margin:0}
+ .mobile-table .main-game-actions button{padding:8px 12px;min-height:44px;font-size:13px}
+ .mobile-table .table-below>:not(.game-status):not(.main-game-actions){grid-column:1/-1}
+ .mobile-table .connection-notice{margin:0;padding:4px 8px;font-size:12px}
+ .mobile-table .game-end-actions{margin:0;gap:4px}
+ .mobile-table .game-end-actions>button{flex:1 1 80px;padding:6px;font-size:12px}
+ .mobile-table .review-banner{padding:0;font-size:12px;gap:4px}
+ .mobile-table .review-banner>span{flex-basis:100%}
+ body[data-text-size=large] .mobile-table .player-bar{flex-wrap:nowrap}
+ body[data-text-size=large] .mobile-table .player-material-row .loss-row{flex-wrap:nowrap}
+}
+
+.player-material-row .captured-piece{position:relative}
+.capture-count{position:absolute;right:-2px;bottom:0;background:#102622;color:#ffe1a3;border-radius:4px;padding:0 2px;font:bold 11px/14px system-ui;pointer-events:none}

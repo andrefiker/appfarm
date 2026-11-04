@@ -7,6 +7,7 @@ import {enamelStyle} from './board-surface';
 import type {ClockState} from './chess-clock';
 import { GameSoFar } from "./table-atmosphere";
 import * as React from "react";
+import {createPortal} from "react-dom";
 import { Piece, pieceNames } from "./pieces";
 import type { Color, Kind } from "./pieces";
 import type {BoardMotion} from './board-effects';
@@ -50,6 +51,8 @@ export type BoardProps = {
   soundEnabled?: boolean;
   soundVolume?: number;
   replayMode?: boolean;
+  replayInOptions?: boolean;
+  replayHost?: HTMLElement | null;
   weather?: Weather;
 };
 export function Icon({
@@ -115,7 +118,7 @@ export function ChessBoard({
   motion,
   locked,
   onSquare, onMove, drag=true, dragTargets, playful=false, winner=null, motionSequence=motion?.serial,
-  fun=funDefaults, draw=false, entrance=0, soundEnabled=false, soundVolume=80, replayMode=false, weather='off',
+  fun=funDefaults, draw=false, entrance=0, soundEnabled=false, soundVolume=80, replayMode=false, weather='off', replayInOptions=false, replayHost=null,
 }: BoardProps) {
   const squares = boardSquares(orientation);
   const visualAllowed=useVisualPermission(playful);
@@ -261,7 +264,7 @@ export function ChessBoard({
       </div>
       <BoardWeather weather={weather} enabled={allowed&&!replayMode}/>
     </div>
-    {!replayMode && allowed && fun.replay && captureReplay ? <div className="capture-replay-action"><button type="button" className="secondary" onClick={()=>{setReplayNumber(n=>n+1);setReplaying(true);}}>Replay last capture</button></div> : null}
+    {!replayMode && allowed && fun.replay && captureReplay ? replayInOptions ? replayHost ? createPortal(<div className="capture-replay-action"><button type="button" className="secondary" onClick={()=>{setReplayNumber(n=>n+1);setReplaying(true);}}>Replay last capture</button></div>,replayHost) : null : <div className="capture-replay-action"><button type="button" className="secondary" onClick={()=>{setReplayNumber(n=>n+1);setReplaying(true);}}>Replay last capture</button></div> : null}
     {!replayMode ? <dialog ref={replayDialog} className="qk-dialog capture-replay-dialog" aria-labelledby="capture-replay-title" onCancel={()=>setReplaying(false)} onClose={()=>setReplaying(false)}>
       <div className="dialog-head"><h2 id="capture-replay-title">Capture replay</h2><button type="button" autoFocus onClick={()=>setReplaying(false)}>Close replay</button></div>
       <p>Historical capture · the match is unchanged. New moves close this preview.</p>
@@ -338,7 +341,7 @@ export function MaterialScore({
     </section>
   );
 }
-export function LostPieces({ losses, color, audience=false }: { losses: Losses | null; color: Color; audience?:boolean }) {
+export function LostPieces({ losses, color, audience=false, grouped=false }: { losses: Losses | null; color: Color; audience?:boolean; grouped?:boolean }) {
   const reacting=useAudience(losses?.[color].length||0,audience);
   const name = color === "w" ? "White" : "Black";
   return (
@@ -349,10 +352,11 @@ export function LostPieces({ losses, color, audience=false }: { losses: Losses |
       </span>
       <div className={`loss-tray tray-${color}`} role="list" aria-label={`${name} lost pieces`}>
         {!losses ? <span className="loss-empty">History unavailable</span> :
-          losses[color].length ? losses[color].map((kind, i) => (
+          losses[color].length ? (grouped ? [...new Set(losses[color])] : losses[color]).map((kind, i) => (
             <span key={`${kind}-${i}`} className={`captured-piece${reacting?' audience-react':''}`} data-effect={reacting?'audience':undefined} data-captured={kind}
-              role="listitem" aria-label={`${name} ${pieceNames[kind]}`} title={pieceNames[kind]}>
+              role="listitem" aria-label={`${name} ${pieceNames[kind]}${grouped ? ` ×${losses[color].filter(p=>p===kind).length}` : ""}`} title={pieceNames[kind]}>
               <Piece color={color} kind={kind} scope={`lost-${color}-${i}`} />
+              {grouped && losses[color].filter(p=>p===kind).length>1 ? <b className="capture-count">×{losses[color].filter(p=>p===kind).length}</b> : null}
             </span>
           )) : <span className="loss-empty">None</span>}
       </div>
@@ -471,7 +475,7 @@ function PlayerBar({
           </span>
         ) : null}
       </span>
-    </div><div className="player-material-row"><LostPieces color={color} losses={losses} audience={audience}/>
+    </div><div className="player-material-row"><LostPieces color={color} losses={losses} audience={audience} grouped/>
       <span className="player-material" title="Material only, not a prediction of the result" aria-label={`${color==='w'?'White':'Black'} material: ${totals[color]} points${advantage>0?`, ahead by ${advantage}`:''}`}>
         {advantage>0?<strong>{color==='w'?'White':'Black'} +{advantage}</strong>:<span>{totals[color]} pts</span>}
       </span></div></div>
@@ -534,6 +538,22 @@ export type GameSurfaceProps = {
 };
 export function GameSurface(p: GameSurfaceProps) {
   const stage=React.useRef<HTMLElement>(null);
+  const [replayHost,setReplayHost]=React.useState<HTMLDivElement|null>(null);
+  React.useLayoutEffect(()=>{
+    const el=stage.current;if(!el)return;
+    const resize=()=>{
+      if(!matchMedia('(max-width: 600px)').matches){el.style.removeProperty('--fit-board-size');return;}
+      const panels=Array.from(el.querySelectorAll<HTMLElement>(':scope > .player-strip, :scope > .board-lock'));
+      const reserved=panels.reduce((n,p)=>n+p.getBoundingClientRect().height,0)+panels.length*4;
+      const side=Math.floor(Math.max(8,Math.min(el.clientWidth,el.clientHeight-reserved)));
+      if(el.style.getPropertyValue('--fit-board-size')!==`${side}px`)el.style.setProperty('--fit-board-size',`${side}px`);
+    };
+    const observer=new ResizeObserver(resize);observer.observe(el);
+    const children=new MutationObserver(resize);children.observe(el,{childList:true});
+    for(const panel of el.querySelectorAll('.player-strip'))observer.observe(panel);
+    window.addEventListener('resize',resize);resize();
+    return()=>{observer.disconnect();children.disconnect();window.removeEventListener('resize',resize);};
+  },[]);
   const [boardLocked,setBoardLocked]=React.useState(false);
   React.useEffect(()=>setBoardLocked(false),[p.gameId]);
   const [selection, setSelection] = React.useState<ReviewSelection | null>(null);
@@ -669,7 +689,7 @@ export function GameSurface(p: GameSurfaceProps) {
             active={!reviewing && !p.ended && !p.waiting && !p.clock?.clock_paused && p.turn === top}
             yours={top === p.me}
           />
-          <ChessBoard {...shownBoard} locked={shownBoard.locked||boardLocked} onSquare={s=>{if(!boardLocked)shownBoard.onSquare(s);}} onMove={boardLocked?undefined:shownBoard.onMove}/>
+          <ChessBoard {...shownBoard} replayInOptions replayHost={replayHost} locked={shownBoard.locked||boardLocked} onSquare={s=>{if(!boardLocked)shownBoard.onSquare(s);}} onMove={boardLocked?undefined:shownBoard.onMove}/>
           {boardLocked?<BoardLock locked onChange={setBoardLocked}/>:null}
           <CaptureFlight stage={stage} motion={reviewing ? null : p.board.motion} observedSerial={p.board.motionSequence ?? p.board.motion?.serial} enabled={Boolean(!reviewing && p.board.playful && p.board.fun?.tray)} orientation={p.board.orientation}/>
           <PlayerBar
@@ -684,7 +704,7 @@ export function GameSurface(p: GameSurfaceProps) {
           />
         </section>
         <section className="table-below" aria-label="Current game">
-          <FirstGameTips/>
+
           {reviewing ? <div className="review-banner" role="status">
             <span>Review · Position {validSelection!.ply} of {p.sans.length}</span>
             <button type="button" disabled={validSelection!.ply===0} onClick={()=>browse(validSelection!.ply-1)}>Previous</button>
@@ -703,54 +723,15 @@ export function GameSurface(p: GameSurfaceProps) {
           </div>
           {!p.ended && !p.spectator ? <div className="main-game-actions"><button type="button" className="secondary" disabled={p.busy} onClick={p.online?p.onBack:p.onNew}><Icon name="new"/> New game</button></div> : null}
           {p.online && (p.connection !== 'Live' || p.pendingOnlineMove) ? <p className="connection-notice" role="status">{p.pendingOnlineMove ? 'Sending move · waiting for server confirmation' : `${p.connection} · Showing the last confirmed position. Moves are paused until reconnected.`}</p> : null}
-          {!p.online ? <p className="engine-status" role="status">{p.computerEngine || 'Computer'} · Level {p.level}{!p.ended && p.turn!==p.me ? ` · ${p.status}` : ''}</p> : null}
+
           {p.ended ? <div className="game-end-actions" aria-label="Game finished">{!p.spectator ? contextual : null}<button className="secondary" onClick={p.onReviewGame}>Review game</button><button className="secondary" onClick={p.onNewOpponent}>New opponent</button></div> : null}
           {p.animalReaction ? <p className="animal-reaction" role="status" aria-live="polite" aria-atomic="true">{p.animalReaction}</p> : null}
           {p.ended && !p.spectator && !p.waiting && p.viewerLost ? (
             <p className="loss-message">{LOSS_MESSAGE}</p>
           ) : null}
-          {p.pauseControls}
-          <div className="table-toolbar">
-            <button
-              type="button"
-              className="table-controls-toggle"
-              aria-haspopup="dialog"
-              aria-expanded={p.controlsOpen === true}
-              onClick={p.onToggleControls}
-            >
-              <Icon name="settings" />
-              Table controls
-            </button>
-            <button
-              type="button"
-              className="table-sound"
-              aria-label={p.sound ? "Mute move sounds" : "Enable move sounds"}
-              aria-pressed={p.sound}
-              title={p.sound ? "Sound on" : "Sound off"}
-              onClick={p.onSound}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                className="ui-icon"
-                aria-hidden="true"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M11 4 5 9H2v6h3l6 5Z" />
-                {p.sound ? (
-                  <path d="M15 8a6 6 0 0 1 0 8M18 5a10 10 0 0 1 0 14" />
-                ) : (
-                  <path d="m16 9 6 6m0-6-6 6" />
-                )}
-              </svg>
-            </button>
-            <div className="table-context">{!p.ended && p.waiting ? contextual : null}</div>
-          </div>
+
           {p.drawPending && !p.controlsOpen ? p.drawControls : null}
-          {p.ended?p.postGame:null}
+
 
         </section>
       </div>
@@ -843,6 +824,12 @@ export function GameSurface(p: GameSurfaceProps) {
               {!p.ended && !p.waiting ? contextual : null}{p.drawControls}
               <button className="secondary" onClick={p.onSound}>{p.sound?'Mute move sounds':'Enable move sounds'}</button>
             </section>
+            <FirstGameTips/>
+            <div ref={setReplayHost}/>
+          {!p.online ? <p className="engine-status" role="status">{p.computerEngine || 'Computer'} · Level {p.level}{!p.ended && p.turn!==p.me ? ` · ${p.status}` : ''}</p> : null}
+            {p.pauseControls}
+            {p.ended?p.postGame:null}
+            {p.waiting?contextual:null}
             {p.tableExtra}
             <MoveHistory sans={p.sans} cursor={reviewing ? validSelection!.ply : null}
               available={p.losses !== null} onBrowse={ply=>{browse(ply);if(ply!==null)p.onCloseControls?.();}} />

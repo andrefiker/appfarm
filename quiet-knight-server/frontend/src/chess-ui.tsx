@@ -1,4 +1,5 @@
 import {BoardLock,FirstGameTips} from "./ux-tools";
+import {pieceCaptureCounts} from "./piece-captures";
 import {accountRequest} from "./account-api";
 import {identityHeaders} from "./player-credential";
 import { positionAtPly, reviewStillValid } from "./move-review";
@@ -52,6 +53,7 @@ export type BoardProps = {
   entrance?: number;
   soundEnabled?: boolean;
   soundVolume?: number;
+  captureMarks?:Record<string,number>;
   replayMode?: boolean;
   replayInOptions?: boolean;
   replayHost?: HTMLElement | null;
@@ -120,7 +122,7 @@ export function ChessBoard({
   motion,
   locked,
   onSquare, onMove, drag=true, dragTargets, playful=false, winner=null, motionSequence=motion?.serial,
-  fun=funDefaults, draw=false, entrance=0, soundEnabled=false, soundVolume=80, replayMode=false, weather='off', replayInOptions=false, replayHost=null,
+  fun=funDefaults, draw=false, entrance=0, soundEnabled=false, soundVolume=80, replayMode=false, weather='off', replayInOptions=false, replayHost=null, captureMarks={},
 }: BoardProps) {
   const squares = boardSquares(orientation);
   const visualAllowed=useVisualPermission(playful);
@@ -202,7 +204,7 @@ export function ChessBoard({
               data-square={square}
               data-piece={piece ? `${piece.color}${piece.type}` : ""}
               className={`square ${dark ? "square-dark" : "square-light"}${last && (last.from === square || last.to === square) ? " square-last" : ""}${selected === square ? " square-selected" : ""}${check === square ? " square-check" : ""}${dragPreview?.to === square ? dragPreview.legal.includes(square) ? " square-drop-valid" : " square-drop-invalid" : ""}`}
-              aria-label={`${square}, ${piece ? `${piece.color === "w" ? "White" : "Black"} ${pieceNames[piece.type]}` : "empty"}${target ? ", legal destination" : ""}${check === square ? ", in check" : ""}`}
+              aria-label={`${square}, ${piece ? `${piece.color === "w" ? "White" : "Black"} ${pieceNames[piece.type]}` : "empty"}${target ? ", legal destination" : ""}${check === square ? ", in check" : ""}${captureMarks[square] ? `, ${captureMarks[square]} captures` : ""}`}
               aria-pressed={selected === square}
               aria-disabled={locked}
               onPointerDown={e=>{if(drag && onMove && !locked && piece && (!dragTargets || dragTargets(square).length)){gesture.current={from:square,x:e.clientX,y:e.clientY};e.currentTarget.setPointerCapture(e.pointerId);}}}
@@ -248,6 +250,7 @@ export function ChessBoard({
                   </span>
                 </span>
               ) : null}
+              {piece && captureMarks[square] ? <span className="piece-capture-mark" aria-hidden="true" data-capture-count={captureMarks[square]}>{captureMarks[square]}</span> : null}
               {capture ? <CaptureEffect key={`capture-${capture.serial}`} motion={capture} sneak={fun.sneak && capture.captured?.square !== capture.to}/> : null}
               {landing ? <LandingEffect key={`landing-${active.serial}`} motion={active} fun={fun}/> : null}
               {index%8===0?<span className="square-coordinate rank-coordinate" aria-hidden="true">{square[1]}</span>:null}
@@ -587,6 +590,7 @@ export function GameSurface(p: GameSurfaceProps) {
     selected: null, targets: [], motion: null, motionSequence:p.board.motionSequence ?? p.board.motion?.serial, locked: true, drag: false,
     onSquare: () => {}, onMove: undefined, dragTargets:undefined, playful: false,
   } : p.board;
+  const captureMarks=React.useMemo(()=>pieceCaptureCounts(reviewing ? validSelection!.line.slice(0,validSelection!.ply) : p.sans, shownBoard.position),[reviewing,validSelection,p.sans,shownBoard.position]);
   const bottom = p.board.orientation;
   const top = bottom === "w" ? "b" : "w";
   const sheet = React.useRef<HTMLDialogElement>(null);
@@ -703,7 +707,7 @@ export function GameSurface(p: GameSurfaceProps) {
             active={!reviewing && !p.ended && !p.waiting && !p.clock?.clock_paused && p.turn === top}
             yours={top === p.me}
           />
-          <ChessBoard {...shownBoard} replayInOptions replayHost={replayHost} locked={shownBoard.locked||boardLocked} onSquare={s=>{if(!boardLocked)shownBoard.onSquare(s);}} onMove={boardLocked?undefined:shownBoard.onMove}/>
+          <ChessBoard {...shownBoard} captureMarks={captureMarks} replayInOptions replayHost={replayHost} locked={shownBoard.locked||boardLocked} onSquare={s=>{if(!boardLocked)shownBoard.onSquare(s);}} onMove={boardLocked?undefined:shownBoard.onMove}/>
           {boardLocked?<BoardLock locked onChange={setBoardLocked}/>:null}
           <CaptureFlight stage={stage} motion={reviewing ? null : p.board.motion} observedSerial={p.board.motionSequence ?? p.board.motion?.serial} enabled={Boolean(!reviewing && p.board.playful && p.board.fun?.tray)} orientation={p.board.orientation}/>
           <PlayerBar

@@ -134,3 +134,6 @@ body[data-battery=true] .qk *,body[data-battery=true] .qk *::before,body[data-ba
  .mobile-table .series-score span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
  .mobile-table .series-score small{font-size:9px;white-space:nowrap}
 }
+
+/* A capture counter stays at the base of its own piece, without blocking taps. */
+.board .piece-capture-mark{position:absolute;z-index:12;left:50%;bottom:3%;transform:translateX(-50%);display:grid;place-items:center;min-width:clamp(11px,3vw,15px);height:clamp(11px,3vw,15px);padding:0 2px;border-radius:50%;background:#d71e2b;color:#fff;font:700 clamp(8px,2vw,10px)/1 system-ui;box-shadow:0 0 0 1px #fff8;pointer-events:none}

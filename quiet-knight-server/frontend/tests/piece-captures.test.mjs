@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {pieceCaptureCounts} from '../src/piece-captures.ts';
+assert.deepEqual(pieceCaptureCounts([]),{});
+assert.deepEqual(pieceCaptureCounts(['e4','d5','exd5']),{d5:1});
+assert.deepEqual(pieceCaptureCounts(['e4','d5','exd5','Qxd5']),{d5:1});
+assert.deepEqual(pieceCaptureCounts(['e4','d5','exd5','c6','dxc6']),{c6:2});
+assert.deepEqual(pieceCaptureCounts(['e4','d5','exd5','c6','dxc6','Nxc6']),{c6:1});
+assert.deepEqual(pieceCaptureCounts(['exd6'],undefined,'4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1'),{d6:1});
+assert.deepEqual(pieceCaptureCounts(['axb7','Kf7','bxa8=Q'],undefined,'r3k3/1r6/P7/8/8/8/8/4K3 w - - 0 1'),{a8:2});
+assert.deepEqual(pieceCaptureCounts(['e4','e5','Nf3','Nc6','Bc4','Nf6','O-O']),{});
+assert.deepEqual(pieceCaptureCounts(['e4','not-a-move']),{});
+assert.deepEqual(pieceCaptureCounts(['e4'],{e2:{color:'w',type:'p'}}),{});
+console.log('piece captures: passed');

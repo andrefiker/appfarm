@@ -99,7 +99,8 @@ body[data-battery=true] .qk *,body[data-battery=true] .qk *::before,body[data-ba
  .mobile-table .board-stage>.board-frame{width:var(--fit-board-size,100%);max-width:100%;margin:0;padding:3px;flex-shrink:0}
  .mobile-table .player-bar{min-height:36px;height:auto;padding:1px 8px;flex-wrap:nowrap;gap:4px}
  .mobile-table .player-handle{font-size:18px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
- .mobile-table .player-meta{font-size:12px;line-height:1.25}
+ .mobile-table .player-copy{display:flex;flex-direction:row;align-items:baseline;gap:6px;min-width:0}
+ .mobile-table .player-meta{font-size:12px;line-height:1.25;white-space:nowrap;flex-shrink:0}
  .mobile-table .player-material-row{padding:0 8px 2px;gap:4px}
  .mobile-table .player-material-row .loss-row{min-height:38px;gap:2px 6px;flex-wrap:nowrap}
  .mobile-table .player-material-row .loss-label{font-size:12px}

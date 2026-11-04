@@ -81,7 +81,10 @@ body[data-battery=true] .qk *,body[data-battery=true] .qk *::before,body[data-ba
 .board .target-dot{background:#ff3038;box-shadow:none;width:13%;height:13%;opacity:.8}
 .board .capture-ring{border:2px solid #ff3038;box-shadow:none;opacity:.75}
 
-.mobile-table .game-status h2{font-size:24px;font-weight:800;line-height:1.3}
+.mobile-table .game-status h2{font-size:20px;font-weight:800;line-height:1.3}
 .mobile-table .game-status.status-your-turn{padding:10px 12px;border-radius:10px;background:#e6c78f14}
 .mobile-table .game-status.status-your-turn h2{color:#ffe0a1}
 .mobile-table .game-status.status-your-turn .state-dot{background:#ffe0a1;width:10px;height:10px}
+
+.main-game-actions{display:flex;justify-content:center;margin:8px 0}
+.main-game-actions button{min-height:44px;padding:10px 24px}

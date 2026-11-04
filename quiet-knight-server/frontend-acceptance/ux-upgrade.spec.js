@@ -104,7 +104,7 @@ test('saved game search finds opponent and result without changing archive',asyn
  test('resign opens a separate confirmation and cancel keeps the game',async({page})=>{const f=await table(page);await options(page);await btn(page,'Resign').click();await expect(page.getByRole('dialog',{name:'Table controls',exact:true})).not.toBeVisible();await expect(page.getByRole('heading',{name:/Resign/})).toBeVisible();await btn(page,'Keep playing').click();await expect(sq(page,'g1')).toHaveAttribute('data-piece','wn');expect(f.writes).toHaveLength(0);});
 
 test('larger symmetric captured trays and secondary panels live in options',async({page})=>{
- const f=await table(page);await expect(page.locator('.status-your-turn h2')).toHaveCSS('font-size','24px');await expect(page.locator('.status-your-turn h2')).toHaveCSS('font-weight','800');
+ const f=await table(page);await expect(page.locator('.status-your-turn h2')).toHaveCSS('font-size','20px');await expect(page.locator('.status-your-turn h2')).toHaveCSS('font-weight','800');
  for(const width of [320,390,1280]){
   await page.setViewportSize({width,height:900});
   await expect(page.locator('.table-below .board-history,.table-below .live-captures')).toHaveCount(0);
@@ -121,4 +121,11 @@ test('larger symmetric captured trays and secondary panels live in options',asyn
  await expect(page.getByRole('dialog',{name:'Table controls',exact:true})).toBeHidden();await expect(page.locator('.review-banner')).toContainText('Position 2 of 4');
  await page.locator('.review-banner').getByRole('button',{name:'Previous',exact:true}).click();await expect(page.locator('.review-banner')).toContainText('Position 1 of 4');
  await page.locator('.review-banner').getByRole('button',{name:'Return to game',exact:true}).click();await expect(sq(page,'d5')).toHaveAttribute('data-piece','bq');expect(f.writes).toHaveLength(0);expect(f.errors).toEqual([]);
+});
+
+test('main new game confirms before resetting local play or leaving a live table',async({page})=>{
+ const f=await table(page);await page.locator('.main-game-actions').getByRole('button',{name:'New game',exact:true}).click();await expect(btn(page,'Leave table')).toBeVisible();await btn(page,'Keep playing').click();expect(f.writes).toHaveLength(0);await expect(sq(page,'d5')).toHaveAttribute('data-piece','bq');
+ await page.goto(url.split('?')[0]);await btn(page,'Play White').click();await sq(page,'e2').click();await sq(page,'e4').click();await expect(sq(page,'g1')).toHaveAttribute('aria-disabled','false',{timeout:20000});
+ await page.locator('.main-game-actions').getByRole('button',{name:'New game',exact:true}).click();await expect(page.getByText('The current local position will be cleared. Your selected color and level stay the same.',{exact:true})).toBeVisible();await btn(page,'Keep playing').click();await expect(sq(page,'e4')).toHaveAttribute('data-piece','wp');
+ await page.locator('.main-game-actions').getByRole('button',{name:'New game',exact:true}).click();await page.getByRole('dialog').getByRole('button',{name:'New game',exact:true}).click();await expect(sq(page,'e2')).toHaveAttribute('data-piece','wp');await expect(page.locator('.board .chess-art')).toHaveCount(32);await page.screenshot({path:'output/playwright/main-new-game-390.png',fullPage:true});expect(f.errors).toEqual([]);
 });

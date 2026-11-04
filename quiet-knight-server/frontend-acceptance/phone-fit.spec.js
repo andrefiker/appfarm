@@ -53,6 +53,13 @@ const sq=(p,s)=>p.locator(`.board-stage [data-square=${s}]`);
 const options=async p=>{await btn(p,'Open table controls').click();};
 async function preferences(p){await options(p);await p.getByText('Preferences & diagnostics',{exact:true}).click();}
 
+test('saved computer games recover capture counters without stored SAN',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('qk-local-save-v1:guest',JSON.stringify({moves:[{from:'e2',to:'e4'},{from:'d7',to:'d5'},{from:'e4',to:'d5'},{from:'d8',to:'d5'}],color:'w',level:2})));
+ await page.goto(url);await btn(page,'Resume saved computer game').click();
+ await expect(sq(page,'d5').locator('.piece-capture-mark')).toHaveText('1');
+ await fits(page);
+});
+
 
 async function fits(page){
  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight+1&&document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);

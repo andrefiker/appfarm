@@ -276,7 +276,7 @@ export default function GameApp() {
     () => (history ? lossesFromHistory(history) : null),
     [history],
   );
-  const sans = room?.moves || localMoves.map((m) => m.san || "");
+  const sans = room?.moves || localGame.history();
   const last =
     room?.last_move ||
     (localMoves.length ? localMoves[localMoves.length - 1] : null);

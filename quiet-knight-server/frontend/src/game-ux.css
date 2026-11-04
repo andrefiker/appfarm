@@ -94,7 +94,7 @@ body[data-battery=true] .qk *,body[data-battery=true] .qk *::before,body[data-ba
  .mobile-table.game-shell{height:100dvh;min-height:0;padding:env(safe-area-inset-top) max(4px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(4px,env(safe-area-inset-left));display:grid;grid-template-rows:44px minmax(0,1fr);gap:2px}
  .mobile-table .game-header{min-height:44px;height:44px;width:100%;max-width:none;padding:0 4px;margin:0;gap:4px}
  .mobile-table .game-layout{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;width:100%;height:100%;max-width:none;min-height:0;gap:4px;margin:0}
- .mobile-table .board-stage{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:0;position:relative}
+ .mobile-table .board-stage{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px;min-height:0;position:relative}
  .mobile-table .board-stage>.player-strip{width:100%;margin:0;padding:0;flex-shrink:0}
  .mobile-table .board-stage>.board-frame{width:var(--fit-board-size,100%);max-width:100%;margin:0;padding:3px;flex-shrink:0}
  .mobile-table .player-bar{min-height:36px;height:auto;padding:1px 8px;flex-wrap:nowrap;gap:4px}

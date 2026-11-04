@@ -1,4 +1,6 @@
 import {BoardLock,FirstGameTips} from "./ux-tools";
+import {accountRequest} from "./account-api";
+import {identityHeaders} from "./player-credential";
 import { positionAtPly, reviewStillValid } from "./move-review";
 import type { ReviewSelection } from "./move-review";
 import { LOSS_MESSAGE } from "./post-game";
@@ -507,6 +509,8 @@ export type GameSurfaceProps = {
   animalReaction?: string;
   computerEngine?: string;
   pendingOnlineMove?:boolean;
+  seriesScore?:{white:number;black:number;draws:number};
+  seriesPlayers?:{whiteId:string;blackId:string;gameNumber:number;eventId?:string};
   drawPending?:boolean;
   onReviewGame:()=>void;
   onNewOpponent:()=>void;
@@ -538,6 +542,16 @@ export type GameSurfaceProps = {
 };
 export function GameSurface(p: GameSurfaceProps) {
   const stage=React.useRef<HTMLElement>(null);
+  const [pairRecord,setPairRecord]=React.useState<{white:number;black:number;draws:number}|null>(null);
+  const whiteId=p.seriesPlayers?.whiteId,blackId=p.seriesPlayers?.blackId;
+  React.useEffect(()=>{
+    setPairRecord(null);if(!whiteId||!blackId||whiteId===blackId)return;
+    let alive=true;
+    void accountRequest<{wins:number;losses:number;draws:number}>(`/players/${encodeURIComponent(whiteId)}/head-to-head/${encodeURIComponent(blackId)}`,undefined,identityHeaders()).then(r=>{
+      if(alive && [r.wins,r.losses,r.draws].every(n=>Number.isSafeInteger(n)&&n>=0))setPairRecord({white:r.wins,black:r.losses,draws:r.draws});
+    }).catch(()=>{});return()=>{alive=false;};
+  },[whiteId,blackId,p.seriesPlayers?.gameNumber,p.seriesPlayers?.eventId]);
+  const scoreboard=pairRecord||p.seriesScore;
   const [replayHost,setReplayHost]=React.useState<HTMLDivElement|null>(null);
   React.useLayoutEffect(()=>{
     const el=stage.current;if(!el)return;
@@ -721,6 +735,7 @@ export function GameSurface(p: GameSurfaceProps) {
             <h2>{reviewing ? `Live game: ${p.status}` : p.status}</h2>
             {p.ended ? <span className="end-reason">{p.hint}</span> : null}
           </div>
+          {scoreboard ? <div className="series-score" aria-label={pairRecord?"Wins together":"Wins at this table"} title={pairRecord?"Recorded games between these accounts":"Counts this table's games since the score feature was added"}><span>{playerName(top)} {top==='w'?scoreboard.white:scoreboard.black}</span><span>Draws {scoreboard.draws}</span><span>{playerName(bottom)} {bottom==='w'?scoreboard.white:scoreboard.black}</span><small>{pairRecord?'All recorded games':'This table · since update'}</small></div> : null}
           {!p.ended && !p.spectator ? <div className="main-game-actions"><button type="button" className="secondary" disabled={p.busy} onClick={p.online?p.onBack:p.onNew}><Icon name="new"/> New game</button></div> : null}
           {p.online && (p.connection !== 'Live' || p.pendingOnlineMove) ? <p className="connection-notice" role="status">{p.pendingOnlineMove ? 'Sending move · waiting for server confirmation' : `${p.connection} · Showing the last confirmed position. Moves are paused until reconnected.`}</p> : null}
 

@@ -5,7 +5,7 @@ const url = process.env.QK_FRONTEND_URL || 'http://127.0.0.1:3000/';
 test.skip(!/^http:\/\/(127\.0\.0\.1|localhost):/.test(url), 'isolated candidate only');
 const opening = ['e4', 'd5', 'exd5', 'Qxd5'];
 
-async function table(page, {role = 'white', moves = opening} = {}) {
+async function table(page, {role = 'white', moves = opening, accounts = false} = {}) {
   let version = 1, number = 1, line = [...moves], release=null, hold=false;
   const sockets = [], writes = [], errors = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -13,7 +13,7 @@ async function table(page, {role = 'white', moves = opening} = {}) {
     const chess = new Chess(); line.forEach(san => chess.move(san));
     const last = chess.history({verbose:true}).at(-1);
     return {code:'REV001', fen:chess.fen(), turn:chess.turn(), status:chess.isCheckmate()?'checkmate':'active', winner:chess.isCheckmate()?(chess.turn()==='w'?'b':'w'):null,
-      version, game_number:number, created_at:1, white_joined:true, black_joined:true,white_player:{handle:'Alice',quiet_points:0},black_player:{handle:'Bob',quiet_points:0},
+      version, game_number:number, series_score:{white:2,black:1,draws:1}, created_at:1, white_joined:true, black_joined:true,white_player:{handle:'Alice',quiet_points:0,...(accounts?{id:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'}:{})},black_player:{handle:'Bob',quiet_points:0,...(accounts?{id:'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'}:{})},
       moves:[...line], last_move:last ? {from:last.from, to:last.to, san:last.san} : null};
   };
   await page.route('**/capabilities', route => route.fulfill({json:{protocol:2, new_games:'untimed', guest_play:true, variants:['standard']}}));
@@ -61,7 +61,7 @@ async function fits(page){
  const boxes=await page.locator('.board-stage>.board-frame .square').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return [r.width,r.height]}));expect(boxes).toHaveLength(64);for(const[w,h]of boxes){expect(Math.abs(w-h)).toBeLessThan(.6);expect(w).toBeGreaterThan(18);}
 }
 for(const role of ['white','black'])test(`portrait table fits without scrolling for ${role}`,async({page})=>{
- const f=await table(page,{role});
+ const f=await table(page,{role});await expect(page.getByLabel('Wins at this table')).toContainText('Draws 1');await expect(page.getByLabel('Wins at this table')).toContainText('Alice 2');await expect(page.getByLabel('Wins at this table')).toContainText('Bob 1');
  for(const [width,height]of [[320,568],[360,640],[393,780],[390,844],[430,932]]){await page.setViewportSize({width,height});await fits(page);}
  await page.setViewportSize({width:393,height:780});await mkdir('output/playwright',{recursive:true});await page.screenshot({path:`output/playwright/phone-fit-${role}.png`});
  await options(page);await expect(page.getByRole('complementary',{name:'First game tips'})).toBeVisible();await btn(page,'Close table controls').click();
@@ -76,4 +76,9 @@ test('large text, crowded capture trays and final actions fit on short phones',a
 test('capture replay lives in options and keeps the live table fitted',async({page})=>{
  const f=await table(page,{moves:['e4','d5']});await page.setViewportSize({width:393,height:780});f.update(['e4','d5','exd5']);await expect(sq(page,'d5')).toHaveAttribute('data-piece','wp');await expect(btn(page,'Replay last capture')).toHaveCount(0);await fits(page);
  await options(page);await btn(page,'Replay last capture').click();await expect(page.getByRole('dialog',{name:'Capture replay',exact:true})).toBeVisible();await btn(page,'Close replay').click();await expect(page.getByRole('dialog',{name:'Table controls',exact:true})).toBeVisible();await btn(page,'Close table controls').click();await fits(page);expect(f.writes).toHaveLength(0);expect(f.errors).toEqual([]);
+});
+
+test('authenticated pair displays their recorded win totals instead of only this table',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('qk-player-token-v1','x'.repeat(43)));let auth='';await page.route(/\/players\/.*\/head-to-head\//,route=>{auth=route.request().headers().authorization||'';return route.fulfill({json:{wins:7,losses:5,draws:3}});});
+ const f=await table(page,{accounts:true});await expect(page.getByLabel('Wins together')).toContainText('Alice 7');await expect(page.getByLabel('Wins together')).toContainText('Bob 5');await expect(page.getByLabel('Wins together')).toContainText('Draws 3');expect(auth).toBe('Bearer '+ 'x'.repeat(43));await fits(page);expect(f.errors).toEqual([]);
 });

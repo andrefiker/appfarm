@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {visibleSeries,carrySeries} from '../series-score.js';
+let room={status:'active',winner:null};assert.deepEqual(visibleSeries(room),{white:0,black:0,draws:0});
+room={...room,status:'resigned',winner:'w'};assert.deepEqual(visibleSeries(room),{white:1,black:0,draws:0});
+let prior=carrySeries(room,true);assert.deepEqual(prior,{white:0,black:1,draws:0});
+room={status:'active',winner:null,series_score:prior};assert.deepEqual(visibleSeries(room),prior);
+room={...room,status:'draw',winner:null};prior=carrySeries(room,false);assert.deepEqual(prior,{white:0,black:1,draws:1});
+room={status:'checkmate',winner:'w',series_score:prior};assert.deepEqual(carrySeries(room,true),{white:1,black:1,draws:1});
+assert.deepEqual(visibleSeries(room),{white:1,black:1,draws:1});
+console.log('series score: pass');

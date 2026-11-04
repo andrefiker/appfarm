@@ -1,4 +1,5 @@
 import {CAPABILITIES,guestName} from './capabilities.js';
+import {visibleSeries,carrySeries} from './series-score.js';
 import {consentTransition,ConsentError} from './consent.js';
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
@@ -59,6 +60,7 @@ function publicRoom(room) {
     version: room.version,
     created_at: room.created_at,
     game_number: room.game_number||1,
+    series_score:visibleSeries(room),
     white_player:room.white_player||null,
     black_player:room.black_player||null,
     points_policy:room.points_policy||{eligible:false,remaining:0,reason:'Guests play casually'},
@@ -427,6 +429,7 @@ async function handleApi(req, res, url) {
       input.colors=proposal.colors;
     }
     if(input.colors!==undefined&&!['same','swap'].includes(input.colors))return send(res,400,{error:'Choose same or swap colors'},origin);
+    room.series_score=carrySeries(room,input.colors==='swap'&&Boolean(room.black_token));
     if(input.colors==='swap'&&room.black_token){
       [room.white_token,room.black_token]=[room.black_token,room.white_token];
       [room.white_player,room.black_player]=[room.black_player||null,room.white_player||null];

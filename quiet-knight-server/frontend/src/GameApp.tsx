@@ -53,6 +53,7 @@ type RoomState = ClockState & {
   white_player?: { id: string; handle: string; quiet_points: number } | null;
   black_player?: { id: string; handle: string; quiet_points: number } | null;
   points_policy?: { eligible: boolean; reason: string; remaining: number };
+  series_score?: {white:number;black:number;draws:number};
   score_event?: {
     id: string;
     scored: boolean;
@@ -1221,6 +1222,8 @@ export default function GameApp() {
           gameId={record.id}
           onReviewStart={() => { setSelected(null); setPendingMove(null); setPromotion(null); }}
           clock={room||undefined}
+          seriesScore={room?.series_score && room.white_joined && room.black_joined ? room.series_score : undefined}
+          seriesPlayers={room?.white_player && room.black_player ? {whiteId:room.white_player.id,blackId:room.black_player.id,gameNumber:room.game_number||1,eventId:room.score_event?.id} : undefined}
           drawControls={room && room.status === 'active' && room.black_joined && me ? <DrawControls me={me} proposal={room.proposal} busy={busy} connected={connection === 'Live'} paused={Boolean(room.clock_paused)} onAction={action => void consent(action, action === 'request' ? 'draw' : undefined)} /> : null}
           pauseControls={room && room.status === 'active' ? <ClockControls state={room} me={me} busy={busy || connection !== 'Live'} onAction={(action) => void changePause(action)} /> : null}
           viewerLost={viewerLost(

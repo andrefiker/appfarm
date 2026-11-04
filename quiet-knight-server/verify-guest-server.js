@@ -26,12 +26,12 @@ export async function verifyGuestServer({request,post,socket,waitFor,restart,poo
   assert.equal(spectator.some(e=>e.type==='seat.role'&&e.role!=='spectator'),false,'Broadcasts must not elevate a spectator');
   await restart();
   const resumed=await post(route+'/join',{seat_token:white});assert.equal(resumed.data.role,'white');assert.deepEqual(resumed.data.room.moves,['e4','e5']);
-  const ended=await post(route+'/resign',{seat_token:black});assert.equal(ended.status,200);assert.equal(ended.data.room.score_event.scored,false);
+  const ended=await post(route+'/resign',{seat_token:black});assert.equal(ended.status,200);assert.equal(ended.data.room.score_event.scored,false);assert.deepEqual(ended.data.room.series_score,{white:1,black:0,draws:0});
   for(const colors of ['same','swap']){
     if(colors==='swap')assert.equal((await post(route+'/resign',{seat_token:black})).status,200);
-    const next=await post(route+'/rematch',{seat_token:white,colors});assert.equal(next.status,200);assert.equal(next.data.room.time_control,undefined);
+    const next=await post(route+'/rematch',{seat_token:white,colors,game_number:colors==='same'?1:2});assert.equal(next.status,200);assert.equal(next.data.room.time_control,undefined);assert.deepEqual(next.data.room.series_score,colors==='same'?{white:1,black:0,draws:0}:{white:0,black:2,draws:0});assert.equal((await post(route+'/rematch',{seat_token:white,colors,game_number:colors==='same'?1:2})).status,409);
   }
-  assert.equal((await post(route+'/join',{seat_token:white})).data.role,'black');
+  const rejoined=await post(route+'/join',{seat_token:white});assert.equal(rejoined.data.role,'black');assert.deepEqual(rejoined.data.room.series_score,{white:0,black:2,draws:0});
   assert.equal((await pool.query('SELECT count(*)::int AS n FROM qk_players')).rows[0].n,playersBefore,'Guest play must not create hidden accounts');
   assert.equal((await request('/players/me')).status,401);
   assert.equal((await post('/players/me/computer-games',{})).status,401);

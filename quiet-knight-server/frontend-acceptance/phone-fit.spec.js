@@ -102,3 +102,13 @@ test('capture dot follows the actual piece and updates while reviewing',async({p
  await options(page);await page.locator('.board-history summary').click();await page.getByLabel('Review timeline').fill('3');await expect(sq(page,'d5').locator('.piece-capture-mark')).toHaveText('1');await expect(sq(page,'e5').locator('.piece-capture-mark')).toHaveCount(0);await page.locator('.review-banner').getByRole('button',{name:'Return to game'}).click();await expect(sq(page,'e5').locator('.piece-capture-mark')).toHaveText('1');
  await page.screenshot({path:'output/playwright/piece-capture-mark.png'});f.update(['e4','d5','exd5','c6','dxc6']);await expect(sq(page,'c6').locator('.piece-capture-mark')).toHaveText('2');await options(page);await btn(page,'Flip board').click();await btn(page,'Close table controls').click();await expect(sq(page,'c6').locator('.piece-capture-mark')).toHaveText('2');await fits(page);expect(f.writes).toHaveLength(0);expect(f.errors).toEqual([]);
 });
+
+test('captured piece points appear for each player and update',async({page})=>{
+ const f=await table(page);await page.setViewportSize({width:393,height:780});
+ await expect(page.getByLabel('White captured 1 points')).toBeVisible();
+ await expect(page.getByLabel('Black captured 1 points')).toBeVisible();
+ f.update(['e4','d5','exd5','c6','dxc6']);
+ await expect(page.getByLabel('White captured 2 points')).toBeVisible();
+ await expect(page.getByLabel('Black captured 0 points')).toBeVisible();
+ await fits(page);await page.screenshot({path:'output/playwright/captured-points.png'});
+});

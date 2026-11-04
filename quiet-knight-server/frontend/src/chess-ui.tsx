@@ -436,7 +436,7 @@ function PlayerBar({
   yours,
   presence,
   detail,
-  losses, position, audience=false, turnText,
+  losses, audience=false, turnText,
 }: {
   clock?: ClockState;
   color: Color;
@@ -447,7 +447,7 @@ function PlayerBar({
   detail?: string;
   losses: Losses | null; position:Position; audience?:boolean; turnText?:string;
 }) {
-  const totals=materialTotals(position),advantage=totals[color]-totals[color==='w'?'b':'w'];
+  const capturedPoints=losses?.[color==='w'?'b':'w'].reduce((sum,kind)=>sum+materialValues[kind],0);
   const waitingForFriend = !yours && name === "Seat open";
   return (
     <div className={`player-strip${active ? " player-active" : ""}`} data-player-color={color}><div className={`player-bar${yours ? " player-yours" : ""}`}>
@@ -481,8 +481,8 @@ function PlayerBar({
         ) : null}
       </span>
     </div><div className="player-material-row"><LostPieces color={color} losses={losses} audience={audience} grouped/>
-      <span className="player-material" title="Material only, not a prediction of the result" aria-label={`${color==='w'?'White':'Black'} material: ${totals[color]} points${advantage>0?`, ahead by ${advantage}`:''}`}>
-        {advantage>0?<strong>{color==='w'?'White':'Black'} +{advantage}</strong>:<span>{totals[color]} pts</span>}
+      <span className="player-material" title="Points for pieces captured: pawn 1, knight and bishop 3, rook 5, queen 9" aria-label={`${color==='w'?'White':'Black'} captured ${capturedPoints === undefined ? 'unknown' : capturedPoints} points`}>
+        {capturedPoints === undefined ? <span>—</span> : <strong>{capturedPoints} pts captured</strong>}
       </span></div></div>
   );
 }

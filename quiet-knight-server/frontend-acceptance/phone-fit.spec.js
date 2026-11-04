@@ -105,10 +105,9 @@ test('capture dot follows the actual piece and updates while reviewing',async({p
 
 test('captured piece points appear for each player and update',async({page})=>{
  const f=await table(page);await page.setViewportSize({width:393,height:780});
- await expect(page.getByLabel('White captured 1 points')).toBeVisible();
- await expect(page.getByLabel('Black captured 1 points')).toBeVisible();
+ await expect(page.locator('.player-material')).toHaveCount(0);
  f.update(['e4','d5','exd5','c6','dxc6']);
- await expect(page.getByLabel('White captured 2 points')).toBeVisible();
- await expect(page.getByLabel('Black captured 0 points')).toBeVisible();
+ await expect(page.getByLabel('White leads by 2 captured points')).toBeVisible();
+ await expect(page.locator('.player-material')).toHaveCount(1);
  await fits(page);await page.screenshot({path:'output/playwright/captured-points.png'});
 });

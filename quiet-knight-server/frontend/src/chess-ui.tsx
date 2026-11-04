@@ -448,6 +448,8 @@ function PlayerBar({
   losses: Losses | null; position:Position; audience?:boolean; turnText?:string;
 }) {
   const capturedPoints=losses?.[color==='w'?'b':'w'].reduce((sum,kind)=>sum+materialValues[kind],0);
+  const opponentPoints=losses?.[color].reduce((sum,kind)=>sum+materialValues[kind],0);
+  const advantage=capturedPoints === undefined || opponentPoints === undefined ? 0 : capturedPoints-opponentPoints;
   const waitingForFriend = !yours && name === "Seat open";
   return (
     <div className={`player-strip${active ? " player-active" : ""}`} data-player-color={color}><div className={`player-bar${yours ? " player-yours" : ""}`}>
@@ -481,9 +483,7 @@ function PlayerBar({
         ) : null}
       </span>
     </div><div className="player-material-row"><LostPieces color={color} losses={losses} audience={audience} grouped/>
-      <span className="player-material" title="Points for pieces captured: pawn 1, knight and bishop 3, rook 5, queen 9" aria-label={`${color==='w'?'White':'Black'} captured ${capturedPoints === undefined ? 'unknown' : capturedPoints} points`}>
-        {capturedPoints === undefined ? <span>—</span> : <strong>{capturedPoints} pts captured</strong>}
-      </span></div></div>
+      {advantage > 0 ? <span className="player-material" title="Advantage based on captured piece values" aria-label={`${color==='w'?'White':'Black'} leads by ${advantage} captured points`}><strong>{color==='w'?'White':'Black'} +{advantage}</strong></span> : null}</div></div>
   );
 }
 export type GameSurfaceProps = {

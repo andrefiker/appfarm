@@ -745,7 +745,7 @@ export function GameSurface(p: GameSurfaceProps) {
             <p className="loss-message">{LOSS_MESSAGE}</p>
           ) : null}
 
-          {p.drawPending && !p.controlsOpen ? p.drawControls : null}
+          {p.online && !p.ended && !p.waiting && !p.spectator && !p.controlsOpen ? <div className="quick-game-actions" aria-label="Game actions">{p.drawControls}{contextual}</div> : null}
 
 
         </section>

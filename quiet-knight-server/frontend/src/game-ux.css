@@ -88,6 +88,9 @@ body[data-battery=true] .qk *,body[data-battery=true] .qk *::before,body[data-ba
 
 .main-game-actions{display:flex;justify-content:center;margin:8px 0}
 .main-game-actions button{min-height:44px;padding:10px 24px}
+.quick-game-actions{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.quick-game-actions .draw-controls{margin:0}
+.quick-game-actions .table-resign{min-height:44px;padding:8px 16px;border:1px solid var(--line);color:var(--text)}
 /* Fit the table to the phone viewport, including its system insets. */
 @media(max-width:600px){
  body:has(.mobile-table){overflow:hidden}
@@ -130,9 +133,10 @@ body[data-battery=true] .qk *,body[data-battery=true] .qk *::before,body[data-ba
 @media(max-width:600px){.mobile-table .series-score{grid-column:1/-1;gap:4px 10px;margin:0;min-height:25px}.mobile-table .series-score small{font-size:10px}}
 @media(max-width:600px){
  .mobile-table .table-below>.game-status,.mobile-table .table-below>.main-game-actions{grid-row:1}
- .mobile-table .table-below>.series-score:not(.game-status):not(.main-game-actions){grid-row:2;grid-column:1/-1;min-height:18px;gap:3px 8px;font-size:11px;flex-wrap:nowrap}
+ .mobile-table .table-below>.series-score:not(.game-status):not(.main-game-actions){grid-row:2;grid-column:1/-1;min-height:20px;gap:3px 8px;font-size:13px;flex-wrap:nowrap}
+ .mobile-table .table-below>.quick-game-actions{grid-row:3;grid-column:1/-1}
  .mobile-table .series-score span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
- .mobile-table .series-score small{font-size:9px;white-space:nowrap}
+ .mobile-table .series-score small{font-size:10px;white-space:nowrap}
 }
 
 /* A capture counter stays at the base of its own piece, without blocking taps. */

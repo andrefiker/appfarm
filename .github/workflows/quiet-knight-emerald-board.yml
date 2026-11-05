@@ -44,14 +44,14 @@ jobs:
       - name: Prepare unsigned package and public verification tools
         run: |
           mkdir -p release
-          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -f -p 4 android-store/app/build/outputs/apk/quietKnight/release/app-quietKnight-release-unsigned.apk release/Quiet-Knight-Emerald-1.5.8-unsigned.apk
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging release/Quiet-Knight-Emerald-1.5.8-unsigned.apk > release/badging.txt
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -f -p 4 android-store/app/build/outputs/apk/quietKnight/release/app-quietKnight-release-unsigned.apk release/Quiet-Knight-Emerald-1.6.1-unsigned.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging release/Quiet-Knight-Emerald-1.6.1-unsigned.apk > release/badging.txt
           cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" release/apksigner.jar
           cp "$ANDROID_HOME/build-tools/35.0.0/zipalign" release/zipalign
           cp -R quiet-knight-server/frontend/dist release/web
           printf '%s\n' "$GITHUB_SHA" > release/source-commit.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: quiet-knight-emerald-1.5.8-unsigned
+          name: quiet-knight-emerald-1.6.1-unsigned
           path: release/
           retention-days: 7

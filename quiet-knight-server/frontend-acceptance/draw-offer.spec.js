@@ -44,7 +44,6 @@ async function table(browser) {
     });
     await page.goto(url); await button(page,'Create live game').click();
     await expect(button(page,'Connection: Live. Reconnect')).toBeVisible();
-    if(role!=='spectator')await button(page,'Table controls').click();
     return page;
   }
   return {state,writes,errors,player,update(patch){Object.assign(state,patch);state.version++;publish();},async close(){await Promise.all(contexts.map(c=>c.close()));}};
@@ -61,7 +60,7 @@ test('two players can cancel, decline and accept a visible draw offer; spectator
     await expect(black.getByText('Your opponent offered a draw',{exact:true})).toBeVisible();
     await expect(button(spectator,'Accept draw')).toHaveCount(0);
     // Reloading an opponent retains the pending server proposal.
-    await black.reload();await button(black,'Table controls').click();
+    await black.reload();
     await expect(button(black,'Accept draw')).toBeVisible();
     await button(white,'Cancel offer').click();
     await expect(button(black,'Offer draw')).toBeVisible();
@@ -81,7 +80,6 @@ test('two players can cancel, decline and accept a visible draw offer; spectator
       await black.screenshot({path:`output/playwright/draw-offer-${width}.png`,fullPage:true});
     }
     await button(black,'Accept draw').click();
-    await button(white,'Close table controls').click();await button(black,'Close table controls').click();
     for(const p of [white,black,spectator]) {
       await expect(p.getByRole('heading',{name:'Drawn game',exact:true})).toBeVisible();
       await expect(button(p,'Offer draw')).toHaveCount(0);
@@ -138,3 +136,11 @@ test('computer games do not offer a bilateral draw', async ({page})=>{
   await expect(page.locator('.square')).toHaveCount(64);
   await expect(button(page,'Offer draw')).toHaveCount(0);
 });
+
+ test('resign requires confirmation from the game screen', async ({browser})=>{
+ const f=await table(browser);try {
+ const white=await f.player('white');await button(white,'Resign').click();
+ await expect(white.getByRole('dialog',{name:'Resign this game?'})).toBeVisible();
+ await button(white,'Keep playing').click();expect(f.state.status).toBe('active');
+ } finally {await f.close();}
+ });

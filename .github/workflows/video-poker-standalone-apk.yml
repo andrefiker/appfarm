@@ -1,0 +1,84 @@
+name: Video Poker 1.2.3 APK (isolated)
+on:
+  push:
+    branches:
+      - feature/video-poker-v1-2-3-50k-apk
+    paths:
+      - 'video-poker-standalone/**'
+      - '.github/workflows/video-poker-standalone-apk.yml'
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate HTML game rules
+        shell: bash
+        run: |
+          node <<'NODE'
+          const {readFileSync}=require('node:fs');
+          const vm=require('node:vm');
+          const assert=require('node:assert/strict');
+          const {webcrypto}=require('node:crypto');
+          const html=readFileSync('video-poker-standalone/index.html','utf8');
+          const script=html.match(/<script>(\(function\(root\)[\s\S]*?)<\/script>/)?.[1];
+          assert.ok(script,'embedded poker engine');
+          const ctx={crypto:webcrypto,Uint32Array,module:{exports:{}}};
+          ctx.globalThis=ctx;
+          vm.runInNewContext(script,ctx);
+          const p=ctx.module.exports;
+          assert.deepEqual([...p.bets],[500,1000,10000,50000]);
+          assert.equal(p.payout(9,50000),40000000);
+          assert.equal(p.payout(9,10000),8000000);
+          assert.equal(p.payout(9,500),125000);
+          assert.equal(p.payout(6,50000),450000);
+          assert.ok(html.includes('Video Poker · 1.2.3'));
+          console.log('Standalone version, bets and payouts verified.');
+          NODE
+      - name: Bundle HTML and configure separate Android identity
+        shell: bash
+        run: |
+          mkdir -p quiet-video-poker/android/app/src/main/assets
+          cp video-poker-standalone/index.html quiet-video-poker/android/app/src/main/assets/quiet-video-poker.html
+          python3 - <<'PY'
+          from pathlib import Path
+          gradle=Path("quiet-video-poker/android/app/build.gradle")
+          s=gradle.read_text()
+          s=s.replace("applicationId 'com.appfarm.quietvideopoker'","applicationId 'com.andrefiker.videopoker.standalone'")
+          s=s.replace('versionCode 4',"versionCode 123")
+          s=s.replace("versionName '1.3.0'","versionName '1.2.3'")
+          gradle.write_text(s)
+          manifest=Path('quiet-video-poker/android/app/src/main/AndroidManifest.xml')
+          manifest.write_text(manifest.read_text().replace('android:label="Quiet Video Poker"','android:label="Video Poker"'))
+          PY
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - name: Install Android API 35
+        run: yes | sdkmanager 'platforms;android-35' 'build-tools;35.0.0' >/dev/null
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Build APK
+        run: gradle --no-daemon -p quiet-video-poker/android :app:assembleDebug
+      - name: Verify APK
+        shell: bash
+        run: |
+          APK=quiet-video-poker/android/app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | tee apk-badging.txt
+          grep -q "name='com.andrefiker.videopoker.standalone'" apk-badging.txt
+          grep -q "versionCode='123' versionName='1.2.3'" apk-badging.txt
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
+          unzip -t "$APK" | tail -n 2
+          unzip -p "$APK" assets/quiet-video-poker.html | grep -F 'const bets=[500,1000,10000,50000];'
+          sha256sum "$APK"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: video-poker-1-2-3-debug-apk
+          path: quiet-video-poker/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 15

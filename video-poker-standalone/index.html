@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#0b1725"><title>Video Poker</title><style>:root{color-scheme:dark;--bg:#0b1725;--panel:#101f30;--line:#263648;--muted:#91a2b6;--gold:#e8c780;--white:#f3f3ec;--green:#87ccb7}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 55%,#1b3347 0%,#0b1725 65%);color:var(--white);font-family:Arial,Helvetica,sans-serif;min-height:100vh}button{font:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}button:focus-visible{outline:3px solid #a7d9ff;outline-offset:4px}button:disabled{cursor:default;opacity:.4}.app{max-width:680px;margin:auto;padding:32px 32px 18px}header,.brand,.bank,.section-heading,.hand-tools,footer,.modal-top{display:flex;align-items:center;justify-content:space-between}.brand{gap:13px}.brand-mark{font-size:32px;color:var(--gold);width:48px;height:48px;border:1px solid #75623e;border-radius:50%;text-align:center;line-height:46px}.eyebrow{font-size:10px;letter-spacing:1.9px;color:var(--muted);font-weight:700}h1{font-family:Georgia,serif;font-weight:400;margin:4px 0 0;font-size:30px;letter-spacing:-.6px}.period{color:var(--gold)}.icon-button{background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:50%;width:44px;height:44px;font-size:22px}.bank{padding:28px 0 23px}.balance{font-size:44px;letter-spacing:-1.8px;line-height:1.2;font-variant-numeric:tabular-nums}.last-win{text-align:right}.last-win strong{display:block;font-size:24px;font-weight:400;color:var(--gold);margin-top:6px}.paytable{padding:16px 20px 13px;background:#101e2c;border:1px solid var(--line);border-radius:12px}.section-heading{font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:15px}.section-heading b{color:var(--gold);font-weight:400;margin-left:7px}.section-heading button{background:none;border:0;color:var(--muted);font-size:11px;padding:6px 0;min-height:30px}table{border-collapse:collapse;width:100%;font-size:12px;font-variant-numeric:tabular-nums}th{text-align:left;font-size:8px;letter-spacing:1.3px;color:#91a2b6;padding:0 0 8px;font-weight:400}td{padding:4px 0;color:#d1d9e1}td:last-child,th:last-child{text-align:right}td:last-child{font-family:monospace;color:var(--gold)}tr.winning td{background:#2b3e42;color:#ffe2a0}tr.winning td:first-child{padding-left:7px;border-radius:4px 0 0 4px}tr.winning td:last-child{padding-right:7px;border-radius:0 4px 4px 0}.pay-note{color:#92a0ae;font-size:9px;margin-top:11px;border-top:1px solid var(--line);padding-top:10px}.table-area{padding-top:25px}.table-label{display:flex;align-items:center;justify-content:center;gap:14px;color:#8fa2b6;font-size:8px;letter-spacing:2.2px}.table-label span{width:45px;height:1px;background:var(--line)}.status{text-align:center;min-height:88px;padding:18px 0 15px}.status h2{font-family:Georgia,serif;font-size:25px;font-weight:400;margin:0 0 7px}.status p{margin:0;color:var(--muted);font-size:12px}.status.win h2{color:var(--gold)}.cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.card{position:relative;min-width:0;padding:0;background:none;border:0;color:inherit;opacity:1!important;transition:none}.card-face{display:block;position:relative;background:#f1efe7;color:#172a3d;border-radius:8px;border:2px solid #f1efe7;box-shadow:0 6px 12px #0003;overflow:hidden}.card.red .card-face{color:#b03b44}.corner{position:absolute;left:9px;top:7px;text-align:center;line-height:.95}.corner b{font-size:25px;font-family:Georgia,serif;font-weight:700;display:block}.corner small{font-size:18px;line-height:1.1}.corner.bottom{left:auto;top:auto;right:9px;bottom:7px;transform:rotate(180deg)}.center-suit{position:absolute;inset:0;display:grid;place-items:center;font-size:47px}.card-back{background:repeating-linear-gradient(45deg,#142d44 0,#142d44 5px,#1b3750 5px,#1b3750 6px);border:1px solid #46617a;box-shadow:inset 0 0 0 5px #142a40,inset 0 0 0 6px #46617a}.card-back .center-suit{color:#b4a17c;font-size:38px}.hold-label{display:block;color:#98aabd;font-size:9px;font-weight:700;letter-spacing:1.4px;padding:11px 0 6px;min-height:28px}.card.held{transform:none}.card.held .card-face{border-color:var(--gold);box-shadow:0 0 0 2px #e8c78035,0 6px 15px #0003}.card.held .hold-label{color:var(--gold)}.hand-tools{height:30px;color:var(--muted);font-size:10px}.hand-tools button{border:0;background:none;color:var(--gold);font-size:11px;padding:8px 0;min-height:30px}.controls{display:grid;grid-template-columns:1fr;gap:20px;align-items:end;padding:20px 0 24px}.bets{display:flex;gap:5px;margin-top:10px}.bets button{min-width:0;flex:1;height:44px;background:#13253a;border:1px solid #35465a;border-radius:6px;color:#b8c5d2;font-size:14px}.bets button.selected{color:var(--gold);background:#342f26;border-color:#bc9d60}.deal{display:flex;align-items:center;justify-content:space-between;height:64px;background:var(--gold);color:#172334;border:1px solid #f3dcac;border-radius:9px;font-weight:700;padding:0 23px;font-size:16px;box-shadow:0 4px 16px #0002}.deal:hover{background:#f4d99d}.deal span:last-child{font-size:24px}.refill{grid-column:1/-1;min-height:44px;border:1px solid var(--gold);background:none;color:var(--gold);border-radius:7px}footer{border-top:1px solid var(--line);padding-top:17px;color:#8da0b2;font-size:8px;letter-spacing:1px}footer i{display:inline-block;background:var(--green);width:5px;height:5px;border-radius:100%;margin-right:5px}footer button{border:0;background:none;color:#a9b7c5;font-size:11px;min-height:36px}footer button span{background:#223348;padding:3px 6px;border-radius:4px;margin-left:6px}.save-note{font-size:11px;color:#ecb27a;text-align:center;min-height:14px}dialog{max-width:480px;width:calc(100% - 32px);max-height:85vh;background:#142438;color:var(--white);border:1px solid #43536a;border-radius:15px;padding:22px;box-shadow:0 25px 100px #0008}dialog::backdrop{background:#030b14c9;backdrop-filter:blur(5px)}.modal-top{gap:10px;border-bottom:1px solid #354357;padding-bottom:14px;margin-bottom:16px}.modal-top h2{font:26px Georgia,serif;margin:0}.modal-top button{border:1px solid #43536a;background:none;color:#d7e0e8;width:44px;height:44px;border-radius:50%}#modalBody{font-size:14px;line-height:1.6;color:#c2cfdb}#modalBody ol{padding-left:22px}#modalBody li{margin-bottom:13px}.setting{display:flex;align-items:center;justify-content:space-between;min-height:56px;border-bottom:1px solid var(--line)}input[type=checkbox]{width:24px;height:24px;accent-color:var(--gold)}.secondary{width:100%;margin-top:20px;border:1px solid #7e6c50;border-radius:7px;color:var(--gold);background:none;min-height:46px}.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}.stat{background:#0b1929;padding:12px;border-radius:8px;font-size:11px}.stat b{display:block;font-size:22px;color:var(--gold)}.history-row{padding:12px 0;border-top:1px solid #304056;display:flex;justify-content:space-between;font-size:12px}.history-row strong{color:#e7c686}.mini-cards{letter-spacing:2px;color:#edf0ef}.history-row small{color:#92a5b7}body.no-motion *,body.no-motion *::after{animation:none!important;transition:none!important}[hidden]{display:none!important}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}@media(max-width:500px){.app{padding:20px 18px 12px}.brand-mark{width:40px;height:40px;line-height:38px;font-size:27px}.eyebrow{font-size:8px;letter-spacing:1.5px}h1{font-size:27px}.bank{padding:23px 0 20px}.balance{font-size:39px}.paytable{padding:12px 14px 11px}.section-heading{margin-bottom:10px}.card-face{border-radius:6px}.cards{gap:7px}.corner{top:6px;left:6px}.corner b{font-size:22px}.corner small{font-size:15px}.corner.bottom{right:6px;bottom:6px}.center-suit{font-size:30px}.controls{gap:15px;padding-top:16px}.deal{padding:0 15px;height:59px;font-size:15px}.table-area{padding-top:20px}.status h2{font-size:23px}.table-label{font-size:7px}.status{min-height:83px}.bets{gap:4px}.bets button{height:44px}.hold-label{font-size:8px;letter-spacing:.8px}td{padding:3px 0}.pay-note{font-size:8px}footer{letter-spacing:.5px}}@media(max-width:360px){.app{padding:16px 12px}.cards{gap:5px}.card-face{}.center-suit{font-size:26px}.corner b{font-size:20px}.corner small{font-size:13px}.controls{gap:10px}.deal{padding:0 12px}h1{font-size:25px}.brand{gap:9px}.brand .eyebrow{font-size:7px}}
+.app{height:100vh;height:100dvh;display:flex;flex-direction:column;padding:20px 24px 12px}
+.app>header,.bank,.controls,footer{flex-shrink:0}
+.bank{padding:20px 0 12px}
+.table-area{flex:1;display:flex;flex-direction:column;justify-content:center;padding:8px 0;min-height:min-content}
+.status{min-height:0;padding:8px 0 22px}
+.card-face{}
+.controls{gap:12px;padding:12px 0 14px}
+.bets{margin-top:8px}
+.deal{height:56px}
+footer{padding-top:8px}
+.save-note{flex-shrink:0;margin:4px 0 0;min-height:0}
+.save-note:empty{display:none}
+@media(max-width:500px){.app{padding:16px 18px 10px}.card-face{}.bank{padding:18px 0 10px}.status{padding:8px 0 20px}.controls{gap:10px;padding:10px 0 12px}.deal{height:54px}}
+@media(max-width:360px){.app{padding:12px}.card-face{}}
+@media(max-height:700px){.app{padding-top:10px;padding-bottom:8px}.brand-mark{width:36px;height:36px;line-height:34px;font-size:24px}h1{font-size:24px}.brand .eyebrow{display:none}.bank{padding:10px 0 6px}.balance{font-size:32px}.last-win strong{font-size:22px;margin-top:3px}.status{padding:4px 0 14px}.status h2{font-size:21px;margin-bottom:5px}.status p{font-size:11px}.card-face{}.hold-label{padding:8px 0 3px;min-height:22px}.hand-tools{height:26px}.controls{gap:8px;padding:8px 0}.bets{margin-top:6px}.deal{height:48px}footer{padding-top:4px}footer button{min-height:30px}}
+@media(max-height:590px){.bank{padding:6px 0 4px}.card-face{}.table-area{padding:4px 0}.status{padding:2px 0 12px}.status h2{font-size:20px}.hand-tools{height:24px}.controls{gap:7px;padding:6px 0}.center-suit{font-size:29px}.corner b{font-size:20px}.corner small{font-size:13px}.refill{min-height:40px}}
+
+/* Standard poker-card dimensions: width, never screen height, controls shape. */
+.card-face{width:100%;height:auto;aspect-ratio:5 / 7}
+.corner{left:5px;top:5px}.corner.bottom{right:5px;bottom:5px}
+.corner b{font-size:clamp(16px,4.6vw,25px)}.corner small{font-size:clamp(10px,3vw,16px)}
+.center-suit{font-size:clamp(22px,6.4vw,40px)}
+</style></head>
+<body><main class="app">
+<header><div class="brand"><span class="brand-mark">♠</span><div><span class="eyebrow">THE OFFLINE CARD ROOM</span><h1>Video Poker<span class="period">.</span></h1></div></div><button class="icon-button" id="settings" aria-label="Open settings">⚙</button></header>
+<section class="bank" aria-label="Score"><div><span class="eyebrow">YOUR CREDITS</span><div class="balance" id="credits">1,000</div></div><div class="last-win"><span class="eyebrow">LAST WIN</span><strong id="lastWin">—</strong></div></section>
+
+<section class="table-area" aria-label="Poker table"><div class="status" role="status" aria-live="polite"><h2 id="result">A fresh deck awaits.</h2><p id="instruction">Set your bet, then deal yourself in.</p></div><div class="cards" id="cards"></div><div class="hand-tools"><span id="heldCount">52 cards · no jokers</span><button id="clear" hidden>Release all</button></div></section>
+<section class="controls"><div class="bet-block"><span class="eyebrow">BET PER HAND</span><div class="bets" id="bets" role="group" aria-label="Bet credits"></div></div><button class="deal" id="action"><span id="actionText">Deal hand</span><span aria-hidden="true">↗</span></button><button class="refill" id="refill" hidden>Refill 1,000 free credits</button></section>
+<footer><span><i></i> OFFLINE · PLAY CREDITS ONLY</span><button id="history">History <span id="handCount">0</span></button></footer>
+<p class="save-note" id="saveNote" role="status"></p>
+</main>
+<dialog id="modal"><div class="modal-top"><h2 id="modalTitle"></h2><button id="closeModal" aria-label="Close dialog">✕</button></div><div id="modalBody"></div></dialog>
+<script>(function(root){
+'use strict';
+const names=['No win','Jacks or Better','Two Pair','Three of a Kind','Straight','Flush','Full House','Four of a Kind','Straight Flush','Royal Flush'];
+const bets=[500,1000,10000,50000];
+const validSavedBet=b=>bets.includes(b)||[50,100,250].includes(b)||(Number.isInteger(b)&&b>=1&&b<=5);
+const pays=[0,1,2,3,4,6,9,25,50,250];
+function rank(c){return c%13+2;}
+function evaluate(cards){
+ if(cards.length!==5||new Set(cards).size!==5||cards.some(c=>!Number.isInteger(c)||c<0||c>51))throw Error('Invalid hand');
+ const ranks=cards.map(rank).sort((a,b)=>a-b),counts={};
+ ranks.forEach(r=>counts[r]=(counts[r]||0)+1);
+ const groups=Object.values(counts).sort((a,b)=>b-a);
+ const flush=cards.every(c=>Math.floor(c/13)===Math.floor(cards[0]/13));
+ const straight=new Set(ranks).size===5&&(ranks[4]-ranks[0]===4||ranks.join(',')==='2,3,4,5,14');
+ if(flush&&straight)return ranks[0]===10?9:8;
+ if(groups[0]===4)return 7;
+ if(groups[0]===3&&groups[1]===2)return 6;
+ if(flush)return 5;
+ if(straight)return 4;
+ if(groups[0]===3)return 3;
+ if(groups[0]===2&&groups[1]===2)return 2;
+ if(Object.keys(counts).some(r=>counts[r]===2&&Number(r)>=11))return 1;
+ return 0;
+}
+function payout(category,bet){return category===9&&(bet===5||bet===10000||bet===50000)?800*bet:pays[category]*bet;}
+function randomInt(n){const a=new Uint32Array(1),limit=4294967296-(4294967296%n);do{root.crypto.getRandomValues(a);}while(a[0]>=limit);return a[0]%n;}
+function shuffle(){const d=Array.from({length:52},(_,i)=>i);for(let i=51;i>0;i--){let j=randomInt(i+1);[d[i],d[j]]=[d[j],d[i]];}return d;}
+function fresh(){return {version:2,credits:1000,bet:500,phase:'ready',hand:[],deck:[],held:[false,false,false,false,false],lastWin:0,lastCategory:0,hands:0,totalBet:0,totalWon:0,best:0,history:[],settings:{sound:false,haptics:true,motion:false}};}
+function deal(s,deck=shuffle()){
+ if(s.phase==='hold'||!bets.includes(s.bet)||s.credits<s.bet)return false;
+ if(deck.length!==52||new Set(deck).size!==52||deck.some(c=>!Number.isInteger(c)||c<0||c>51))throw Error('Invalid deck');
+ s.deck=deck.slice();s.hand=s.deck.splice(0,5);s.held.fill(false);s.credits-=s.bet;s.totalBet+=s.bet;s.lastWin=0;s.lastCategory=0;s.phase='hold';return true;
+}
+function draw(s){
+ if(s.phase!=='hold')return false;
+ s.hand=s.hand.map((c,i)=>s.held[i]?c:s.deck.shift());s.lastCategory=evaluate(s.hand);s.lastWin=payout(s.lastCategory,s.bet);s.credits+=s.lastWin;s.totalWon+=s.lastWin;s.best=Math.max(s.best,s.lastWin);s.hands++;
+ s.history.unshift({hand:s.hand.slice(),category:s.lastCategory,bet:s.bet,win:s.lastWin});s.history=s.history.slice(0,30);s.deck=[];s.phase='result';if(!bets.includes(s.bet))s.bet=500;return true;
+}
+function restore(raw){
+ try{const s=JSON.parse(raw),ints=['credits','bet','lastWin','lastCategory','hands','totalBet','totalWon','best'];
+ if(!s||![1,2].includes(s.version)||ints.some(k=>!Number.isSafeInteger(s[k])||s[k]<0)||!validSavedBet(s.bet)||s.lastCategory>9||!['ready','hold','result'].includes(s.phase))return null;
+ if(!Array.isArray(s.hand)||!Array.isArray(s.deck)||!Array.isArray(s.held)||s.held.length!==5||s.held.some(x=>typeof x!=='boolean'))return null;
+ const all=s.hand.concat(s.deck);if(all.some(c=>!Number.isInteger(c)||c<0||c>51)||new Set(all).size!==all.length)return null;
+ if(s.phase==='hold'&&(s.hand.length!==5||s.deck.length!==47)||s.phase==='result'&&(s.hand.length!==5||s.deck.length!==0)||s.phase==='ready'&&(s.hand.length||s.deck.length))return null;
+ if(!Array.isArray(s.history)||s.history.length>30||s.history.some(h=>!h||!Array.isArray(h.hand)||h.hand.length!==5||new Set(h.hand).size!==5||h.hand.some(c=>!Number.isInteger(c)||c<0||c>51)||!Number.isInteger(h.bet)||!validSavedBet(h.bet)||!Number.isInteger(h.category)||h.category<0||h.category>9||h.win!==payout(h.category,h.bet)))return null;
+ if(!s.settings||['sound','haptics','motion'].some(k=>typeof s.settings[k]!=='boolean'))return null;s.settings.motion=false;s.version=2;if(s.phase!=='hold'&&!bets.includes(s.bet))s.bet=500;return s;
+ }catch{return null;}
+}
+const API={bets,names,pays,rank,evaluate,payout,shuffle,fresh,deal,draw,restore};root.Poker=API;if(typeof module!=='undefined')module.exports=API;
+})(typeof globalThis!=='undefined'?globalThis:this);
+</script><script>'use strict';
+const $=id=>document.getElementById(id),P=Poker,KEY='fiker-video-poker-fresh-v1';
+let state=P.fresh(),saveFailed=false;
+try{const raw=localStorage.getItem(KEY);if(raw){const recovered=P.restore(raw);if(recovered)state=recovered;else $('saveNote').textContent='Saved data could not be read. A fresh session was started.';}}catch{saveFailed=true;}
+const suits=['♠','♥','♣','♦'],suitNames=['spades','hearts','clubs','diamonds'];
+function cardRank(c){return ({11:'J',12:'Q',13:'K',14:'A'})[P.rank(c)]||String(P.rank(c));}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));saveFailed=false;}catch{saveFailed=true;}$('saveNote').textContent=saveFailed?'Saving is unavailable. Keep this window open to preserve your game.':'';}
+let soundContext;
+function feedback(win=false){if(state.settings.haptics&&navigator.vibrate)navigator.vibrate(win?[20,35,20]:10);if(state.settings.sound){try{soundContext??=new(window.AudioContext||window.webkitAudioContext)();soundContext.resume();const o=soundContext.createOscillator(),g=soundContext.createGain();o.type='sine';o.frequency.setValueAtTime(win?660:380,soundContext.currentTime);g.gain.setValueAtTime(.035,soundContext.currentTime);g.gain.exponentialRampToValueAtTime(.001,soundContext.currentTime+.15);o.connect(g).connect(soundContext.destination);o.start();o.stop(soundContext.currentTime+.16);}catch{}}}
+function render(){
+ const holding=state.phase==='hold';document.body.classList.add('no-motion');
+ $('credits').textContent=state.credits.toLocaleString('en-US');$('lastWin').textContent=state.lastWin?'+'+state.lastWin.toLocaleString('en-US'):'—';$('handCount').textContent=state.hands;
+ if(!$('cards').children.length){
+  for(let i=0;i<5;i++){
+   const button=document.createElement('button');button.className='card';button.dataset.index=i;
+   button.innerHTML='<span class="card-face"></span><span class="hold-label"></span>';$('cards').append(button);
+  }
+ }
+ Array.from($('cards').children).forEach((button,i)=>{
+  const c=state.hand[i],s=Math.floor(c/13),r=c===undefined?'':cardRank(c),held=holding&&state.held[i];
+  button.className=`card ${s===1||s===3?'red':''} ${held?'held':''}`;
+  button.disabled=!holding;button.setAttribute('aria-pressed',String(held));
+  button.setAttribute('aria-label',(c===undefined?'Card back':r+' of '+suitNames[s])+(holding?', '+(held?'held':'tap to hold'):''));
+  const face=button.querySelector('.card-face'),key=c===undefined?'back':String(c);
+  if(button.dataset.card!==key){
+   button.dataset.card=key;face.className='card-face'+(c===undefined?' card-back':'');
+   face.innerHTML=c===undefined?'<span class="center-suit">♠</span>':`<span class="corner"><b>${r}</b><small>${suits[s]}</small></span><span class="center-suit">${suits[s]}</span><span class="corner bottom"><b>${r}</b><small>${suits[s]}</small></span>`;
+  }
+  button.querySelector('.hold-label').textContent=holding?(held?'● HELD':'HOLD'):'\u00a0';
+ });
+ $('bets').innerHTML=P.bets.map(b=>`<button data-bet="${b}" class="${state.bet===b?'selected':''}" aria-label="Bet ${b.toLocaleString('en-US')} credits" aria-pressed="${state.bet===b}" ${holding?'disabled':''}>${b>=1000?b/1000+'K':b}</button>`).join('');
+ const count=state.held.filter(Boolean).length;
+ $('result').textContent=holding?'Make your hand.':state.phase==='ready'?'A fresh deck awaits.':state.lastWin?P.names[state.lastCategory]:'No winning hand.';
+ $('instruction').textContent=holding?'Tap the cards you want to keep.':state.phase==='ready'?'Set your bet, then deal yourself in.':state.lastWin?`+${state.lastWin.toLocaleString('en-US')} credits returned · Bet ${state.history[0]?.bet ?? state.bet}`:'Deal when you’re ready.';
+ $('result').parentElement.classList.toggle('win',state.phase==='result'&&state.lastWin>0);
+ $('heldCount').textContent=holding?`${count} held · ${5-count} to replace`:'52 cards · no jokers';$('clear').hidden=!holding||!count;
+ $('actionText').textContent=holding?(count===5?'Keep all five':'Draw cards'):'Deal hand';$('action').disabled=!holding&&state.credits<state.bet;$('refill').hidden=holding||state.credits>=state.bet;$('refill').textContent=`Add ${Math.max(1000,state.bet-state.credits).toLocaleString('en-US')} free credits`;
+}
+function changed(){save();render();}
+$('cards').onclick=e=>{const b=e.target.closest('[data-index]');if(!b||state.phase!=='hold')return;state.held[+b.dataset.index]=!state.held[+b.dataset.index];feedback();changed();};
+$('bets').onclick=e=>{const b=e.target.closest('[data-bet]');if(!b||state.phase==='hold')return;state.bet=+b.dataset.bet;changed();};
+$('clear').onclick=()=>{state.held.fill(false);changed();};
+$('action').onclick=()=>{const ok=state.phase==='hold'?P.draw(state):P.deal(state);if(!ok)return;feedback(state.lastWin>0);changed();};
+$('refill').onclick=()=>{if(state.phase!=='hold'&&state.credits<state.bet){state.credits+=Math.max(1000,state.bet-state.credits);changed();}};
+const modal=$('modal');let lastFocus;
+function openModal(title,html){lastFocus=document.activeElement;$('modalTitle').textContent=title;$('modalBody').innerHTML=html;modal.showModal();}
+$('closeModal').onclick=()=>modal.close();modal.addEventListener('close',()=>lastFocus?.focus());modal.addEventListener('click',e=>{if(e.target===modal){const r=modal.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)modal.close();}});
+function showRules(){openModal('A little poker, at your pace.',`<ol><li>Choose a bet from <strong>500, 1,000, 10,000 or 50,000 credits</strong> and tap <strong>Deal hand</strong>. Your bet is deducted immediately.</li><li>Tap any cards you want to <strong>hold</strong>. Tap again to release.</li><li>Tap <strong>Draw cards</strong>. Unheld cards are replaced once from the remaining deck.</li><li>A pair of jacks, queens, kings or aces is the smallest paying hand. Payouts shown are the <strong>total credits returned</strong>, including your bet.</li></ol><p>Ace can be low in A–2–3–4–5 or high in 10–J–Q–K–A. No wild cards. Full house pays 9×; flush pays 6×. Royal flush pays 250× below 10,000, 8,000,000 at 10,000, or 40,000,000 at 50,000 credits. An unfinished hand from an older version keeps its original bet and payout.</p><p>Credits are fictional, free, and have no cash value. There are no purchases, ads or cash-outs. Your game stays on this device.</p>`);}
+$('settings').onclick=()=>{openModal('Your card room',`<label class="setting">Sound<input type="checkbox" data-setting="sound" ${state.settings.sound?'checked':''}></label><label class="setting">Haptics, where supported<input type="checkbox" data-setting="haptics" ${state.settings.haptics?'checked':''}></label><p>Progress saves after every action, including held cards. Sound starts off.</p><button class="secondary" id="rules">How to play</button><button class="secondary" id="reset">Start a new session</button><p>Video Poker · 1.2.3<br>Built for offline play.</p>`);$('modalBody').onchange=e=>{if(e.target.dataset.setting){state.settings[e.target.dataset.setting]=e.target.checked;changed();}};$('rules').onclick=showRules;$('reset').onclick=()=>{openModal('Start fresh?',`<p>This clears your credits, statistics, hand history and any unfinished hand. You’ll start with 1,000 free credits.</p><button class="secondary" id="confirmReset">Yes, reset this session</button><button class="secondary" id="cancelReset">Keep playing</button>`);$('confirmReset').onclick=()=>{const settings=state.settings;state=P.fresh();state.settings=settings;changed();modal.close();};$('cancelReset').onclick=()=>modal.close();};};
+$('history').onclick=()=>openModal('Your session',`<div class="stats"><div class="stat">Hands played<b>${state.hands}</b></div><div class="stat">Biggest payout<b>${state.best}</b></div><div class="stat">Total bet<b>${state.totalBet}</b></div><div class="stat">Total returned<b>${state.totalWon}</b></div></div><p>${state.history.length?'Most recent 30 completed hands.':'Your completed hands will appear here.'}</p>${state.history.map(h=>`<div class="history-row"><div><div class="mini-cards">${h.hand.map(c=>cardRank(c)+suits[Math.floor(c/13)]).join(' ')}</div><small>${P.names[h.category]} · Bet ${h.bet}</small></div><strong>+${h.win}</strong></div>`).join('')}`);
+document.addEventListener('keydown',e=>{if(modal.open||e.repeat||e.target.tagName==='INPUT')return;if(/^[1-5]$/.test(e.key)&&state.phase==='hold'){state.held[+e.key-1]=!state.held[+e.key-1];changed();}if(e.key==='Enter'&&e.target===document.body){e.preventDefault();$('action').click();}});
+render();if(saveFailed)$('saveNote').textContent='Saving is unavailable. Keep this window open to preserve your game.';
+</script></body></html>

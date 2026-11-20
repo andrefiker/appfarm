@@ -155,3 +155,46 @@ body[data-coordinates=true] .qk.mobile-table .file-coordinate { bottom:2px; righ
 .qk .coach-choices li p { margin:3px 0; }
 .qk .coach-choices small { color:#e6cfa9; }
 .qk .coach-actions { display:flex;gap:8px;flex-wrap:wrap; }
+
+/* A sideways phone puts every control beside the board, not above or below it. */
+@media (orientation:landscape) and (max-height:540px) and (min-width:520px) {
+ body:has(.qk.mobile-table){overflow:hidden}
+ .qk.mobile-table.game-shell{
+   --landscape-board:min(calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 2px),58vw);
+   position:relative;box-sizing:border-box;display:grid;width:100%;max-width:none;height:100dvh;min-height:0;
+   grid-template-columns:var(--landscape-board) minmax(0,1fr);
+   grid-template-rows:auto auto auto auto minmax(0,1fr);
+   align-content:start;gap:4px 12px;
+   padding:calc(1px + env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) calc(1px + env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));
+ }
+ .qk.mobile-table .game-layout,.qk.mobile-table .board-stage{display:contents}
+ .qk.mobile-table .game-header{
+   grid-area:1/2;width:100%;height:auto;min-height:44px;max-width:none;margin:0;padding:0 4px;gap:3px;
+ }
+ .qk.mobile-table .game-title h1{font-size:clamp(13px,2.25vw,21px)}
+ .qk.mobile-table .game-title::after{content:none}
+ .qk.mobile-table .board-stage>.board-frame{
+   grid-area:1/1/-1/2;align-self:center;justify-self:center;
+   width:var(--landscape-board);margin:0;padding:0;max-width:100%;
+ }
+ .qk.mobile-table .board-stage>.player-strip{
+   grid-column:2;grid-row:2;margin:0;width:100%;min-width:0;padding:0;
+ }
+ .qk.mobile-table .board-stage>.player-strip~.player-strip{grid-row:3}
+ .qk.mobile-table .player-bar{min-height:32px;height:auto;padding:2px 6px;gap:4px;flex-wrap:nowrap}
+ .qk.mobile-table .player-copy{min-width:0}
+ .qk.mobile-table .player-handle{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .qk.mobile-table .player-meta,.qk.mobile-table .turn-label{font-size:11px}
+ .qk.mobile-table .board-stage>:is(.lifetime-score-mount,.lifetime-score){grid-area:4/2;width:100%;max-width:none}
+ .qk.mobile-table .board-stage>.board-lock{position:absolute;inset:auto auto 6px max(8px,env(safe-area-inset-left));z-index:8}
+ .qk.mobile-table .table-below{
+   grid-area:5/2;display:flex;min-height:0;overflow:auto;overscroll-behavior:contain;
+   flex-direction:column;align-items:stretch;justify-content:flex-start;gap:5px;padding:0 2px 2px;
+ }
+ .qk.mobile-table .table-below>*{flex-shrink:0}
+ .qk.mobile-table .game-status,.qk.mobile-table .game-status.status-your-turn{min-height:36px;padding:4px 8px;margin:0}
+ .qk.mobile-table .game-status h2{font-size:18px}
+ .qk.mobile-table .main-game-actions,.qk.mobile-table .quick-game-actions{justify-content:flex-start;margin:0;gap:4px}
+ .qk.mobile-table .main-game-actions button{min-height:44px;padding:6px 9px;font-size:12px}
+ .qk.mobile-table .connection-notice{padding:4px 6px}
+}

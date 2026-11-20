@@ -11,14 +11,14 @@ assert.equal(loadHapticPreference(storage),true,'new native feedback is enabled 
 assert.equal(values.get('qk-local-save-v1:guest'),'keep-position');
 values.set('qk-haptics','false');assert.equal(loadHapticPreference(storage),false,'later opt-out survives restart');
 assert.equal(loadHapticPreference({getItem:()=>{throw Error('blocked');},setItem:()=>{}}),true);
-for(const kind of ['select','move','capture','check','arrival'])assert.equal(playHaptic(kind,true),true);
-assert.deepEqual(native,['select','move','capture','check','arrival']);assert.deepEqual(web,[],'native route must not double-vibrate');
+for(const kind of ['select','move','capture','check','arrival','turn'])assert.equal(playHaptic(kind,true),true);
+assert.deepEqual(native,['select','move','capture','check','arrival','turn']);assert.deepEqual(web,[],'native route must not double-vibrate');
 assert.equal(playHaptic('move',false),false);
 document.visibilityState='hidden';assert.equal(playHaptic('move',true),false);document.visibilityState='visible';
 window.dispatchEvent(new Event('qk-background'));assert.equal(playHaptic('move',true),false);
 window.dispatchEvent(new Event('qk-resume'));assert.equal(playHaptic('select',true),true);
 window.QuietKnightHaptics.postMessage=()=>{throw Error('bridge unavailable');};
 assert.equal(playHaptic('capture',true),true);assert.deepEqual(web,[24]);
-delete window.QuietKnightHaptics;assert.equal(playHaptic('check',true),true);assert.deepEqual(web[1],[16,35,16]);
+delete window.QuietKnightHaptics;assert.equal(playHaptic('check',true),true);assert.deepEqual(web[1],[16,35,16]);assert.equal(playHaptic('turn',true),true);assert.equal(web[2],18);
 navigator.vibrate=()=>{throw Error('unsupported');};assert.equal(playHaptic('move',true),false);
 console.log('Haptics passed: one-time enable, persisted opt-out, native routing without duplicate vibration, browser fallback, background/hidden suppression and unavailable APIs.');

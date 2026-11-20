@@ -515,14 +515,14 @@ export function GameSurface(p: GameSurfaceProps) {
     const el=stage.current;if(!el)return;
     const resize=()=>{
       if(!matchMedia('(max-width: 600px)').matches){el.style.removeProperty('--fit-board-size');return;}
-      const panels=Array.from(el.querySelectorAll<HTMLElement>(':scope > .player-strip, :scope > .board-lock, :scope > .lifetime-score'));
+      const panels=Array.from(el.querySelectorAll<HTMLElement>(':scope > .player-strip, :scope > .board-lock, :scope > .lifetime-score, :scope > .lifetime-score-mount'));
       const reserved=panels.reduce((n,p)=>n+p.getBoundingClientRect().height,0)+panels.length*5;
       const side=Math.floor(Math.max(8,Math.min(el.clientWidth,el.clientHeight-reserved)));
       if(el.style.getPropertyValue('--fit-board-size')!==`${side}px`)el.style.setProperty('--fit-board-size',`${side}px`);
     };
     const observer=new ResizeObserver(resize);observer.observe(el);
     const children=new MutationObserver(resize);children.observe(el,{childList:true});
-    for(const panel of el.querySelectorAll('.player-strip'))observer.observe(panel);
+    for(const panel of el.querySelectorAll('.player-strip, .lifetime-score, .lifetime-score-mount'))observer.observe(panel);
     window.addEventListener('resize',resize);resize();
     return()=>{observer.disconnect();children.disconnect();window.removeEventListener('resize',resize);};
   },[]);
@@ -580,9 +580,11 @@ export function GameSurface(p: GameSurfaceProps) {
         className="primary"
         disabled={p.busy}
         onClick={p.onNew}
+        aria-label="Rematch"
+        title="Stay in this room and swap sides"
       >
         <Icon name="new" />
-        Rematch
+        <span>Rematch<br /><small aria-hidden="true">Swap sides</small></span>
       </button>
     ) : (
       <button

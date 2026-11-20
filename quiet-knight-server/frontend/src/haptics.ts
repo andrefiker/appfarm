@@ -1,6 +1,6 @@
-export type HapticKind = 'select' | 'move' | 'capture' | 'check' | 'arrival';
+export type HapticKind = 'select' | 'move' | 'capture' | 'check' | 'arrival' | 'turn';
 type HapticWindow = Window & {QuietKnightHaptics?: {postMessage: (kind:string)=>void}};
-const patterns:Record<HapticKind,number|number[]>={select:7,move:14,capture:24,check:[16,35,16],arrival:10};
+const patterns:Record<HapticKind,number|number[]>={select:7,move:14,capture:24,check:[16,35,16],arrival:10,turn:18};
 let foreground=true;
 if(typeof window!=='undefined'){
  window.addEventListener('qk-background',()=>{foreground=false;});

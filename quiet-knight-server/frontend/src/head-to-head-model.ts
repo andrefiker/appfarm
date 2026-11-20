@@ -52,3 +52,55 @@ export function scoreboardRoomStatus(room: Seats | null | undefined, color: 'w' 
   if (mine.id === other.id) return 'Use two different Knight IDs.';
   return 'Lifetime score unavailable.';
 }
+export type RivalAccount = Account;
+export type RecentHumanGame = {id:string; white_player_id:string|null; black_player_id:string|null; result:string; ended_at:string; moves?:ReadonlyArray<unknown>};
+export type RecentPairGame = {id:string; outcome:'Win'|'Draw'|'Loss'; endedAt:number; moveCount:number|null};
+
+export function recentPairGames(games:ReadonlyArray<RecentHumanGame>, viewer:string, rival:string): RecentPairGame[] {
+  if (!playerId.test(viewer) || !playerId.test(rival) || viewer === rival) return [];
+  const found = new Map<string, RecentPairGame>();
+  for (const game of games) {
+    if (!game || typeof game.id !== 'string' || !game.id || found.has(game.id) || typeof game.ended_at !== 'string') continue;
+    const white = game.white_player_id === viewer && game.black_player_id === rival;
+    const black = game.black_player_id === viewer && game.white_player_id === rival;
+    if (!white && !black) continue;
+    const endedAt = Date.parse(game.ended_at);
+    if (!Number.isFinite(endedAt) || !['1-0','0-1','1/2-1/2'].includes(game.result)) continue;
+    const outcome = game.result === '1/2-1/2' ? 'Draw' : (white === (game.result === '1-0') ? 'Win' : 'Loss');
+    found.set(game.id, {id:game.id,outcome,endedAt,moveCount:Array.isArray(game.moves) ? Math.ceil(game.moves.length/2) : null});
+  }
+  return [...found.values()].sort((a,b) => b.endedAt - a.endedAt).slice(0,8);
+}
+
+const explicitPinPrefix = 'qk-scoreboard-pin-v1:';
+function explicitPinKey(viewer:string) {return explicitPinPrefix + viewer;}
+export function hasStoredOpponentPin(): boolean {
+  try {
+    for(let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith(explicitPinPrefix) && readPinnedOpponent(key.slice(explicitPinPrefix.length))) return true;
+    }
+  } catch {}
+  return false;
+}
+export function readPinnedOpponent(viewer:string|undefined): Account|null {
+  if (!viewer || !playerId.test(viewer)) return null;
+  try {
+    const rival = JSON.parse(localStorage.getItem(explicitPinKey(viewer)) || 'null');
+    return validOpponent(viewer,rival) ? rival : null;
+  } catch {return null;}
+}
+function validOpponent(viewer:string, rival:unknown): rival is Account {
+  if (typeof rival !== 'object' || rival === null) return false;
+  const a = rival as Account;
+  return playerId.test(viewer) && typeof a.id === 'string' && playerId.test(a.id) && a.id !== viewer
+    && typeof a.handle === 'string' && /^[a-zA-Z0-9_-]{3,20}$/.test(a.handle);
+}
+export function writePinnedOpponent(viewer:string, rival:Account|null): boolean {
+  if (!playerId.test(viewer) || (rival && !validOpponent(viewer,rival))) return false;
+  try {
+    if (rival) localStorage.setItem(explicitPinKey(viewer), JSON.stringify({id:rival.id, handle:rival.handle}));
+    else localStorage.removeItem(explicitPinKey(viewer));
+    return true;
+  } catch {return false;}
+}

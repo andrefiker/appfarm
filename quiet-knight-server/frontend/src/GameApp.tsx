@@ -20,7 +20,9 @@ import {
   useQuietIdle,
 } from "./table-atmosphere";
 import { HeadToHead, HeadToHeadStatus } from "./head-to-head";
-import { readScoreboardRival, rivalForRoom, scoreboardRoomStatus } from "./head-to-head-model";
+import { accountRequest } from "./account-api";
+import { identityHeaders } from "./player-credential";
+import { hasStoredOpponentPin, readPinnedOpponent, readScoreboardRival, rivalForRoom, scoreboardRoomStatus } from "./head-to-head-model";
 import { useKnightId, KnightIdPanel, AccountGate } from "./knight-id";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Chess } from "chess.js";
@@ -86,7 +88,7 @@ type Modal =
   | "invite"
   | null;
 const REACTIONS:Record<string,string>={hello:"👋", "well-played":"👏",thanks:"🙏",fox:"🦊",owl:"🦉",tortoise:"🐢"};
-const BUILD = "Quiet Knight 1.6.5 · Sculptor";
+const BUILD = "Quiet Knight 1.6.6 · Sculptor";
 function roleColor(role: Role | null): Color | null {
   return role === "white" ? "w" : role === "black" ? "b" : null;
 }
@@ -266,8 +268,29 @@ export default function GameApp() {
   // Room role and account ownership come from the server; the score lookup then
   // authenticates independently without switching the current local save owner.
   const viewerId = me === "w" ? room?.white_player?.id : me === "b" ? room?.black_player?.id : undefined;
+  const [, refreshPin] = useState(0);
+  const accountViewer = knight.player?.id;
+  const [restoredPinOwner, setRestoredPinOwner] = useState<string | null>(null);
+  useEffect(() => {
+    setRestoredPinOwner(null);
+    if (screen !== "home" || accountViewer || !hasStoredOpponentPin()) return;
+    let active = true;
+    const restorePin = () => {
+      void accountRequest<{player?:{id?:string}}>('/players/me', undefined, identityHeaders())
+        .then(data => {
+          const id = data.player?.id;
+          if (active) setRestoredPinOwner(id && readPinnedOpponent(id) ? id : null);
+        }).catch(() => {if(active)setRestoredPinOwner(null);});
+    };
+    restorePin();
+    window.addEventListener("online", restorePin);
+    return () => {active = false; window.removeEventListener("online", restorePin);};
+  }, [screen, accountViewer]);
+  const homePinOwner = accountViewer ?? restoredPinOwner ?? undefined;
+  const pinnedOpponent = readPinnedOpponent(viewerId || homePinOwner);
+  const onScoreboardPinChange = () => refreshPin(n => n + 1);
   const currentRival = rivalForRoom(room, me, viewerId);
-  const scoreboardRival = currentRival ?? (waiting ? rivalForRoom(room, me, viewerId, readScoreboardRival(viewerId)) : null);
+  const scoreboardRival = currentRival ?? (waiting ? rivalForRoom(room, me, viewerId, (pinnedOpponent ?? readScoreboardRival(viewerId))) : null);
   const history = useMemo(() => {
     if (!room) return localGame.history({ verbose: true });
     try {
@@ -374,7 +397,14 @@ export default function GameApp() {
       serial: ++motionSerial.current,
       escapedCheck: previous.check === last.from && previous.position[last.from]?.type === "k",
     }, old));
-    if (screen === "game") playHaptic(check ? "check" : history?.[count - 1]?.captured ? "capture" : "move", preferences.current.haptics);
+    const moved = history?.[count - 1];
+    if (screen === "game") {
+      if (!room || moved?.color === me) {
+        playHaptic(check ? "check" : moved?.captured ? "capture" : "move", preferences.current.haptics);
+      } else if (prefs.turnVibration && connection === "Live" && room.status === "active" && !room.clock_paused && me && moved && turn === me) {
+        playHaptic("turn", preferences.current.haptics);
+      }
+    }
     const actor=previous.position[last.from];
     if (preferences.current.sound && (check || !preferences.current.playful || !actor || !pieceSoundEnabled(preferences.current.fun,actor.type)))
       void chessAudio.play(
@@ -1058,7 +1088,11 @@ export default function GameApp() {
         />
       </label>
       <button type="button" className="secondary" disabled={!haptics} onClick={()=>playHaptic('move',haptics)}>Test haptics</button>
-      <p className="settings-note">Gentle feedback for selection, moves, captures and check. Your phone’s touch feedback setting applies.</p>
+      <label className="preference-row">
+        <span>Vibrate when it is my turn online</span>
+        <input type="checkbox" checked={prefs.turnVibration} disabled={!haptics} onChange={(e) => updatePrefs({turnVibration: e.target.checked})} />
+      </label>
+      <p className="settings-note">Haptics follow your phone's touch feedback setting. Turn vibration only runs while you are looking at the game.</p>
       <p className="settings-note">
         Tap a piece, then its destination. Arrow keys move focus; Enter selects.
         Motion follows your device’s reduced-motion preference.
@@ -1190,6 +1224,13 @@ export default function GameApp() {
                     ? "Link this existing Knight ID"
                     : "Account (optional)"}
               </button>
+              {homePinOwner && pinnedOpponent ? (
+                <section className="head-to-head-lobby" aria-label="Pinned opponent">
+                  <HeadToHead viewerId={homePinOwner} rival={pinnedOpponent} roomCode="home" settling={false} recentGames={homePinOwner === accountViewer ? knight.games : undefined} pinnedRival={pinnedOpponent} onPinChange={onScoreboardPinChange} />
+                  <button type="button" className="secondary" disabled={busy} onClick={() => void createRoom()}>New room for {pinnedOpponent.handle}</button>
+                  <small>Creates a regular room. You can copy and share the invite yourself.</small>
+                </section>
+              ) : null}
               {!knight.player && memories[0] ? (
                 <button
                   type="button"
@@ -1228,7 +1269,7 @@ export default function GameApp() {
           gameId={record.id}
           onReviewStart={() => { setSelected(null); setPendingMove(null); setPromotion(null); }}
           clock={room||undefined}
-          lifetimeScore={room && viewerId && scoreboardRival ? <HeadToHead viewerId={viewerId} rival={scoreboardRival} roomCode={room.code} eventId={room.score_event?.id} settling={ended && !room.score_event} /> : mode === "online" ? <HeadToHeadStatus message={scoreboardRoomStatus(room, me)} /> : null}
+          lifetimeScore={room && viewerId && scoreboardRival ? <HeadToHead viewerId={viewerId} rival={scoreboardRival} roomCode={room.code} eventId={room.score_event?.id} settling={ended && !room.score_event} recentGames={viewerId === accountViewer ? knight.games : undefined} pinnedRival={pinnedOpponent} onPinChange={onScoreboardPinChange} /> : mode === "online" ? <HeadToHeadStatus message={scoreboardRoomStatus(room, me)} /> : null}
           drawControls={room && room.status === 'active' && room.black_joined && me ? <DrawControls me={me} proposal={room.proposal} busy={busy} connected={connection === 'Live'} paused={Boolean(room.clock_paused)} onAction={action => void consent(action, action === 'request' ? 'draw' : undefined)} /> : null}
           pauseControls={room && room.status === 'active' ? <ClockControls state={room} me={me} busy={busy || connection !== 'Live'} onAction={(action) => void changePause(action)} /> : null}
           viewerLost={viewerLost(
@@ -1351,7 +1392,8 @@ export default function GameApp() {
           onSettings={() => setModal("settings")}
           onNew={() => {
             setTableControls(false);
-            if (room || ended) void rematch();
+            if (room) void rematch("swap");
+            else if (ended) void rematch();
             else if (localMoves.length === 0) void rematch("same");
             else setModal("restart");
           }}

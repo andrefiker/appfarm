@@ -12,7 +12,7 @@ const crops: Record<Color, readonly (readonly [number,number,number,number])[]> 
  b: [[34,698,197,299],[270,598,219,399],[538,590,205,403],[784,650,223,349],[1046,586,217,413],[1294,526,221,473]],
 };
 const proportions: Record<Kind, readonly [number,number]> = {
- p:[65,66],n:[73,86],b:[63,87],r:[75,77],q:[75,88],k:[76,96],
+ p:[65,66],n:[73,86],b:[58,87],r:[75,77],q:[80,88],k:[73,96],
 };
 
 export function Piece({color,kind,label,fitToSquare=false}:{color:Color;kind:Kind;scope:string;label?:string;fitToSquare?:boolean}) {

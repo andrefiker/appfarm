@@ -123,6 +123,7 @@ public class MainActivity extends Activity {
                         int feedback;
                         if ("select".equals(kind)) feedback = HapticFeedbackConstants.CLOCK_TICK;
                         else if ("move".equals(kind) || "arrival".equals(kind)) feedback = HapticFeedbackConstants.VIRTUAL_KEY;
+                        else if ("turn".equals(kind)) feedback = HapticFeedbackConstants.CONTEXT_CLICK;
                         else if ("capture".equals(kind)) feedback = HapticFeedbackConstants.LONG_PRESS;
                         else if ("check".equals(kind)) feedback = Build.VERSION.SDK_INT >= 30 ? HapticFeedbackConstants.CONFIRM : HapticFeedbackConstants.LONG_PRESS;
                         else return;

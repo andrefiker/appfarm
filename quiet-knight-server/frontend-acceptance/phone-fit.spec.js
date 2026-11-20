@@ -75,12 +75,12 @@ for(const role of ['white','black'])test(`portrait table fits without scrolling 
  if(role==='white'){await sq(page,'g1').click();await sq(page,'f3').click();await expect(sq(page,'f3')).toHaveAttribute('data-piece','wn');expect(f.writes).toHaveLength(1);}expect(f.errors).toEqual([]);
 });
 test('large text and final actions fit on short phones without capture trays',async({page})=>{
- await page.addInitScript(()=>localStorage.setItem('qk-play-preferences-v1',JSON.stringify({schema:1,textSize:'large'})));
+ await page.addInitScript(()=>localStorage.setItem('qk-play-preferences-v1',JSON.stringify({schema:1,textSize:'large',rematchColors:'same'})));
  const f=await table(page,{moves:['e4','d5','exd5','c6','dxc6','Nxc6']});
  await page.setViewportSize({width:360,height:640});
  await expect(page.locator('.board-stage .player-material-row,.board-stage .loss-tray,.board-stage .capture-count')).toHaveCount(0);
  await fits(page);
- f.update(['f3','e5','g4','Qh4#']);await expect(btn(page,'Rematch')).toBeVisible();await fits(page);await btn(page,'Rematch').click();await expect(page.locator('.board .chess-art')).toHaveCount(32);await fits(page);await options(page);await btn(page,'Lock board').click();await expect(btn(page,'Hold to unlock')).toBeVisible();await fits(page);expect(f.errors).toEqual([]);
+ f.update(['f3','e5','g4','Qh4#']);await expect(btn(page,'Rematch')).toBeVisible();await fits(page);await expect(btn(page,'Rematch')).toContainText('Swap sides');await btn(page,'Rematch').click();await expect(page.locator('.board .chess-art')).toHaveCount(32);expect(f.writes).toHaveLength(1);expect(f.writes[0]).toMatchObject({colors:'swap',game_number:1});expect(f.writes[0].action).toBeUndefined();expect(new URL(page.url()).searchParams.get('room')).toBe('REV001');await fits(page);await options(page);await btn(page,'Lock board').click();await expect(btn(page,'Hold to unlock')).toBeVisible();await fits(page);expect(f.errors).toEqual([]);
 });
 test('capture replay lives in options and keeps the live table fitted',async({page})=>{
  const f=await table(page,{moves:['e4','d5']});await page.setViewportSize({width:393,height:780});f.update(['e4','d5','exd5']);await expect(sq(page,'d5')).toHaveAttribute('data-piece','wp');await expect(btn(page,'Replay last capture')).toHaveCount(0);await fits(page);
@@ -171,4 +171,58 @@ test('portrait gets more playable board width and taller tile-contained sculptur
    expect(height+Number(await inner.getAttribute('y'))).toBe(98);
  }
  for(const [width,height] of [[320,568],[360,640],[393,780]]){await page.setViewportSize({width,height});await fits(page);}
+});
+for(const optedIn of [false,true])test('confirmed online turn vibration opt-in = '+optedIn,async({page})=>{
+ await page.addInitScript(optedIn=>{
+  localStorage.setItem('qk-play-preferences-v1',JSON.stringify(optedIn?{schema:1,turnVibration:true}:{schema:1}));
+  window.__turnPulses=[];
+  window.QuietKnightHaptics={postMessage:kind=>window.__turnPulses.push(kind)};
+ },optedIn);
+ const f=await table(page,{moves:['e4']});
+ const pulses=()=>page.evaluate(()=>window.__turnPulses.filter(kind=>kind==='turn'));
+ f.update(['e4','e5']);
+ await expect(sq(page,'e5')).toHaveAttribute('data-piece','bp');
+ await expect.poll(pulses).toEqual(optedIn?['turn']:[]);
+ f.update(['e4','e5']);
+ await expect.poll(pulses).toEqual(optedIn?['turn']:[]);
+ await page.evaluate(()=>window.dispatchEvent(new Event('qk-background')));
+ f.update(['e4','e5','Nf3']);
+ await expect(sq(page,'f3')).toHaveAttribute('data-piece','wn');
+ f.update(['e4','e5','Nf3','Nc6']);
+ await expect(sq(page,'c6')).toHaveAttribute('data-piece','bn');
+ await expect.poll(pulses).toEqual(optedIn?['turn']:[]);
+ expect(f.errors).toEqual([]);
+});
+test('tap lifetime scoreboard for private pair history and persistent pin',async({page})=>{
+ const alice='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', bob='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', carol='cccccccc-cccc-4ccc-8ccc-cccccccccccc';
+ await page.addInitScript(()=>localStorage.setItem('qk-player-token-v1','x'.repeat(43)));
+ await page.route(/\/players\/.*\/head-to-head\//,route=>route.fulfill({json:{wins:7,losses:5,draws:3}}));
+ await page.route('**/players/me',route=>route.fulfill({json:{player:{registered:true,id:bob,handle:'Bob'},games:[
+   {id:'latest',white_player_id:alice,black_player_id:bob,result:'0-1',ended_at:'2026-11-20T01:00:00Z',moves:[{san:'e4'},{san:'e5'},{san:'d4'}]},
+   {id:'draw',white_player_id:bob,black_player_id:alice,result:'1/2-1/2',ended_at:'2026-11-18T01:00:00Z'},
+   {id:'unrelated',white_player_id:bob,black_player_id:carol,result:'0-1',ended_at:'2026-11-19T01:00:00Z'}
+ ]}}));
+ const f=await table(page,{accounts:true,role:'black'});
+ const score=page.getByRole('button',{name:/Lifetime scoreboard:/});
+ await score.click();
+ const dialog=page.getByRole('dialog',{name:'You vs Alice',exact:true});
+ const list=dialog.getByRole('list',{name:'Recent games together'});
+ await expect(list.getByRole('listitem')).toHaveCount(2);
+ await expect(list.getByRole('listitem').first()).toContainText('Win');
+ await expect(list.getByRole('listitem').first()).toContainText('2 moves');
+ await expect(list.getByRole('listitem').last()).toContainText('Draw');
+ await expect(list).not.toContainText('Loss');
+ await dialog.getByRole('button',{name:'Pin Alice',exact:true}).click();
+ await expect(dialog.getByRole('button',{name:'Unpin opponent',exact:true})).toBeVisible();
+ await dialog.getByRole('button',{name:'Close',exact:true}).click();
+ await expect(score).toBeFocused();
+ await page.goto(url);
+ const homePin=page.getByRole('region',{name:'Pinned opponent'});
+ await expect(homePin).toBeVisible();
+ await homePin.getByRole('button',{name:/Lifetime scoreboard:/}).click();
+ await dialog.getByRole('button',{name:'Unpin opponent',exact:true}).click();
+ await expect(homePin).toHaveCount(0);
+ await page.reload();
+ await expect(homePin).toHaveCount(0);
+ expect(f.errors).toEqual([]);
 });

@@ -2,6 +2,9 @@ import {loadHapticPreference,playHaptic} from './haptics';
 import {adaptiveLevel} from './review-assessment';
 import {InviteQR,parseInvitation} from './invitation';
 import {About} from './about';
+import {BeginnerEntry,BeginnerPractice} from './beginner-practice';
+import type {BeginnerPreset} from './beginner-practice';
+import {whyIllegal} from './beginner-rules';
 import {StudyRoom} from './StudyRoom';
 import type {StudySeed} from './StudyRoom';
 import {useServerCapabilities} from './server-capabilities';
@@ -33,6 +36,8 @@ import { shareInvite } from "./invite-share";
 import { diagnosticReport } from "./diagnostics";
 import { lastLiveRoom, rememberLiveRoom, forgetLiveRoom } from "./live-resume";
 import {pieceSoundEnabled} from './fun-audio';
+import {soundCue} from './accessibility-preferences';
+import {SoundCueSettings} from './accessibility-settings';
 import { useChessAudio } from "./chess-audio";
 import { GameSurface, HomeSurface, Icon, PromotionChoices } from "./chess-ui";
 import { DrawControls } from './draw-controls';
@@ -90,7 +95,7 @@ type Modal =
   | "invite"
   | null;
 const REACTIONS:Record<string,string>={hello:"👋", "well-played":"👏",thanks:"🙏",fox:"🦊",owl:"🦉",tortoise:"🐢"};
-const BUILD = "Quiet Knight 1.6.11 · Sculptor";
+const BUILD = "Quiet Knight 1.6.12 · Sculptor";
 function roleColor(role: Role | null): Color | null {
   return role === "white" ? "w" : role === "black" ? "b" : null;
 }
@@ -151,7 +156,8 @@ export default function GameApp() {
   const [diagnostics, setDiagnostics] = useState("");
   const [diagnosing, setDiagnosing] = useState(false);
   const offlineStatus = useOfflineFiles();
-  const [screen, setScreen] = useState<"home" | "game" | "study">("home");
+  const [screen, setScreen] = useState<"home" | "game" | "study" | "learn">("home");
+  const [beginnerPreset,setBeginnerPreset]=useState<BeginnerPreset>("rules");
   const [mode, setMode] = useState<"local" | "online">("local");
   const [room, setRoom] = useState<RoomState | null>(null);
   const [role, setRole] = useState<Role | null>(null);
@@ -187,6 +193,7 @@ export default function GameApp() {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [motion, setMotion] = useState<Motion>(null);
+  const [personalityCue, setPersonalityCue] = useState<'move'|'capture'|null>(null);
   const [entrance, setEntrance] = useState(0);
   useEffect(() => {if (!entrance) return; const timer = window.setTimeout(() => setEntrance(0),1100);return () => window.clearTimeout(timer);}, [entrance]);
   const roomCodeRef = useRef<string | null>(null);
@@ -390,6 +397,7 @@ export default function GameApp() {
     if (previous && screen === "game" && count === 0 && ((room && previous.roomCode === room.code && previous.key !== gameKey) || (!room && !previous.roomCode && previous.count > 0))) setEntrance(Date.now());
     if (previous?.key !== gameKey || count !== previous.count + 1 || !last) {
       setMotion(null);
+      setPersonalityCue(null);
       return;
     }
     setMotion(old => describeBoardMotion(previous.position, position, {
@@ -407,14 +415,15 @@ export default function GameApp() {
         playHaptic("turn", preferences.current.haptics);
       }
     }
+    // This path only runs for a single new half-move in the same table.
+    // Room restores and non-live snapshots never make a remote move sound.
     const actor=previous.position[last.from];
-    if (preferences.current.sound && (check || !preferences.current.playful || !actor || !pieceSoundEnabled(preferences.current.fun,actor.type)))
-      void chessAudio.play(
-        Boolean(history?.[count - 1]?.captured),
-        Boolean(check),
-        false,
-        history?.[count - 1]?.color === me,
-      );
+    const capture=Boolean(moved?.captured);
+    const fresh=screen==="game"&&(!room||Boolean(me&&moved&&(moved.color===me||connection==="Live")));
+    const cue=fresh&&preferences.current.sound?soundCue(prefs.soundCues,capture,Boolean(check)):null;
+    const personality=cue&&cue!=="check"&&preferences.current.playful&&actor&&pieceSoundEnabled(preferences.current.fun,actor.type)?cue:null;
+    setPersonalityCue(personality);
+    if(cue&&!personality)void chessAudio.play(capture,false,false,moved?.color===me,cue);
   }, [gameKey, sans.length]);
   useEffect(() => {
     if (knight.player && room?.score_event?.id) void knight.refresh();
@@ -734,7 +743,7 @@ export default function GameApp() {
         },
       ]);
     } catch {
-      setMessage("That move is not legal.");
+      setMessage(whyIllegal(game,from as Square,to as Square)||"That move is not legal.");
     }
   }
   function onSquare(square: string) {
@@ -750,7 +759,7 @@ export default function GameApp() {
       .moves({ square: selected as Square, verbose: true })
       .filter((m) => m.to === square);
     if (!legal.length) {
-      setSelected(null);
+      setMessage(whyIllegal(game,selected as Square,square as Square)||"That move is not legal.");
       return;
     }
     if (legal.some((m) => m.promotion)) {
@@ -1048,7 +1057,7 @@ export default function GameApp() {
         />
       </label>
       <label className="preference-row">
-        <span>Move sounds</span>
+        <span>Game sounds</span>
         <input
           type="checkbox"
           checked={sound}
@@ -1058,6 +1067,7 @@ export default function GameApp() {
           }}
         />
       </label>
+      <SoundCueSettings value={prefs.soundCues} onChange={soundCues=>updatePrefs({soundCues})}/>
       <div className="audio-controls">
         <label htmlFor="qk-volume">
           Sound volume <strong>{volume}%</strong>
@@ -1072,7 +1082,7 @@ export default function GameApp() {
           value={volume}
           onChange={(e) => setVolume(Number(e.target.value))}
         />
-        <button type="button" className="secondary" onClick={enableSound}>
+        <button type="button" className="secondary" disabled={!sound || prefs.quiet} onClick={()=>void chessAudio.test()}>
           Test sound
         </button>
         <p role="status">{chessAudio.status}</p>
@@ -1180,6 +1190,7 @@ export default function GameApp() {
   return (
     <>
       {archiveError&&screen==="game"?<p role="alert" className="server-compatibility">{archiveError}</p>:null}
+      {screen === "learn" ? <BeginnerPractice key={beginnerPreset} preset={beginnerPreset} onBack={()=>setScreen("home")}/> : null}
       {screen === "study" ? <StudyRoom key={accountId} owner={accountId} prefs={prefs} haptics={haptics} sound={sound} volume={volume} seed={studySeed} onBack={()=>setScreen(room?"game":"home")}/> : null}
 
       {screen === "home" && localMoves.length > 0 ? (
@@ -1209,7 +1220,7 @@ export default function GameApp() {
       {screen === "home" ? (
         <HomeSurface
           mascotEnabled={prefs.fun.easter && prefs.playful && prefs.animate && !prefs.quiet} sound={sound && !prefs.quiet} volume={volume} soundTheme={prefs.soundTheme}
-          extras={<section className="studio-entry"><button className="secondary" onClick={()=>{setTableControls(false);setModal("archive");}}>Move archive & export</button>{archiveError?<p role="alert">{archiveError}</p>:null}<h2>Continue the position</h2><button className="secondary" onClick={()=>openStudy(localMoves.length?{sans:localMoves.map(m=>m.san||"")}:undefined)}>Continue the position · analyse</button><button className="secondary" onClick={()=>openStudy({mode:"pass"})}>Pass and play · offline</button><button className="secondary" onClick={()=>openStudy()}>Study, puzzles & Chess960</button><p role="status" className="server-compatibility">{compatibility.message}</p><details className="friend-setup"><summary>Friend options & invite link</summary><label>Friend-game side<select aria-label="Friend-game side" value={friendSide} onChange={e=>setFriendSide(e.target.value)}><option value="white">White</option><option value="black">Black</option></select></label><label>Friend-game style<select aria-label="Friend-game style" value={friendKind} onChange={e=>setFriendKind(e.target.value)}><option value="live">Live · untimed</option><option value="correspondence">Correspondence · no deadlines</option></select></label><label>Paste invite link<input aria-label="Paste invite link" value={inviteInput} maxLength={1000} onChange={e=>setInviteInput(e.target.value)}/></label><button className="secondary" onClick={()=>{const code=parseInvitation(inviteInput);if(code)void joinRoom(code);else setMessage("Paste a valid room link or six-character code.");}}>Open invitation</button></details></section>}
+          extras={<section className="studio-entry"><BeginnerEntry onPractice={preset=>{setBeginnerPreset(preset);setScreen("learn");}} onFullGame={()=>startComputer("w")}/><button className="secondary" onClick={()=>{setTableControls(false);setModal("archive");}}>Move archive & export</button>{archiveError?<p role="alert">{archiveError}</p>:null}<h2>Continue the position</h2><button className="secondary" onClick={()=>openStudy(localMoves.length?{sans:localMoves.map(m=>m.san||"")}:undefined)}>Continue the position · analyse</button><button className="secondary" onClick={()=>openStudy({mode:"pass"})}>Pass and play · offline</button><button className="secondary" onClick={()=>openStudy()}>Study, puzzles & Chess960</button><p role="status" className="server-compatibility">{compatibility.message}</p><details className="friend-setup"><summary>Friend options & invite link</summary><label>Friend-game side<select aria-label="Friend-game side" value={friendSide} onChange={e=>setFriendSide(e.target.value)}><option value="white">White</option><option value="black">Black</option></select></label><label>Friend-game style<select aria-label="Friend-game style" value={friendKind} onChange={e=>setFriendKind(e.target.value)}><option value="live">Live · untimed</option><option value="correspondence">Correspondence · no deadlines</option></select></label><label>Paste invite link<input aria-label="Paste invite link" value={inviteInput} maxLength={1000} onChange={e=>setInviteInput(e.target.value)}/></label><button className="secondary" onClick={()=>{const code=parseInvitation(inviteInput);if(code)void joinRoom(code);else setMessage("Paste a valid room link or six-character code.");}}>Open invitation</button></details></section>}
           identity={
             <>
               <button
@@ -1369,12 +1380,12 @@ export default function GameApp() {
             motion:prefs.animate?motion:null,
             motionSequence:motion?.serial,
             playful:prefs.playful && prefs.animate && !prefs.quiet && !prefs.battery,
-            fun:prefs.fun, weather:prefs.battery?'off':prefs.weather, soundEnabled:sound, soundVolume:volume, draw:room?.status === "draw", entrance,
+            fun:prefs.fun, weather:prefs.battery?'off':prefs.weather, soundEnabled:!!(sound&&personalityCue&&prefs.soundCues[personalityCue]), soundMaster:sound&&!prefs.quiet, soundVolume:volume, draw:room?.status === "draw", entrance,
             winner:ended ? room ? room.winner : game.isCheckmate() ? turn === 'w' ? 'b' : 'w' : null : null,
             locked:locked || Boolean(pendingMove),
             onSquare, drag:prefs.drag,
             dragTargets:from=>locked || game.get(from as Square)?.color!==me ? [] : game.moves({square:from as Square,verbose:true}).map(m=>m.to),
-            onMove:(from,to)=>{if(locked||game.get(from as Square)?.color!==me)return;const moves=game.moves({square:from as Square,verbose:true}).filter(m=>m.to===to);if(!moves.length)return;if(moves.some(m=>m.promotion))setPromotion({from,to});else proposeMove(from,to);},
+            onMove:(from,to)=>{if(locked||game.get(from as Square)?.color!==me)return;const moves=game.moves({square:from as Square,verbose:true}).filter(m=>m.to===to);if(!moves.length){setMessage(whyIllegal(game,from as Square,to as Square)||"That move is not legal.");return;}if(moves.some(m=>m.promotion))setPromotion({from,to});else proposeMove(from,to);},
           }}
           online={mode === "online"}
           code={room?.code}

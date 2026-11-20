@@ -8,6 +8,12 @@ const heads:Record<Kind,string>={
   q:'M22 25l11 40h34l11-40-17 13-11-20-11 20ZM21 19h2M49 12h2M77 19h2',
   k:'M50 10v22M40 20h20M32 38q18-13 36 0l-5 27H37ZM35 69h30',
 };
+export function ContrastGlyph({color,kind}:{color:Color;kind:Kind}){
+ const fill=color==='w'?'#fffdf3':'#111b28',stroke=color==='w'?'#111b28':'#fffdf3';
+ return <g className="qk-piece-silhouette" fill={fill} stroke={stroke} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+  <path d={heads[kind]}/><path d="M35 70h30l5 9H30ZM25 81h50v10H25Z"/>
+ </g>;
+}
 export function ClassicPiece({color,kind,label}:{color:Color;kind:Kind;label?:string}){
   return <svg className="chess-art classic-piece" viewBox="0 0 100 100" role={label?'img':undefined} aria-label={label} aria-hidden={!label} focusable="false"><g fill={color==='w'?'#fff9e9':'#162329'} stroke={color==='w'?'#18242b':'#f7edcd'} strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round"><path d={heads[kind]}/><path d="M35 70h30l5 9H30ZM25 81h50v10H25Z"/></g></svg>;
 }

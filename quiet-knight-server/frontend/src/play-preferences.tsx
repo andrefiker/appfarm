@@ -1,21 +1,25 @@
 import {useEffect,useState} from 'react';
+import {readPieceStyle,readSoundCues} from './accessibility-preferences';
+import type {PieceStyle,SoundCues} from './accessibility-preferences';
+import {PieceStyleSetting} from './accessibility-settings';
 import {funDefaults,readFunOptions} from './fun-options';
 import type {FunOptions} from './fun-options';
 import {readSoundTheme} from './sound-themes';
 import type {SoundTheme} from './sound-themes';
 import type {Weather} from './extra-fun';
 import type {Style} from './offline-engine';
-export type PlayPreferences={schema:1;hintsRevision:number;battery:boolean;turnVibration:boolean;rematchColors:'same'|'swap';textSize:'standard'|'large';coordinates:boolean;fun:FunOptions;weather:Weather;soundTheme:SoundTheme;quiet:boolean;reactions:boolean;left:boolean;drag:boolean;confirm:boolean;animate:boolean;playful:boolean;hints:boolean;contrast:boolean;style:Style;think:number;adaptive:boolean;nickname:string};
-const defaults:PlayPreferences={schema:1,hintsRevision:2,battery:false,turnVibration:false,rematchColors:'swap',textSize:'standard',coordinates:true,fun:funDefaults,weather:'off',soundTheme:'classic',quiet:false,reactions:false,left:false,drag:true,confirm:false,animate:true,playful:true,hints:true,contrast:false,style:'balanced',think:250,adaptive:false,nickname:''};
+export type PlayPreferences={schema:1;hintsRevision:number;battery:boolean;turnVibration:boolean;rematchColors:'same'|'swap';textSize:'standard'|'large';coordinates:boolean;fun:FunOptions;weather:Weather;soundTheme:SoundTheme;soundCues:SoundCues;pieceStyle:PieceStyle;quiet:boolean;reactions:boolean;left:boolean;drag:boolean;confirm:boolean;animate:boolean;playful:boolean;hints:boolean;contrast:boolean;style:Style;think:number;adaptive:boolean;nickname:string};
+const defaults:PlayPreferences={schema:1,hintsRevision:2,battery:false,turnVibration:false,rematchColors:'swap',textSize:'standard',coordinates:true,fun:funDefaults,weather:'off',soundTheme:'classic',soundCues:readSoundCues(undefined),pieceStyle:'sculptor',quiet:false,reactions:false,left:false,drag:true,confirm:false,animate:true,playful:true,hints:true,contrast:false,style:'balanced',think:250,adaptive:false,nickname:''};
 export function usePlayPreferences(){
   const [prefs,setPrefs]=useState<PlayPreferences>(()=>{
     try{const p=JSON.parse(localStorage.getItem('qk-play-preferences-v1')||'null');if(!p||p.schema!==1)return defaults;
-      return {...defaults,...Object.fromEntries(Object.keys(defaults).filter(k=>typeof p[k]===typeof defaults[k as keyof PlayPreferences]).map(k=>[k,p[k]])),hintsRevision:2,hints:p.hintsRevision===2&&typeof p.hints==='boolean'?p.hints:true,rematchColors:p.rematchColors==='same'?'same':'swap',textSize:p.textSize==='large'?'large':'standard',fun:readFunOptions(p.fun),weather:['rain','dust','fireflies'].includes(p.weather)?p.weather:'off',soundTheme:readSoundTheme(p.soundTheme),think:Math.max(50,Math.min(1500,Number(p.think)||250)),style:['balanced','fox','tortoise','owl','beginner'].includes(p.style)?p.style:'balanced',nickname:String(p.nickname||'').replace(/[^\p{L}\p{N} ._-]/gu,'').slice(0,24)};
+      return {...defaults,...Object.fromEntries(Object.keys(defaults).filter(k=>typeof p[k]===typeof defaults[k as keyof PlayPreferences]).map(k=>[k,p[k]])),hintsRevision:2,hints:p.hintsRevision===2&&typeof p.hints==='boolean'?p.hints:true,rematchColors:p.rematchColors==='same'?'same':'swap',textSize:p.textSize==='large'?'large':'standard',fun:readFunOptions(p.fun),weather:['rain','dust','fireflies'].includes(p.weather)?p.weather:'off',soundTheme:readSoundTheme(p.soundTheme),soundCues:readSoundCues(p.soundCues),pieceStyle:readPieceStyle(p.pieceStyle),think:Math.max(50,Math.min(1500,Number(p.think)||250)),style:['balanced','fox','tortoise','owl','beginner'].includes(p.style)?p.style:'balanced',nickname:String(p.nickname||'').replace(/[^\p{L}\p{N} ._-]/gu,'').slice(0,24)};
     }catch{return defaults;}
   });
   useEffect(()=>{
     document.body.dataset.battery=String(prefs.battery);document.body.dataset.textSize=prefs.textSize;document.body.dataset.coordinates=String(prefs.coordinates);
     document.body.dataset.quiet=String(prefs.quiet);document.body.dataset.left=String(prefs.left);
+    document.body.dataset.pieceStyle=prefs.pieceStyle;
     document.body.dataset.motion=String(prefs.animate);document.body.dataset.contrast=String(prefs.contrast);
     try{localStorage.setItem('qk-play-preferences-v1',JSON.stringify(prefs));}catch{}
   },[prefs]);
@@ -24,6 +28,7 @@ export function usePlayPreferences(){
 export function PlaySettings({prefs,update}:{prefs:PlayPreferences;update:(p:Partial<PlayPreferences>)=>void}){
   return <section aria-label="Play preferences"><h3>Play your way</h3>
     {([['quiet','Quiet Mode'],['battery','Battery saver'],['reactions','Receive / send quiet reactions'],['left','Left-handed controls'],['drag','Drag to move (tap always works)'],['confirm','Confirm each move'],['animate','Move animations'],['playful','Playful piece effects'],['hints','Legal destination previews'],['contrast','High contrast'],['coordinates','Square coordinates'],['adaptive','Adaptive difficulty for local computer games']] as const).map(([key,label])=><label className="preference-row" key={key}><span>{label}</span><input type="checkbox" checked={prefs[key]} onChange={e=>update({[key]:e.target.checked})}/></label>)}
+    <PieceStyleSetting value={prefs.pieceStyle} onChange={pieceStyle=>update({pieceStyle})}/>
     <label className="preference-row">Text size<select aria-label="Text size" value={prefs.textSize} onChange={e=>update({textSize:e.target.value as PlayPreferences['textSize']})}><option value="standard">Standard</option><option value="large">Large</option></select></label>
     <label className="preference-row">Computer rematch colors<select aria-label="Computer rematch colors" value={prefs.rematchColors} onChange={e=>update({rematchColors:e.target.value as 'same'|'swap'})}><option value="swap">Swap sides</option><option value="same">Keep sides</option></select></label>
     <p className="settings-note">Battery saver pauses decorative effects and limits computer searches to 100 ms. Your separate animation and thinking preferences are restored when it is switched off.</p>
@@ -33,9 +38,9 @@ export function PlaySettings({prefs,update}:{prefs:PlayPreferences;update:(p:Par
       {([['survivor','Last-pawn headband'],['dodge','King escape dodge'],['trails','Long-move trails'],['hoofprints','Knight hoofprints'],['graduation','Pawn graduation details'],['indignation','Royal indignation'],['photo','Victory photograph'],['movie','Whole-game movie'],['audience','Captured-piece audience'],['easter','Playful home knight']] as const).map(([key,label])=><label className="preference-row" key={key}><span>{label}</span><input type="checkbox" checked={prefs.fun[key]} onChange={e=>update({fun:{...prefs.fun,[key]:e.target.checked}})}/></label>)}
       <label className="preference-row">Board weather<select aria-label="Board weather" value={prefs.weather} onChange={e=>update({weather:e.target.value as Weather})}><option value="off">Off</option><option value="rain">Rain</option><option value="dust">Drifting dust</option><option value="fireflies">Fireflies</option></select></label>
       <label className="preference-row">Move sound theme<select aria-label="Move sound theme" value={prefs.soundTheme} onChange={e=>update({soundTheme:e.target.value as SoundTheme})}><option value="classic">Classic</option><option value="wood">Wooden clicks</option><option value="marble">Marble clacks</option><option value="orchestra">Tiny orchestra</option><option value="cartoon">Cartoon</option></select></label>
-      <p className="settings-note">Weather stays at the edges. Badges are cosmetic. Movies are read-only. Sound themes require move sounds; piece personality sounds keep their own voices.</p>
+      <p className="settings-note">Weather stays at the edges. Badges are cosmetic. Movies are read-only. Sound themes apply to enabled move and capture cues; personality sounds keep their own voices.</p>
       </details>
-      <p className="settings-note">Move effects last one second. Replay is a separate view and never changes the match. Personality sounds also require move sounds to be enabled.</p>
+      <p className="settings-note">Move effects last one second. Replay is a separate view and never changes the match. Personality sounds only play when the matching move or capture cue is enabled.</p>
       <details><summary>Choose piece sounds</summary>{([['soundP','Pawn thud'],['soundN','Knight hoofbeats'],['soundB','Bishop sweep'],['soundR','Rook rumble'],['soundQ','Queen chime'],['soundK','King clang']] as const).map(([key,label])=><label className="preference-row" key={key}><span>{label}</span><input type="checkbox" checked={prefs.fun[key]} onChange={e=>update({fun:{...prefs.fun,[key]:e.target.checked}})}/></label>)}</details>
     </details>
     <p className="settings-note">Playful effects add brief captures, leaps and celebrations. Move animations must be on; Quiet Mode and reduced motion suppress these effects.</p>

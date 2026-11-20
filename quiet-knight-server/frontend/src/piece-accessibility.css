@@ -1,0 +1,7 @@
+.qk-piece-silhouette { display:none; }
+body[data-piece-style="contrast"] .sculptor-piece > svg { display:none; }
+body[data-piece-style="contrast"] .qk-piece-silhouette { display:inline; }
+body[data-piece-style="contrast"] .sculptor-piece.art-w { filter:drop-shadow(0 1px 1px #101a26aa); }
+body[data-piece-style="contrast"] .sculptor-piece.art-b { filter:drop-shadow(0 1px 1px #101a26aa); }
+.qk .sound-cue-options { margin:8px 0 0;padding:6px 10px 8px;border:1px solid var(--line);border-radius:6px;min-inline-size:0; }
+.qk .sound-cue-options legend { padding-inline:4px;color:var(--text);font-size:12px; }

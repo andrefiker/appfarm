@@ -245,7 +245,7 @@ test("Prepared offline shell, closed-page relaunch, saved computer response and 
       .getByRole("button", { name: "Open settings", exact: true })
       .click();
     await a.page
-      .getByRole("checkbox", { name: "Move sounds", exact: true })
+      .getByRole("checkbox", { name: "Game sounds", exact: true })
       .uncheck();
     await a.page
       .getByRole("slider", { name: "Sound volume", exact: true })
@@ -276,7 +276,7 @@ test("Prepared offline shell, closed-page relaunch, saved computer response and 
       .getByRole("button", { name: "Open settings", exact: true })
       .click();
     await expect(
-      a.page.getByRole("checkbox", { name: "Move sounds", exact: true }),
+      a.page.getByRole("checkbox", { name: "Game sounds", exact: true }),
     ).not.toBeChecked();
     await expect(
       a.page.getByRole("slider", { name: "Sound volume", exact: true }),

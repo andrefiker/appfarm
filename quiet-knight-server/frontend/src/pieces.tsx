@@ -1,4 +1,6 @@
 import sculptorAtlas from './assets/sculptor-atlas.png';
+import {ContrastGlyph} from './classic-pieces';
+import './piece-accessibility.css';
 
 export type Color = 'w' | 'b';
 export type Kind = 'p' | 'n' | 'b' | 'r' | 'q' | 'k';
@@ -27,5 +29,6 @@ export function Piece({color,kind,label,fitToSquare=false}:{color:Color;kind:Kin
    <svg x={(100-width)/2} y={y} width={width} height={height} viewBox={crop.join(' ')} preserveAspectRatio="none" overflow="hidden">
     <image href={sculptorAtlas} width={atlasSize.width} height={atlasSize.height}/>
    </svg>
+   <ContrastGlyph color={color} kind={kind}/>
  </svg>;
 }

@@ -47,6 +47,7 @@ export type BoardProps = {
   draw?: boolean;
   entrance?: number;
   soundEnabled?: boolean;
+  soundMaster?: boolean;
   soundVolume?: number;
   replayMode?: boolean;
   replayInOptions?: boolean;
@@ -116,13 +117,13 @@ export function ChessBoard({
   motion,
   locked,
   onSquare, onMove, drag=true, dragTargets, playful=false, winner=null, motionSequence=motion?.serial,
-  fun=funDefaults, draw=false, entrance=0, soundEnabled=false, soundVolume=80, replayMode=false, weather='off', replayInOptions=false, replayHost=null,
+  fun=funDefaults, draw=false, entrance=0, soundEnabled=false, soundMaster=soundEnabled, soundVolume=80, replayMode=false, weather='off', replayInOptions=false, replayHost=null,
 }: BoardProps) {
   const squares = boardSquares(orientation);
   const visualAllowed=useVisualPermission(playful);
   const pawnCounts={w:Object.values(position).filter(p=>p.color==='w'&&p.type==='p').length,b:Object.values(position).filter(p=>p.color==='b'&&p.type==='p').length};
   const {events, victory, handshake, arriving, allowed} = usePieceEffects(motion, visualAllowed, orientation, winner, motionSequence, draw, entrance);
-  usePersonalityAudio(motion,allowed && soundEnabled && !replayMode,soundVolume,fun,motionSequence);
+  usePersonalityAudio(motion,allowed && soundEnabled && !replayMode,soundVolume,fun,motionSequence,soundMaster);
   const [captureReplay,setCaptureReplay]=React.useState<{position:Position;motion:BoardMotion;check:string|null}|null>(null);
   const [replaying,setReplaying]=React.useState(false),[replayNumber,setReplayNumber]=React.useState(0);
   const replayDialog=React.useRef<HTMLDialogElement>(null), seenReplay=React.useRef(motionSequence);
@@ -799,7 +800,7 @@ export function GameSurface(p: GameSurfaceProps) {
             ) : null}
             <section className="sheet-section" aria-label="Game actions"><h3>Game actions</h3><BoardLock locked={boardLocked} onChange={locked=>{setBoardLocked(locked);if(locked){p.onReviewStart();p.onCloseControls?.();}}}/>
               {!p.ended && !p.waiting ? contextual : null}{p.drawControls}
-              <button className="secondary" onClick={p.onSound}>{p.sound?'Mute move sounds':'Enable move sounds'}</button>
+              <button className="secondary" onClick={p.onSound}>{p.sound?'Mute all game sounds':'Enable game sounds'}</button>
             </section>
             <FirstGameTips/>
             <div ref={setReplayHost}/>

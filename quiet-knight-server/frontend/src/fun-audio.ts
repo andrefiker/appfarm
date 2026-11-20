@@ -16,27 +16,29 @@ export function pieceSoundEnabled(fun: FunOptions, kind: Kind) {
   const keys = {p:'soundP',n:'soundN',b:'soundB',r:'soundR',q:'soundQ',k:'soundK'} as const;
   return fun.sounds && fun[keys[kind]];
 }
-export function usePersonalityAudio(motion: BoardMotion | null, enabled: boolean, volume: number, fun: FunOptions, observedSerial=motion?.serial) {
+export function usePersonalityAudio(motion: BoardMotion | null, enabled: boolean, volume: number, fun: FunOptions, observedSerial=motion?.serial, master=enabled) {
   const context = useRef<AudioContext | null>(null), active = useRef(new Set<OscillatorNode>());
-  const current = useRef({enabled, volume, fun}); current.current = {enabled, volume, fun};
-  const seen = useRef(motion?.serial);
+  const current = useRef({master, volume, fun}); current.current = {master, volume, fun};
+  const seen = useRef(motion?.serial), foreground=useRef(true);
   const stop = () => {for (const node of active.current) {try {node.stop();} catch {}} active.current.clear();};
   useEffect(() => {
     const unlock = () => {
-      if (!current.current.enabled || !current.current.fun.sounds) return;
+      if (!foreground.current || document.hidden || document.body.dataset.quiet==='true' || !current.current.master || !current.current.fun.sounds) return;
       try {
         context.current ||= new AudioContext();
         void context.current.resume().catch(() => undefined);
       } catch { /* Unsupported or blocked audio leaves gameplay intact. */ }
     };
-    const hide = () => {if (document.hidden) stop();};
+    const background=()=>{foreground.current=false;stop();void context.current?.suspend().catch(()=>undefined);};
+    const resume=()=>{foreground.current=true;};
+    const hide = () => {if (document.hidden) background();else resume();};
     document.addEventListener('pointerdown',unlock,{passive:true});
     document.addEventListener('keydown',unlock);
     document.addEventListener('visibilitychange',hide);
-    window.addEventListener('qk-background',stop);
+    window.addEventListener('qk-background',background);window.addEventListener('qk-resume',resume);
     return () => {
       document.removeEventListener('pointerdown',unlock);document.removeEventListener('keydown',unlock);
-      document.removeEventListener('visibilitychange',hide);window.removeEventListener('qk-background',stop);
+      document.removeEventListener('visibilitychange',hide);window.removeEventListener('qk-background',background);window.removeEventListener('qk-resume',resume);
       stop();void context.current?.close().catch(() => undefined);context.current=null;
     };
   }, []);
@@ -45,7 +47,7 @@ export function usePersonalityAudio(motion: BoardMotion | null, enabled: boolean
     if (!enabled || !fun.sounds) {stop();return;}
     const ctx=context.current, kind=motion?.actor?.type;
     if (kind && !pieceSoundEnabled(fun,kind)) {stop();return;}
-    if (!fresh || !kind || document.hidden || ctx?.state!=='running') return;
+    if (!fresh || !kind || !foreground.current || document.hidden || ctx?.state!=='running') return;
     const voice=voices[kind], level=Math.max(0,Math.min(1,volume/100))*.11;
     for (const beat of voice.beats) {
       const at=ctx.currentTime+(motion?.captured?.square ? .30 : .04)+beat;

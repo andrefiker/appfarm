@@ -1,0 +1,43 @@
+import {test,expect} from '@playwright/test';
+const url=process.env.QK_FRONTEND_URL||'http://127.0.0.1:3000/';
+test.skip(!/^http:\/\/(127\.0\.0\.1|localhost):/.test(url),'isolated candidate only');
+const at=(page,s)=>page.locator('.board [data-square="'+s+'"]');
+const btn=(page,name)=>page.getByRole('button',{name,exact:true});
+test('offline first-game guide completes check, castling and promotion by playing legal moves',async({page})=>{
+ await page.goto(url);await expect(btn(page,'Learn the rules')).toBeVisible();await page.context().setOffline(true);await btn(page,'Learn the rules').click();
+ const pageArea=page.getByRole('main',{name:'First-game guide'});
+ await expect(pageArea).toBeVisible();
+ await at(page,'e2').click();await at(page,'d3').click();
+ await expect(pageArea.getByRole('status')).toContainText('rook moves along');
+ await at(page,'e7').click();await expect(pageArea.getByRole('status')).toContainText('That is check');
+ await btn(page,'Next exercise').click();await at(page,'e1').click();await at(page,'g1').click();
+ await expect(pageArea.getByRole('status')).toContainText('You castled');
+ await expect(at(page,'f1')).toHaveAttribute('aria-label',/rook/i);
+ await btn(page,'Next exercise').click();await at(page,'e7').click();await at(page,'e8').click();
+ await btn(page,'Promote to queen').click();
+ await page.getByRole('button',{name:/confirm promotion/i}).click();
+ await expect(pageArea.getByRole('status')).toContainText('You promoted the pawn');
+ await btn(page,'Finish practice').click();await expect(pageArea).toContainText('You know the essentials');
+ await btn(page,'Back to table').click();await expect(btn(page,'Play a full game')).toBeVisible();
+});
+test('threat puzzle requires an attempt and does not touch the saved game',async({page})=>{
+ await page.goto(url);await btn(page,'Practice tactics').click();
+ const before=await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)));
+ await expect(btn(page,'Reveal answer')).toBeDisabled();
+ await at(page,'g2').click();await expect(page.getByRole('status')).toContainText('Not that piece');
+ await expect(page.getByRole('status')).not.toContainText('g7');
+ await at(page,'c3').click();await expect(page.getByRole('status')).toContainText('bishop on g7');
+ await btn(page,'Next exercise').click();await expect(page.getByText('Position 2 of 3')).toBeVisible();
+ await at(page,'g3').click();await btn(page,'Reveal answer').click();
+ await expect(page.getByRole('status')).toContainText('knight on c6');
+ await btn(page,'Back to table').click();
+ const after=await page.evaluate(()=>Object.fromEntries(Object.entries(localStorage)));
+ expect(after).toEqual(before);
+});
+test('full-game preset enters a normal computer game and explains a rejected move',async({page})=>{
+ await page.goto(url);await btn(page,'Play a full game').click();
+ await at(page,'e2').click();await at(page,'f3').click();
+ await expect(page.getByText(/Pawns move diagonally only to capture/)).toBeVisible();
+ await expect(at(page,'e2')).toHaveAttribute('aria-label',/pawn/i);
+ await at(page,'e4').click();await expect(at(page,'e4')).toHaveAttribute('aria-label',/pawn/i);
+});

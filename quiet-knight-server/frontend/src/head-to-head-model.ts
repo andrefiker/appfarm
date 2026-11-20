@@ -39,3 +39,16 @@ export function readScoreboardRival(viewer: string | undefined): Account | null 
 export function rememberScoreboardRival(viewer: string, rival: Account): void {
   try {localStorage.setItem(pinKey(viewer), JSON.stringify({id: rival.id, handle: rival.handle}));} catch {}
 }
+
+export function scoreboardRoomStatus(room: Seats | null | undefined, color: 'w' | 'b' | null): string {
+  if (!room) return 'Connecting to the table.';
+  if (!color) return 'Only players can see their lifetime score.';
+  const mine = color === 'w' ? room.white_player : room.black_player;
+  const other = color === 'w' ? room.black_player : room.white_player;
+  const joined = color === 'w' ? room.black_joined : room.white_joined;
+  if (!mine?.id || !playerId.test(mine.id)) return 'Sign in, then play in a new room.';
+  if (!joined) return 'Waiting for opponent to join.';
+  if (!other?.id || !playerId.test(other.id)) return 'Opponent must sign in, then join a new room.';
+  if (mine.id === other.id) return 'Use two different Knight IDs.';
+  return 'Lifetime score unavailable.';
+}

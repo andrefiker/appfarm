@@ -5,7 +5,7 @@ const url = process.env.QK_FRONTEND_URL || 'http://127.0.0.1:3000/';
 test.skip(!/^http:\/\/(127\.0\.0\.1|localhost):/.test(url), 'isolated candidate only');
 const opening = ['e4', 'd5', 'exd5', 'Qxd5'];
 
-async function table(page, {role = 'white', moves = opening, accounts = false} = {}) {
+async function table(page, {role = 'white', moves = opening, accounts = false, guestOpponent = false} = {}) {
   let version = 1, number = 1, line = [...moves], release=null, hold=false, settled, code="REV001", swapped=false;
   const sockets = [], writes = [], errors = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -13,7 +13,7 @@ async function table(page, {role = 'white', moves = opening, accounts = false} =
     const chess = new Chess(); line.forEach(san => chess.move(san));
     const last = chess.history({verbose:true}).at(-1);
     return {code, score_event:settled, fen:chess.fen(), turn:chess.turn(), status:chess.isCheckmate()?'checkmate':'active', winner:chess.isCheckmate()?(chess.turn()==='w'?'b':'w'):null,
-      version, game_number:number, series_score:{white:2,black:1,draws:1}, created_at:1, white_joined:true, black_joined:true,white_player:{handle:swapped?'Bob':'Alice',quiet_points:0,...(accounts?{id:swapped?'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb':'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'}:{})},black_player:{handle:swapped?'Alice':'Bob',quiet_points:0,...(accounts?{id:swapped?'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa':'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'}:{})},
+      version, game_number:number, series_score:{white:2,black:1,draws:1}, created_at:1, white_joined:true, black_joined:true,white_player:{handle:swapped?'Bob':'Alice',quiet_points:0,...(accounts&&(!guestOpponent||role==='white')?{id:swapped?'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb':'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'}:{})},black_player:{handle:swapped?'Alice':'Bob',quiet_points:0,...(accounts&&(!guestOpponent||role==='black')?{id:swapped?'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa':'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'}:{})},
       moves:[...line], last_move:last ? {from:last.from, to:last.to, san:last.san} : null};
   };
   await page.route('**/capabilities', route => route.fulfill({json:{protocol:2, new_games:'untimed', guest_play:true, variants:['standard']}}));
@@ -68,7 +68,7 @@ async function fits(page){
  const boxes=await page.locator('.board-stage>.board-frame .square').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return [r.width,r.height]}));expect(boxes).toHaveLength(64);for(const[w,h]of boxes){expect(Math.abs(w-h)).toBeLessThan(.6);expect(w).toBeGreaterThan(18);}
 }
 for(const role of ['white','black'])test(`portrait table fits without scrolling for ${role}`,async({page})=>{
- const f=await table(page,{role});await expect(page.getByLabel('Lifetime scoreboard')).toHaveCount(0);
+ const f=await table(page,{role});await expect(page.getByLabel('Lifetime scoreboard')).toContainText('Sign in, then play in a new room.');
  for(const [width,height]of [[320,568],[360,640],[393,780],[390,844],[430,932]]){await page.setViewportSize({width,height});await fits(page);}
  await page.setViewportSize({width:393,height:780});await mkdir('output/playwright',{recursive:true});await page.screenshot({path:`output/playwright/phone-fit-${role}.png`});
  await options(page);await expect(page.getByRole('complementary',{name:'First game tips'})).toBeVisible();await btn(page,'Close table controls').click();
@@ -116,6 +116,25 @@ test('lifetime scoreboard follows signed-in players between rooms and updates on
  await expect.poll(()=>requests.length).toBe(3);
  expect(requests[2]).toEqual({path,auth:"Bearer "+"x".repeat(43)});
  await page.setViewportSize({width:393,height:780});await fits(page);await mkdir('output/playwright',{recursive:true});await page.screenshot({path:'output/playwright/lifetime-scoreboard.png'});expect(f.errors).toEqual([]);
+});
+
+
+test('guest opponent has a visible scoreboard explanation and the top link copies the correct room',async({page})=>{
+ await page.addInitScript(()=>Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>{window.__copiedGameLink=text;}}}));
+ const f=await table(page,{accounts:true,guestOpponent:true,role:'white'});
+ const score=page.getByLabel('Lifetime scoreboard');
+ await expect(score.getByText('Lifetime score',{exact:true})).toBeVisible();
+ await expect(score).toContainText('Opponent must sign in');
+ await expect(score).not.toContainText('Draws 0');
+ await page.setViewportSize({width:320,height:568});
+ const copy=btn(page,'Copy game link');
+ await expect(copy).toBeVisible(); await expect(copy).toHaveCSS('width','44px');
+ const box=await copy.boundingBox();
+ expect(box.x).toBeGreaterThanOrEqual(0); expect(box.x+box.width).toBeLessThanOrEqual(320);
+ await copy.click();
+ await expect.poll(()=>page.evaluate(()=>window.__copiedGameLink)).toBe(new URL('?room=REV001',url).href);
+ await expect(page.getByText('Invite copied. Send it to your friend.')).toBeVisible();
+ await fits(page);expect(f.errors).toEqual([]);
 });
 
 test('discrete legal move dots return for older preferences and can still be disabled later',async({page})=>{

@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {rivalForRoom, headToHeadPath, parseHeadToHead} from '../src/head-to-head-model.ts';
+import {rivalForRoom, headToHeadPath, parseHeadToHead, scoreboardRoomStatus} from '../src/head-to-head-model.ts';
 
 const alice={id:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',handle:'Alice'};
 const bob={id:'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',handle:'Bob'};
@@ -26,4 +26,12 @@ test('only a valid response can produce a count, including true zero',()=>{
   assert.deepEqual(parseHeadToHead({wins:0,draws:0,losses:0}),{wins:0,draws:0,losses:0});
   assert.deepEqual(parseHeadToHead({wins:5,draws:2,losses:7}),{wins:5,draws:2,losses:7});
   for(const v of [null,{}, {wins:1,draws:0}, {wins:1,draws:-1,losses:0},{wins:1,draws:0,losses:'7'}]) assert.equal(parseHeadToHead(v),null);
+});
+test('online scoreboard always explains why no account pair is available',()=>{
+  assert.match(scoreboardRoomStatus(null,null),/Connecting/);
+  assert.match(scoreboardRoomStatus(room(alice,bob),null),/Only players/);
+  assert.match(scoreboardRoomStatus(room(null,bob),'w'),/Sign in.*new room/);
+  assert.match(scoreboardRoomStatus(room(alice,null,true),'w'),/Waiting for opponent/);
+  assert.match(scoreboardRoomStatus(room(alice,null),'w'),/Opponent must sign in/);
+  assert.match(scoreboardRoomStatus(room(alice,alice),'w'),/different Knight IDs/);
 });

@@ -610,7 +610,7 @@ export function GameSurface(p: GameSurfaceProps) {
     <main
       className={`qk game-shell mobile-table${p.zen ? " zen-table" : ""}${p.idle ? " quiet-idle" : ""}`}
     >
-      <header className="game-header">
+      <header className={p.online && p.code ? "game-header has-copy-invite" : "game-header"}>
         <button
           type="button"
           className="icon-button"
@@ -636,6 +636,7 @@ export function GameSurface(p: GameSurfaceProps) {
             </button>
           ) : null}
         </div>
+        {p.online && p.code ? <button type="button" className="icon-button copy-game-link" aria-label="Copy game link" title="Copy game link" onClick={p.onCopy}><Icon name="copy" /></button> : null}
         <button
           type="button"
           className="icon-button"

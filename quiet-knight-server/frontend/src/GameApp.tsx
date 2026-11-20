@@ -19,8 +19,8 @@ import {
   useTablePreferences,
   useQuietIdle,
 } from "./table-atmosphere";
-import { HeadToHead } from "./head-to-head";
-import { readScoreboardRival, rivalForRoom } from "./head-to-head-model";
+import { HeadToHead, HeadToHeadStatus } from "./head-to-head";
+import { readScoreboardRival, rivalForRoom, scoreboardRoomStatus } from "./head-to-head-model";
 import { useKnightId, KnightIdPanel, AccountGate } from "./knight-id";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Chess } from "chess.js";
@@ -86,7 +86,7 @@ type Modal =
   | "invite"
   | null;
 const REACTIONS:Record<string,string>={hello:"👋", "well-played":"👏",thanks:"🙏",fox:"🦊",owl:"🦉",tortoise:"🐢"};
-const BUILD = "Quiet Knight 1.6.3 · Sculptor";
+const BUILD = "Quiet Knight 1.6.4 · Sculptor";
 function roleColor(role: Role | null): Color | null {
   return role === "white" ? "w" : role === "black" ? "b" : null;
 }
@@ -1228,7 +1228,7 @@ export default function GameApp() {
           gameId={record.id}
           onReviewStart={() => { setSelected(null); setPendingMove(null); setPromotion(null); }}
           clock={room||undefined}
-          lifetimeScore={room && viewerId && scoreboardRival ? <HeadToHead viewerId={viewerId} rival={scoreboardRival} roomCode={room.code} eventId={room.score_event?.id} settling={ended && !room.score_event} /> : null}
+          lifetimeScore={room && viewerId && scoreboardRival ? <HeadToHead viewerId={viewerId} rival={scoreboardRival} roomCode={room.code} eventId={room.score_event?.id} settling={ended && !room.score_event} /> : mode === "online" ? <HeadToHeadStatus message={scoreboardRoomStatus(room, me)} /> : null}
           drawControls={room && room.status === 'active' && room.black_joined && me ? <DrawControls me={me} proposal={room.proposal} busy={busy} connected={connection === 'Live'} paused={Boolean(room.clock_paused)} onAction={action => void consent(action, action === 'request' ? 'draw' : undefined)} /> : null}
           pauseControls={room && room.status === 'active' ? <ClockControls state={room} me={me} busy={busy || connection !== 'Live'} onAction={(action) => void changePause(action)} /> : null}
           viewerLost={viewerLost(

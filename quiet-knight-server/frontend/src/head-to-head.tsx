@@ -12,7 +12,13 @@ type Props = {
   settling: boolean;
 };
 
-type Snapshot = {path: string; status: 'loading' | 'ready' | 'failed'; totals: HeadToHeadTotals | null};
+type Snapshot = {path: string; status: 'loading' | 'ready' | 'failed' | 'denied'; totals: HeadToHeadTotals | null};
+
+export function HeadToHeadStatus({message}: {message: string}) {
+  return <div className="series-score lifetime-score lifetime-score-status" role="status" aria-label="Lifetime scoreboard" title="Completed games together across rooms and colors">
+    <strong>Lifetime score</strong><small>{message}</small>
+  </div>;
+}
 
 export function HeadToHead({viewerId, rival, roomCode, eventId, settling}: Props) {
   const path = headToHeadPath(viewerId, rival.id);
@@ -35,12 +41,13 @@ export function HeadToHead({viewerId, rival, roomCode, eventId, settling}: Props
     }).catch(error => {
       if (!alive) return;
       const denied = error?.status === 401 || error?.status === 403;
-      setSnapshot(previous => ({path, status: 'failed', totals: !denied && previous?.path === path ? previous.totals : null}));
+      setSnapshot(previous => ({path, status: denied ? 'denied' : 'failed', totals: !denied && previous?.path === path ? previous.totals : null}));
     });
     return () => {alive = false;};
   }, [path, roomCode, eventId, retry]);
   const current = snapshot?.path === path ? snapshot : null;
   const totals = current?.totals;
+  if (current?.status === 'denied') return <HeadToHeadStatus message='Sign in to view your lifetime score.' />;
   return <div className="series-score lifetime-score" role="status" aria-label="Lifetime scoreboard" title="Completed games together across rooms and colors">
     {totals ? <>
       <span>You {totals.wins}</span><span>Draws {totals.draws}</span><span>{rival.handle} {totals.losses}</span>

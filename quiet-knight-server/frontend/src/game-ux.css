@@ -141,3 +141,10 @@ body[data-battery=true] .qk *,body[data-battery=true] .qk *::before,body[data-ba
 
 /* A capture counter stays at the base of its own piece, without blocking taps. */
 .board .piece-capture-mark{position:absolute;z-index:12;left:50%;bottom:3%;transform:translateX(-50%);display:grid;place-items:center;min-width:clamp(15px,4vw,19px);height:clamp(15px,4vw,19px);padding:0 3px;border-radius:50%;background:#c71927;color:#fff;font:700 clamp(10px,2.7vw,12px)/1 system-ui;box-shadow:0 0 0 1.5px #fff,0 1px 2px #0009;pointer-events:none}
+
+/* Keep the room link action in the header without narrowing either touch target. */
+.mobile-table .game-header.has-copy-invite{grid-template-columns:44px minmax(0,1fr) 44px 44px}
+
+/* Keep the reason readable even when the two parts wrap on a narrow phone. */
+.mobile-table .table-below>.lifetime-score-status:not(.game-status):not(.main-game-actions){flex-wrap:wrap;gap:2px 8px;text-align:center}
+.mobile-table .table-below>.lifetime-score-status small{font-size:12px;white-space:normal;line-height:1.25}

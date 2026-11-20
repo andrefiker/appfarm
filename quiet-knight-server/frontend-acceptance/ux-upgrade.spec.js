@@ -50,7 +50,7 @@ async function table(page, {role = 'white', moves = opening} = {}) {
 }
 const btn=(p,name)=>p.getByRole('button',{name,exact:true});
 const sq=(p,s)=>p.locator(`.board-stage [data-square=${s}]`);
-const options=async p=>{await btn(p,'Table controls').click();};
+const options=async p=>{await btn(p,'Open table controls').click();};
 async function preferences(p){await options(p);await p.getByText('Preferences & diagnostics',{exact:true}).click();}
 
 test('compact strips, original pieces and large text fit equal squares in both orientations',async({page})=>{
@@ -103,17 +103,16 @@ test('saved game search finds opponent and result without changing archive',asyn
 
  test('resign opens a separate confirmation and cancel keeps the game',async({page})=>{const f=await table(page);await options(page);await btn(page,'Resign').click();await expect(page.getByRole('dialog',{name:'Table controls',exact:true})).not.toBeVisible();await expect(page.getByRole('heading',{name:/Resign/})).toBeVisible();await btn(page,'Keep playing').click();await expect(sq(page,'g1')).toHaveAttribute('data-piece','wn');expect(f.writes).toHaveLength(0);});
 
-test('larger symmetric captured trays and secondary panels live in options',async({page})=>{
+test('main table has no capture trays and secondary panels live in options',async({page})=>{
  const f=await table(page);await expect(page.locator('.status-your-turn h2')).toHaveCSS('font-size','20px');await expect(page.locator('.status-your-turn h2')).toHaveCSS('font-weight','800');
  for(const width of [320,390,1280]){
   await page.setViewportSize({width,height:900});
   await expect(page.locator('.table-below .board-history,.table-below .live-captures')).toHaveCount(0);
   await expect(page.getByRole('button',{name:'Watch game movie',exact:true})).toBeHidden();
-  const sizes=await page.locator('.player-material-row .captured-piece').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return [r.width,r.height]}));
-  expect(sizes.length).toBeGreaterThanOrEqual(2);for(const [w,h] of sizes){expect(w).toBe(32);expect(h).toBe(38);}
+  await expect(page.locator('.board-stage .player-material-row,.board-stage .loss-tray,.board-stage .captured-piece')).toHaveCount(0);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth)).toBe(false);
  }
- await page.setViewportSize({width:390,height:844});await mkdir('output/playwright',{recursive:true});await page.screenshot({path:'output/playwright/larger-trays-390.png',fullPage:true});
+ await page.setViewportSize({width:390,height:844});await mkdir('output/playwright',{recursive:true});await page.screenshot({path:'output/playwright/clean-table-390.png',fullPage:true});
  await sq(page,'g1').click();await expect(page.locator('.target-dot').first()).toHaveCSS('background-color','rgb(255, 48, 56)');await page.screenshot({path:'output/playwright/discreet-red-dots-390.png',fullPage:true});await sq(page,'g1').click();
  await options(page);await expect(page.locator('.table-sheet .board-history')).toBeVisible();await expect(page.locator('.table-sheet .material-panel')).toBeVisible();
  await btn(page,'Watch game movie').click();await expect(page.getByRole('dialog',{name:'Game movie',exact:true})).toBeVisible();await btn(page,'Close movie').click();if(!await page.locator('.table-sheet').isVisible())await options(page);

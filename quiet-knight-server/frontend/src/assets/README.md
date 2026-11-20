@@ -19,3 +19,7 @@ The opaque 1254×1254 icon in frontend/public/icon.png and Android's Quiet Knigh
 ## Emerald Enamel board (1.1.11)
 
 `emerald-enamel-reference.png` is the unchanged 1024×1536 generated comparison preview approved by André (option 2). No additional appearance option is exposed. `board-surface.ts` renders exact square regions from the empty middle four ranks of the approved panel, using CSS background viewports on the interactive board and SVG viewports in postcards. Top/bottom ranks reuse empty-rank material to avoid painted-in pieces; texture mapping follows each named square through board flips. Other panels and headings are never rendered. Frame: slim green inset and continuous brass hairline. Piece atlas and app icon unchanged. Original preview prompt: six board alternatives retaining the approved faceted ivory/gold and graphite/gold pieces; selected Emerald Enamel: deep jewel forest green and pale warm ivory enamel, restrained brass edge, smooth tactile satin glaze.
+
+## Sculptor board and pieces (1.6.3)
+
+sculptor-atlas.png is an original generated transparent 12-piece atlas for Quiet Knight. Ceramic and basalt pieces use individual cropped SVG viewports with verified alpha gutters. The museum design uses a procedural stone grain and a framed board. No third-party chess piece art or player screenshots are bundled.

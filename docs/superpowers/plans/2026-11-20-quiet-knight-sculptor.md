@@ -10,3 +10,4 @@
 - [ ] Update pieces.tsx, theme styles/preferences and keepsakes together. Test 12 distinct piece models, alternating tiles, prior preference overwrite without clearing saves, and portrait game controls.
 - [ ] Use player identity in the lifetime score front end. Test side swaps, rematches including casual games, new room, absent IDs, request failures and delayed settlements.
 - [ ] Build frontend and review narrowly scoped diff. Compile update if tooling and signer are available; verify application ID, increasing version code and identical certificate before distributing.
+

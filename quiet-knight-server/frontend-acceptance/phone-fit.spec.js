@@ -53,7 +53,7 @@ const sq=(p,s)=>p.locator(`.board-stage [data-square=${s}]`);
 const options=async p=>{await btn(p,'Open table controls').click();};
 async function preferences(p){await options(p);await p.getByText('Preferences & diagnostics',{exact:true}).click();}
 
-test('saved computer games recover capture counters without stored SAN',async({page})=>{
+test('saved computer games recover the board without stored SAN',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('qk-local-save-v1:guest',JSON.stringify({moves:[{from:'e2',to:'e4'},{from:'d7',to:'d5'},{from:'e4',to:'d5'},{from:'d8',to:'d5'}],color:'w',level:2})));
  await page.goto(url);await btn(page,'Resume saved computer game').click();
  await expect(sq(page,'d5')).toHaveAttribute('data-piece','bq');
@@ -63,7 +63,7 @@ test('saved computer games recover capture counters without stored SAN',async({p
 
 async function fits(page){
  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight+1&&document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
- const selectors=['.game-header','.board-stage>.board-frame','.player-strip:first-child','.player-strip[data-player-color=w]','.game-status','.lifetime-score','.main-game-actions'];
+ const selectors=['.game-header','.board-stage>.board-frame','.player-strip:first-child','.player-strip[data-player-color=w]','.game-status','.lifetime-score','.main-game-actions','.quick-game-actions'];
  for(const selector of selectors){const el=page.locator(selector).first();if(await el.count()&&await el.isVisible()){const r=await el.boundingBox();expect(r.y).toBeGreaterThanOrEqual(-1);expect(r.y+r.height).toBeLessThanOrEqual(await page.evaluate(()=>innerHeight)+1);}}
  const boxes=await page.locator('.board-stage>.board-frame .square').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return [r.width,r.height]}));expect(boxes).toHaveLength(64);for(const[w,h]of boxes){expect(Math.abs(w-h)).toBeLessThan(.6);expect(w).toBeGreaterThan(18);}
 }
@@ -74,10 +74,12 @@ for(const role of ['white','black'])test(`portrait table fits without scrolling 
  await options(page);await expect(page.getByRole('complementary',{name:'First game tips'})).toBeVisible();await btn(page,'Close table controls').click();
  if(role==='white'){await sq(page,'g1').click();await sq(page,'f3').click();await expect(sq(page,'f3')).toHaveAttribute('data-piece','wn');expect(f.writes).toHaveLength(1);}expect(f.errors).toEqual([]);
 });
-test('large text, crowded capture trays and final actions fit on short phones',async({page})=>{
+test('large text and final actions fit on short phones without capture trays',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('qk-play-preferences-v1',JSON.stringify({schema:1,textSize:'large'})));
- const f=await table(page,{moves:['e4','d5','exd5','c6','dxc6','Nxc6']});await page.setViewportSize({width:360,height:640});await expect(page.locator('.capture-count')).toHaveText('�2');await fits(page);
- await page.locator('.player-strip').evaluateAll(panels=>{for(const panel of panels){const tray=panel.querySelector('.loss-tray'),piece=tray?.querySelector('.captured-piece');if(piece)for(let i=0;i<4;i++)tray.append(piece.cloneNode(true));}});await fits(page);await page.locator('.loss-tray').evaluateAll(trays=>{for(const tray of trays)while(tray.children.length>1)tray.lastElementChild.remove();});
+ const f=await table(page,{moves:['e4','d5','exd5','c6','dxc6','Nxc6']});
+ await page.setViewportSize({width:360,height:640});
+ await expect(page.locator('.board-stage .player-material-row,.board-stage .loss-tray,.board-stage .capture-count')).toHaveCount(0);
+ await fits(page);
  f.update(['f3','e5','g4','Qh4#']);await expect(btn(page,'Rematch')).toBeVisible();await fits(page);await btn(page,'Rematch').click();await expect(page.locator('.board .chess-art')).toHaveCount(32);await fits(page);await options(page);await btn(page,'Lock board').click();await expect(btn(page,'Hold to unlock')).toBeVisible();await fits(page);expect(f.errors).toEqual([]);
 });
 test('capture replay lives in options and keeps the live table fitted',async({page})=>{
@@ -121,11 +123,13 @@ test('discrete legal move dots return for older preferences and can still be dis
  const f=await table(page);await sq(page,'d2').click();await expect(sq(page,'d3').locator('.target-dot')).toBeVisible();await expect(sq(page,'d4').locator('.target-dot')).toBeVisible();await expect(sq(page,'d3').locator('.target-dot')).toHaveCSS('background-color','rgb(255, 48, 56)');
  await options(page);await page.getByText('Preferences & diagnostics',{exact:true}).click();await page.getByLabel('Legal destination previews',{exact:true}).uncheck();await btn(page,'Close table controls').click();await expect(page.locator('.target-dot')).toHaveCount(0);await page.reload();await options(page);await page.getByText('Preferences & diagnostics',{exact:true}).click();await expect(page.getByLabel('Legal destination previews',{exact:true})).not.toBeChecked();expect(f.errors).toEqual([]);
 });
-test('captured piece points appear for each player and update',async({page})=>{
+test('captures do not show material points, trays or piece counters on the game screen',async({page})=>{
  const f=await table(page);await page.setViewportSize({width:393,height:780});
- await expect(page.locator('.player-material')).toHaveCount(0);
+ const clutter=page.locator('.board-stage .player-material,.board-stage .player-material-row,.board-stage .loss-tray,.board-stage .piece-capture-mark');
+ await expect(clutter).toHaveCount(0);
  f.update(['e4','d5','exd5','c6','dxc6']);
- await expect(page.getByLabel('White leads by 2 captured points')).toBeVisible();
- await expect(page.locator('.player-material')).toHaveCount(1);
- await expect(page.locator('.piece-capture-mark')).toHaveCount(0);await fits(page);await page.screenshot({path:'output/playwright/captured-points.png'});
+ await expect(sq(page,'c6')).toHaveAttribute('data-piece','wp');
+ await expect(clutter).toHaveCount(0);await fits(page);
+ await options(page);
+ await expect(page.getByLabel('Material points',{exact:true})).toBeVisible();
 });

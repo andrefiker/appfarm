@@ -63,7 +63,7 @@ public class MainActivity extends Activity {
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT));
         if (quietKnight()) {
-            int tableColor = Color.rgb(14, 25, 27);
+            int tableColor = Color.rgb(33, 28, 24);
             getWindow().setBackgroundDrawable(new ColorDrawable(tableColor));
             getWindow().getDecorView().setBackgroundColor(tableColor);
             getWindow().setStatusBarColor(tableColor);

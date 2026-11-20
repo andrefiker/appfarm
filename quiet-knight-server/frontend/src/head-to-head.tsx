@@ -44,7 +44,7 @@ export function HeadToHead({viewerId, rival, roomCode, eventId, settling}: Props
   return <div className="series-score lifetime-score" role="status" aria-label="Lifetime scoreboard" title="Completed games together across rooms and colors">
     {totals ? <>
       <span>You {totals.wins}</span><span>Draws {totals.draws}</span><span>{rival.handle} {totals.losses}</span>
-      <small>{current?.status === 'failed' ? 'Last verified totals' : settling ? 'Saving result.' : current?.status === 'ready' ? 'All recorded games' : 'Updating score.'}</small>
-    </> : <small>{current?.status === 'failed' ? 'Lifetime score unavailable' : settling ? 'Saving result.' : 'Loading lifetime score.'}</small>}
+      <small>{current?.status === 'failed' ? 'Last verified totals' : settling ? 'Saving result…' : current?.status === 'ready' ? 'All recorded games' : 'Updating score…'}</small>
+    </> : <small>{current?.status === 'failed' ? 'Lifetime score unavailable' : settling ? 'Saving result…' : 'Loading lifetime score…'}</small>}
   </div>;
 }

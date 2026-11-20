@@ -17,7 +17,9 @@ const proportions: Record<Kind, readonly [number,number]> = {
 
 export function Piece({color,kind,label,fitToSquare=false}:{color:Color;kind:Kind;scope:string;label?:string;fitToSquare?:boolean}) {
  const crop = crops[color][kinds.indexOf(kind)];
- const [width,height]=proportions[kind];
+ const [width,baseHeight]=proportions[kind];
+ // Board pieces grow vertically from a shared baseline; leave clearance at the top.
+ const height=fitToSquare ? Math.min(97,Math.round(baseHeight*1.08)) : baseHeight;
  const y=98-height;
  return <svg className={`chess-art sculptor-piece art-${color}`} viewBox={fitToSquare ? '3 0 94 100' : '0 0 100 100'}
   data-piece-model={`sculptor-${color==='w'?'ceramic':'basalt'}-${pieceNames[kind]}`}

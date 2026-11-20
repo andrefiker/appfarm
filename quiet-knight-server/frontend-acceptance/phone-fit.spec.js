@@ -152,3 +152,23 @@ test('captures do not show material points, trays or piece counters on the game 
  await options(page);
  await expect(page.getByLabel('Material points',{exact:true})).toBeVisible();
 });
+
+test('portrait gets more playable board width and taller tile-contained sculptures',async({page})=>{
+ await table(page);
+ await page.setViewportSize({width:390,height:844});await fits(page);
+ const board=page.locator('.board-stage > .board-frame .board');
+ const widened=await board.boundingBox();
+ expect(widened.width).toBeGreaterThanOrEqual(382);
+ expect(Math.abs(widened.width-widened.height)).toBeLessThan(0.6);
+ const original=await page.addStyleTag({content:'.mobile-table.game-shell{padding-inline:4px!important}.mobile-table .board-stage>.board-frame{padding:3px!important}'});
+ await expect.poll(async()=> (await board.boundingBox()).width).toBeLessThanOrEqual(374);
+ const baseline=await board.boundingBox();
+ expect(widened.width-baseline.width).toBeGreaterThanOrEqual(8);
+ await original.evaluate(el=>el.remove());await expect.poll(async()=> (await board.boundingBox()).width).toBe(widened.width);
+ for(const [tile,height] of [['a2',71],['g1',93],['c1',94],['a1',83],['d1',95],['e1',97]]){
+   const inner=sq(page,tile).locator('.sculptor-piece > svg');
+   await expect(inner).toHaveAttribute('height',String(height));
+   expect(height+Number(await inner.getAttribute('y'))).toBe(98);
+ }
+ for(const [width,height] of [[320,568],[360,640],[393,780]]){await page.setViewportSize({width,height});await fits(page);}
+});

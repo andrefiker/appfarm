@@ -1,11 +1,8 @@
 import {BoardLock,FirstGameTips} from "./ux-tools";
-import {accountRequest} from "./account-api";
-import {identityHeaders} from "./player-credential";
 import { positionAtPly, reviewStillValid } from "./move-review";
 import type { ReviewSelection } from "./move-review";
 import { LOSS_MESSAGE } from "./post-game";
 import {ChessClock} from './chess-clock';
-import {enamelStyle} from './board-surface';
 import type {ClockState} from './chess-clock';
 import { GameSoFar } from "./table-atmosphere";
 import * as React from "react";
@@ -198,7 +195,6 @@ export function ChessBoard({
             <button
               type="button"
               key={square}
-              style={enamelStyle(square)}
               data-square={square}
               data-piece={piece ? `${piece.color}${piece.type}` : ""}
               className={`square ${dark ? "square-dark" : "square-light"}${last && (last.from === square || last.to === square) ? " square-last" : ""}${selected === square ? " square-selected" : ""}${check === square ? " square-check" : ""}${dragPreview?.to === square ? dragPreview.legal.includes(square) ? " square-drop-valid" : " square-drop-invalid" : ""}`}
@@ -244,7 +240,7 @@ export function ChessBoard({
                     fitToSquare
                   />
                   {allowed&&piece.type==='p'?<PawnDetails square={square} color={piece.color} last={pawnCounts[piece.color]===1} fun={fun}/>:null}
-                  {gestureEffect==='indignant'?<span className="indignant-crown" aria-hidden="true">♛</span>:null}
+                  {gestureEffect==='indignant'?<span className="indignant-crown" aria-hidden="true">?</span>:null}
                   </span>
                 </span>
               ) : null}
@@ -269,7 +265,7 @@ export function ChessBoard({
     {!replayMode && allowed && fun.replay && captureReplay ? replayInOptions ? replayHost ? createPortal(<div className="capture-replay-action"><button type="button" className="secondary" onClick={()=>{setReplayNumber(n=>n+1);setReplaying(true);}}>Replay last capture</button></div>,replayHost) : null : <div className="capture-replay-action"><button type="button" className="secondary" onClick={()=>{setReplayNumber(n=>n+1);setReplaying(true);}}>Replay last capture</button></div> : null}
     {!replayMode ? <dialog ref={replayDialog} className="qk-dialog capture-replay-dialog" aria-labelledby="capture-replay-title" onCancel={()=>setReplaying(false)} onClose={()=>setReplaying(false)}>
       <div className="dialog-head"><h2 id="capture-replay-title">Capture replay</h2><button type="button" autoFocus onClick={()=>setReplaying(false)}>Close replay</button></div>
-      <p>Historical capture · the match is unchanged. New moves close this preview.</p>
+      <p>Historical capture � the match is unchanged. New moves close this preview.</p>
       {replaying && captureReplay ? <ChessBoard key={replayNumber} position={captureReplay.position} orientation={orientation} selected={null} targets={[]} last={null} check={captureReplay.check} motion={captureReplay.motion} locked onSquare={()=>{}} drag={false} playful fun={fun} replayMode /> : null}
       <button type="button" className="secondary" onClick={()=>setReplayNumber(n=>n+1)}>Replay again</button>
     </dialog> : null}</>
@@ -284,7 +280,7 @@ export function MaterialScore({
 }) {
   const total = materialTotals(position);
   const difference = total.w - total.b;
-  if (compact) return <details className="material-summary"><summary>{difference===0?'Equal material':`${difference>0?'White':'Black'} +${Math.abs(difference)}`} · material</summary><p>White {total.w} pts · Black {total.b} pts. Piece value only, not a prediction of who will win.</p></details>;
+  if (compact) return <details className="material-summary"><summary>{difference===0?'Equal material':`${difference>0?'White':'Black'} +${Math.abs(difference)}`} � material</summary><p>White {total.w} pts � Black {total.b} pts. Piece value only, not a prediction of who will win.</p></details>;
   return (
     <section className="material-panel" aria-label="Material points">
       <div className="material-heading">
@@ -356,9 +352,9 @@ export function LostPieces({ losses, color, audience=false, grouped=false }: { l
         {!losses ? <span className="loss-empty">History unavailable</span> :
           losses[color].length ? (grouped ? [...new Set(losses[color])] : losses[color]).map((kind, i) => (
             <span key={`${kind}-${i}`} className={`captured-piece${reacting?' audience-react':''}`} data-effect={reacting?'audience':undefined} data-captured={kind}
-              role="listitem" aria-label={`${name} ${pieceNames[kind]}${grouped ? ` ×${losses[color].filter(p=>p===kind).length}` : ""}`} title={pieceNames[kind]}>
+              role="listitem" aria-label={`${name} ${pieceNames[kind]}${grouped ? ` �${losses[color].filter(p=>p===kind).length}` : ""}`} title={pieceNames[kind]}>
               <Piece color={color} kind={kind} scope={`lost-${color}-${i}`} />
-              {grouped && losses[color].filter(p=>p===kind).length>1 ? <b className="capture-count">×{losses[color].filter(p=>p===kind).length}</b> : null}
+              {grouped && losses[color].filter(p=>p===kind).length>1 ? <b className="capture-count">�{losses[color].filter(p=>p===kind).length}</b> : null}
             </span>
           )) : <span className="loss-empty">None</span>}
       </div>
@@ -405,7 +401,7 @@ export function MoveHistory({ sans, cursor, available, onBrowse }: {
         </nav>
         <p className="review-description" role="status">
           {!available ? "Position review unavailable for this history." : cursor === null ? "Current position. Select a move to review it." :
-            `Reviewing position ${cursor} of ${sans.length}${cursor === 0 ? " · Starting position" : ""}. Return to game to play.`}
+            `Reviewing position ${cursor} of ${sans.length}${cursor === 0 ? " � Starting position" : ""}. Return to game to play.`}
         </p>
         <ol className="move-list" aria-label="Moves">
           {rows.map(row => (
@@ -416,7 +412,7 @@ export function MoveHistory({ sans, cursor, available, onBrowse }: {
                 return san ? <button type="button" key={side} disabled={!available}
                   ref={cursor === ply ? activeMove : undefined}
                   aria-label={`${row.number}. ${side === 0 ? "White" : "Black"}: ${san}`}
-                  aria-current={cursor === ply ? "step" : undefined} onClick={() => onBrowse(ply)}>{san}</button> : <span key={side}>—</span>;
+                  aria-current={cursor === ply ? "step" : undefined} onClick={() => onBrowse(ply)}>{san}</button> : <span key={side}>-</span>;
               })}
             </li>
           ))}
@@ -456,8 +452,8 @@ function PlayerBar({
           <strong className="player-handle">{name}</strong>
           <span className="player-meta">
             {color === "w" ? "White" : "Black"}
-            {yours ? " · You" : ""}
-            {detail ? ` · ${detail}` : ""}
+            {yours ? " � You" : ""}
+            {detail ? ` � ${detail}` : ""}
           </span>
         </span>
       </span>
@@ -509,8 +505,7 @@ export type GameSurfaceProps = {
   animalReaction?: string;
   computerEngine?: string;
   pendingOnlineMove?:boolean;
-  seriesScore?:{white:number;black:number;draws:number};
-  seriesPlayers?:{whiteId:string;blackId:string;gameNumber:number;eventId?:string};
+  lifetimeScore?:React.ReactNode;
   drawPending?:boolean;
   onReviewGame:()=>void;
   onNewOpponent:()=>void;
@@ -542,16 +537,6 @@ export type GameSurfaceProps = {
 };
 export function GameSurface(p: GameSurfaceProps) {
   const stage=React.useRef<HTMLElement>(null);
-  const [pairRecord,setPairRecord]=React.useState<{white:number;black:number;draws:number}|null>(null);
-  const whiteId=p.seriesPlayers?.whiteId,blackId=p.seriesPlayers?.blackId;
-  React.useEffect(()=>{
-    setPairRecord(null);if(!whiteId||!blackId||whiteId===blackId)return;
-    let alive=true;
-    void accountRequest<{wins:number;losses:number;draws:number}>(`/players/${encodeURIComponent(whiteId)}/head-to-head/${encodeURIComponent(blackId)}`,undefined,identityHeaders()).then(r=>{
-      if(alive && [r.wins,r.losses,r.draws].every(n=>Number.isSafeInteger(n)&&n>=0))setPairRecord({white:r.wins,black:r.losses,draws:r.draws});
-    }).catch(()=>{});return()=>{alive=false;};
-  },[whiteId,blackId,p.seriesPlayers?.gameNumber,p.seriesPlayers?.eventId]);
-  const scoreboard=pairRecord||p.seriesScore;
   const [replayHost,setReplayHost]=React.useState<HTMLDivElement|null>(null);
   React.useLayoutEffect(()=>{
     const el=stage.current;if(!el)return;
@@ -720,7 +705,7 @@ export function GameSurface(p: GameSurfaceProps) {
         <section className="table-below" aria-label="Current game">
 
           {reviewing ? <div className="review-banner" role="status">
-            <span>Review · Position {validSelection!.ply} of {p.sans.length}</span>
+            <span>Review � Position {validSelection!.ply} of {p.sans.length}</span>
             <button type="button" disabled={validSelection!.ply===0} onClick={()=>browse(validSelection!.ply-1)}>Previous</button>
             <button type="button" disabled={validSelection!.ply===validSelection!.line.length} onClick={()=>browse(validSelection!.ply+1)}>Next</button>
             <button type="button" onClick={() => browse(null)}>Return to game</button>
@@ -735,9 +720,9 @@ export function GameSurface(p: GameSurfaceProps) {
             <h2>{reviewing ? `Live game: ${p.status}` : p.status}</h2>
             {p.ended ? <span className="end-reason">{p.hint}</span> : null}
           </div>
-          {scoreboard ? <div className="series-score" aria-label={pairRecord?"Wins together":"Wins at this table"} title={pairRecord?"Recorded games between these accounts":"Counts this table's games since the score feature was added"}><span>{playerName(top)} {top==='w'?scoreboard.white:scoreboard.black}</span><span>Draws {scoreboard.draws}</span><span>{playerName(bottom)} {bottom==='w'?scoreboard.white:scoreboard.black}</span><small>{pairRecord?'All recorded games':'This table · since update'}</small></div> : null}
+          {p.lifetimeScore}
           {!p.ended && !p.spectator ? <div className="main-game-actions"><button type="button" className="secondary" disabled={p.busy} onClick={p.online?p.onBack:p.onNew}><Icon name="new"/> New game</button></div> : null}
-          {p.online && (p.connection !== 'Live' || p.pendingOnlineMove) ? <p className="connection-notice" role="status">{p.pendingOnlineMove ? 'Sending move · waiting for server confirmation' : `${p.connection} · Showing the last confirmed position. Moves are paused until reconnected.`}</p> : null}
+          {p.online && (p.connection !== 'Live' || p.pendingOnlineMove) ? <p className="connection-notice" role="status">{p.pendingOnlineMove ? 'Sending move � waiting for server confirmation' : `${p.connection} � Showing the last confirmed position. Moves are paused until reconnected.`}</p> : null}
 
           {p.ended ? <div className="game-end-actions" aria-label="Game finished">{!p.spectator ? contextual : null}<button className="secondary" onClick={p.onReviewGame}>Review game</button><button className="secondary" onClick={p.onNewOpponent}>New opponent</button></div> : null}
           {p.animalReaction ? <p className="animal-reaction" role="status" aria-live="polite" aria-atomic="true">{p.animalReaction}</p> : null}
@@ -775,7 +760,7 @@ export function GameSurface(p: GameSurfaceProps) {
         <div className="dialog-head">
           <div>
             <h2 id="table-controls-title">Table controls</h2>
-            <p>{p.online ? `Room ${p.code}` : `Computer · Level ${p.level}`}</p>
+            <p>{p.online ? `Room ${p.code}` : `Computer � Level ${p.level}`}</p>
           </div>
           <button
             type="button"
@@ -828,7 +813,7 @@ export function GameSurface(p: GameSurfaceProps) {
                 {(["w", "b"] as Color[]).map((color) =>
                   p.players?.[color] ? (
                     <p key={color}>
-                      {p.players[color]!.handle} ·{" "}
+                      {p.players[color]!.handle} �{" "}
                       {p.players[color]!.quiet_points} Quiet Points
                     </p>
                   ) : null,
@@ -841,7 +826,7 @@ export function GameSurface(p: GameSurfaceProps) {
             </section>
             <FirstGameTips/>
             <div ref={setReplayHost}/>
-          {!p.online ? <p className="engine-status" role="status">{p.computerEngine || 'Computer'} · Level {p.level}{!p.ended && p.turn!==p.me ? ` · ${p.status}` : ''}</p> : null}
+          {!p.online ? <p className="engine-status" role="status">{p.computerEngine || 'Computer'} � Level {p.level}{!p.ended && p.turn!==p.me ? ` � ${p.status}` : ''}</p> : null}
             {p.pauseControls}
             {p.ended?p.postGame:null}
             {p.waiting?contextual:null}
@@ -868,7 +853,7 @@ export function GameSurface(p: GameSurfaceProps) {
                 ? p.spectator
                   ? "You are watching this table."
                   : "Your seat stays with this room on this device."
-                : `${p.computerEngine || "Computer"} · Saved on this device`}
+                : `${p.computerEngine || "Computer"} � Saved on this device`}
             </p>
           </div>
         ) : null}
@@ -972,7 +957,7 @@ export function HomeSurface({
               onClick={onCreate}
               disabled={busy}
             >
-              {busy ? "Please wait…" : "Create live game"}
+              {busy ? "Please wait." : "Create live game"}
               <Icon name="arrow" />
             </button>
             {resumeLive ? (
@@ -1061,7 +1046,7 @@ export function HomeSurface({
               ))}
             </div>
             <p className="computer-footnote">
-              Offline Stockfish · Saved on this device
+              Offline Stockfish � Saved on this device
             </p>
           </section>
           {extras}
@@ -1079,5 +1064,5 @@ export function PromotionChoices({color,onChoose}:{color:Color;onChoose:(kind:Ki
  const description:Record<string,string>={q:'Moves along ranks, files and diagonals.',r:'Moves along ranks and files.',b:'Moves diagonally.',n:'Jumps in an L shape; can fork pieces.'};
  return <><p>Preview the piece your pawn becomes, then confirm.</p><div className="promotion-options">
  {(['q','r','b','n'] as Kind[]).map(kind=><button type="button" key={kind} data-autofocus={kind==='q'?true:undefined} aria-label={`Promote to ${pieceNames[kind]}`} aria-pressed={preview===kind} onClick={()=>setPreview(kind)}><Piece color={color} kind={kind} scope={`promotion-${kind}`}/><span>{pieceNames[kind]}</span></button>)}
- </div>{preview?<section className="promotion-preview" aria-label="Promotion preview"><div><Piece color={color} kind={preview} scope="promotion-preview"/></div><p><strong>{pieceNames[preview]}</strong> · {description[preview]}</p><button className="primary" type="button" onClick={()=>onChoose(preview)}>Confirm promotion</button></section>:null}</>;
+ </div>{preview?<section className="promotion-preview" aria-label="Promotion preview"><div><Piece color={color} kind={preview} scope="promotion-preview"/></div><p><strong>{pieceNames[preview]}</strong> � {description[preview]}</p><button className="primary" type="button" onClick={()=>onChoose(preview)}>Confirm promotion</button></section>:null}</>;
 }

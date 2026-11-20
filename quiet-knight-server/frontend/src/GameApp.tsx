@@ -20,6 +20,7 @@ import {
   useQuietIdle,
 } from "./table-atmosphere";
 import { HeadToHead } from "./head-to-head";
+import { readScoreboardRival, rivalForRoom } from "./head-to-head-model";
 import { useKnightId, KnightIdPanel, AccountGate } from "./knight-id";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Chess } from "chess.js";
@@ -84,8 +85,8 @@ type Modal =
   | "resign"
   | "invite"
   | null;
-const REACTIONS:Record<string,string>={hello:"👋", "well-played":"👏",thanks:"🙏",fox:"🦊",owl:"🦉",tortoise:"🐢"};
-const BUILD = "Quiet Knight 1.3.0 · Emerald Enamel";
+const REACTIONS:Record<string,string>={hello:"??", "well-played":"??",thanks:"??",fox:"??",owl:"??",tortoise:"??"};
+const BUILD = "Quiet Knight 1.6.2 � Sculptor";
 function roleColor(role: Role | null): Color | null {
   return role === "white" ? "w" : role === "black" ? "b" : null;
 }
@@ -262,6 +263,11 @@ export default function GameApp() {
     ? !["waiting", "active"].includes(room.status)
     : localGame.isGameOver();
   const waiting = room?.status === "waiting";
+  // Room role and account ownership come from the server; the score lookup then
+  // authenticates independently without switching the current local save owner.
+  const viewerId = me === "w" ? room?.white_player?.id : me === "b" ? room?.black_player?.id : undefined;
+  const currentRival = rivalForRoom(room, me, viewerId);
+  const scoreboardRival = currentRival ?? (waiting ? rivalForRoom(room, me, viewerId, readScoreboardRival(viewerId)) : null);
   const history = useMemo(() => {
     if (!room) return localGame.history({ verbose: true });
     try {
@@ -446,9 +452,9 @@ export default function GameApp() {
     mode: room ? "human" : "computer",
     timeControl:room?.time_control?"600+0":"-",
     points: room?.score_event?.scored
-      ? `${room.white_player?.handle || "White"} +${room.score_event.white_points} · ${room.black_player?.handle || "Black"} +${room.score_event.black_points} Quiet Points`
+      ? `${room.white_player?.handle || "White"} +${room.score_event.white_points} � ${room.black_player?.handle || "Black"} +${room.score_event.black_points} Quiet Points`
       : room
-        ? "Casual game · No Quiet Points"
+        ? "Casual game � No Quiet Points"
         : undefined,
   };
   useEffect(() => {
@@ -554,7 +560,7 @@ export default function GameApp() {
       return;
     }
     if (!beginRequest()) return;
-    setMessage(`Joining room ${code}…`);
+    setMessage(`Joining room ${code}.`);
     try {
       const token = savedToken || stored(`qk-seat-${code}`);
       const join_key = joinRequestKey(code);
@@ -901,12 +907,12 @@ export default function GameApp() {
               : !me
                 ? `${turn === "w" ? "White" : "Black"} to move`
                 : room
-                  ? "Opponent’s move"
+                  ? "Opponent's move"
                   : enginePaused ? "Computer paused" : computerEngine.startsWith("Unavailable") ? "Computer unavailable" : "Computer thinking";
   const hint = waiting
     ? "Copy the invite to bring your opponent in."
     : room?.status === "timeout_draw"
-      ? "Time expired · opponent has insufficient mating material."
+      ? "Time expired � opponent has insufficient mating material."
     : room?.status === "timeout"
       ? "Game ended on time."
     : room?.status === "resigned"
@@ -914,10 +920,10 @@ export default function GameApp() {
       : game.isCheckmate()
         ? "Checkmate. Well played."
         : ended
-          ? game.isStalemate() ? "Stalemate · no legal move, but the king is not in check."
-            : game.isInsufficientMaterial() ? "Draw · insufficient material to checkmate."
-            : game.isThreefoldRepetition() ? "Draw · the same position occurred three times."
-            : game.isDrawByFiftyMoves() ? "Draw · fifty moves without a pawn move or capture."
+          ? game.isStalemate() ? "Stalemate � no legal move, but the king is not in check."
+            : game.isInsufficientMaterial() ? "Draw � insufficient material to checkmate."
+            : game.isThreefoldRepetition() ? "Draw � the same position occurred three times."
+            : game.isDrawByFiftyMoves() ? "Draw � fifty moves without a pawn move or capture."
             : "Draw agreed by both players."
           : check
             ? "The king must get out of check."
@@ -929,7 +935,7 @@ export default function GameApp() {
                 ? "You are watching the shared table."
                 : room
                   ? "The other player is choosing a move."
-                  : `${computerEngine} · Level ${level} is choosing a move.`;
+                  : `${computerEngine} � Level ${level} is choosing a move.`;
   function openStudy(seed?:StudySeed){setStudySeed(seed);setModal(null);setTableControls(false);setScreen("study");}
   const tableSettings = (
     <>
@@ -944,7 +950,7 @@ export default function GameApp() {
           setModal("identity");
         }}
       >
-        Knight ID{knight.player ? ` · ${knight.player.handle}` : ""}
+        Knight ID{knight.player ? ` � ${knight.player.handle}` : ""}
       </button>
       <section className="notification-setting" aria-label="Move notifications">
         <div>
@@ -993,7 +999,7 @@ export default function GameApp() {
             onClick={() => void notifications.enable()}
           >
             {notifications.state === "working"
-              ? "Enabling…"
+              ? "Enabling."
               : "Enable move notifications"}
           </button>
         )}
@@ -1039,7 +1045,7 @@ export default function GameApp() {
         </button>
         <p role="status">{chessAudio.status}</p>
         <small>
-          If silent, raise your phone’s media volume and check whether this site
+          If silent, raise your phone's media volume and check whether this site
           is muted.
         </small>
       </div>
@@ -1052,10 +1058,10 @@ export default function GameApp() {
         />
       </label>
       <button type="button" className="secondary" disabled={!haptics} onClick={()=>playHaptic('move',haptics)}>Test haptics</button>
-      <p className="settings-note">Gentle feedback for selection, moves, captures and check. Your phone’s touch feedback setting applies.</p>
+      <p className="settings-note">Gentle feedback for selection, moves, captures and check. Your phone's touch feedback setting applies.</p>
       <p className="settings-note">
         Tap a piece, then its destination. Arrow keys move focus; Enter selects.
-        Motion follows your device’s reduced-motion preference.
+        Motion follows your device's reduced-motion preference.
       </p>
       <p className="settings-note">
         Computer play uses bundled Stockfish 18 Lite WebAssembly, with ten strength levels.
@@ -1080,7 +1086,7 @@ export default function GameApp() {
           disabled={diagnosing}
           onClick={() => void copyDiagnostics()}
         >
-          {diagnosing ? "Preparing diagnostics…" : "Copy diagnostics"}
+          {diagnosing ? "Preparing diagnostics." : "Copy diagnostics"}
         </button>
         {diagnostics ? (
           <textarea
@@ -1098,7 +1104,7 @@ export default function GameApp() {
         <a href="https://stockfishchess.org/" target="_blank" rel="noreferrer">
           Stockfish
         </a>{" "}
-        by the Stockfish developers · GPLv3 ·{" "}
+        by the Stockfish developers � GPLv3 �{" "}
         <a
           href="https://github.com/official-stockfish/Stockfish/tree/sf_18"
           target="_blank"
@@ -1161,13 +1167,13 @@ export default function GameApp() {
             }}
           >
             Resume saved computer game
-          </button><p className="resume-detail">You ({humanColor==='w'?'White':'Black'}) vs Computer · Level {level} · Move {Math.floor(localMoves.length/2)+1} · {localGame.isGameOver()?'Finished · review available':localGame.turn()===humanColor?'Your turn':'Computer to move'}</p>
+          </button><p className="resume-detail">You ({humanColor==='w'?'White':'Black'}) vs Computer � Level {level} � Move {Math.floor(localMoves.length/2)+1} � {localGame.isGameOver()?'Finished � review available':localGame.turn()===humanColor?'Your turn':'Computer to move'}</p>
         </div>
       ) : null}
       {screen === "home" ? (
         <HomeSurface
           mascotEnabled={prefs.fun.easter && prefs.playful && prefs.animate && !prefs.quiet} sound={sound && !prefs.quiet} volume={volume} soundTheme={prefs.soundTheme}
-          extras={<section className="studio-entry"><button className="secondary" onClick={()=>{setTableControls(false);setModal("archive");}}>Move archive & export</button>{archiveError?<p role="alert">{archiveError}</p>:null}<h2>Continue the position</h2><button className="secondary" onClick={()=>openStudy(localMoves.length?{sans:localMoves.map(m=>m.san||"")}:undefined)}>Continue the position · analyse</button><button className="secondary" onClick={()=>openStudy({mode:"pass"})}>Pass and play · offline</button><button className="secondary" onClick={()=>openStudy()}>Study, puzzles & Chess960</button><p role="status" className="server-compatibility">{compatibility.message}</p><details className="friend-setup"><summary>Friend options & invite link</summary><label>Friend-game side<select aria-label="Friend-game side" value={friendSide} onChange={e=>setFriendSide(e.target.value)}><option value="white">White</option><option value="black">Black</option></select></label><label>Friend-game style<select aria-label="Friend-game style" value={friendKind} onChange={e=>setFriendKind(e.target.value)}><option value="live">Live · untimed</option><option value="correspondence">Correspondence · no deadlines</option></select></label><label>Paste invite link<input aria-label="Paste invite link" value={inviteInput} maxLength={1000} onChange={e=>setInviteInput(e.target.value)}/></label><button className="secondary" onClick={()=>{const code=parseInvitation(inviteInput);if(code)void joinRoom(code);else setMessage("Paste a valid room link or six-character code.");}}>Open invitation</button></details></section>}
+          extras={<section className="studio-entry"><button className="secondary" onClick={()=>{setTableControls(false);setModal("archive");}}>Move archive & export</button>{archiveError?<p role="alert">{archiveError}</p>:null}<h2>Continue the position</h2><button className="secondary" onClick={()=>openStudy(localMoves.length?{sans:localMoves.map(m=>m.san||"")}:undefined)}>Continue the position � analyse</button><button className="secondary" onClick={()=>openStudy({mode:"pass"})}>Pass and play � offline</button><button className="secondary" onClick={()=>openStudy()}>Study, puzzles & Chess960</button><p role="status" className="server-compatibility">{compatibility.message}</p><details className="friend-setup"><summary>Friend options & invite link</summary><label>Friend-game side<select aria-label="Friend-game side" value={friendSide} onChange={e=>setFriendSide(e.target.value)}><option value="white">White</option><option value="black">Black</option></select></label><label>Friend-game style<select aria-label="Friend-game style" value={friendKind} onChange={e=>setFriendKind(e.target.value)}><option value="live">Live � untimed</option><option value="correspondence">Correspondence � no deadlines</option></select></label><label>Paste invite link<input aria-label="Paste invite link" value={inviteInput} maxLength={1000} onChange={e=>setInviteInput(e.target.value)}/></label><button className="secondary" onClick={()=>{const code=parseInvitation(inviteInput);if(code)void joinRoom(code);else setMessage("Paste a valid room link or six-character code.");}}>Open invitation</button></details></section>}
           identity={
             <>
               <button
@@ -1179,7 +1185,7 @@ export default function GameApp() {
                 }}
               >
                 {knight.player
-                  ? `${knight.player.handle} · ${knight.player.quiet_points} Quiet Points`
+                  ? `${knight.player.handle} � ${knight.player.quiet_points} Quiet Points`
                   : knight.profile
                     ? "Link this existing Knight ID"
                     : "Account (optional)"}
@@ -1193,9 +1199,9 @@ export default function GameApp() {
                     setModal("memory");
                   }}
                 >
-                  <span>Last game · {memories[0].result}</span>
+                  <span>Last game � {memories[0].result}</span>
                   <small>
-                    {memories[0].white} vs {memories[0].black} ·{" "}
+                    {memories[0].white} vs {memories[0].black} �{" "}
                     {Math.ceil(memories[0].sans.length / 2)} moves
                   </small>
                 </button>
@@ -1222,8 +1228,7 @@ export default function GameApp() {
           gameId={record.id}
           onReviewStart={() => { setSelected(null); setPendingMove(null); setPromotion(null); }}
           clock={room||undefined}
-          seriesScore={room?.series_score && room.white_joined && room.black_joined ? room.series_score : undefined}
-          seriesPlayers={room?.white_player && room.black_player ? {whiteId:room.white_player.id,blackId:room.black_player.id,gameNumber:room.game_number||1,eventId:room.score_event?.id} : undefined}
+          lifetimeScore={room && viewerId && scoreboardRival ? <HeadToHead viewerId={viewerId} rival={scoreboardRival} roomCode={room.code} eventId={room.score_event?.id} settling={ended && !room.score_event} /> : null}
           drawControls={room && room.status === 'active' && room.black_joined && me ? <DrawControls me={me} proposal={room.proposal} busy={busy} connected={connection === 'Live'} paused={Boolean(room.clock_paused)} onAction={action => void consent(action, action === 'request' ? 'draw' : undefined)} /> : null}
           pauseControls={room && room.status === 'active' ? <ClockControls state={room} me={me} busy={busy || connection !== 'Live'} onAction={(action) => void changePause(action)} /> : null}
           viewerLost={viewerLost(
@@ -1256,7 +1261,7 @@ export default function GameApp() {
                   ? presence[me === "w" ? "black" : "white"]
                     ? "Opponent at the table"
                     : "Opponent stepped away"
-                  : "Checking the table…"
+                  : "Checking the table."
               : undefined
           }
           canNudge={canNudge}
@@ -1266,7 +1271,7 @@ export default function GameApp() {
           }
           tableExtra={
             <>
-            {room?<section className="room-lobby" aria-label="Game lobby"><p>Room {room.code} · {room.kind==='correspondence'?'Correspondence · no deadlines':'Live'} · {room.time_control?'Historical 10+0':'Untimed'} · Standard · {presence?.spectators??0} spectators</p><button className="secondary" onClick={()=>{setTableControls(false);setModal('invite');}}>Show invitation QR</button>{role!=='spectator'&&room.status==='active'?<><div className="study-actions">{!room.time_control&&!room.points_policy?.eligible?<button disabled={busy||Boolean(room.proposal)||!room.moves.length} onClick={()=>void consent('request','takeback')}>Request takeback</button>:null}</div>{room.proposal?.kind==='takeback'?<div role="status"><p>{room.proposal.kind} requested by {room.proposal.by==='w'?'White':'Black'}</p>{room.proposal.by===me?<button onClick={()=>void consent('cancel')}>Cancel proposal</button>:<><button onClick={()=>void consent('accept')}>Accept proposal</button><button onClick={()=>void consent('decline')}>Decline proposal</button></>}</div>:null}{prefs.reactions?<div className="study-actions" aria-label="Quiet reactions">{['hello','well-played','thanks','fox','owl','tortoise'].map(kind=><button key={kind} aria-label={kind} title={kind} disabled={busy} onClick={()=>void reaction(kind)}>{REACTIONS[kind]}</button>)}</div>:null}</>:null}{prefs.reactions&&room.reaction&&Date.now()-room.reaction.at<15000?<p role="status">{room.reaction.by==='w'?'White':'Black'}: {REACTIONS[room.reaction.kind]||'•'}</p>:null}</section>:null}
+            {room?<section className="room-lobby" aria-label="Game lobby"><p>Room {room.code} � {room.kind==='correspondence'?'Correspondence � no deadlines':'Live'} � {room.time_control?'Historical 10+0':'Untimed'} � Standard � {presence?.spectators??0} spectators</p><button className="secondary" onClick={()=>{setTableControls(false);setModal('invite');}}>Show invitation QR</button>{role!=='spectator'&&room.status==='active'?<><div className="study-actions">{!room.time_control&&!room.points_policy?.eligible?<button disabled={busy||Boolean(room.proposal)||!room.moves.length} onClick={()=>void consent('request','takeback')}>Request takeback</button>:null}</div>{room.proposal?.kind==='takeback'?<div role="status"><p>{room.proposal.kind} requested by {room.proposal.by==='w'?'White':'Black'}</p>{room.proposal.by===me?<button onClick={()=>void consent('cancel')}>Cancel proposal</button>:<><button onClick={()=>void consent('accept')}>Accept proposal</button><button onClick={()=>void consent('decline')}>Decline proposal</button></>}</div>:null}{prefs.reactions?<div className="study-actions" aria-label="Quiet reactions">{['hello','well-played','thanks','fox','owl','tortoise'].map(kind=><button key={kind} aria-label={kind} title={kind} disabled={busy} onClick={()=>void reaction(kind)}>{REACTIONS[kind]}</button>)}</div>:null}</>:null}{prefs.reactions&&room.reaction&&Date.now()-room.reaction.at<15000?<p role="status">{room.reaction.by==='w'?'White':'Black'}: {REACTIONS[room.reaction.kind]||''}</p>:null}</section>:null}
             {room && (room.white_player || room.black_player) ? (
               <div className="quiet-score" aria-label="Quiet Points">
                 {ended ? (
@@ -1280,7 +1285,7 @@ export default function GameApp() {
                         </strong>
                         <p>
                           {room.score_event.scored
-                            ? `${room.white_player?.handle || "White"} +${room.score_event.white_points} · ${room.black_player?.handle || "Black"} +${room.score_event.black_points}`
+                            ? `${room.white_player?.handle || "White"} +${room.score_event.white_points} � ${room.black_player?.handle || "Black"} +${room.score_event.black_points}`
                             : "No Quiet Points awarded"}
                         </p>
                         {!room.score_event.scored ? (
@@ -1288,7 +1293,7 @@ export default function GameApp() {
                         ) : null}
                       </>
                     ) : (
-                      <p>Recording the result…</p>
+                      <p>Recording the result.</p>
                     )}
                   </>
                 ) : (
@@ -1301,16 +1306,6 @@ export default function GameApp() {
                           "Waiting for your friend"}
                   </small>
                 )}
-                {ended &&
-                room.white_player &&
-                room.black_player &&
-                room.white_player.id !== room.black_player.id ? (
-                  <HeadToHead
-                    white={room.white_player}
-                    black={room.black_player}
-                    gameNumber={room.game_number || 1}
-                  />
-                ) : null}
               </div>
             ) : null}
             </>
@@ -1375,7 +1370,7 @@ export default function GameApp() {
           }}
         />
       ) : null}
-      {pendingMove?<section className="move-confirmation" role="dialog" aria-label="Confirm move"><p>{pendingMove.from} → {pendingMove.to}</p><button onClick={()=>performMove(pendingMove.from,pendingMove.to,pendingMove.promotion)}>Confirm move</button><button onClick={()=>{setPendingMove(null);setSelected(null);}}>Cancel move</button></section>:null}
+      {pendingMove?<section className="move-confirmation" role="dialog" aria-label="Confirm move"><p>{pendingMove.from}  {pendingMove.to}</p><button onClick={()=>performMove(pendingMove.from,pendingMove.to,pendingMove.promotion)}>Confirm move</button><button onClick={()=>{setPendingMove(null);setSelected(null);}}>Cancel move</button></section>:null}
       {screen === "home" ? (
         <p className="network-build">
           {BUILD}
@@ -1437,7 +1432,7 @@ export default function GameApp() {
                       mode: "human",
                       points: g.scored
                         ? "Quiet Points game"
-                        : "Casual game · No Quiet Points",
+                        : "Casual game � No Quiet Points",
                     });
                     setModal("memory");
                   }}

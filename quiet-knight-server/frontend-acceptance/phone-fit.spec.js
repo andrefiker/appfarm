@@ -6,18 +6,18 @@ test.skip(!/^http:\/\/(127\.0\.0\.1|localhost):/.test(url), 'isolated candidate 
 const opening = ['e4', 'd5', 'exd5', 'Qxd5'];
 
 async function table(page, {role = 'white', moves = opening, accounts = false} = {}) {
-  let version = 1, number = 1, line = [...moves], release=null, hold=false;
+  let version = 1, number = 1, line = [...moves], release=null, hold=false, settled, code="REV001", swapped=false;
   const sockets = [], writes = [], errors = [];
   page.on('pageerror', error => errors.push(error.message));
   const room = () => {
     const chess = new Chess(); line.forEach(san => chess.move(san));
     const last = chess.history({verbose:true}).at(-1);
-    return {code:'REV001', fen:chess.fen(), turn:chess.turn(), status:chess.isCheckmate()?'checkmate':'active', winner:chess.isCheckmate()?(chess.turn()==='w'?'b':'w'):null,
-      version, game_number:number, series_score:{white:2,black:1,draws:1}, created_at:1, white_joined:true, black_joined:true,white_player:{handle:'Alice',quiet_points:0,...(accounts?{id:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'}:{})},black_player:{handle:'Bob',quiet_points:0,...(accounts?{id:'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'}:{})},
+    return {code, score_event:settled, fen:chess.fen(), turn:chess.turn(), status:chess.isCheckmate()?'checkmate':'active', winner:chess.isCheckmate()?(chess.turn()==='w'?'b':'w'):null,
+      version, game_number:number, series_score:{white:2,black:1,draws:1}, created_at:1, white_joined:true, black_joined:true,white_player:{handle:swapped?'Bob':'Alice',quiet_points:0,...(accounts?{id:swapped?'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb':'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'}:{})},black_player:{handle:swapped?'Alice':'Bob',quiet_points:0,...(accounts?{id:swapped?'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa':'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'}:{})},
       moves:[...line], last_move:last ? {from:last.from, to:last.to, san:last.san} : null};
   };
   await page.route('**/capabilities', route => route.fulfill({json:{protocol:2, new_games:'untimed', guest_play:true, variants:['standard']}}));
-  await page.route(/\/rooms(?:\/REV001(?:\/[^/?]+)?)?$/, async route => {
+  await page.route(/\/rooms(?:\/REV00[12](?:\/[^/?]+)?)?$/, async route => {
     const path = new URL(route.request().url()).pathname;
     if (path.endsWith('/move')) {
       const payload = route.request().postDataJSON(); writes.push(payload);if(hold)await new Promise(resolve=>{release=resolve;});
@@ -40,8 +40,8 @@ async function table(page, {role = 'white', moves = opening, accounts = false} =
   await page.goto(url);
   await page.getByRole('button',{name:'Create live game', exact:true}).click();
   await expect(page.getByRole('button',{name:'Connection: Live. Reconnect',exact:true})).toBeVisible();
-  return {writes, errors, hold(){hold=true;},release(){hold=false;release?.();}, update(next, gameNumber = number) {
-    line = [...next]; number = gameNumber; version++;
+  return {writes, errors, hold(){hold=true;},release(){hold=false;release?.();}, nextRoom({swap=false}={}){code="REV002";line=[...opening];number=1;version++;settled=undefined;swapped=swap;if(swap)role=role==="white"?"black":"white";}, update(next, gameNumber = number, event) {
+    line = [...next]; number = gameNumber; version++;settled=event;
     for (const socket of sockets) {
       socket.send(JSON.stringify({type:'room.update', room:room()}));
       socket.send(JSON.stringify({type:'seat.role', role, game_number:number}));
@@ -63,12 +63,12 @@ test('saved computer games recover capture counters without stored SAN',async({p
 
 async function fits(page){
  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight+1&&document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
- const selectors=['.game-header','.board-stage>.board-frame','.player-strip:first-child','.player-strip[data-player-color=w]','.game-status','.main-game-actions'];
+ const selectors=['.game-header','.board-stage>.board-frame','.player-strip:first-child','.player-strip[data-player-color=w]','.game-status','.lifetime-score','.main-game-actions'];
  for(const selector of selectors){const el=page.locator(selector).first();if(await el.count()&&await el.isVisible()){const r=await el.boundingBox();expect(r.y).toBeGreaterThanOrEqual(-1);expect(r.y+r.height).toBeLessThanOrEqual(await page.evaluate(()=>innerHeight)+1);}}
  const boxes=await page.locator('.board-stage>.board-frame .square').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return [r.width,r.height]}));expect(boxes).toHaveLength(64);for(const[w,h]of boxes){expect(Math.abs(w-h)).toBeLessThan(.6);expect(w).toBeGreaterThan(18);}
 }
 for(const role of ['white','black'])test(`portrait table fits without scrolling for ${role}`,async({page})=>{
- const f=await table(page,{role});await expect(page.getByLabel('Wins at this table')).toContainText('Draws 1');await expect(page.getByLabel('Wins at this table')).toContainText('Alice 2');await expect(page.getByLabel('Wins at this table')).toContainText('Bob 1');
+ const f=await table(page,{role});await expect(page.getByLabel('Lifetime scoreboard')).toHaveCount(0);
  for(const [width,height]of [[320,568],[360,640],[393,780],[390,844],[430,932]]){await page.setViewportSize({width,height});await fits(page);}
  await page.setViewportSize({width:393,height:780});await mkdir('output/playwright',{recursive:true});await page.screenshot({path:`output/playwright/phone-fit-${role}.png`});
  await options(page);await expect(page.getByRole('complementary',{name:'First game tips'})).toBeVisible();await btn(page,'Close table controls').click();
@@ -76,7 +76,7 @@ for(const role of ['white','black'])test(`portrait table fits without scrolling 
 });
 test('large text, crowded capture trays and final actions fit on short phones',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('qk-play-preferences-v1',JSON.stringify({schema:1,textSize:'large'})));
- const f=await table(page,{moves:['e4','d5','exd5','c6','dxc6','Nxc6']});await page.setViewportSize({width:360,height:640});await expect(page.locator('.capture-count')).toHaveText('×2');await fits(page);
+ const f=await table(page,{moves:['e4','d5','exd5','c6','dxc6','Nxc6']});await page.setViewportSize({width:360,height:640});await expect(page.locator('.capture-count')).toHaveText('�2');await fits(page);
  await page.locator('.player-strip').evaluateAll(panels=>{for(const panel of panels){const tray=panel.querySelector('.loss-tray'),piece=tray?.querySelector('.captured-piece');if(piece)for(let i=0;i<4;i++)tray.append(piece.cloneNode(true));}});await fits(page);await page.locator('.loss-tray').evaluateAll(trays=>{for(const tray of trays)while(tray.children.length>1)tray.lastElementChild.remove();});
  f.update(['f3','e5','g4','Qh4#']);await expect(btn(page,'Rematch')).toBeVisible();await fits(page);await btn(page,'Rematch').click();await expect(page.locator('.board .chess-art')).toHaveCount(32);await fits(page);await options(page);await btn(page,'Lock board').click();await expect(btn(page,'Hold to unlock')).toBeVisible();await fits(page);expect(f.errors).toEqual([]);
 });
@@ -85,9 +85,35 @@ test('capture replay lives in options and keeps the live table fitted',async({pa
  await options(page);await btn(page,'Replay last capture').click();await expect(page.getByRole('dialog',{name:'Capture replay',exact:true})).toBeVisible();await btn(page,'Close replay').click();await expect(page.getByRole('dialog',{name:'Table controls',exact:true})).toBeVisible();await btn(page,'Close table controls').click();await fits(page);expect(f.writes).toHaveLength(0);expect(f.errors).toEqual([]);
 });
 
-test('authenticated pair displays their recorded win totals instead of only this table',async({page})=>{
- await page.addInitScript(()=>localStorage.setItem('qk-player-token-v1','x'.repeat(43)));let auth='';await page.route(/\/players\/.*\/head-to-head\//,route=>{auth=route.request().headers().authorization||'';return route.fulfill({json:{wins:7,losses:5,draws:3}});});
- const f=await table(page,{accounts:true});await expect(page.getByLabel('Wins together')).toContainText('Alice 7');await expect(page.getByLabel('Wins together')).toContainText('Bob 5');await expect(page.getByLabel('Wins together')).toContainText('Draws 3');expect(auth).toBe('Bearer '+ 'x'.repeat(43));await fits(page);expect(f.errors).toEqual([]);
+test('lifetime scoreboard follows signed-in players between rooms and updates only once settled',async({page})=>{
+ const me='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', rival='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', path='/players/'+me+'/head-to-head/'+rival;
+ await page.addInitScript(()=>localStorage.setItem('qk-player-token-v1','x'.repeat(43)));
+ const requests=[];let wins=7;
+ await page.route(/\/players\/.*\/head-to-head\//,route=>{
+   requests.push({path:new URL(route.request().url()).pathname,auth:route.request().headers().authorization});
+   return route.fulfill({json:{wins,losses:5,draws:3}});
+ });
+ const f=await table(page,{accounts:true,role:'black'});
+ const score=page.getByLabel('Lifetime scoreboard');
+ await expect(score).toContainText('You 7');
+ await expect(score).toContainText('Alice 5');
+ await expect(score).toContainText('Draws 3');
+ expect(requests).toEqual([{path,auth:'Bearer '+'x'.repeat(43)}]);
+ f.update(['f3','e5','g4','Qh4#']);
+ await expect(score).toContainText('Saving result');
+ expect(requests).toHaveLength(1);
+ wins=8;
+ f.update(['f3','e5','g4','Qh4#'],1,{id:'confirmed-game-event',scored:false,reason:'Casual rematch',white_points:0,black_points:0,result:'0-1'});
+ await expect(score).toContainText('You 8');
+ expect(requests).toHaveLength(2);
+ f.nextRoom({swap:true});
+ await btn(page,'Leave game').click();
+ await btn(page,'Leave table').click();
+ await btn(page,'Create live game').click();
+ await expect(score).toContainText('You 8');
+ await expect.poll(()=>requests.length).toBe(3);
+ expect(requests[2]).toEqual({path,auth:"Bearer "+"x".repeat(43)});
+ await page.setViewportSize({width:393,height:780});await fits(page);await mkdir('output/playwright',{recursive:true});await page.screenshot({path:'output/playwright/lifetime-scoreboard.png'});expect(f.errors).toEqual([]);
 });
 
 test('discrete legal move dots return for older preferences and can still be disabled later',async({page})=>{

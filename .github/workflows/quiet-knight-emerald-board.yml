@@ -20,12 +20,12 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: quiet-knight-server/frontend/package-lock.json
-      - name: Verify teaching consent and settlement
+      - name: Verify Amateur Mode, legacy teaching and settlement
         working-directory: quiet-knight-server
         run: |
           npm ci --ignore-scripts
           node --check server.js
-          node --test tests/teaching.test.mjs tests/teaching-settlement.test.mjs
+          node --test tests/amateur.test.mjs tests/teaching.test.mjs tests/teaching-settlement.test.mjs
           node tests/teaching-http-ci.mjs
       - name: Check and build game
         working-directory: quiet-knight-server/frontend
@@ -36,6 +36,7 @@ jobs:
           node --experimental-strip-types tests/table-preferences.test.mjs
           node --experimental-strip-types tests/head-to-head.test.mjs
           node --experimental-strip-types tests/haptics.test.mjs
+          node --experimental-strip-types tests/amateur-threats.test.mjs
           npm run test:review
           npm run test:effects
           node --experimental-strip-types tests/studio-rules.test.mjs
@@ -58,14 +59,14 @@ jobs:
       - name: Prepare unsigned package and public verification tools
         run: |
           mkdir -p release
-          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -f -p 4 android-store/app/build/outputs/apk/quietKnight/release/app-quietKnight-release-unsigned.apk release/Quiet-Knight-Emerald-1.6.15-unsigned.apk
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging release/Quiet-Knight-Emerald-1.6.15-unsigned.apk > release/badging.txt
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -f -p 4 android-store/app/build/outputs/apk/quietKnight/release/app-quietKnight-release-unsigned.apk release/Quiet-Knight-Emerald-1.6.16-unsigned.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging release/Quiet-Knight-Emerald-1.6.16-unsigned.apk > release/badging.txt
           cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" release/apksigner.jar
           cp "$ANDROID_HOME/build-tools/35.0.0/zipalign" release/zipalign
           cp -R quiet-knight-server/frontend/dist release/web
           printf '%s\n' "$GITHUB_SHA" > release/source-commit.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: quiet-knight-emerald-1.6.15-unsigned
+          name: quiet-knight-emerald-1.6.16-unsigned
           path: release/
           retention-days: 7

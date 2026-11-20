@@ -45,7 +45,7 @@ import {describeBoardMotion} from './board-effects';
 import { useRoomRealtime } from "./use-room-realtime";
 import { useMoveNotifications } from "./push-notifications";
 import type { Position, Motion } from "./chess-ui";
-import {BeginnerCoach} from "./beginner-coach";
+import {threatenedSquares} from "./amateur-threats";
 import type { Color } from "./pieces";
 import { lossesFromHistory } from "./chess-view-model";
 import { buildGame } from "./computer";
@@ -53,7 +53,7 @@ import { useComputerOpponent } from "./use-computer-opponent";
 import type { LocalMove } from "./computer";
 type Role = "white" | "black" | "spectator";
 type RoomState = ClockState & {
-  teaching_revision?:number;
+  amateur?: {available:boolean;enabled:boolean};
   game_number?: number;
   started_at?: number; ended_at?: number;
   kind?:string;white_nickname?:string;black_nickname?:string;
@@ -274,6 +274,9 @@ export default function GameApp() {
     ? !["waiting", "active"].includes(room.status)
     : localGame.isGameOver();
   const waiting = room?.status === "waiting";
+  const [localAmateur,setLocalAmateur]=useState(false);
+  const amateurOn=room ? !!me&&room.amateur?.enabled===true : localAmateur;
+  const threats=useMemo(()=>amateurOn&&!ended?threatenedSquares(game):[],[amateurOn,ended,game]);
   // Room role and account ownership come from the server; the score lookup then
   // authenticates independently without switching the current local save owner.
   const viewerId = me === "w" ? room?.white_player?.id : me === "b" ? room?.black_player?.id : undefined;
@@ -820,6 +823,13 @@ export default function GameApp() {
     try{const{data}=await api.post(`/api/rooms/${room.code}/consent`,{seat_token:seatToken,game_number:room.game_number||1,expected_version:room.version,action,kind,proposal_id:room.proposal?.id});acceptRoom(data.room as RoomState);}
     catch{setMessage("The proposal changed or is unavailable. Reconnect and try again.");}finally{endRequest();}
   }
+  async function toggleAmateur(){
+    if(!room){setLocalAmateur(on=>!on);return;}
+    if(!me||!seatToken||!room.amateur?.available||connection!=='Live'||!beginRequest())return;
+    try{const {data}=await api.post(`/api/rooms/${room.code}/amateur`,{seat_token:seatToken,game_number:room.game_number||1,expected_version:room.version,enabled:!amateurOn});acceptRoom(data.room as RoomState);}
+    catch{setMessage('Amateur Mode could not be changed. Wait for the table to reconnect or finish updating, then try again.');}
+    finally{endRequest();}
+  }
   async function reaction(kind:string){if(!prefs.reactions||!room||!seatToken||!beginRequest())return;try{const{data}=await api.post(`/api/rooms/${room.code}/reaction`,{seat_token:seatToken,game_number:room.game_number||1,kind});acceptRoom(data.room as RoomState);}catch{setMessage("Reaction unavailable. Give the table a quiet moment.");}finally{endRequest();}}
   async function nudge() {
     if (!room || !seatToken || !canNudge || !beginRequest()) return;
@@ -1282,7 +1292,8 @@ export default function GameApp() {
           gameId={record.id}
           onReviewStart={() => { setSelected(null); setPendingMove(null); setPromotion(null); }}
           clock={room||undefined}
-          coach={!ended&&!waiting&&(room?!!me:mode!=='online')?<BeginnerCoach room={room} seat={seatToken} me={me} fen={game.fen()} yourTurn={!!me&&turn===me&&!pendingOnlineMove} connected={connection==='Live'} accept={next=>acceptRoom(next as RoomState)} />:null}
+          amateur={!ended&&!waiting&&(room?!!me&&room.amateur?.available:mode!=='online')?<button type="button" className="secondary amateur-toggle" aria-pressed={amateurOn} title={room?'Marks attacked pieces for both players. No Quiet Points if used.':'Marks attacked pieces on both sides.'} aria-description={room?(amateurOn?'On for both players. No Quiet Points.':'Shows attacked pieces to both players. No Quiet Points if used.'):'Shows attacked pieces on both sides.'} disabled={busy||Boolean(room&&(connection!=='Live'||pendingOnlineMove))} onClick={()=>void toggleAmateur()}>Amateur Mode</button>:null}
+          amateurInfo={room?.amateur?.available&&me?'Amateur Mode marks attacked pieces in red for both players. A game that uses it keeps its normal result but earns no Quiet Points.':null}
           lifetimeScore={room && viewerId && scoreboardRival ? <HeadToHead viewerId={viewerId} rival={scoreboardRival} roomCode={room.code} eventId={room.score_event?.id} settling={ended && !room.score_event} recentGames={viewerId === accountViewer ? knight.games : undefined} pinnedRival={pinnedOpponent} onPinChange={onScoreboardPinChange} /> : mode === "online" ? <HeadToHeadStatus message={scoreboardRoomStatus(room, me)} /> : null}
           drawControls={room && room.status === 'active' && room.black_joined && me ? <DrawControls me={me} proposal={room.proposal} busy={busy} connected={connection === 'Live'} paused={Boolean(room.clock_paused)} onAction={action => void consent(action, action === 'request' ? 'draw' : undefined)} /> : null}
           pauseControls={room && room.status === 'active' ? <ClockControls state={room} me={me} busy={busy || connection !== 'Live'} onAction={(action) => void changePause(action)} /> : null}
@@ -1375,6 +1386,7 @@ export default function GameApp() {
             orientation,
             selected,
             targets:prefs.hints?targets:[],
+            threatened:threats,
             last,
             check,
             motion:prefs.animate?motion:null,

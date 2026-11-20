@@ -145,16 +145,18 @@ body[data-coordinates=true] .qk.mobile-table .file-coordinate { bottom:2px; righ
 .qk .game-header:has(>.match-material) { grid-template-columns:44px minmax(0,1fr) auto 44px; }
 .qk .game-header.has-copy-invite:has(>.match-material) { grid-template-columns:44px minmax(0,1fr) auto 44px 44px; }
 
-/* Teaching adds one compact control to the existing action row. */
-.qk .main-game-actions:has(.beginner-coach-toggle) { flex-wrap:wrap;gap:4px; }
-.qk .beginner-coach-toggle { color:#fae1b0;border-color:#b7996185; }
-.qk .coach-dialog { width:min(440px,calc(100vw - 24px));max-height:85dvh;overflow:auto;padding:14px;color:#f7ebd4; }
-.qk .coach-dialog p { margin:8px 0; }
-.qk .coach-choices { padding-left:22px; }
-.qk .coach-choices li { padding:7px 0;border-top:1px solid #b7996159; }
-.qk .coach-choices li p { margin:3px 0; }
-.qk .coach-choices small { color:#e6cfa9; }
-.qk .coach-actions { display:flex;gap:8px;flex-wrap:wrap; }
+/* Amateur Mode shares a threat warning without changing the size of the board. */
+.qk .main-game-actions:has(.amateur-toggle) { gap:4px; }
+.qk .amateur-toggle[aria-pressed="true"] {color:#fff3ed;background:#8d2628;border-color:#fa8f82}
+.qk .main-game-actions:has(.amateur-toggle) button {padding-inline:8px;white-space:nowrap}
+.qk .board .square[data-threatened="true"] .chess-art {filter:sepia(1) saturate(6) hue-rotate(309deg) drop-shadow(0 0 2px #df262b)}
+.qk .board .square[data-threatened="true"] .chess-art.art-b {filter:brightness(1.05) sepia(1) saturate(5) hue-rotate(309deg) drop-shadow(0 0 2px #df262b)}
+.qk .board .square[data-threatened="true"]:not(.square-check) {box-shadow:inset 0 0 0 2px #d3202a}
+.qk .amateur-threat-badge {position:absolute;z-index:4;top:2px;right:2px;background:#9b141b;color:#fff;border-radius:50%;font:700 11px/13px system-ui;width:13px;height:13px;text-align:center;pointer-events:none}
+@media (max-width:355px) {
+ .qk.mobile-table .table-below:has(.amateur-toggle) .game-status h2 {font-size:14px;line-height:1.15;overflow-wrap:normal}
+ .qk.mobile-table .main-game-actions:has(.amateur-toggle) button {font-size:12px;padding-inline:6px}
+}
 
 /* Sideways play: the full 8 by 8 board, with no table chrome. */
 @media (orientation:landscape) and (max-height:540px) and (min-width:520px) {

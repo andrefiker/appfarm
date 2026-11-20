@@ -1,3 +1,4 @@
+import {amateurUsed,AMATEUR_POINTS_REASON} from './amateur.js';
 import {createHash,randomBytes,randomUUID,scrypt as scryptCallback,timingSafeEqual} from 'node:crypto';
 import {promisify} from 'node:util';
 import {readFile} from 'node:fs/promises';
@@ -61,7 +62,7 @@ export class IdentityStore{
   if(ids.length===2)await c.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[`pair:${pairKey(...ids)}`]);
   const players=ids.length?(await c.query(`SELECT ${publicColumns} FROM qk_players WHERE id=ANY($1::uuid[]) ORDER BY id FOR UPDATE`,[ids])).rows:[];
   const white=players.find(p=>p.id===room.white_player?.id),black=players.find(p=>p.id===room.black_player?.id);
-  const eligibility=room.teaching?.game===(room.game_number||1)&&room.teaching.ever===true
+  const eligibility=amateurUsed(room) ? {eligible:false,remaining:0,reason:AMATEUR_POINTS_REASON} : room.teaching?.game===(room.game_number||1)&&room.teaching.ever===true
     ? {eligible:false,remaining:0,reason:'Teaching game: no Quiet Points'} : await this.pairStatus(white,black,c);
   const wp=eligibility.eligible?(record.result==='1-0'?3:record.result==='1/2-1/2'?1:0):0;
   const bp=eligibility.eligible?(record.result==='0-1'?3:record.result==='1/2-1/2'?1:0):0;

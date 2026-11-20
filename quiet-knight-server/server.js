@@ -1,6 +1,7 @@
 import {CAPABILITIES,guestName} from './capabilities.js';
 import {visibleSeries,carrySeries} from './series-score.js';
 import {consentTransition,ConsentError} from './consent.js';
+import {AmateurError,amateurView,amateurTransition} from './amateur.js';
 import {TeachingError,teachingState,teachingTransition} from './teaching.js';
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
@@ -52,6 +53,7 @@ function publicRoom(room) {
     code: room.code,
     kind: room.kind||"live", variant:"standard", white_nickname:room.white_nickname||"", black_nickname:room.black_nickname||"",
     teaching_revision:teachingState(room).rev,
+    amateur:amateurView(room),
     rematch_proposal:room.rematch_proposal||null,proposal:room.proposal||null, reaction:room.reaction||null,
     fen: room.fen,
     turn: room.turn,
@@ -268,7 +270,7 @@ async function handleApi(req, res, url) {
     const room = await createRoom(player,input);
     return send(res, 200, { room: publicRoom(room), seat_token: input.side==='black'?room.black_token:room.white_token, role: input.side==='black'?'black':'white' }, origin);
   }
-  const match = url.pathname.match(/^\/rooms\/([A-Z0-9]{6})(?:\/(join|move|resign|rematch|nudge|pause|consent|reaction|teaching))?$/i);
+  const match = url.pathname.match(/^\/rooms\/([A-Z0-9]{6})(?:\/(join|move|resign|rematch|nudge|pause|consent|reaction|teaching|amateur))?$/i);
   if (!match) return send(res, 404, { error: 'Not found' }, origin);
   const code = normalizeCode(match[1]);
   const action = match[2] || '';
@@ -308,6 +310,10 @@ async function handleApi(req, res, url) {
   if (!color) return send(res, 403, { error: 'You do not own a seat in this game' }, origin);
   if (!ownsRoomSeat(room,seatToken,player?.id)) return send(res,403,{error:'This Knight ID does not own that seat'},origin);
 
+  if(action==='amateur'){
+    if(amateurTransition(room,color,input)){room.version++;await saveRoom(room);}
+    return send(res,200,{room:publicRoom(room)},origin);
+  }
   if(action==='teaching'){
     const next=teachingTransition(room,color,input);
     if(next.changed){room.version++;await saveRoom(room);return send(res,200,{room:publicRoom(room)},origin);}
@@ -449,7 +455,7 @@ async function handleApi(req, res, url) {
       [room.white_nickname,room.black_nickname]=[room.black_nickname||"",room.white_nickname||""];
       [room.white_join_digest,room.black_join_digest]=[room.black_join_digest||null,room.white_join_digest||null];
     }
-    room.rematch_proposal=null;room.proposal=null;room.reaction=null;room.draw_agreement=null;room.move_requests=[];delete room.teaching;
+    room.rematch_proposal=null;room.proposal=null;room.reaction=null;room.draw_agreement=null;room.move_requests=[];delete room.teaching;delete room.amateur;
     room.game_number=previousNumber+1;room.started_at=Date.now();room.ended_at=null;room.score_event=null;
     room.points_policy=await identities.pairStatus(room.white_player,room.black_player);
     const game = new Chess();
@@ -532,7 +538,7 @@ const server = http.createServer((req, res) => {
   const method=req.method||'GET';
   const task=(method==='GET'||method==='HEAD')&&!isApiPath(url.pathname)?serveFrontend(req,res,url):handleApi(req,res,url);
   task.catch(err => {
-    if(err instanceof ConsentError||err instanceof TeachingError)return send(res,err.status,{error:err.message},req.headers.origin||'');
+    if(err instanceof ConsentError||err instanceof TeachingError||err instanceof AmateurError)return send(res,err.status,{error:err.message},req.headers.origin||'');
     if(err instanceof IdentityError)return send(res,err.status,{error:err.message},req.headers.origin||'');
     if(err instanceof PushError)return send(res,err.status,{error:err.message},req.headers.origin||'');
     if (err?.code === 'QK_CONFLICT') return send(res,409,{error:'Room changed; retry from the current position'},req.headers.origin||'');

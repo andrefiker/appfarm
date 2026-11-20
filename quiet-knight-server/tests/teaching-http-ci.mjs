@@ -39,4 +39,30 @@ try{
  assert.equal((await teach(b,'status')).teaching.enabled,false);
  await teach(w,'tip',{game_number:1,expected_fen:room.fen},409);
  console.log('Isolated Redis teaching HTTP checks passed.');
+ // Exercise the actual HTTP route and Redis persistence on a fresh untimed room.
+ const amateurHost=await request('/rooms',{nickname:'Demo White',side:'white',kind:'live',require_untimed:true});
+ const amateurPath='/rooms/'+amateurHost.room.code;
+ const amateurGuest=await request(amateurPath+'/join',{nickname:'Demo Black'});
+ let active=amateurGuest.room;
+ const toggle=(token,enabled,status=200,extra={})=>request(amateurPath+'/amateur',{seat_token:token,enabled,game_number:active.game_number,expected_version:active.version,...extra},status);
+ assert.deepEqual(active.amateur,{available:true,enabled:false});
+ await toggle('spectator',true,403);
+ await toggle(amateurGuest.seat_token,true,409,{expected_version:active.version-1});
+ active=(await toggle(amateurGuest.seat_token,true)).room;
+ assert.deepEqual(active.amateur,{available:true,enabled:true});
+ assert.equal(active.points_policy.eligible,false);
+ assert.deepEqual((await request(amateurPath)).room.amateur,active.amateur);
+ assert.deepEqual((await request(amateurPath+'/join',{seat_token:amateurHost.seat_token})).room.amateur,active.amateur);
+ active=(await toggle(amateurHost.seat_token,false)).room;
+ assert.equal(active.amateur.enabled,false);
+ assert.equal(active.points_policy.eligible,false);
+ active=(await toggle(amateurHost.seat_token,true)).room;
+ assert.equal(active.amateur.enabled,true);
+ active=(await request(amateurPath+'/resign',{seat_token:amateurGuest.seat_token})).room;
+ assert.deepEqual(active.amateur,{available:false,enabled:false});
+ active=(await request(amateurPath+'/rematch',{seat_token:amateurHost.seat_token,game_number:active.game_number})).room;
+ assert.equal(active.game_number,2);
+ assert.deepEqual(active.amateur,{available:true,enabled:false});
+ await toggle(amateurHost.seat_token,true,409,{game_number:1});
+ console.log('Isolated Redis Amateur Mode HTTP checks passed.');
 }finally{child.kill();}

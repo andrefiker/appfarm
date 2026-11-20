@@ -32,6 +32,7 @@ export type BoardProps = {
   orientation: Color;
   selected: string | null;
   targets: string[];
+  threatened?: readonly string[];
   last: { from: string; to: string } | null;
   check: string | null;
   motion: Motion;
@@ -112,6 +113,7 @@ export function ChessBoard({
   orientation,
   selected,
   targets,
+  threatened,
   last,
   check,
   motion,
@@ -169,6 +171,7 @@ export function ChessBoard({
       >
         {squares.map((square, index) => {
           const piece = position[square];
+          const inDanger=Boolean(piece&&threatened?.includes(square));
           const target = targets.includes(square) || Boolean(dragPreview?.legal.includes(square));
           const dark =
             (square.charCodeAt(0) - 97 + Number(square[1])) % 2 === 1;
@@ -197,8 +200,9 @@ export function ChessBoard({
               key={square}
               data-square={square}
               data-piece={piece ? `${piece.color}${piece.type}` : ""}
+              data-threatened={inDanger||undefined}
               className={`square ${dark ? "square-dark" : "square-light"}${last && (last.from === square || last.to === square) ? " square-last" : ""}${selected === square ? " square-selected" : ""}${check === square ? " square-check" : ""}${dragPreview?.to === square ? dragPreview.legal.includes(square) ? " square-drop-valid" : " square-drop-invalid" : ""}`}
-              aria-label={`${square}, ${piece ? `${piece.color === "w" ? "White" : "Black"} ${pieceNames[piece.type]}` : "empty"}${target ? ", legal destination" : ""}${check === square ? ", in check" : ""}`}
+              aria-label={`${square}, ${piece ? `${piece.color === "w" ? "White" : "Black"} ${pieceNames[piece.type]}` : "empty"}${target ? ", legal destination" : ""}${check === square ? ", in check" : inDanger ? ", under attack" : ""}`}
               aria-pressed={selected === square}
               aria-disabled={locked}
               onPointerDown={e=>{if(drag && onMove && !locked && piece && (!dragTargets || dragTargets(square).length)){gesture.current={from:square,x:e.clientX,y:e.clientY};e.currentTarget.setPointerCapture(e.pointerId);}}}
@@ -248,6 +252,7 @@ export function ChessBoard({
               {landing ? <LandingEffect key={`landing-${active.serial}`} motion={active} fun={fun}/> : null}
               {index%8===0?<span className="square-coordinate rank-coordinate" aria-hidden="true">{square[1]}</span>:null}
               {index>=56?<span className="square-coordinate file-coordinate" aria-hidden="true">{square[0]}</span>:null}
+              {inDanger&&check!==square?<span className="amateur-threat-badge" aria-hidden="true">!</span>:null}
               {check === square ? <span className="check-badge" aria-hidden="true">!</span> : null}
               {target ? (
                 <span
@@ -476,7 +481,8 @@ export type GameSurfaceProps = {
     b?: { handle: string; quiet_points: number } | null;
   };
   tableExtra?: React.ReactNode;
-  coach?: React.ReactNode;
+  amateur?: React.ReactNode;
+  amateurInfo?: React.ReactNode;
   animalReaction?: string;
   computerEngine?: string;
   pendingOnlineMove?:boolean;
@@ -668,7 +674,7 @@ export function GameSurface(p: GameSurfaceProps) {
             active={!reviewing && !p.ended && !p.waiting && !p.clock?.clock_paused && p.turn === top}
             yours={top === p.me}
           />
-          <ChessBoard {...shownBoard} replayInOptions replayHost={replayHost} locked={shownBoard.locked||boardLocked} onSquare={s=>{if(!boardLocked)shownBoard.onSquare(s);}} onMove={boardLocked?undefined:shownBoard.onMove}/>
+          <ChessBoard {...shownBoard} threatened={reviewing?undefined:shownBoard.threatened} replayInOptions replayHost={replayHost} locked={shownBoard.locked||boardLocked} onSquare={s=>{if(!boardLocked)shownBoard.onSquare(s);}} onMove={boardLocked?undefined:shownBoard.onMove}/>
           {boardLocked?<BoardLock locked onChange={setBoardLocked}/>:null}
           <PlayerBar
             color={bottom}
@@ -699,7 +705,7 @@ export function GameSurface(p: GameSurfaceProps) {
             <h2>{reviewing ? `Live game: ${p.status}` : p.status}</h2>
             {p.ended ? <span className="end-reason">{p.hint}</span> : null}
           </div>
-          {!p.ended && !p.spectator ? <div className="main-game-actions">{!reviewing?p.coach:null}<button type="button" className="secondary" disabled={p.busy} onClick={p.online?p.onBack:p.onNew}><Icon name="new"/> New game</button></div> : null}
+          {!p.ended && !p.spectator ? <div className="main-game-actions">{!reviewing?p.amateur:null}<button type="button" className="secondary" disabled={p.busy} onClick={p.online?p.onBack:p.onNew}><Icon name="new"/> New game</button></div> : null}
           {p.online && (p.connection !== 'Live' || p.pendingOnlineMove) ? <p className="connection-notice" role="status">{p.pendingOnlineMove ? 'Sending move · waiting for server confirmation' : `${p.connection} · Showing the last confirmed position. Moves are paused until reconnected.`}</p> : null}
 
           {p.ended ? <div className="game-end-actions" aria-label="Game finished">{!p.spectator ? contextual : null}<button className="secondary" onClick={p.onReviewGame}>Review game</button><button className="secondary" onClick={p.onNewOpponent}>New opponent</button></div> : null}
@@ -800,6 +806,7 @@ export function GameSurface(p: GameSurfaceProps) {
             ) : null}
             <section className="sheet-section" aria-label="Game actions"><h3>Game actions</h3><BoardLock locked={boardLocked} onChange={locked=>{setBoardLocked(locked);if(locked){p.onReviewStart();p.onCloseControls?.();}}}/>
               {!p.ended && !p.waiting ? contextual : null}{p.drawControls}
+              {!reviewing&&p.amateur?p.amateur:null}{p.amateurInfo?<p>{p.amateurInfo}</p>:null}
               <button className="secondary" onClick={p.onSound}>{p.sound?'Mute all game sounds':'Enable game sounds'}</button>
             </section>
             <FirstGameTips/>

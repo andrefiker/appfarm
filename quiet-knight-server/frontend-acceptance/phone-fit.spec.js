@@ -5,30 +5,26 @@ const url = process.env.QK_FRONTEND_URL || 'http://127.0.0.1:3000/';
 test.skip(!/^http:\/\/(127\.0\.0\.1|localhost):/.test(url), 'isolated candidate only');
 const opening = ['e4', 'd5', 'exd5', 'Qxd5'];
 
-async function table(page, {role = 'white', moves = opening, accounts = false, guestOpponent = false, teaching = false} = {}) {
+async function table(page, {role = 'white', moves = opening, accounts = false, guestOpponent = false, amateur = false} = {}) {
   let version = 1, number = 1, line = [...moves], release=null, hold=false, settled, code="REV001", swapped=false;
-  const sockets = [], writes = [], errors = [], teachingCalls=[];
-  let teachingRevision=0,teachingEnabled=false,teachingProposal=null,holdTip=false,tipRelease=null;
-  const teachingView=()=>({game_number:number,revision:teachingRevision,available:true,enabled:teachingEnabled,proposal:teachingProposal});
+  const sockets = [], writes = [], errors = [], amateurCalls=[];
+  let amateurEnabled=false;
   page.on('pageerror', error => errors.push(error.message));
   const room = () => {
     const chess = new Chess(); line.forEach(san => chess.move(san));
     const last = chess.history({verbose:true}).at(-1);
-    return {code, ...(teaching?{teaching_revision:teachingRevision}:{}), score_event:settled, fen:chess.fen(), turn:chess.turn(), status:chess.isCheckmate()?'checkmate':'active', winner:chess.isCheckmate()?(chess.turn()==='w'?'b':'w'):null,
+    return {code, ...(amateur?{amateur:{available:true,enabled:amateurEnabled}}:{}), score_event:settled, fen:chess.fen(), turn:chess.turn(), status:chess.isCheckmate()?'checkmate':'active', winner:chess.isCheckmate()?(chess.turn()==='w'?'b':'w'):null,
       version, game_number:number, series_score:{white:2,black:1,draws:1}, created_at:1, white_joined:true, black_joined:true,white_player:{handle:swapped?'Bob':'Alice',quiet_points:0,...(accounts&&(!guestOpponent||role==='white')?{id:swapped?'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb':'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'}:{})},black_player:{handle:swapped?'Alice':'Bob',quiet_points:0,...(accounts&&(!guestOpponent||role==='black')?{id:swapped?'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa':'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'}:{})},
       moves:[...line], last_move:last ? {from:last.from, to:last.to, san:last.san} : null};
   };
   await page.route('**/capabilities', route => route.fulfill({json:{protocol:2, new_games:'untimed', guest_play:true, variants:['standard']}}));
   await page.route(/\/rooms(?:\/REV00[12](?:\/[^/?]+)?)?$/, async route => {
     const path = new URL(route.request().url()).pathname;
-    if(path.endsWith('/teaching')){
-      const data=route.request().postDataJSON();teachingCalls.push(data.action);
-      if(data.action==='status')return route.fulfill({json:{teaching:teachingView()}});
-      if(data.action==='tip'){const json={teaching:teachingView(),fen:room().fen,position_version:version};if(holdTip)await new Promise(resolve=>{tipRelease=resolve});return route.fulfill({json});}
-      if(data.action==='request'){teachingProposal={id:'p1',by:role==='white'?'w':'b'};}
-      if(data.action==='accept'){teachingEnabled=true;teachingProposal=null;}
-      if(data.action==='disable'){teachingEnabled=false;teachingProposal=null;}
-      version++;teachingRevision++;return route.fulfill({json:{room:room()}});
+    if(path.endsWith('/amateur')){
+      const data=route.request().postDataJSON();amateurCalls.push(data);
+      amateurEnabled=data.enabled;version++;
+      for(const socket of sockets)socket.send(JSON.stringify({type:'room.update',room:room()}));
+      return route.fulfill({json:{room:room()}});
     }
     if (path.endsWith('/move')) {
       const payload = route.request().postDataJSON(); writes.push(payload);if(hold)await new Promise(resolve=>{release=resolve;});
@@ -51,8 +47,8 @@ async function table(page, {role = 'white', moves = opening, accounts = false, g
   await page.goto(url);
   await page.getByRole('button',{name:'Create live game', exact:true}).click();
   await expect(page.getByRole('button',{name:'Connection: Live. Reconnect',exact:true})).toBeVisible();
-  return {writes, errors, teachingCalls, holdTip(){holdTip=true;},releaseTip(){holdTip=false;tipRelease?.();}, proposeAsOpponent(){teachingProposal={id:'p2',by:role==='white'?'b':'w'};teachingRevision++;this.update(line,number,settled);}, hold(){hold=true;},release(){hold=false;release?.();}, nextRoom({swap=false}={}){code="REV002";line=[...opening];number=1;version++;settled=undefined;swapped=swap;if(swap)role=role==="white"?"black":"white";}, update(next, gameNumber = number, event) {
-    if(gameNumber!==number){teachingEnabled=false;teachingProposal=null;teachingRevision=0;}
+  return {writes, errors, amateurCalls, opponentAmateur(enabled){amateurEnabled=enabled;this.update(line,number,settled);}, hold(){hold=true;},release(){hold=false;release?.();}, nextRoom({swap=false}={}){code="REV002";line=[...opening];number=1;version++;settled=undefined;swapped=swap;if(swap)role=role==="white"?"black":"white";}, update(next, gameNumber = number, event) {
+    if(gameNumber!==number)amateurEnabled=false;
     line = [...next]; number = gameNumber; version++;settled=event;
     for (const socket of sockets) {
       socket.send(JSON.stringify({type:'room.update', room:room()}));
@@ -243,39 +239,60 @@ test('tap lifetime scoreboard for private pair history and persistent pin',async
  await expect(homePin).toHaveCount(0);
  expect(f.errors).toEqual([]);
 });
-test('live Beginner Coach needs mutual consent, your turn and current position',async({page})=>{
- const f=await table(page,{moves:[],teaching:true});await page.setViewportSize({width:320,height:568});
- await expect(btn(page,'Teaching')).toBeVisible();await fits(page);
- await btn(page,'Teaching').click();await expect(btn(page,'Get tips')).toHaveCount(0);await btn(page,'Close').click();
- f.proposeAsOpponent();await btn(page,'Teaching request').click();await btn(page,'Accept teaching').click();
- await expect(btn(page,'Coach · on')).toBeVisible();await btn(page,'Coach · on').click();
- await expect(page.locator('.coach-choices li').first()).toBeVisible({timeout:18000});
- await expect(page.locator('.coach-choices li small').first()).toContainText('Watch');
- expect(f.teachingCalls.filter(a=>a==='tip')).toHaveLength(1);
- await expect(sq(page,'e2')).toHaveAttribute('data-piece','wp');expect(f.writes).toHaveLength(0);
- f.update(['e4']);await expect(page.getByRole('dialog',{name:'Beginner Coach'})).toBeHidden();
- await btn(page,'Coach · on').click();await expect(page.getByText('Tips are available on your turn.',{exact:true})).toBeVisible();
- expect(f.teachingCalls.filter(a=>a==='tip')).toHaveLength(1);await btn(page,'Turn off teaching').click();
- await expect(btn(page,'Teaching')).toBeVisible();expect(f.errors).toEqual([]);
+for(const role of ['white','black'])test(`Amateur Mode is available to ${role}; updates both colors and clears when disabled`,async({page})=>{
+ const f=await table(page,{role,moves:['e4','d5'],amateur:true});await page.setViewportSize({width:393,height:873});
+ await expect(btn(page,'Beginner Coach')).toHaveCount(0);
+ const toggle=btn(page,'Amateur Mode');await expect(toggle).toHaveAttribute('aria-pressed','false');
+ await expect(page.locator('[data-threatened]')).toHaveCount(0);
+ await toggle.click();await expect(toggle).toHaveAttribute('aria-pressed','true');
+ await expect(toggle).toHaveAccessibleDescription('On for both players. No Quiet Points.');
+ await expect(page.locator('[data-threatened=true]')).toHaveCount(2);
+ await expect(sq(page,'e4')).toHaveAccessibleName(/White pawn, under attack/);
+ await expect(sq(page,'d5')).toHaveAccessibleName(/Black pawn, under attack/);
+ await fits(page);
+ await page.setViewportSize({width:320,height:568});
+ await fits(page);
+ const status=await page.locator('.game-status h2').boundingBox();expect(status.width).toBeGreaterThan(65);expect(status.height).toBeLessThan(55);
+ await page.setViewportSize({width:393,height:873});
+ expect(f.amateurCalls).toEqual([{game_number:1,expected_version:1,seat_token:'synthetic-review-seat',enabled:true}]);
+ if(role==='white'){
+   await mkdir('output/playwright',{recursive:true});
+   await page.screenshot({path:'output/playwright/Quiet-Knight-Amateur-Portrait.png',animations:'disabled'});
+   await page.setViewportSize({width:873,height:393});
+   await expect(toggle).toBeHidden();
+   await expect(page.locator('.board-stage .board [data-square]')).toHaveCount(64);
+   await expect(page.locator('[data-threatened=true]')).toHaveCount(2);
+   await page.screenshot({path:'output/playwright/Quiet-Knight-Amateur-Landscape.png',animations:'disabled'});
+   await page.setViewportSize({width:393,height:873});
+ }
+ f.update(['e4','d5','exd5']);await expect(page.locator('[data-threatened=true]')).toHaveCount(1);
+ await expect(sq(page,'d5')).toHaveAccessibleName(/White pawn, under attack/);
+ await toggle.click();await expect(page.locator('[data-threatened]')).toHaveCount(0);
+ expect(f.writes).toHaveLength(0);expect(f.errors).toEqual([]);
 });
-test('spectators get no teaching controls or private status',async({page})=>{
- const f=await table(page,{role:'spectator',moves:[],teaching:true});await expect(btn(page,'Teaching')).toHaveCount(0);
- await expect(btn(page,'Beginner Coach')).toHaveCount(0);expect(f.teachingCalls).toEqual([]);
+test('opponent activation is reflected in a seated client and resets on rematch',async({page})=>{
+ const f=await table(page,{moves:['e4','d5'],amateur:true});
+ f.opponentAmateur(true);
+ await expect(btn(page,'Amateur Mode')).toHaveAttribute('aria-pressed','true');
+ await expect(page.locator('[data-threatened=true]')).toHaveCount(2);
+ f.update(['e4','d5'],2);
+ await expect(btn(page,'Amateur Mode')).toHaveAttribute('aria-pressed','false');
+ await expect(page.locator('[data-threatened]')).toHaveCount(0);
+ expect(f.amateurCalls).toHaveLength(0);
 });
-test('Beginner Coach analyses offline practice and never plays a move',async({page})=>{
- await page.goto(url);await btn(page,'Play White').click();await btn(page,'Beginner Coach').click();
- await expect(page.locator('.coach-choices li').first()).toBeVisible({timeout:18000});
- await expect(sq(page,'e2')).toHaveAttribute('data-piece','wp');
+test('spectator cannot use Amateur Mode or see its red markings',async({page})=>{
+ const f=await table(page,{role:'spectator',moves:['e4','d5'],amateur:true});
+ f.opponentAmateur(true);
+ await expect(btn(page,'Amateur Mode')).toHaveCount(0);
+ await expect(page.locator('[data-threatened]')).toHaveCount(0);
+ expect(f.amateurCalls).toHaveLength(0);
 });
-
-test('an older opponent cannot silently approve and a late authorized hint is discarded',async({page})=>{
- const f=await table(page,{moves:[],teaching:true});
- await btn(page,'Teaching').click();await btn(page,'Request teaching').click();
- await btn(page,'Teaching request').click();await expect(btn(page,'Accept teaching')).toHaveCount(0);
- await expect(btn(page,'Get tips')).toHaveCount(0);await btn(page,'Close').click();
- expect(f.teachingCalls).not.toContain('tip');
- f.proposeAsOpponent();await btn(page,'Teaching request').click();await btn(page,'Accept teaching').click();
- f.holdTip();await btn(page,'Coach · on').click();await expect.poll(()=>f.teachingCalls.includes('tip')).toBe(true);
- f.update(['e4'],2);await expect(page.getByRole('dialog',{name:'Beginner Coach'})).toBeHidden();
- f.releaseTip();await expect(page.locator('.coach-choices li')).toHaveCount(0);await expect(btn(page,'Teaching')).toBeVisible();
+test('offline Amateur Mode toggles independently of the removed Coach and asks no server',async({page})=>{
+ await page.route('**/capabilities',r=>r.fulfill({json:{protocol:2,new_games:'untimed',guest_play:true,variants:['standard']}}));
+ await page.addInitScript(()=>localStorage.setItem('qk-local-save-v1:guest',JSON.stringify({moves:[{from:'e2',to:'e4'},{from:'d7',to:'d5'}],color:'w',level:2})));
+ const requests=[];page.on('request',r=>{if(/\/(amateur|teaching)$/.test(r.url()))requests.push(r.url());});
+ await page.goto(url);await btn(page,'Resume saved computer game').click();
+ await expect(btn(page,'Beginner Coach')).toHaveCount(0);
+ const toggle=btn(page,'Amateur Mode');await toggle.click();await expect(page.locator('[data-threatened=true]')).toHaveCount(2);
+ await toggle.click();await expect(page.locator('[data-threatened]')).toHaveCount(0);expect(requests).toEqual([]);
 });

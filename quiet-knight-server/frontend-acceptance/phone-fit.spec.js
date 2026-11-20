@@ -142,12 +142,14 @@ test('discrete legal move dots return for older preferences and can still be dis
  const f=await table(page);await sq(page,'d2').click();await expect(sq(page,'d3').locator('.target-dot')).toBeVisible();await expect(sq(page,'d4').locator('.target-dot')).toBeVisible();await expect(sq(page,'d3').locator('.target-dot')).toHaveCSS('background-color','rgb(255, 48, 56)');
  await options(page);await page.getByText('Preferences & diagnostics',{exact:true}).click();await page.getByLabel('Legal destination previews',{exact:true}).uncheck();await btn(page,'Close table controls').click();await expect(page.locator('.target-dot')).toHaveCount(0);await page.reload();await options(page);await page.getByText('Preferences & diagnostics',{exact:true}).click();await expect(page.getByLabel('Legal destination previews',{exact:true})).not.toBeChecked();expect(f.errors).toEqual([]);
 });
-test('captures do not show material points, trays or piece counters on the game screen',async({page})=>{
+test('match material points update without trays or piece counters',async({page})=>{
  const f=await table(page);await page.setViewportSize({width:393,height:780});
  const clutter=page.locator('.board-stage .player-material,.board-stage .player-material-row,.board-stage .loss-tray,.board-stage .piece-capture-mark');
+ await expect(page.getByLabel('Material balance: equal (0)',{exact:true})).toHaveText('0');
  await expect(clutter).toHaveCount(0);
  f.update(['e4','d5','exd5','c6','dxc6']);
  await expect(sq(page,'c6')).toHaveAttribute('data-piece','wp');
+ await expect(page.getByLabel('Material balance: White +2',{exact:true})).toHaveText('White +2');
  await expect(clutter).toHaveCount(0);await fits(page);
  await options(page);
  await expect(page.getByLabel('Material points',{exact:true})).toBeVisible();

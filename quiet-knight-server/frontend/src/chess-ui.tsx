@@ -539,6 +539,9 @@ export function GameSurface(p: GameSurfaceProps) {
     if (ply !== null) p.onReviewStart();
     setSelection(ply === null ? null : { gameId: p.gameId, line: [...p.sans], ply });
   }
+  const liveMaterial=materialTotals(p.board.position);
+  const materialLead=liveMaterial.w-liveMaterial.b;
+  const materialLabel=materialLead===0?'0':`${materialLead>0?'White':'Black'} +${Math.abs(materialLead)}`;
   const shownBoard: BoardProps = review ? {
     ...p.board, position: review.position, last: review.last, check: review.check,
     selected: null, targets: [], motion: null, motionSequence:p.board.motionSequence ?? p.board.motion?.serial, locked: true, drag: false,
@@ -638,6 +641,7 @@ export function GameSurface(p: GameSurfaceProps) {
             </button>
           ) : null}
         </div>
+        {!p.waiting ? <span className="match-material" role="status" aria-label={`Material balance: ${materialLead===0?'equal (0)':materialLabel}`} aria-live="polite" title="Piece-value difference in this game">{materialLabel}</span> : null}
         {p.online && p.code ? <button type="button" className="icon-button copy-game-link" aria-label="Copy game link" title="Copy game link" onClick={p.onCopy}><Icon name="copy" /></button> : null}
         <button
           type="button"

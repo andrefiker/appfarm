@@ -23,3 +23,7 @@ The opaque 1254×1254 icon in frontend/public/icon.png and Android's Quiet Knigh
 ## Sculptor board and pieces (1.6.3)
 
 sculptor-atlas.png is an original generated transparent 12-piece atlas for Quiet Knight. Ceramic and basalt pieces use individual cropped SVG viewports with verified alpha gutters. The museum design uses a procedural stone grain and a framed board. No third-party chess piece art or player screenshots are bundled.
+
+## Sculptor Metalworks (1.6.7)
+
+The bundled atlas now renders the original fine-machined Metalworks set: bright silver with cobalt inlay and blackened steel with copper inlay. The 12 transparent assets are individually cropped. Metal board surfaces and the existing game rules remain separate.

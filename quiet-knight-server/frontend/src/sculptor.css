@@ -1,12 +1,9 @@
 /* Sculptor: ivory ceramic and basalt, with a museum-plinth table. */
-:root { background:#211d1a; --surface:#302824; --text:#f1e7d8; --muted:#cabaaa; --line:#675547; --accent:#e4b889; --light-a:#93adbf; --dark-a:#577a8d; --ivory:#f1e7d8; --ink:#eee2d1; }
+:root { background:#211d1a; --surface:#302824; --text:#f1e7d8; --muted:#cabaaa; --line:#675547; --accent:#e4b889; --light-a:#aeb8bd; --dark-a:#3b4b59; --ivory:#f1e7d8; --ink:#eee2d1; }
 body[data-atmosphere="sculptor"] { background:radial-gradient(ellipse at 30% 0,#71564255,transparent 54%),linear-gradient(155deg,#302823,#211d1a 62%); color:var(--text); }
 .qk .board-frame { border-color:#987e62; background:linear-gradient(155deg,#aa8d6d,#665243 60%,#8b725b); box-shadow:0 3px 0 #171411,0 10px 24px #120f0b7d; }
 .qk .board-frame::before { border-color:#d0b79773; border-radius:1px; }
 .qk .board { outline-color:#362d26; box-shadow:0 0 0 1px #3c3026; }
-.qk .square-light { background:linear-gradient(148deg,#9bb5c7,#93adbf); }
-.qk .square-dark { background:linear-gradient(148deg,#618498,#577a8d); }
-.qk .square-light::before,.qk .square-dark::before { content:'';position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 18% 14%,#fff2df20,transparent 64%); }
 .qk .square-selected::after { border-color:#ffe0ad;background:#dab58129; }
 .qk .square-last::after { box-shadow:inset 0 0 0 1.5px #f3c080; background:#dfa05d36; }
 .qk .art-cell .sculptor-piece { transform:none;filter:drop-shadow(0 2px 1px #1c140d65); }
@@ -17,8 +14,6 @@ body[data-atmosphere="sculptor"] { background:radial-gradient(ellipse at 30% 0,#
 .qk .secondary,.qk .icon-button,.qk .brand-seal { color:var(--text);background:#42342c82;border-color:#a1846a58; }
 .qk .primary { background:linear-gradient(135deg,#f1d8b8,#cd9e75);border-color:#e4b992;color:#2c2019; }
 .qk .display-board { border-color:#a08467;box-shadow:0 5px #3d2e26,0 8px #7c624e,0 15px 22px #0006; }
-.qk .display-light { background:linear-gradient(120deg,#a1bacb,#93adbf); }
-.qk .display-dark { background:linear-gradient(120deg,#66899b,#577a8d); }
 .qk .choice-w {background:linear-gradient(135deg,#ebd9c0,#bd9775);border-color:#cfa988;color:#2b211c;}
 .qk .choice-b {background:linear-gradient(135deg,#5d514b,#352b27);border-color:#846e60;color:#f0e5d8;}
 .qk .join-row input,.qk .invite-field { background:#231c18;border-color:#846a56; }
@@ -46,12 +41,6 @@ body[data-atmosphere="sculptor"] {
   box-shadow:0 2px 0 #352920,0 6px 0 -1px #74614f,0 10px 0 -3px #45372c,0 14px 19px #17110dc9;
 }
 .qk .board { outline-color:#493c30;box-shadow:0 0 0 1px #877059; }
-.qk .square-light { background:radial-gradient(ellipse at 23% 15%,#e4f5ff1f,transparent 70%),#93adbf; }
-.qk .square-dark { background:radial-gradient(ellipse at 24% 12%,#d1edff17,transparent 70%),#577a8d; }
-.qk .square-light::before,.qk .square-dark::before {
-  opacity:.28;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='86' height='86'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.53' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='.88'/%3E%3C/svg%3E");
-  background-size:78px 78px;mix-blend-mode:multiply;
-}
 .qk .art-cell .sculptor-piece { filter:drop-shadow(1px 2px 1px #20140db8); }
 .qk .player-strip { background:transparent;box-shadow:none;border-color:transparent; }
 .qk .player-strip .player-handle { color:#f6eadb; }
@@ -76,30 +65,47 @@ body[data-atmosphere="sculptor"] {
  }
  .mobile-table .game-title { flex-wrap:wrap;gap:0 8px; }
  .mobile-table .game-title h1 {width:100%;font-size:19px;line-height:1.15; }
- .mobile-table .game-title::after {content:"SCULPTOR  ∙  CERAMIC GALLERY";font-size:8px;letter-spacing:.15em;color:#dec8ad; }
+ .mobile-table .game-title::after {content:"SCULPTOR  ∙  METALWORKS";font-size:8px;letter-spacing:.15em;color:#dec8ad; }
  .mobile-table .game-title button.connection { min-height:17px;font-size:10px; }
 }
 
 
-/* Slate Blue refinement: keep the moves/check styling unchanged. */
-.qk .square-light { background:#93adbf; }
-.qk .square-dark { background:#577a8d; }
-.qk .square-light::before,.qk .square-dark::before { opacity:.11; }
-
-.qk.mobile-table .board-frame {
-  border-color:#566773;
-  background:linear-gradient(150deg,#99a8ae,#364853 52%,#71808a);
-  border-radius:3px;
-  box-shadow:0 1px 1px #1a1918,0 5px 12px #17110d90;
+/* Machined steel. Keep the selection/last move/check overlays on ::after unchanged. */
+.qk .square-light,.qk .display-light {
+  background-color:var(--light-a);
+  background-image:
+    linear-gradient(123deg,#f5fcff4a 0%,#d5e1e651 19%,#81949d19 39%,#edf7fb2e 47%,#f6fbff64 53%,#85919830 69%,#43546238 100%),
+    repeating-linear-gradient(0deg,#26374312 0 1px,#ffffff18 1px 2px,transparent 2px 5px);
+}
+.qk .square-dark,.qk .display-dark {
+  background-color:var(--dark-a);
+  background-image:
+    linear-gradient(123deg,#819baa66 0%,#5d71815c 17%,#2635433d 38%,#a5bccc2b 52%,#5e73835c 58%,#27374522 76%,#12202c85 100%),
+    repeating-linear-gradient(0deg,#03090e1a 0 1px,#c5ddea17 1px 2px,transparent 2px 4px);
+}
+.qk :is(.square-light,.square-dark)::before {
+  content:'';
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  box-shadow:inset 0 1px #ffffff4d,inset 1px 0 #e1f3ff27,inset 0 -1px #07101882,inset -1px 0 #1424325f;
+}
+.qk .square-dark::before {
+  box-shadow:inset 0 1px #d9efff55,inset 1px 0 #bfd6e92b,inset 0 -1px #020709a6,inset -1px 0 #06111a8c;
+}
+.qk.mobile-table .board-frame,.qk .board-frame {
+  border-color:#62717b;
+  background:linear-gradient(151deg,#e5edf046 6%,#aebcc3 21%,#293844 55%,#81929c 82%,#d9e2e6);
+  box-shadow:inset 0 1px #f4fcff66,0 1px 1px #11171c,0 5px 12px #10151c90;
 }
 .qk.mobile-table .board-frame::before { border-width:0; }
-.qk.mobile-table .board { outline-color:#394952;box-shadow:none; }
+.qk.mobile-table .board,.qk .board { outline-color:#273744;box-shadow:none; }
 
 .qk .sculptor-piece.art-w {
-  filter:saturate(.72) brightness(1.045) drop-shadow(1px 2px 1px #20262c96);
+  filter:drop-shadow(0 0 .4px #253542ad) drop-shadow(1px 2px 1px #20262c96);
 }
 .qk .sculptor-piece.art-b {
-  filter:drop-shadow(0 0 .6px #edf5ffcc) drop-shadow(1px 2px 1px #141a1fbd);
+  filter:drop-shadow(0 0 .65px #edf5ffcc) drop-shadow(1px 2px 1px #141a1fbd);
 }
 
 .qk .game-header {

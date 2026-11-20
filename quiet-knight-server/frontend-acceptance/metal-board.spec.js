@@ -2,7 +2,7 @@ import {test,expect} from '@playwright/test';
 import {mkdir} from 'node:fs/promises';
 const url=process.env.QK_FRONTEND_URL||'http://127.0.0.1:3000/';
 test.skip(!/^http:\/\/(127\.0\.0\.1|localhost):/.test(url),'isolated candidate only');
-test('blue-gray and ivory marble remain distinct on a square phone board',async({page})=>{
+test('solid blue-gray and ivory squares remain distinct on a square phone board',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('qk-play-preferences-v1',JSON.stringify({schema:1,coordinates:false})));
  await page.setViewportSize({width:390,height:844});
  await page.route('**/capabilities',route=>route.fulfill({json:{protocol:2,new_games:'untimed',guest_play:true,variants:['standard']}}));
@@ -12,9 +12,9 @@ test('blue-gray and ivory marble remain distinct on a square phone board',async(
  await expect(dark).toHaveCSS('background-color','rgb(96, 112, 120)');
  await expect(light).toHaveCSS('background-color','rgb(229, 216, 201)');
  for(const square of [dark,light]){
-   await expect(square).toHaveCSS('background-image',/^linear-gradient.*data:image\/svg\+xml/);
-   await expect(square).not.toHaveCSS('background-image',/repeating-linear-gradient/);
-   expect(await square.evaluate(el=>getComputedStyle(el,'::before').boxShadow)).toMatch(/inset/);
+   await expect(square).toHaveCSS('background-image','none');
+   await expect(square).toHaveCSS('box-shadow','none');
+   expect(await square.evaluate(el=>getComputedStyle(el,'::before').content)).toBe('none');
  }
  await expect(board.locator('.square')).toHaveCount(64);
  const frame=page.locator('.board-stage .board-frame').filter({has:page.locator('.board')});

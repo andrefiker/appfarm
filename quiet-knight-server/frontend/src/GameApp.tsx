@@ -40,6 +40,7 @@ import {describeBoardMotion} from './board-effects';
 import { useRoomRealtime } from "./use-room-realtime";
 import { useMoveNotifications } from "./push-notifications";
 import type { Position, Motion } from "./chess-ui";
+import {BeginnerCoach} from "./beginner-coach";
 import type { Color } from "./pieces";
 import { lossesFromHistory } from "./chess-view-model";
 import { buildGame } from "./computer";
@@ -47,6 +48,7 @@ import { useComputerOpponent } from "./use-computer-opponent";
 import type { LocalMove } from "./computer";
 type Role = "white" | "black" | "spectator";
 type RoomState = ClockState & {
+  teaching_revision?:number;
   game_number?: number;
   started_at?: number; ended_at?: number;
   kind?:string;white_nickname?:string;black_nickname?:string;
@@ -88,7 +90,7 @@ type Modal =
   | "invite"
   | null;
 const REACTIONS:Record<string,string>={hello:"👋", "well-played":"👏",thanks:"🙏",fox:"🦊",owl:"🦉",tortoise:"🐢"};
-const BUILD = "Quiet Knight 1.6.10 · Sculptor";
+const BUILD = "Quiet Knight 1.6.11 · Sculptor";
 function roleColor(role: Role | null): Color | null {
   return role === "white" ? "w" : role === "black" ? "b" : null;
 }
@@ -1269,6 +1271,7 @@ export default function GameApp() {
           gameId={record.id}
           onReviewStart={() => { setSelected(null); setPendingMove(null); setPromotion(null); }}
           clock={room||undefined}
+          coach={!ended&&!waiting&&(room?!!me:mode!=='online')?<BeginnerCoach room={room} seat={seatToken} me={me} fen={game.fen()} yourTurn={!!me&&turn===me&&!pendingOnlineMove} connected={connection==='Live'} accept={next=>acceptRoom(next as RoomState)} />:null}
           lifetimeScore={room && viewerId && scoreboardRival ? <HeadToHead viewerId={viewerId} rival={scoreboardRival} roomCode={room.code} eventId={room.score_event?.id} settling={ended && !room.score_event} recentGames={viewerId === accountViewer ? knight.games : undefined} pinnedRival={pinnedOpponent} onPinChange={onScoreboardPinChange} /> : mode === "online" ? <HeadToHeadStatus message={scoreboardRoomStatus(room, me)} /> : null}
           drawControls={room && room.status === 'active' && room.black_joined && me ? <DrawControls me={me} proposal={room.proposal} busy={busy} connected={connection === 'Live'} paused={Boolean(room.clock_paused)} onAction={action => void consent(action, action === 'request' ? 'draw' : undefined)} /> : null}
           pauseControls={room && room.status === 'active' ? <ClockControls state={room} me={me} busy={busy || connection !== 'Live'} onAction={(action) => void changePause(action)} /> : null}

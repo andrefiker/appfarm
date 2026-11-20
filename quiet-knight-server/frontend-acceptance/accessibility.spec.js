@@ -7,7 +7,7 @@ const sq=(p,s)=>p.locator('.board-stage .board [data-square='+s+']').first();
 async function capabilities(page){
  await page.route('**/capabilities',r=>r.fulfill({json:{protocol:2,new_games:'untimed',guest_play:true,variants:['standard']}}));
 }
-test('sculpted set is default, silhouettes are opt-in and saved with original board controls',async({page})=>{
+test('Staunton is default, silhouettes are opt-in and saved with original board controls',async({page})=>{
  await capabilities(page);await page.goto(url);await page.getByRole('button',{name:/Play White/}).click();
  await expect(sq(page,'e2').locator('.sculptor-piece > svg')).toBeVisible();
  await expect(sq(page,'e2').locator('.qk-piece-silhouette')).toBeHidden();

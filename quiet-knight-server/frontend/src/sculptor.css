@@ -65,7 +65,7 @@ body[data-atmosphere="sculptor"] {
  }
  .mobile-table .game-title { flex-wrap:wrap;gap:0 8px; }
  .mobile-table .game-title h1 {width:100%;font-size:19px;line-height:1.15; }
- .mobile-table .game-title::after {content:"SCULPTOR  ∙  METALWORKS";font-size:8px;letter-spacing:.15em;color:#dec8ad; }
+ .mobile-table .game-title::after {content:"STAUNTON  ∙  OPTION 01";font-size:8px;letter-spacing:.15em;color:#dec8ad; }
  .mobile-table .game-title button.connection { min-height:17px;font-size:10px; }
 }
 

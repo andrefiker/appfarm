@@ -167,7 +167,7 @@ test('match material points update without trays or piece counters',async({page}
  await expect(page.getByLabel('Material points',{exact:true})).toBeVisible();
 });
 
-test('portrait gets more playable board width and taller tile-contained sculptures',async({page})=>{
+test('portrait gets more playable board width and aligned tile-contained Staunton pieces',async({page})=>{
  await table(page);
  await page.setViewportSize({width:390,height:844});await fits(page);
  const board=page.locator('.board-stage > .board-frame .board');
@@ -179,11 +179,14 @@ test('portrait gets more playable board width and taller tile-contained sculptur
  const baseline=await board.boundingBox();
  expect(widened.width-baseline.width).toBeGreaterThanOrEqual(8);
  await original.evaluate(el=>el.remove());await expect.poll(async()=> (await board.boundingBox()).width).toBe(widened.width);
- for(const [tile,height] of [['a2',71],['g1',93],['c1',94],['a1',83],['d1',95],['e1',97]]){
-   const inner=sq(page,tile).locator('.sculptor-piece > svg');
-   await expect(inner).toHaveAttribute('height',String(height));
-   expect(height+Number(await inner.getAttribute('y'))).toBe(98);
+ const bases=[];
+ for(const tile of ['a2','g1','c1','a1','d1','e1']){
+   const inner=sq(page,tile).locator('[data-turned-wood]');
+   await expect(inner).toBeVisible();
+   bases.push(await inner.locator('g > path').nth(1).evaluate(el=> Math.round(el.getBoundingClientRect().bottom*10)/10));
  }
+ expect(Math.abs(bases[1]-bases[0]-widened.width/8)).toBeLessThan(0.6);
+ expect(Math.max(...bases.slice(1))-Math.min(...bases.slice(1))).toBeLessThan(0.6);
  for(const [width,height] of [[320,568],[360,640],[393,780]]){await page.setViewportSize({width,height});await fits(page);}
 });
 for(const optedIn of [false,true])test('confirmed online turn vibration opt-in = '+optedIn,async({page})=>{

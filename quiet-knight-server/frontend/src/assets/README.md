@@ -27,3 +27,7 @@ sculptor-atlas.png is an original generated transparent 12-piece atlas for Quiet
 ## Sculptor Metalworks (1.6.7)
 
 The bundled atlas now renders the original fine-machined Metalworks set: bright silver with cobalt inlay and blackened steel with copper inlay. The 12 transparent assets are individually cropped. Metal board surfaces and the existing game rules remain separate.
+
+## Turned Staunton (1.6.13)
+
+The default pieces are the original inline SVG Staunton set in ../staunton-pieces.tsx, based on concept 01: boxwood and ebony, a shared turned base, and six distinct silhouettes. The marble board, high-contrast option, and saved-game schema are unchanged.

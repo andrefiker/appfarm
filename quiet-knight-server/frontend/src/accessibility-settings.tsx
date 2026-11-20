@@ -2,7 +2,7 @@ import type {PieceStyle,SoundCues} from './accessibility-preferences';
 export function PieceStyleSetting({value,onChange}:{value:PieceStyle;onChange:(v:PieceStyle)=>void}){
  return <label className="preference-row"><span>Piece style</span>
   <select aria-label="Piece style" value={value} onChange={e=>onChange(e.target.value==='contrast'?'contrast':'sculptor')}>
-   <option value="sculptor">Sculpted (default)</option><option value="contrast">High-contrast silhouettes</option>
+   <option value="sculptor">Staunton (default)</option><option value="contrast">High-contrast silhouettes</option>
   </select>
  </label>;
 }

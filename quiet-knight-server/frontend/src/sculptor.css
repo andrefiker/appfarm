@@ -174,3 +174,58 @@ body[data-coordinates=true] .qk.mobile-table .file-coordinate { bottom:2px; righ
  .qk.mobile-table .board-stage > .board-frame::before {content:none}
  .qk.mobile-table .board-stage > .board-frame .board {outline:0}
 }
+
+
+/* 1.6.15 phone UI polish — layout only. Keep all Staunton/sculptor piece art unchanged.
+   The viewport-fit board remains governed by --fit-board-size and existing landscape rules. */
+@media (orientation:portrait) and (max-width:600px) {
+  .qk.mobile-table .game-header {
+    border-radius:6px;
+    box-shadow:inset 0 -1px #d3b39533;
+  }
+  .qk.mobile-table .game-title h1 {
+    letter-spacing:.045em;
+    text-wrap:balance;
+  }
+  .qk.mobile-table .board-stage { gap:3px; }
+  .qk.mobile-table .player-strip {
+    border-radius:7px;
+  }
+  .qk.mobile-table .player-bar {
+    min-height:34px;
+    padding-inline:10px;
+  }
+  .qk.mobile-table .player-handle {
+    font-size:clamp(16px,4.2vw,19px);
+    font-weight:650;
+  }
+  .qk.mobile-table .player-meta { font-size:12px; }
+  .qk.mobile-table .player-material-row { padding-inline:10px; }
+  .qk.mobile-table .table-below {
+    align-content:start;
+    gap:6px;
+    padding-inline:8px;
+  }
+  .qk.mobile-table .main-game-actions {
+    gap:6px;
+  }
+  .qk.mobile-table .main-game-actions button {
+    min-height:48px;
+    border-radius:10px;
+    padding-inline:clamp(8px,2vw,14px);
+    font-weight:600;
+  }
+  .qk.mobile-table .game-status h2 {
+    font-size:clamp(16px,4.3vw,20px);
+    line-height:1.2;
+  }
+  .qk.mobile-table .match-material {
+    font-size:12px;
+    padding:3px 7px;
+    font-variant-numeric:tabular-nums;
+  }
+  .qk.mobile-table .board-frame { border-radius:3px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  .qk.mobile-table .main-game-actions button { transition:none; }
+}

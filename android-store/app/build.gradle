@@ -32,10 +32,14 @@ android {
             // candidate alongside it, preserving the original app and local saves.
             // Opt-in, separately signed installation; never replaces Studio.
             def emeraldInstall = project.hasProperty('qkStandaloneEmerald')
-            applicationId emeraldInstall ? 'com.andrefiker.quietknight.emerald' : 'com.andrefiker.quietknight.appfarm.studio'
-            versionCode emeraldInstall ? 49 : 16
-            versionName emeraldInstall ? '1.6.18' : '1.1.11'
-            resValue 'string', 'app_name', emeraldInstall ? 'Quiet Knight Emerald' : 'Quiet Knight'
+            def forestInstall = project.hasProperty('qkStandaloneForest')
+            if (emeraldInstall && forestInstall) {
+                throw new GradleException('Choose exactly one standalone Quiet Knight identity')
+            }
+            applicationId forestInstall ? 'com.andrefiker.quietknight.forest' : (emeraldInstall ? 'com.andrefiker.quietknight.emerald' : 'com.andrefiker.quietknight.appfarm.studio')
+            versionCode (emeraldInstall || forestInstall) ? 49 : 16
+            versionName (emeraldInstall || forestInstall) ? '1.6.18' : '1.1.11'
+            resValue 'string', 'app_name', forestInstall ? 'Quiet Knight Forest' : (emeraldInstall ? 'Quiet Knight Emerald' : 'Quiet Knight')
             buildConfigField 'String', 'SOURCE_COMMIT', '"' + (System.getenv('GITHUB_SHA') ?: 'local-unverified') + '"'
             buildConfigField 'String', 'HOME_URL', '"https://quiet-knight-server-production.up.railway.app/assets/quiet-knight/index.html"'
         }

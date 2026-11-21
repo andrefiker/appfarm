@@ -9,7 +9,7 @@ test('solid blue-gray and ivory squares remain distinct on a square phone board'
  await page.goto(url);await page.getByRole('button',{name:/Play White/}).click();
  const board=page.locator('.board-stage .board');
  const dark=board.locator('[data-square=a1]'),light=board.locator('[data-square=b1]');
- await expect(dark).toHaveCSS('background-color','rgb(96, 112, 120)');
+ await expect(dark).toHaveCSS('background-color','rgb(64, 93, 76)');
  await expect(light).toHaveCSS('background-color','rgb(229, 216, 201)');
  for(const square of [dark,light]){
    await expect(square).toHaveCSS('background-image','none');

@@ -8,13 +8,13 @@ const opening = ['e4', 'd5', 'exd5', 'Qxd5'];
 async function table(page, {role = 'white', moves = opening, accounts = false, guestOpponent = false, amateur = false} = {}) {
   let version = 1, number = 1, line = [...moves], release=null, hold=false, settled, code="REV001", swapped=false;
   const sockets = [], writes = [], errors = [], amateurCalls=[];
-  let amateurEnabled=false;
+  let amateurEnabled=false, series={white:2,black:1,draws:1};
   page.on('pageerror', error => errors.push(error.message));
   const room = () => {
     const chess = new Chess(); line.forEach(san => chess.move(san));
     const last = chess.history({verbose:true}).at(-1);
     return {code, ...(amateur?{amateur:{available:true,enabled:amateurEnabled}}:{}), score_event:settled, fen:chess.fen(), turn:chess.turn(), status:chess.isCheckmate()?'checkmate':'active', winner:chess.isCheckmate()?(chess.turn()==='w'?'b':'w'):null,
-      version, game_number:number, series_score:{white:2,black:1,draws:1}, created_at:1, white_joined:true, black_joined:true,white_player:{handle:swapped?'Bob':'Alice',quiet_points:0,...(accounts&&(!guestOpponent||role==='white')?{id:swapped?'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb':'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'}:{})},black_player:{handle:swapped?'Alice':'Bob',quiet_points:0,...(accounts&&(!guestOpponent||role==='black')?{id:swapped?'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa':'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'}:{})},
+      version, game_number:number, series_score:series, created_at:1, white_joined:true, black_joined:true,white_player:{handle:swapped?'Bob':'Alice',quiet_points:0,...(accounts&&(!guestOpponent||role==='white')?{id:swapped?'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb':'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'}:{})},black_player:{handle:swapped?'Alice':'Bob',quiet_points:0,...(accounts&&(!guestOpponent||role==='black')?{id:swapped?'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa':'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'}:{})},
       moves:[...line], last_move:last ? {from:last.from, to:last.to, san:last.san} : null};
   };
   await page.route('**/capabilities', route => route.fulfill({json:{protocol:2, new_games:'untimed', guest_play:true, variants:['standard']}}));
@@ -54,7 +54,7 @@ async function table(page, {role = 'white', moves = opening, accounts = false, g
       socket.send(JSON.stringify({type:'room.update', room:room()}));
       socket.send(JSON.stringify({type:'seat.role', role, game_number:number}));
     }
-  }};
+  }, score(next){series=next;this.update(line,number,settled);}};
 }
 const btn=(p,name)=>p.getByRole('button',{name,exact:true});
 const sq=(p,s)=>p.locator(`.board-stage [data-square=${s}]`);
@@ -71,7 +71,7 @@ test('saved computer games recover the board without stored SAN',async({page})=>
 
 async function fits(page){
  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight+1&&document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
- const selectors=['.game-header','.board-stage>.board-frame','.player-strip:first-child','.player-strip[data-player-color=w]','.game-status','.lifetime-score','.main-game-actions','.quick-game-actions'];
+ const selectors=['.game-header','.board-stage>.board-frame','.player-strip:first-child','.player-strip[data-player-color=w]','.game-status','.table-score','.lifetime-score','.main-game-actions','.quick-game-actions'];
  for(const selector of selectors){const el=page.locator(selector).first();if(await el.count()&&await el.isVisible()){const r=await el.boundingBox();expect(r.y).toBeGreaterThanOrEqual(-1);expect(r.y+r.height).toBeLessThanOrEqual(await page.evaluate(()=>innerHeight)+1);}}
  const boxes=await page.locator('.board-stage>.board-frame .square').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return [r.width,r.height]}));expect(boxes).toHaveLength(64);for(const[w,h]of boxes){expect(Math.abs(w-h)).toBeLessThan(.6);expect(w).toBeGreaterThan(18);}
 }
@@ -82,17 +82,50 @@ for(const role of ['white','black'])test(`portrait table fits without scrolling 
  await options(page);await expect(page.getByRole('complementary',{name:'First game tips'})).toBeVisible();await btn(page,'Close table controls').click();
  if(role==='white'){await sq(page,'g1').click();await sq(page,'f3').click();await expect(sq(page,'f3')).toHaveAttribute('data-piece','wn');expect(f.writes).toHaveLength(1);}expect(f.errors).toEqual([]);
 });
-test('large text and final actions fit on short phones without capture trays',async({page})=>{
+test('large text and final actions fit on short phones with compact lost-piece trays',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('qk-play-preferences-v1',JSON.stringify({schema:1,textSize:'large',rematchColors:'same'})));
  const f=await table(page,{moves:['e4','d5','exd5','c6','dxc6','Nxc6']});
  await page.setViewportSize({width:360,height:640});
- await expect(page.locator('.board-stage .player-material-row,.board-stage .loss-tray,.board-stage .capture-count')).toHaveCount(0);
+ await expect(page.getByRole('group',{name:'Black lost pieces'}).getByRole('img',{name:/Pawn: 2/i})).toBeVisible();
+ await expect(page.getByRole('group',{name:'White lost pieces'}).getByRole('img',{name:/Pawn: 1/i})).toBeVisible();
  await fits(page);
  f.update(['f3','e5','g4','Qh4#']);await expect(btn(page,'Rematch')).toBeVisible();await fits(page);await expect(btn(page,'Rematch')).toContainText('Swap sides');await btn(page,'Rematch').click();await expect(page.locator('.board .chess-art')).toHaveCount(32);expect(f.writes).toHaveLength(1);expect(f.writes[0]).toMatchObject({colors:'swap',game_number:1});expect(f.writes[0].action).toBeUndefined();expect(new URL(page.url()).searchParams.get('room')).toBe('REV001');await fits(page);await options(page);await btn(page,'Lock board').click();await expect(btn(page,'Hold to unlock')).toBeVisible();await fits(page);expect(f.errors).toEqual([]);
 });
 test('capture replay lives in options and keeps the live table fitted',async({page})=>{
  const f=await table(page,{moves:['e4','d5']});await page.setViewportSize({width:393,height:780});f.update(['e4','d5','exd5']);await expect(sq(page,'d5')).toHaveAttribute('data-piece','wp');await expect(btn(page,'Replay last capture')).toHaveCount(0);await fits(page);
  await options(page);await btn(page,'Replay last capture').click();await expect(page.getByRole('dialog',{name:'Capture replay',exact:true})).toBeVisible();await btn(page,'Close replay').click();await expect(page.getByRole('dialog',{name:'Table controls',exact:true})).toBeVisible();await btn(page,'Close table controls').click();await fits(page);expect(f.writes).toHaveLength(0);expect(f.errors).toEqual([]);
+});
+
+test('same-table scoreboard uses server totals, including guests and rematches, while landscape stays board-only',async({page})=>{
+ await page.setViewportSize({width:393,height:873});
+ const f=await table(page,{moves:[]});
+ const score=page.getByRole('status',{name:'Table scoreboard'});
+ await expect(score).toContainText('White 2');
+ await expect(score).toContainText('Draws 1');
+ await expect(score).toContainText('Black 1');
+ await expect(page.getByLabel('Lifetime scoreboard')).toContainText('Sign in');
+ f.update(['f3','e5','g4','Qh4#']);
+ f.score({white:2,black:2,draws:1});
+ await expect(score).toContainText('Black 2');
+ await btn(page,'Rematch').click();
+ await expect(score).toContainText('Black 2');
+ await expect(score).toContainText('White 2');
+ f.score({white:2,black:3,draws:1});
+ await expect(score).toContainText('Black 3');
+ f.update(['e4','d5','exd5','Qxd5'],2);
+ const loss=page.getByRole('group',{name:'Black lost pieces'});
+ await expect(loss.getByRole('img',{name:/Pawn: 1/i})).toBeVisible();
+ await page.setViewportSize({width:320,height:568});await fits(page);
+ await page.setViewportSize({width:873,height:393});await expect(score).toBeHidden();await expect(loss).toBeHidden();
+ await expect(page.locator('.board-stage .square')).toHaveCount(64);
+ await page.setViewportSize({width:393,height:873});await expect(score).toContainText('Black 3');
+ await expect(loss).toBeVisible();
+ await expect(page.locator('.board-stage .square[data-square=d5]')).toHaveAttribute('data-piece','bq');
+ await expect(page.locator('.board-stage .board .chess-art')).toHaveCount(30);
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ await mkdir('output/playwright',{recursive:true});
+ await page.screenshot({path:'output/playwright/table-score-portrait.png'});
+ expect(f.errors).toEqual([]);
 });
 
 test('lifetime scoreboard follows signed-in players between rooms and updates only once settled',async({page})=>{

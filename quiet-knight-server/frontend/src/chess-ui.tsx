@@ -413,6 +413,7 @@ function PlayerBar({
   presence,
   detail,
   turnText,
+  lost,
 }: {
   clock?: ClockState;
   color: Color;
@@ -422,8 +423,12 @@ function PlayerBar({
   presence?: string;
   detail?: string;
   turnText?:string;
+  lost?: readonly Kind[];
 }) {
   const waitingForFriend = !yours && name === "Seat open";
+  const missing = (["q", "r", "b", "n", "p"] as const)
+    .map(kind => ({kind, count: lost?.filter(piece => piece === kind).length ?? 0}))
+    .filter(item => item.count > 0);
   return (
     <div className={`player-strip${active ? " player-active" : ""}`} data-player-color={color}><div className={`player-bar${yours ? " player-yours" : ""}`}>
       <span className="player-identity">
@@ -455,7 +460,13 @@ function PlayerBar({
           </span>
         ) : null}
       </span>
-    </div></div>
+    </div>{missing.length > 0 ? <div className="player-losses" role="group" aria-label={color === "w" ? "White lost pieces" : "Black lost pieces"}>
+      <span className="player-losses-label">Lost</span>
+      {missing.map(({kind,count}) => <span className="player-loss-token" key={kind} role="img" aria-label={`${pieceNames[kind]}: ${count}`} title={`${pieceNames[kind]}: ${count}`}>
+        <span aria-hidden="true"><Piece color={color} kind={kind} scope={`table-loss-${color}-${kind}`} /></span>
+        {count > 1 ? <b aria-hidden="true">×{count}</b> : null}
+      </span>)}
+    </div> : null}</div>
   );
 }
 export type GameSurfaceProps = {
@@ -486,6 +497,7 @@ export type GameSurfaceProps = {
   animalReaction?: string;
   computerEngine?: string;
   pendingOnlineMove?:boolean;
+  tableScore?: {white:number; black:number; draws:number};
   lifetimeScore?:React.ReactNode;
   drawPending?:boolean;
   onReviewGame:()=>void;
@@ -523,14 +535,14 @@ export function GameSurface(p: GameSurfaceProps) {
     const el=stage.current;if(!el)return;
     const resize=()=>{
       if(!matchMedia('(max-width: 600px)').matches){el.style.removeProperty('--fit-board-size');return;}
-      const panels=Array.from(el.querySelectorAll<HTMLElement>(':scope > .player-strip, :scope > .board-lock, :scope > .lifetime-score, :scope > .lifetime-score-mount'));
+      const panels=Array.from(el.querySelectorAll<HTMLElement>(':scope > .player-strip, :scope > .board-lock, :scope > .table-score, :scope > .lifetime-score, :scope > .lifetime-score-mount'));
       const reserved=panels.reduce((n,p)=>n+p.getBoundingClientRect().height,0)+panels.length*5;
       const side=Math.floor(Math.max(8,Math.min(el.clientWidth,el.clientHeight-reserved)));
       if(el.style.getPropertyValue('--fit-board-size')!==`${side}px`)el.style.setProperty('--fit-board-size',`${side}px`);
     };
     const observer=new ResizeObserver(resize);observer.observe(el);
     const children=new MutationObserver(resize);children.observe(el,{childList:true});
-    for(const panel of el.querySelectorAll('.player-strip, .lifetime-score, .lifetime-score-mount'))observer.observe(panel);
+    for(const panel of el.querySelectorAll('.player-strip, .table-score, .lifetime-score, .lifetime-score-mount'))observer.observe(panel);
     window.addEventListener('resize',resize);resize();
     return()=>{observer.disconnect();children.disconnect();window.removeEventListener('resize',resize);};
   },[]);
@@ -669,6 +681,7 @@ export function GameSurface(p: GameSurfaceProps) {
             turnText={!p.online && top!==p.me ? p.status.includes("paused")?"Paused":p.status.includes("unavailable")?"Unavailable":"Thinking" : undefined}
             clock={p.clock}
             name={playerName(top)}
+            lost={reviewing ? undefined : p.losses?.[top]}
             detail={detail(top)}
             presence={top !== p.me ? p.presenceLabel : undefined}
             active={!reviewing && !p.ended && !p.waiting && !p.clock?.clock_paused && p.turn === top}
@@ -681,10 +694,17 @@ export function GameSurface(p: GameSurfaceProps) {
             turnText={!p.online && bottom!==p.me ? p.status.includes("paused")?"Paused":p.status.includes("unavailable")?"Unavailable":"Thinking" : undefined}
             clock={p.clock}
             name={playerName(bottom)}
+            lost={reviewing ? undefined : p.losses?.[bottom]}
             detail={detail(bottom)}
             active={!reviewing && !p.ended && !p.waiting && !p.clock?.clock_paused && p.turn === bottom}
             yours={bottom === p.me}
           />
+          {p.tableScore ? <div className="table-score" role="status" aria-label="Table scoreboard" aria-live="polite" aria-atomic="true" title="Completed games in this room, including rematches">
+            <strong>Table score</strong>
+            <span>White <b>{p.tableScore.white}</b></span>
+            <span>Draws <b>{p.tableScore.draws}</b></span>
+            <span>Black <b>{p.tableScore.black}</b></span>
+          </div> : null}
           {p.lifetimeScore}
         </section>
         <section className="table-below" aria-label="Current game">

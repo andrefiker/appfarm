@@ -189,3 +189,8 @@ body[data-coordinates=true] .qk.mobile-table .file-coordinate { bottom:2px; righ
  .qk.mobile-table .board-stage > .board-frame::before {content:none}
  .qk.mobile-table .board-stage > .board-frame .board {outline:0}
 }
+
+/* Soft edge light for black pieces on dark squares only. */
+.qk .board .square-dark .chess-art.art-b {
+  filter:drop-shadow(0 0 1px #e3dbb7) drop-shadow(0 0 2.35px #ded6b48c) drop-shadow(0 2px 1px #211918b3);
+}

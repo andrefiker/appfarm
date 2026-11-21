@@ -272,16 +272,23 @@ test('tap lifetime scoreboard for private pair history and persistent pin',async
  await expect(homePin).toHaveCount(0);
  expect(f.errors).toEqual([]);
 });
-for(const role of ['white','black'])test(`Amateur Mode is available to ${role}; updates both colors and clears when disabled`,async({page})=>{
+for(const role of ['white','black'])test(`Amateur Mode only marks ${role}'s threatened pieces and clears when disabled`,async({page})=>{
  const f=await table(page,{role,moves:['e4','d5'],amateur:true});await page.setViewportSize({width:393,height:873});
  await expect(btn(page,'Beginner Coach')).toHaveCount(0);
  const toggle=btn(page,'Amateur Mode');await expect(toggle).toHaveAttribute('aria-pressed','false');
  await expect(page.locator('[data-threatened]')).toHaveCount(0);
+ const own=sq(page,role==='white'?'e4':'d5'), other=sq(page,role==='white'?'d5':'e4');
+ const normalFilter=await own.locator('.chess-art').evaluate(el=>getComputedStyle(el).filter);
  await toggle.click();await expect(toggle).toHaveAttribute('aria-pressed','true');
- await expect(toggle).toHaveAccessibleDescription('On for both players. No Quiet Points.');
- await expect(page.locator('[data-threatened=true]')).toHaveCount(2);
- await expect(sq(page,'e4')).toHaveAccessibleName(/White pawn, under attack/);
- await expect(sq(page,'d5')).toHaveAccessibleName(/Black pawn, under attack/);
+ await expect(toggle).toHaveAccessibleDescription('Each player sees only their own threatened pieces. No Quiet Points if used.');
+ await expect(page.locator('[data-threatened=true]')).toHaveCount(1);
+ await expect(own).toHaveAccessibleName(/pawn, under attack/);
+ await expect(other).not.toHaveAccessibleName(/under attack/);
+ const dot=own.locator('.amateur-threat-dot');
+ await expect(dot).toHaveCSS('width','7px');
+ await expect(own.locator('.chess-art')).toHaveCSS('filter',normalFilter);
+ await expect(page.getByRole('button',{name:'Connection: Live. Reconnect',exact:true})).toHaveText('');
+ expect(await page.locator('.game-title').evaluate(el=>getComputedStyle(el,'::after').content)).toBe('none');
  await fits(page);
  await page.setViewportSize({width:320,height:568});
  await fits(page);
@@ -294,12 +301,12 @@ for(const role of ['white','black'])test(`Amateur Mode is available to ${role}; 
    await page.setViewportSize({width:873,height:393});
    await expect(toggle).toBeHidden();
    await expect(page.locator('.board-stage .board [data-square]')).toHaveCount(64);
-   await expect(page.locator('[data-threatened=true]')).toHaveCount(2);
+   await expect(page.locator('[data-threatened=true]')).toHaveCount(1);
    await page.screenshot({path:'output/playwright/Quiet-Knight-Amateur-Landscape.png',animations:'disabled'});
    await page.setViewportSize({width:393,height:873});
  }
- f.update(['e4','d5','exd5']);await expect(page.locator('[data-threatened=true]')).toHaveCount(1);
- await expect(sq(page,'d5')).toHaveAccessibleName(/White pawn, under attack/);
+ f.update(['e4','d5','exd5']);await expect(page.locator('[data-threatened=true]')).toHaveCount(role==='white'?1:0);
+ if(role==='white')await expect(sq(page,'d5')).toHaveAccessibleName(/White pawn, under attack/);
  await toggle.click();await expect(page.locator('[data-threatened]')).toHaveCount(0);
  expect(f.writes).toHaveLength(0);expect(f.errors).toEqual([]);
 });
@@ -307,7 +314,7 @@ test('opponent activation is reflected in a seated client and resets on rematch'
  const f=await table(page,{moves:['e4','d5'],amateur:true});
  f.opponentAmateur(true);
  await expect(btn(page,'Amateur Mode')).toHaveAttribute('aria-pressed','true');
- await expect(page.locator('[data-threatened=true]')).toHaveCount(2);
+ await expect(page.locator('[data-threatened=true]')).toHaveCount(1);
  f.update(['e4','d5'],2);
  await expect(btn(page,'Amateur Mode')).toHaveAttribute('aria-pressed','false');
  await expect(page.locator('[data-threatened]')).toHaveCount(0);
@@ -326,6 +333,6 @@ test('offline Amateur Mode toggles independently of the removed Coach and asks n
  const requests=[];page.on('request',r=>{if(/\/(amateur|teaching)$/.test(r.url()))requests.push(r.url());});
  await page.goto(url);await btn(page,'Resume saved computer game').click();
  await expect(btn(page,'Beginner Coach')).toHaveCount(0);
- const toggle=btn(page,'Amateur Mode');await toggle.click();await expect(page.locator('[data-threatened=true]')).toHaveCount(2);
+ const toggle=btn(page,'Amateur Mode');await toggle.click();await expect(page.locator('[data-threatened=true]')).toHaveCount(1);
  await toggle.click();await expect(page.locator('[data-threatened]')).toHaveCount(0);expect(requests).toEqual([]);
 });

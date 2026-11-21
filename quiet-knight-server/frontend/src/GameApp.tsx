@@ -276,7 +276,7 @@ export default function GameApp() {
   const waiting = room?.status === "waiting";
   const [localAmateur,setLocalAmateur]=useState(false);
   const amateurOn=room ? !!me&&room.amateur?.enabled===true : localAmateur;
-  const threats=useMemo(()=>amateurOn&&!ended?threatenedSquares(game):[],[amateurOn,ended,game]);
+  const threats=useMemo(()=>amateurOn&&!ended&&me?threatenedSquares(game,me):[],[amateurOn,ended,game,me]);
   // Room role and account ownership come from the server; the score lookup then
   // authenticates independently without switching the current local save owner.
   const viewerId = me === "w" ? room?.white_player?.id : me === "b" ? room?.black_player?.id : undefined;
@@ -1292,8 +1292,8 @@ export default function GameApp() {
           gameId={record.id}
           onReviewStart={() => { setSelected(null); setPendingMove(null); setPromotion(null); }}
           clock={room||undefined}
-          amateur={!ended&&!waiting&&(room?!!me&&room.amateur?.available:mode!=='online')?<button type="button" className="secondary amateur-toggle" aria-pressed={amateurOn} title={room?'Marks attacked pieces for both players. No Quiet Points if used.':'Marks attacked pieces on both sides.'} aria-description={room?(amateurOn?'On for both players. No Quiet Points.':'Shows attacked pieces to both players. No Quiet Points if used.'):'Shows attacked pieces on both sides.'} disabled={busy||Boolean(room&&(connection!=='Live'||pendingOnlineMove))} onClick={()=>void toggleAmateur()}>Amateur Mode</button>:null}
-          amateurInfo={room?.amateur?.available&&me?'Amateur Mode marks attacked pieces in red for both players. A game that uses it keeps its normal result but earns no Quiet Points.':null}
+          amateur={!ended&&!waiting&&(room?!!me&&room.amateur?.available:mode!=='online')?<button type="button" className="secondary amateur-toggle" aria-pressed={amateurOn} title="Marks only your own attacked pieces." aria-description={room?'Each player sees only their own threatened pieces. No Quiet Points if used.':'Shows only your threatened pieces.'} disabled={busy||Boolean(room&&(connection!=='Live'||pendingOnlineMove))} onClick={()=>void toggleAmateur()}>Amateur Mode</button>:null}
+          amateurInfo={room?.amateur?.available&&me?'Each player sees a red dot on their own threatened pieces. A game that uses Amateur Mode keeps its normal result but earns no Quiet Points.':null}
           tableScore={mode === "online" ? room?.series_score : undefined}
           lifetimeScore={room && viewerId && scoreboardRival ? <HeadToHead viewerId={viewerId} rival={scoreboardRival} roomCode={room.code} eventId={room.score_event?.id} settling={ended && !room.score_event} recentGames={viewerId === accountViewer ? knight.games : undefined} pinnedRival={pinnedOpponent} onPinChange={onScoreboardPinChange} /> : mode === "online" ? <HeadToHeadStatus message={scoreboardRoomStatus(room, me)} /> : null}
           drawControls={room && room.status === 'active' && room.black_joined && me ? <DrawControls me={me} proposal={room.proposal} busy={busy} connected={connection === 'Live'} paused={Boolean(room.clock_paused)} onAction={action => void consent(action, action === 'request' ? 'draw' : undefined)} /> : null}

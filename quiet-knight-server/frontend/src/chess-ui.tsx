@@ -252,7 +252,7 @@ export function ChessBoard({
               {landing ? <LandingEffect key={`landing-${active.serial}`} motion={active} fun={fun}/> : null}
               {index%8===0?<span className="square-coordinate rank-coordinate" aria-hidden="true">{square[1]}</span>:null}
               {index>=56?<span className="square-coordinate file-coordinate" aria-hidden="true">{square[0]}</span>:null}
-              {inDanger&&check!==square?<span className="amateur-threat-badge" aria-hidden="true">!</span>:null}
+              {inDanger&&check!==square?<span className="amateur-threat-dot" aria-hidden="true"/>:null}
               {check === square ? <span className="check-badge" aria-hidden="true">!</span> : null}
               {target ? (
                 <span
@@ -653,11 +653,10 @@ export function GameSurface(p: GameSurfaceProps) {
               type="button"
               className={`connection ${p.connection === "Live" ? "connection-live" : ""}`}
               onClick={p.onReconnect}
-              title="Reconnect to this room"
+              title={`Connection: ${p.connection}. Reconnect.`}
               aria-label={`Connection: ${p.connection}. Reconnect`}
             >
-              <i />
-              {p.connection}
+              <i aria-hidden="true" />
             </button>
           ) : null}
         </div>

@@ -5,7 +5,7 @@ const url = process.env.QK_FRONTEND_URL || 'http://127.0.0.1:3000/';
 test.skip(!/^http:\/\/(127\.0\.0\.1|localhost):/.test(url), 'isolated candidate only');
 const opening = ['e4', 'd5', 'exd5', 'Qxd5'];
 
-async function table(page, {role = 'white', moves = opening, accounts = false, guestOpponent = false, amateur = false} = {}) {
+async function table(page, {role = 'white', moves = opening, accounts = false, guestOpponent = false, amateur = false, directInvite = false, androidEntry = false} = {}) {
   let version = 1, number = 1, line = [...moves], release=null, hold=false, settled, code="REV001", swapped=false;
   const sockets = [], writes = [], errors = [], amateurCalls=[];
   let amateurEnabled=false, series={white:2,black:1,draws:1};
@@ -44,8 +44,14 @@ async function table(page, {role = 'white', moves = opening, accounts = false, g
     };
     send(); socket.onMessage(send);
   });
-  await page.goto(url);
-  await page.getByRole('button',{name:'Create live game', exact:true}).click();
+  const entry=new URL(url);
+  if(androidEntry){
+    entry.pathname='/assets/quiet-knight/index.html';
+    await page.route('**/assets/quiet-knight/index.html**',async route=>route.fulfill({response:await route.fetch({url})}));
+  }
+  if(directInvite)entry.searchParams.set('room',code);
+  await page.goto(entry.toString());
+  if(!directInvite)await page.getByRole('button',{name:'Create live game', exact:true}).click();
   await expect(page.getByRole('button',{name:'Connection: Live. Reconnect',exact:true})).toBeVisible();
   return {writes, errors, amateurCalls, opponentAmateur(enabled){amateurEnabled=enabled;this.update(line,number,settled);}, hold(){hold=true;},release(){hold=false;release?.();}, nextRoom({swap=false}={}){code="REV002";line=[...opening];number=1;version++;settled=undefined;swapped=swap;if(swap)role=role==="white"?"black":"white";}, update(next, gameNumber = number, event) {
     if(gameNumber!==number)amateurEnabled=false;
@@ -60,6 +66,24 @@ const btn=(p,name)=>p.getByRole('button',{name,exact:true});
 const sq=(p,s)=>p.locator(`.board-stage [data-square=${s}]`);
 const options=async p=>{await btn(p,'Open table controls').click();};
 async function preferences(p){await options(p);await p.getByText('Preferences & diagnostics',{exact:true}).click();}
+
+test('Android room copy gives a canonical web link; a fresh visitor sees the current table',async({page,browser})=>{
+ await page.addInitScript(()=>Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>{window.__copiedGameLink=text;}}}));
+ await table(page,{androidEntry:true, directInvite:true});
+ await btn(page,'Copy game link').click();
+ const invite=await page.evaluate(()=>window.__copiedGameLink);
+ expect(invite).toBe(new URL('/?room=REV001',url).href);
+ const fresh=await browser.newContext({viewport:{width:393,height:873}});
+ try{
+  const guest=await fresh.newPage();const f=await table(guest,{directInvite:true,role:'spectator',amateur:true});f.opponentAmateur(true);
+  expect(guest.url()).toBe(invite);
+  await expect(guest.getByRole('status',{name:'Table scoreboard'})).toContainText('White 2');
+  await expect(guest.getByRole('group',{name:'Black lost pieces'})).toBeVisible();
+  await expect(guest.locator('.board .square-dark').first()).toHaveCSS('background-color','rgb(64, 93, 76)');
+  await expect(guest.locator('.amateur-threat-dot')).toHaveCount(0);
+  await expect(guest.locator('.board [data-square]')).toHaveCount(64);
+ } finally{await fresh.close();}
+});
 
 test('saved computer games recover the board without stored SAN',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('qk-local-save-v1:guest',JSON.stringify({moves:[{from:'e2',to:'e4'},{from:'d7',to:'d5'},{from:'e4',to:'d5'},{from:'d8',to:'d5'}],color:'w',level:2})));

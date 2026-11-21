@@ -101,6 +101,9 @@ function roleColor(role: Role | null): Color | null {
 }
 function roomLink(code: string) {
   const url = new URL(window.location.href);
+  // The Android shell serves its bundled index at this path. Share the
+  // public web game so recipients never need the Android package or assets.
+  if (url.pathname === "/assets/quiet-knight/index.html") url.pathname = "/";
   url.search = "";
   url.hash = "";
   url.searchParams.set("room", code);

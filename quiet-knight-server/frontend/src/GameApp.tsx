@@ -22,11 +22,11 @@ import {
   useTablePreferences,
   useQuietIdle,
 } from "./table-atmosphere";
-import { HeadToHead, HeadToHeadStatus } from "./head-to-head";
+import { HeadToHead } from "./head-to-head";
 import { accountRequest } from "./account-api";
 import { identityHeaders } from "./player-credential";
-import { hasStoredOpponentPin, readPinnedOpponent, readScoreboardRival, rivalForRoom, scoreboardRoomStatus } from "./head-to-head-model";
-import { useKnightId, KnightIdPanel, AccountGate } from "./knight-id";
+import { hasStoredOpponentPin, readPinnedOpponent } from "./head-to-head-model";
+import { useKnightId } from "./knight-id";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Chess } from "chess.js";
 import type { Square } from "chess.js";
@@ -87,7 +87,6 @@ type RoomState = ClockState & {
 type Modal =
   | "archive"
   | "memory"
-  | "identity"
   | "settings"
   | "leave"
   | "restart"
@@ -95,7 +94,7 @@ type Modal =
   | "invite"
   | null;
 const REACTIONS:Record<string,string>={hello:"👋", "well-played":"👏",thanks:"🙏",fox:"🦊",owl:"🦉",tortoise:"🐢"};
-const BUILD = "Quiet Knight 1.6.15 · Board only";
+const BUILD = "Quiet Knight 1.6.20 · Board only";
 function roleColor(role: Role | null): Color | null {
   return role === "white" ? "w" : role === "black" ? "b" : null;
 }
@@ -248,7 +247,7 @@ export default function GameApp() {
     setResumeLive(null);
     setRoom(null); setRole(null); setRoleGame(1); setPresence(null); setSeatToken(null);
     setJoinCode(""); setMode("local"); setScreen("home"); setSelected(null);
-    setPromotion(null); setModal(current => current === "identity" ? current : null); setViewedGame(null); setMessage("");
+    setPromotion(null); setModal(null); setViewedGame(null); setMessage("");
     const saved = loadLocal(accountId);
     setLocalMoves(saved.moves); setHumanColor(saved.color); setLevel(saved.level);
     const id = stored(localGameIdKey(accountId)) || crypto.randomUUID();
@@ -280,9 +279,6 @@ export default function GameApp() {
   const [localAmateur,setLocalAmateur]=useState(false);
   const amateurOn=room ? !!me&&room.amateur?.enabled===true : localAmateur;
   const threats=useMemo(()=>amateurOn&&!ended&&me?threatenedSquares(game,me):[],[amateurOn,ended,game,me]);
-  // Room role and account ownership come from the server; the score lookup then
-  // authenticates independently without switching the current local save owner.
-  const viewerId = me === "w" ? room?.white_player?.id : me === "b" ? room?.black_player?.id : undefined;
   const [, refreshPin] = useState(0);
   const accountViewer = knight.player?.id;
   const [restoredPinOwner, setRestoredPinOwner] = useState<string | null>(null);
@@ -302,10 +298,8 @@ export default function GameApp() {
     return () => {active = false; window.removeEventListener("online", restorePin);};
   }, [screen, accountViewer]);
   const homePinOwner = accountViewer ?? restoredPinOwner ?? undefined;
-  const pinnedOpponent = readPinnedOpponent(viewerId || homePinOwner);
+  const pinnedOpponent = readPinnedOpponent(homePinOwner);
   const onScoreboardPinChange = () => refreshPin(n => n + 1);
-  const currentRival = rivalForRoom(room, me, viewerId);
-  const scoreboardRival = currentRival ?? (waiting ? rivalForRoom(room, me, viewerId, (pinnedOpponent ?? readScoreboardRival(viewerId))) : null);
   const history = useMemo(() => {
     if (!room) return localGame.history({ verbose: true });
     try {
@@ -996,16 +990,6 @@ export default function GameApp() {
       <PlaySettings prefs={prefs} update={updatePrefs}/>
       <About compatibility={compatibility}/>
       <p className="server-compatibility">{compatibility.message}</p>
-      <button
-        type="button"
-        className="secondary wide"
-        onClick={() => {
-          void knight.refresh();
-          setModal("identity");
-        }}
-      >
-        Knight ID{knight.player ? ` · ${knight.player.handle}` : ""}
-      </button>
       <section className="notification-setting" aria-label="Move notifications">
         <div>
           <strong>Move notifications</strong>
@@ -1188,9 +1172,7 @@ export default function GameApp() {
       ? "Move archive"
     : modal === "memory"
       ? "The final position"
-      : modal === "identity"
-        ? "Knight ID"
-        : modal === "settings"
+      : modal === "settings"
           ? "At your table"
           : modal === "leave"
             ? "Leave this game?"
@@ -1236,20 +1218,6 @@ export default function GameApp() {
           extras={<section className="studio-entry"><BeginnerEntry onPractice={preset=>{setBeginnerPreset(preset);setScreen("learn");}} onFullGame={()=>startComputer("w")}/><button className="secondary" onClick={()=>{setTableControls(false);setModal("archive");}}>Move archive & export</button>{archiveError?<p role="alert">{archiveError}</p>:null}<h2>Continue the position</h2><button className="secondary" onClick={()=>openStudy(localMoves.length?{sans:localMoves.map(m=>m.san||"")}:undefined)}>Continue the position · analyse</button><button className="secondary" onClick={()=>openStudy({mode:"pass"})}>Pass and play · offline</button><button className="secondary" onClick={()=>openStudy()}>Study, puzzles & Chess960</button><p role="status" className="server-compatibility">{compatibility.message}</p><details className="friend-setup"><summary>Friend options & invite link</summary><label>Friend-game side<select aria-label="Friend-game side" value={friendSide} onChange={e=>setFriendSide(e.target.value)}><option value="white">White</option><option value="black">Black</option></select></label><label>Friend-game style<select aria-label="Friend-game style" value={friendKind} onChange={e=>setFriendKind(e.target.value)}><option value="live">Live · untimed</option><option value="correspondence">Correspondence · no deadlines</option></select></label><label>Paste invite link<input aria-label="Paste invite link" value={inviteInput} maxLength={1000} onChange={e=>setInviteInput(e.target.value)}/></label><button className="secondary" onClick={()=>{const code=parseInvitation(inviteInput);if(code)void joinRoom(code);else setMessage("Paste a valid room link or six-character code.");}}>Open invitation</button></details></section>}
           identity={
             <>
-              <button
-                type="button"
-                className="knight-chip"
-                onClick={() => {
-                  void knight.refresh();
-                  setModal("identity");
-                }}
-              >
-                {knight.player
-                  ? `${knight.player.handle} · ${knight.player.quiet_points} Quiet Points`
-                  : knight.profile
-                    ? "Link this existing Knight ID"
-                    : "Account (optional)"}
-              </button>
               {homePinOwner && pinnedOpponent ? (
                 <section className="head-to-head-lobby" aria-label="Pinned opponent">
                   <HeadToHead viewerId={homePinOwner} rival={pinnedOpponent} roomCode="home" settling={false} recentGames={homePinOwner === accountViewer ? knight.games : undefined} pinnedRival={pinnedOpponent} onPinChange={onScoreboardPinChange} />
@@ -1298,7 +1266,6 @@ export default function GameApp() {
           amateur={!ended&&!waiting&&(room?!!me&&room.amateur?.available:mode!=='online')?<button type="button" className="secondary amateur-toggle" aria-pressed={amateurOn} title="Marks only your own attacked pieces." aria-description={room?'Each player sees only their own threatened pieces. No Quiet Points if used.':'Shows only your threatened pieces.'} disabled={busy||Boolean(room&&(connection!=='Live'||pendingOnlineMove))} onClick={()=>void toggleAmateur()}>Amateur Mode</button>:null}
           amateurInfo={room?.amateur?.available&&me?'Each player sees a red dot on their own threatened pieces. A game that uses Amateur Mode keeps its normal result but earns no Quiet Points.':null}
           tableScore={mode === "online" ? room?.series_score : undefined}
-          lifetimeScore={room && viewerId && scoreboardRival ? <HeadToHead viewerId={viewerId} rival={scoreboardRival} roomCode={room.code} eventId={room.score_event?.id} settling={ended && !room.score_event} recentGames={viewerId === accountViewer ? knight.games : undefined} pinnedRival={pinnedOpponent} onPinChange={onScoreboardPinChange} /> : mode === "online" ? <HeadToHeadStatus message={scoreboardRoomStatus(room, me)} /> : null}
           drawControls={room && room.status === 'active' && room.black_joined && me ? <DrawControls me={me} proposal={room.proposal} busy={busy} connected={connection === 'Live'} paused={Boolean(room.clock_paused)} onAction={action => void consent(action, action === 'request' ? 'draw' : undefined)} /> : null}
           pauseControls={room && room.status === 'active' ? <ClockControls state={room} me={me} busy={busy || connection !== 'Live'} onAction={(action) => void changePause(action)} /> : null}
           viewerLost={viewerLost(
@@ -1487,28 +1454,6 @@ export default function GameApp() {
                 <ArchivePanel key={accountId} owner={accountId}/>
               ) : modal === "memory" && viewedGame ? (
                 <FinalPosition record={viewedGame} />
-              ) : modal === "identity" && (!knight.player || knight.recoveryCode) ? (
-                <AccountGate knight={knight} embedded onContinue={closeModal} />
-              ) : modal === "identity" ? (
-                <KnightIdPanel
-                  knight={knight}
-                  onView={(g) => {
-                    setViewedGame({
-                      id: g.id,
-                      white: g.white_handle,
-                      black: g.black_handle,
-                      result: g.result as GameRecord["result"],
-                      fen: g.final_fen,
-                      sans: g.moves.map((m) => m.san),
-                      date: g.ended_at,
-                      mode: "human",
-                      points: g.scored
-                        ? "Quiet Points game"
-                        : "Casual game · No Quiet Points",
-                    });
-                    setModal("memory");
-                  }}
-                />
               ) : modal === "settings" ? (
                 tableSettings
               ) : modal === "invite" && room ? (

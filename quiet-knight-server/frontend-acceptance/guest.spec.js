@@ -53,15 +53,15 @@ test('guest computer save resumes offline without any account service',async({br
  }finally{await a.context.close();}
 });
 
-test('optional account creation, record panel and logout do not gate guest play',async({browser})=>{
- const a=await actor(browser,360),handle='GuestAcct'+crypto.randomUUID().replaceAll('-','').slice(0,8);
+test('guest can play from Home without account entry points',async({browser})=>{
+ const a=await actor(browser,360);
  try{
   await a.page.goto(url);await noGate(a.page);
-  await a.page.getByRole('button',{name:'Account (optional)',exact:true}).click();await a.page.getByRole('button',{name:'Create Account',exact:true}).click();
-  await a.page.getByRole('textbox',{name:'Knight ID',exact:true}).fill(handle);await a.page.getByLabel('Password',{exact:true}).fill('synthetic-account-pass');await a.page.getByRole('button',{name:'Create Account',exact:true}).click();
-  await expect(a.page.getByRole('heading',{name:'Save your recovery code',exact:true})).toBeVisible();await a.page.getByRole('button',{name:'Continue to game',exact:true}).click();
-  await a.page.getByRole('button',{name:new RegExp(handle+' ·')}).click();await expect(a.page.getByRole('heading',{name:'Human game history',exact:true})).toBeVisible();await expect(a.page.getByRole('heading',{name:'Computer game history',exact:true})).toBeVisible();
-  await a.page.getByRole('button',{name:'Log Out',exact:true}).click();await a.page.getByRole('button',{name:'Close dialog',exact:true}).click();await noGate(a.page);
-  await a.page.getByRole('button',{name:'Play White',exact:true}).click();await move(a.page,'e2','e4');expect(a.errors).toEqual([]);
+  await expect(a.page.getByRole('button',{name:'Account (optional)',exact:true})).toHaveCount(0);
+  await a.page.getByRole('button',{name:'Open settings',exact:true}).click();
+  await expect(a.page.getByRole('button',{name:/Knight ID|Sign in|Log in|Create Account/i})).toHaveCount(0);
+  await a.page.getByRole('button',{name:'Close dialog',exact:true}).click();
+  await a.page.getByRole('button',{name:'Play White',exact:true}).click();await move(a.page,'e2','e4');
+  expect(a.accountRequests).toEqual([]);expect(a.errors).toEqual([]);
  }finally{await a.context.close();}
 });

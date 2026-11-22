@@ -498,7 +498,6 @@ export type GameSurfaceProps = {
   computerEngine?: string;
   pendingOnlineMove?:boolean;
   tableScore?: {white:number; black:number; draws:number};
-  lifetimeScore?:React.ReactNode;
   drawPending?:boolean;
   onReviewGame:()=>void;
   onNewOpponent:()=>void;
@@ -535,14 +534,14 @@ export function GameSurface(p: GameSurfaceProps) {
     const el=stage.current;if(!el)return;
     const resize=()=>{
       if(!matchMedia('(max-width: 600px)').matches){el.style.removeProperty('--fit-board-size');return;}
-      const panels=Array.from(el.querySelectorAll<HTMLElement>(':scope > .player-strip, :scope > .board-lock, :scope > .table-score, :scope > .lifetime-score, :scope > .lifetime-score-mount'));
+      const panels=Array.from(el.querySelectorAll<HTMLElement>(':scope > .player-strip, :scope > .board-lock, :scope > .table-score'));
       const reserved=panels.reduce((n,p)=>n+p.getBoundingClientRect().height,0)+panels.length*5;
       const side=Math.floor(Math.max(8,Math.min(el.clientWidth,el.clientHeight-reserved)));
       if(el.style.getPropertyValue('--fit-board-size')!==`${side}px`)el.style.setProperty('--fit-board-size',`${side}px`);
     };
     const observer=new ResizeObserver(resize);observer.observe(el);
     const children=new MutationObserver(resize);children.observe(el,{childList:true});
-    for(const panel of el.querySelectorAll('.player-strip, .table-score, .lifetime-score, .lifetime-score-mount'))observer.observe(panel);
+    for(const panel of el.querySelectorAll('.player-strip, .table-score'))observer.observe(panel);
     window.addEventListener('resize',resize);resize();
     return()=>{observer.disconnect();children.disconnect();window.removeEventListener('resize',resize);};
   },[]);
@@ -559,9 +558,6 @@ export function GameSurface(p: GameSurfaceProps) {
     if (ply !== null) p.onReviewStart();
     setSelection(ply === null ? null : { gameId: p.gameId, line: [...p.sans], ply });
   }
-  const liveMaterial=materialTotals(p.board.position);
-  const materialLead=liveMaterial.w-liveMaterial.b;
-  const materialLabel=materialLead===0?'0':`${materialLead>0?'White':'Black'} +${Math.abs(materialLead)}`;
   const shownBoard: BoardProps = review ? {
     ...p.board, position: review.position, last: review.last, check: review.check,
     selected: null, targets: [], motion: null, motionSequence:p.board.motionSequence ?? p.board.motion?.serial, locked: true, drag: false,
@@ -660,7 +656,6 @@ export function GameSurface(p: GameSurfaceProps) {
             </button>
           ) : null}
         </div>
-        {!p.waiting ? <span className="match-material" role="status" aria-label={`Material balance: ${materialLead===0?'equal (0)':materialLabel}`} aria-live="polite" title="Piece-value difference in this game">{materialLabel}</span> : null}
         {p.online && p.code ? <button type="button" className="icon-button copy-game-link" aria-label="Copy game link" title="Copy game link" onClick={p.onCopy}><Icon name="copy" /></button> : null}
         <button
           type="button"
@@ -704,7 +699,6 @@ export function GameSurface(p: GameSurfaceProps) {
             <span>Draws <b>{p.tableScore.draws}</b></span>
             <span>Black <b>{p.tableScore.black}</b></span>
           </div> : null}
-          {p.lifetimeScore}
         </section>
         <section className="table-below" aria-label="Current game">
 

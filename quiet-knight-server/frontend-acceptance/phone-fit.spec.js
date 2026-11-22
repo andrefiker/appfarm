@@ -100,7 +100,7 @@ async function fits(page){
  const boxes=await page.locator('.board-stage>.board-frame .square').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return [r.width,r.height]}));expect(boxes).toHaveLength(64);for(const[w,h]of boxes){expect(Math.abs(w-h)).toBeLessThan(.6);expect(w).toBeGreaterThan(18);}
 }
 for(const role of ['white','black'])test(`portrait table fits without scrolling for ${role}`,async({page})=>{
- const f=await table(page,{role});await expect(page.getByLabel('Lifetime scoreboard')).toContainText('Sign in, then play in a new room.');
+ const f=await table(page,{role});await expect(page.getByLabel('Lifetime scoreboard')).toHaveCount(0);
  for(const [width,height]of [[320,568],[360,640],[393,780],[390,844],[430,932]]){await page.setViewportSize({width,height});await fits(page);}
  await page.setViewportSize({width:393,height:780});await mkdir('output/playwright',{recursive:true});await page.screenshot({path:`output/playwright/phone-fit-${role}.png`});
  await options(page);await expect(page.getByRole('complementary',{name:'First game tips'})).toBeVisible();await btn(page,'Close table controls').click();
@@ -127,7 +127,7 @@ test('same-table scoreboard uses server totals, including guests and rematches, 
  await expect(score).toContainText('White 2');
  await expect(score).toContainText('Draws 1');
  await expect(score).toContainText('Black 1');
- await expect(page.getByLabel('Lifetime scoreboard')).toContainText('Sign in');
+ await expect(page.getByLabel('Lifetime scoreboard')).toHaveCount(0);
  f.update(['f3','e5','g4','Qh4#']);
  f.score({white:2,black:2,draws:1});
  await expect(score).toContainText('Black 2');
@@ -152,45 +152,13 @@ test('same-table scoreboard uses server totals, including guests and rematches, 
  expect(f.errors).toEqual([]);
 });
 
-test('lifetime scoreboard follows signed-in players between rooms and updates only once settled',async({page})=>{
- const me='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', rival='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', path='/players/'+me+'/head-to-head/'+rival;
- await page.addInitScript(()=>localStorage.setItem('qk-player-token-v1','x'.repeat(43)));
- const requests=[];let wins=7;
- await page.route(/\/players\/.*\/head-to-head\//,route=>{
-   requests.push({path:new URL(route.request().url()).pathname,auth:route.request().headers().authorization});
-   return route.fulfill({json:{wins,losses:5,draws:3}});
- });
- const f=await table(page,{accounts:true,role:'black'});
- const score=page.getByLabel('Lifetime scoreboard');
- await expect(score.locator('.lifetime-score-cell').nth(0)).toHaveText('7Your wins');
- await expect(score.locator('.lifetime-score-cell').nth(2)).toHaveText('5Alice wins');
- await expect(score.locator('.lifetime-score-cell').nth(1)).toHaveText('3Draws');
- expect(requests).toEqual([{path,auth:'Bearer '+'x'.repeat(43)}]);
- f.update(['f3','e5','g4','Qh4#']);
- await expect(score).toContainText('Saving result');
- expect(requests).toHaveLength(1);
- wins=8;
- f.update(['f3','e5','g4','Qh4#'],1,{id:'confirmed-game-event',scored:false,reason:'Casual rematch',white_points:0,black_points:0,result:'0-1'});
- await expect(score.locator('.lifetime-score-cell').nth(0)).toHaveText('8Your wins');
- expect(requests).toHaveLength(2);
- f.nextRoom({swap:true});
- await btn(page,'Leave game').click();
- await btn(page,'Leave table').click();
- await btn(page,'Create live game').click();
- await expect(score.locator('.lifetime-score-cell').nth(0)).toHaveText('8Your wins');
- await expect.poll(()=>requests.length).toBe(3);
- expect(requests[2]).toEqual({path,auth:"Bearer "+"x".repeat(43)});
- await page.setViewportSize({width:393,height:780});await fits(page);await mkdir('output/playwright',{recursive:true});await page.screenshot({path:'output/playwright/lifetime-scoreboard.png'});expect(f.errors).toEqual([]);
-});
 
 
-test('guest opponent has a visible scoreboard explanation and the top link copies the correct room',async({page})=>{
+
+test('guest opponent has no sign-in prompt and the top link copies the correct room',async({page})=>{
  await page.addInitScript(()=>Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>{window.__copiedGameLink=text;}}}));
  const f=await table(page,{accounts:true,guestOpponent:true,role:'white'});
- const score=page.getByLabel('Lifetime scoreboard');
- await expect(score.getByText('Lifetime score',{exact:true})).toBeVisible();
- await expect(score).toContainText('Opponent must sign in');
- await expect(score).not.toContainText('Draws 0');
+ await expect(page.getByLabel('Lifetime scoreboard')).toHaveCount(0);
  await page.setViewportSize({width:320,height:568});
  const copy=btn(page,'Copy game link');
  await expect(copy).toBeVisible(); await expect(copy).toHaveCSS('width','44px');
@@ -207,15 +175,13 @@ test('discrete legal move dots return for older preferences and can still be dis
  const f=await table(page);await sq(page,'d2').click();await expect(sq(page,'d3').locator('.target-dot')).toBeVisible();await expect(sq(page,'d4').locator('.target-dot')).toBeVisible();await expect(sq(page,'d3').locator('.target-dot')).toHaveCSS('background-color','rgb(255, 48, 56)');
  await options(page);await page.getByText('Preferences & diagnostics',{exact:true}).click();await page.getByLabel('Legal destination previews',{exact:true}).uncheck();await btn(page,'Close table controls').click();await expect(page.locator('.target-dot')).toHaveCount(0);await page.reload();await options(page);await page.getByText('Preferences & diagnostics',{exact:true}).click();await expect(page.getByLabel('Legal destination previews',{exact:true})).not.toBeChecked();expect(f.errors).toEqual([]);
 });
-test('match material points update without trays or piece counters',async({page})=>{
- const f=await table(page);await page.setViewportSize({width:393,height:780});
- const clutter=page.locator('.board-stage .player-material,.board-stage .player-material-row,.board-stage .loss-tray,.board-stage .piece-capture-mark');
- await expect(page.getByLabel('Material balance: equal (0)',{exact:true})).toHaveText('0');
- await expect(clutter).toHaveCount(0);
+test('piece-value details stay in Options and not in the board header',async({page})=>{
+ const f=await table(page);
+ await expect(page.locator('.match-material')).toHaveCount(0);
  f.update(['e4','d5','exd5','c6','dxc6']);
  await expect(sq(page,'c6')).toHaveAttribute('data-piece','wp');
- await expect(page.getByLabel('Material balance: White +2',{exact:true})).toHaveText('White +2');
- await expect(clutter).toHaveCount(0);await fits(page);
+ await expect(page.locator('.match-material')).toHaveCount(0);
+ await expect(page.getByRole('group',{name:'Black lost pieces'})).toBeVisible();
  await options(page);
  await expect(page.getByLabel('Material points',{exact:true})).toBeVisible();
 });
@@ -263,39 +229,7 @@ for(const optedIn of [false,true])test('confirmed online turn vibration opt-in =
  await expect.poll(pulses).toEqual(optedIn?['turn']:[]);
  expect(f.errors).toEqual([]);
 });
-test('tap lifetime scoreboard for private pair history and persistent pin',async({page})=>{
- const alice='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', bob='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', carol='cccccccc-cccc-4ccc-8ccc-cccccccccccc';
- await page.addInitScript(()=>localStorage.setItem('qk-player-token-v1','x'.repeat(43)));
- await page.route(/\/players\/.*\/head-to-head\//,route=>route.fulfill({json:{wins:7,losses:5,draws:3}}));
- await page.route('**/players/me',route=>route.fulfill({json:{player:{registered:true,id:bob,handle:'Bob'},games:[
-   {id:'latest',white_player_id:alice,black_player_id:bob,result:'0-1',ended_at:'2026-11-20T01:00:00Z',moves:[{san:'e4'},{san:'e5'},{san:'d4'}]},
-   {id:'draw',white_player_id:bob,black_player_id:alice,result:'1/2-1/2',ended_at:'2026-11-18T01:00:00Z'},
-   {id:'unrelated',white_player_id:bob,black_player_id:carol,result:'0-1',ended_at:'2026-11-19T01:00:00Z'}
- ]}}));
- const f=await table(page,{accounts:true,role:'black'});
- const score=page.getByRole('button',{name:/Lifetime scoreboard:/});
- await score.click();
- const dialog=page.getByRole('dialog',{name:'You vs Alice',exact:true});
- const list=dialog.getByRole('list',{name:'Recent games together'});
- await expect(list.getByRole('listitem')).toHaveCount(2);
- await expect(list.getByRole('listitem').first()).toContainText('Win');
- await expect(list.getByRole('listitem').first()).toContainText('2 moves');
- await expect(list.getByRole('listitem').last()).toContainText('Draw');
- await expect(list).not.toContainText('Loss');
- await dialog.getByRole('button',{name:'Pin Alice',exact:true}).click();
- await expect(dialog.getByRole('button',{name:'Unpin opponent',exact:true})).toBeVisible();
- await dialog.getByRole('button',{name:'Close',exact:true}).click();
- await expect(score).toBeFocused();
- await page.goto(url);
- const homePin=page.getByRole('region',{name:'Pinned opponent'});
- await expect(homePin).toBeVisible();
- await homePin.getByRole('button',{name:/Lifetime scoreboard:/}).click();
- await dialog.getByRole('button',{name:'Unpin opponent',exact:true}).click();
- await expect(homePin).toHaveCount(0);
- await page.reload();
- await expect(homePin).toHaveCount(0);
- expect(f.errors).toEqual([]);
-});
+
 for(const role of ['white','black'])test(`Amateur Mode only marks ${role}'s threatened pieces and clears when disabled`,async({page})=>{
  const f=await table(page,{role,moves:['e4','d5'],amateur:true});await page.setViewportSize({width:393,height:873});
  await expect(btn(page,'Beginner Coach')).toHaveCount(0);
@@ -359,4 +293,29 @@ test('offline Amateur Mode toggles independently of the removed Coach and asks n
  await expect(btn(page,'Beginner Coach')).toHaveCount(0);
  const toggle=btn(page,'Amateur Mode');await toggle.click();await expect(page.locator('[data-threatened=true]')).toHaveCount(1);
  await toggle.click();await expect(page.locator('[data-threatened]')).toHaveCount(0);expect(requests).toEqual([]);
+});
+
+test('clean table keeps scores, trays and invite but omits account and material chrome',async({page})=>{
+ await page.setViewportSize({width:393,height:873});
+ const f=await table(page);
+ await expect(page.locator('.match-material')).toHaveCount(0);
+ await expect(page.getByLabel('Lifetime scoreboard')).toHaveCount(0);
+ await expect(page.getByRole('status',{name:'Table scoreboard'})).toContainText('White 2');
+ await expect(page.getByRole('group',{name:'Black lost pieces'})).toBeVisible();
+ await expect(btn(page,'Copy game link')).toBeVisible();
+ await options(page);
+ await page.getByText('Preferences & diagnostics',{exact:true}).click();
+ await expect(page.getByRole('button',{name:/Knight ID|Sign in|Log in|Create Account/i})).toHaveCount(0);
+ await btn(page,'Close table controls').click();
+ await fits(page);
+ await mkdir('output/playwright',{recursive:true});await page.screenshot({path:'output/playwright/clean-table-portrait.png'});
+ await page.setViewportSize({width:873,height:393});
+ await expect(sq(page,'h1')).toBeInViewport({ratio:.99});
+ await expect(page.locator('.board-stage .square')).toHaveCount(64);
+ await page.setViewportSize({width:393,height:873});
+ await expect(sq(page,'d5')).toHaveAttribute('data-piece','bq');
+ expect(f.errors).toEqual([]);
+ await page.goto(url);
+ await expect(btn(page,'Create live game')).toBeVisible();
+ await expect(page.getByRole('button',{name:/Account \(optional\)|Sign in|Log in|Create Account/i})).toHaveCount(0);
 });

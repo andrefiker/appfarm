@@ -45,7 +45,7 @@ import {describeBoardMotion} from './board-effects';
 import { useRoomRealtime } from "./use-room-realtime";
 import { useMoveNotifications } from "./push-notifications";
 import type { Position, Motion } from "./chess-ui";
-import {threatenedSquares} from "./amateur-threats";
+import {threatenedSquaresForBothSides} from "./amateur-threats";
 import type { Color } from "./pieces";
 import { lossesFromHistory } from "./chess-view-model";
 import { buildGame } from "./computer";
@@ -278,7 +278,7 @@ export default function GameApp() {
   const waiting = room?.status === "waiting";
   const [localAmateur,setLocalAmateur]=useState(false);
   const amateurOn=room ? !!me&&room.amateur?.enabled===true : localAmateur;
-  const threats=useMemo(()=>amateurOn&&!ended&&me?threatenedSquares(game,me):[],[amateurOn,ended,game,me]);
+  const threats=useMemo(()=>amateurOn&&!ended&&me?threatenedSquaresForBothSides(game):[],[amateurOn,ended,game,me]);
   const [, refreshPin] = useState(0);
   const accountViewer = knight.player?.id;
   const [restoredPinOwner, setRestoredPinOwner] = useState<string | null>(null);
@@ -1263,8 +1263,8 @@ export default function GameApp() {
           gameId={record.id}
           onReviewStart={() => { setSelected(null); setPendingMove(null); setPromotion(null); }}
           clock={room||undefined}
-          amateur={!ended&&!waiting&&(room?!!me&&room.amateur?.available:mode!=='online')?<button type="button" className="secondary amateur-toggle" aria-pressed={amateurOn} title="Marks only your own attacked pieces." aria-description={room?'Each player sees only their own threatened pieces. No Quiet Points if used.':'Shows only your threatened pieces.'} disabled={busy||Boolean(room&&(connection!=='Live'||pendingOnlineMove))} onClick={()=>void toggleAmateur()}>Amateur Mode</button>:null}
-          amateurInfo={room?.amateur?.available&&me?'Each player sees a red dot on their own threatened pieces. A game that uses Amateur Mode keeps its normal result but earns no Quiet Points.':null}
+          amateur={!ended&&!waiting&&(room?!!me&&room.amateur?.available:mode!=='online')?<button type="button" className="secondary amateur-toggle" aria-pressed={amateurOn} title="Marks attacked pieces on both sides." aria-description={room?'Threatened pieces on both sides are marked. No Quiet Points if used.':'Shows threatened pieces on both sides.'} disabled={busy||Boolean(room&&(connection!=='Live'||pendingOnlineMove))} onClick={()=>void toggleAmateur()}>Amateur Mode</button>:null}
+          amateurInfo={room?.amateur?.available&&me?'Threatened pieces on both sides get a red dot. A game that uses Amateur Mode keeps its normal result but earns no Quiet Points.':null}
           tableScore={mode === "online" ? room?.series_score : undefined}
           drawControls={room && room.status === 'active' && room.black_joined && me ? <DrawControls me={me} proposal={room.proposal} busy={busy} connected={connection === 'Live'} paused={Boolean(room.clock_paused)} onAction={action => void consent(action, action === 'request' ? 'draw' : undefined)} /> : null}
           pauseControls={room && room.status === 'active' ? <ClockControls state={room} me={me} busy={busy || connection !== 'Live'} onAction={(action) => void changePause(action)} /> : null}

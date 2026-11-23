@@ -60,9 +60,9 @@ jobs:
       - name: Prepare unsigned package and public verification tools
         run: |
           mkdir -p release
-          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -f -p 4 android-store/app/build/outputs/apk/quietKnight/release/app-quietKnight-release-unsigned.apk release/Quiet-Knight-Forest-1.6.20-unsigned.apk
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging release/Quiet-Knight-Forest-1.6.20-unsigned.apk > release/badging.txt
-          grep -F "name='com.andrefiker.quietknight.forest' versionCode='51' versionName='1.6.20'" release/badging.txt
+          "$ANDROID_HOME/build-tools/35.0.0/zipalign" -f -p 4 android-store/app/build/outputs/apk/quietKnight/release/app-quietKnight-release-unsigned.apk release/Quiet-Knight-Forest-1.6.21-unsigned.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging release/Quiet-Knight-Forest-1.6.21-unsigned.apk > release/badging.txt
+          grep -F "name='com.andrefiker.quietknight.forest' versionCode='52' versionName='1.6.21'" release/badging.txt
           grep -F "application-label:'Quiet Knight Forest'" release/badging.txt
           cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" release/apksigner.jar
           cp "$ANDROID_HOME/build-tools/35.0.0/zipalign" release/zipalign
@@ -70,6 +70,6 @@ jobs:
           printf '%s\n' "$GITHUB_SHA" > release/source-commit.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: quiet-knight-forest-1.6.20-unsigned
+          name: quiet-knight-forest-1.6.21-unsigned
           path: release/
           retention-days: 7

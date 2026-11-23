@@ -149,12 +149,14 @@ body[data-coordinates=true] .qk.mobile-table .file-coordinate { bottom:2px; righ
 
 .qk .board-stage > .table-score {
  display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:2px 12px;
- width:min(100%,420px);min-height:24px;margin-inline:auto;padding:3px 6px;flex-shrink:0;
+ width:min(100%,460px);min-height:48px;margin-inline:auto;padding:4px 6px;flex-shrink:0;
  border:1px solid #a180655c;border-radius:7px;background:#302824;
- color:var(--text);font-size:12px;line-height:1.25;font-variant-numeric:tabular-nums;
+ color:var(--text);font-size:24px;line-height:1.16;font-variant-numeric:tabular-nums;
 }
 .qk .table-score > span {white-space:nowrap;color:var(--muted)}
 .qk .table-score b {color:var(--text)}
+.qk .board-stage > .match-material {flex:none;width:100%;padding:2px 4px;text-align:center;color:var(--text);font-size:13px;font-weight:650;line-height:1.25;font-variant-numeric:tabular-nums}
+
 .qk .player-losses {display:flex;align-items:center;gap:2px 6px;padding:0 8px 2px;min-height:24px}
 .qk .player-losses-label {margin-inline-end:3px;font-size:11px;color:var(--muted)}
 .qk .player-loss-token {display:inline-flex;align-items:center;gap:1px;color:var(--text);font-size:10px}
@@ -172,7 +174,7 @@ body[data-coordinates=true] .qk.mobile-table .file-coordinate { bottom:2px; righ
  }
  .qk.mobile-table .game-layout,.qk.mobile-table .board-stage {display:contents}
  .qk.mobile-table :is(.game-header,.table-below) {display:none}
- .qk.mobile-table .board-stage > :is(.player-strip,.board-lock,.table-score,.lifetime-score,.lifetime-score-mount) {display:none}
+ .qk.mobile-table .board-stage > :is(.player-strip,.board-lock,.table-score,.match-material,.lifetime-score,.lifetime-score-mount) {display:none}
  .qk.mobile-table .board-stage > .board-frame {
    width:var(--landscape-board);max-width:100%;margin:0;padding:0;border:0;border-radius:0;box-shadow:none;
  }

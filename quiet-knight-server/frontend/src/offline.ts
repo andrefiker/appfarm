@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react'; import { buildGame } from './computer'; import type { LocalMove } from './computer'; import type { Color } from './pieces'; export type LocalSave = { moves: LocalMove[]; color: Color; level: number }; const KEY = 'qk-local-save-v1'; const localKey=(playerId?:string)=>playerId?`${KEY}:${playerId}`:KEY; export function loadLocal(playerId?:string): LocalSave {
+import { useEffect, useState } from 'react';
+import {isComputerLevel} from './computer-difficulty';
+ import { buildGame } from './computer'; import type { LocalMove } from './computer'; import type { Color } from './pieces'; export type LocalSave = { moves: LocalMove[]; color: Color; level: number }; const KEY = 'qk-local-save-v1'; const localKey=(playerId?:string)=>playerId?`${KEY}:${playerId}`:KEY; export function loadLocal(playerId?:string): LocalSave {
  const blank:LocalSave={moves:[],color:'w',level:5};
  for(const suffix of ['',':backup'])try{
   const raw=localStorage.getItem(localKey(playerId)+suffix);if(!raw)continue;
   const saved=JSON.parse(raw);
   if(saved.schema!==undefined&&saved.schema!==2)throw Error('Unsupported save schema');
-  if(!Array.isArray(saved.moves)||saved.moves.length>4000||!['w','b'].includes(saved.color)||!Number.isInteger(saved.level)||saved.level<1||saved.level>10)throw Error('Invalid save');
+  if(!Array.isArray(saved.moves)||saved.moves.length>4000||!['w','b'].includes(saved.color)||!isComputerLevel(saved.level))throw Error('Invalid save');
   buildGame(saved.moves);return{moves:saved.moves,color:saved.color,level:saved.level};
  }catch{try{const raw=localStorage.getItem(localKey(playerId)+suffix);if(raw)localStorage.setItem(localKey(playerId)+':recovery'+suffix,raw);}catch{}}
  return blank;

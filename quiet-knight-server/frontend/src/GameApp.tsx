@@ -462,7 +462,8 @@ export default function GameApp() {
       client_game_id: localTableId,
       moves: localMoves.map(({ from, to, promotion }) => ({ from, to, promotion })),
       human_color: humanColor,
-      level,
+      // Legacy account API stores whole levels; the local game keeps the exact practice step.
+      level: Math.max(1,Math.round(level)),
     }).then(ok => { if (!ok) savedComputerGames.current.delete(key); });
   }, [knight.player?.id, knight.recordComputer, gameOwner, accountId, room, mode, localGame, localTableId, localMoves, humanColor, level, onlineRetry]);
   const record: GameRecord = {

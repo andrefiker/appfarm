@@ -1,3 +1,4 @@
+import {computerLevels,computerLevelIndex} from './computer-difficulty';
 import {BoardLock,FirstGameTips} from "./ux-tools";
 import { positionAtPly, reviewStillValid } from "./move-review";
 import type { ReviewSelection } from "./move-review";
@@ -122,6 +123,12 @@ export function ChessBoard({
   fun=funDefaults, draw=false, entrance=0, soundEnabled=false, soundMaster=soundEnabled, soundVolume=80, replayMode=false, weather='off', replayInOptions=false, replayHost=null,
 }: BoardProps) {
   const squares = boardSquares(orientation);
+  const instructionsId = React.useId();
+  const [focusedSquare, setFocusedSquare] = React.useState<string | null>(null);
+  const tabSquare = focusedSquare ?? selected ?? squares[0];
+  const selectedPiece = selected && !locked ? position[selected] : undefined;
+  const legalCount = new Set(targets).size;
+  const destinationCount = `${legalCount} legal ${legalCount === 1 ? 'destination' : 'destinations'}`;
   const visualAllowed=useVisualPermission(playful);
   const pawnCounts={w:Object.values(position).filter(p=>p.color==='w'&&p.type==='p').length,b:Object.values(position).filter(p=>p.color==='b'&&p.type==='p').length};
   const {events, victory, handshake, arriving, allowed} = usePieceEffects(motion, visualAllowed, orientation, winner, motionSequence, draw, entrance);
@@ -164,10 +171,17 @@ export function ChessBoard({
   }
   return (
     <><div className="board-frame">
+      <span className="sr-only" id={instructionsId}>
+        {locked ? 'Read-only board. Use the arrow keys to explore squares.' : 'Use the arrow keys to explore squares. Press Enter or Space to select a piece or play a move. Tab leaves the board.'}
+      </span>
+      <span className="sr-only" aria-live="polite" aria-atomic="true">
+        {selectedPiece && selected ? `${selected}, ${selectedPiece.color === 'w' ? 'White' : 'Black'} ${pieceNames[selectedPiece.type]} selected${legalCount ? `, ${destinationCount}.` : '.'}` : ''}
+      </span>
       <div
         className="board"
         role="group"
         aria-label={`Chess board, ${orientation === "w" ? "White" : "Black"} at bottom`}
+        aria-describedby={instructionsId}
       >
         {squares.map((square, index) => {
           const piece = position[square];
@@ -201,10 +215,12 @@ export function ChessBoard({
               data-square={square}
               data-piece={piece ? `${piece.color}${piece.type}` : ""}
               data-threatened={inDanger||undefined}
+              tabIndex={tabSquare === square ? 0 : -1}
               className={`square ${dark ? "square-dark" : "square-light"}${last && (last.from === square || last.to === square) ? " square-last" : ""}${selected === square ? " square-selected" : ""}${check === square ? " square-check" : ""}${dragPreview?.to === square ? dragPreview.legal.includes(square) ? " square-drop-valid" : " square-drop-invalid" : ""}`}
-              aria-label={`${square}, ${piece ? `${piece.color === "w" ? "White" : "Black"} ${pieceNames[piece.type]}` : "empty"}${target ? ", legal destination" : ""}${check === square ? ", in check" : inDanger ? ", under attack" : ""}`}
+              aria-label={`${square}, ${piece ? `${piece.color === "w" ? "White" : "Black"} ${pieceNames[piece.type]}` : "empty"}${target && !locked ? ", legal destination" : ""}${check === square ? ", in check" : inDanger ? ", under attack" : ""}${selected === square && !locked && legalCount ? `, ${destinationCount}` : ""}${last?.to === square ? ", last move destination" : last?.from === square ? ", last move origin" : ""}`}
               aria-pressed={selected === square}
               aria-disabled={locked}
+              onFocus={() => setFocusedSquare(square)}
               onPointerDown={e=>{if(drag && onMove && !locked && piece && (!dragTargets || dragTargets(square).length)){gesture.current={from:square,x:e.clientX,y:e.clientY};e.currentTarget.setPointerCapture(e.pointerId);}}}
               onPointerMove={e=>{const start=gesture.current;if(!start||Math.hypot(e.clientX-start.x,e.clientY-start.y)<12)return;const to=document.elementFromPoint(e.clientX,e.clientY)?.closest<HTMLElement>('[data-square]')?.dataset.square||null;setDragPreview({from:start.from,to,legal:dragTargets?.(start.from)||targets});}}
               onPointerUp={e=>{const start=gesture.current;cancelDrag();if(!start||Math.hypot(e.clientX-start.x,e.clientY-start.y)<12)return;suppressClick.current=true;setTimeout(()=>{suppressClick.current=false;},0);const dest=document.elementFromPoint(e.clientX,e.clientY)?.closest<HTMLElement>('[data-square]')?.dataset.square;if(dest&&dest!==start.from&&!locked&&(!dragTargets||dragTargets(start.from).includes(dest)))onMove?.(start.from,dest);}}
@@ -212,17 +228,19 @@ export function ChessBoard({
               onLostPointerCapture={cancelDrag}
               onClick={() => {if(!locked&&!suppressClick.current)onSquare(square);}}
               onKeyDown={(e) => {
-                const delta = (
-                  {
-                    ArrowLeft: -1,
-                    ArrowRight: 1,
-                    ArrowUp: -8,
-                    ArrowDown: 8,
-                  } as Record<string, number>
-                )[e.key];
-                if (delta === undefined) return;
+                const rowStart = index - index % 8;
+                let next: number;
+                switch (e.key) {
+                  case 'ArrowLeft': next = Math.max(rowStart, index - 1); break;
+                  case 'ArrowRight': next = Math.min(rowStart + 7, index + 1); break;
+                  case 'ArrowUp': next = index >= 8 ? index - 8 : index; break;
+                  case 'ArrowDown': next = index < 56 ? index + 8 : index; break;
+                  case 'Home': next = e.ctrlKey ? 0 : rowStart; break;
+                  case 'End': next = e.ctrlKey ? 63 : rowStart + 7; break;
+                  default: return;
+                }
                 e.preventDefault();
-                const next = Math.max(0, Math.min(63, index + delta));
+                if (next === index) return;
                 e.currentTarget.parentElement
                   ?.querySelector<HTMLButtonElement>(
                     `[data-square='${squares[next]}']`,
@@ -1004,8 +1022,8 @@ export function HomeSurface({
               <h2>Play the computer</h2>
               <span className="mode-mark">Computer</span>
             </div>
-            <p>Stockfish 18 Lite, bundled for offline play. Choose your strength and side.</p>
-            <div className="study-actions" aria-label="Difficulty presets">{([['Beginner',1],['Casual',3],['Club',5],['Strong',9]] as const).map(([name,n])=><button className="secondary" type="button" key={n} aria-pressed={level===n} onClick={()=>onLevel(n)}>{name}</button>)}</div>
+            <p>Play offline. Levels below 3 give you more room to practice. Choose your strength and side.</p>
+            <div className="study-actions" aria-label="Difficulty presets">{([['First steps',0.5],['Beginner',1.5],['Casual',3],['Club',5]] as const).map(([name,n])=><button className="secondary" type="button" key={n} aria-pressed={level===n} onClick={()=>onLevel(n)}>{name}</button>)}</div>
             <div className="level-heading">
               <label htmlFor="qk-level">Difficulty</label>
               <span>
@@ -1018,10 +1036,12 @@ export function HomeSurface({
               aria-label="Computer level"
               className="level-range"
               type="range"
-              min="1"
-              max="10"
-              value={level}
-              onChange={(e) => onLevel(Number(e.target.value))}
+              min={0}
+              max={computerLevels.length-1}
+              step={1}
+              value={computerLevelIndex(level)}
+              aria-valuetext={`Level ${level} of 10`}
+              onChange={(e) => onLevel(computerLevels[Number(e.target.value)])}
             />
             <div className="color-choice">
               {(["w", "b"] as Color[]).map((c) => (

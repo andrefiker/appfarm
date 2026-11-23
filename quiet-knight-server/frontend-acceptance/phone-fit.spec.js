@@ -151,15 +151,38 @@ test('discrete legal move dots return for older preferences and can still be dis
  const f=await table(page);await sq(page,'d2').click();await expect(sq(page,'d3').locator('.target-dot')).toBeVisible();await expect(sq(page,'d4').locator('.target-dot')).toBeVisible();await expect(sq(page,'d3').locator('.target-dot')).toHaveCSS('background-color','rgb(255, 48, 56)');
  await options(page);await page.getByText('Preferences & diagnostics',{exact:true}).click();await page.getByLabel('Legal destination previews',{exact:true}).uncheck();await btn(page,'Close table controls').click();await expect(page.locator('.target-dot')).toHaveCount(0);await page.reload();await options(page);await page.getByText('Preferences & diagnostics',{exact:true}).click();await expect(page.getByLabel('Legal destination previews',{exact:true})).not.toBeChecked();expect(f.errors).toEqual([]);
 });
-test('piece-value details stay in Options and not in the board header',async({page})=>{
- const f=await table(page);
- await expect(page.locator('.match-material')).toHaveCount(0);
- f.update(['e4','d5','exd5','c6','dxc6']);
- await expect(sq(page,'c6')).toHaveAttribute('data-piece','wp');
- await expect(page.locator('.match-material')).toHaveCount(0);
- await expect(page.getByRole('group',{name:'Black lost pieces'})).toBeVisible();
+test('match material updates in the marked area and leaves landscape board-only',async({page})=>{
+ await page.setViewportSize({width:393,height:873});
+ const f=await table(page,{moves:[]});
+ const material=page.getByRole('status',{name:'Material advantage',exact:true});
+ await expect(material).toHaveText('Equal material');
+ f.update(['e4','d5','exd5']);
+ await expect(material).toHaveText('White +1');
+ f.update(['e4','d5','Nc3','dxe4','Bc4','Qxd2+','Kf1','Qxc2']);
+ await expect(material).toHaveText('Black +3');
+ await expect(page.getByRole('status',{name:'Table scoreboard'})).toContainText('White 2');
+ await expect(page.locator('.table-score')).toHaveCSS('font-size','24px');
+ const score=await page.locator('.table-score').boundingBox();
+ const advantage=await material.boundingBox();
+ const actions=await btn(page,'New game').boundingBox();
+ expect(score.y+score.height).toBeLessThan(advantage.y);
+ expect(advantage.y+advantage.height).toBeLessThan(actions.y);
+ await fits(page);
+ await mkdir('output/playwright',{recursive:true});
+ await page.screenshot({path:'output/playwright/Quiet-Knight-Material-Score.png',animations:'disabled'});
+ await page.setViewportSize({width:320,height:568});
+ await fits(page);
+ await page.setViewportSize({width:873,height:393});
+ await expect(material).toBeHidden();
+ await expect(sq(page,'h1')).toBeInViewport({ratio:.99});
+ await page.setViewportSize({width:393,height:873});
+ await expect(material).toHaveText('Black +3');
  await options(page);
  await expect(page.getByLabel('Material points',{exact:true})).toBeVisible();
+ await btn(page,'Close table controls').click();
+ f.update([],2);
+ await expect(material).toHaveText('Equal material');
+ expect(f.errors).toEqual([]);
 });
 
 test('portrait gets more playable board width and aligned tile-contained Staunton pieces',async({page})=>{
@@ -271,10 +294,10 @@ test('offline Amateur Mode toggles independently of the removed Coach and asks n
  await toggle.click();await expect(page.locator('[data-threatened]')).toHaveCount(0);expect(requests).toEqual([]);
 });
 
-test('clean table keeps scores, trays and invite but omits account and material chrome',async({page})=>{
+test('clean table keeps scores, trays and invite but omits account and lifetime chrome',async({page})=>{
  await page.setViewportSize({width:393,height:873});
  const f=await table(page);
- await expect(page.locator('.match-material')).toHaveCount(0);
+ await expect(page.getByRole('status',{name:'Material advantage',exact:true})).toHaveText('Equal material');
  await expect(page.getByLabel('Lifetime scoreboard')).toHaveCount(0);
  await expect(page.getByRole('status',{name:'Table scoreboard'})).toContainText('White 2');
  await expect(page.getByRole('group',{name:'Black lost pieces'})).toBeVisible();

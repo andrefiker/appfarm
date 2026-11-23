@@ -23,4 +23,6 @@ globalThis.document={hidden:false}; globalThis.window={matchMedia:()=>({matches:
 new Function('require','module','exports',outputFiles[0].text)(require,mod,mod.exports);
 assert.match(mod.exports.markup, /aria-label="Table scoreboard"/);
 assert.match(mod.exports.markup, /aria-label="Copy game link"/);
-assert.doesNotMatch(mod.exports.markup, /class="match-material"|Lifetime-marker/);
+assert.doesNotMatch(mod.exports.markup, /Lifetime-marker/);
+
+assert.match(mod.exports.markup, /aria-label="Material advantage">White \+5/);

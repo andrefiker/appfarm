@@ -186,3 +186,61 @@ body[data-coordinates=true] .qk.mobile-table .file-coordinate { bottom:2px; righ
 .qk .board .square-dark .chess-art.art-b {
   filter:drop-shadow(0 0 1px #e3dbb7) drop-shadow(0 0 2.35px #ded6b48c) drop-shadow(0 2px 1px #211918b3);
 }
+
+
+/* Room lighting only: the actual Forest squares, brass frame and figures stay the same. */
+:root[data-theme="light"] {
+  color-scheme:light;
+  --surface:#fffaf0; --text:#252b23; --muted:#526051; --line:#bfbaab; --accent:#365b47;
+  --room:#f5f0e5; --linen:#fffcf4; --panel:#ebe5d8; --edge:#bdb5a4;
+  background:var(--room); color:var(--text);
+}
+:root[data-theme="light"] body[data-atmosphere] {
+  background:radial-gradient(ellipse at 50% 0,#fffdf6 0%,transparent 62%),var(--room);
+}
+[data-theme="light"] .qk .game-header {
+  background:linear-gradient(140deg,var(--linen),var(--panel));
+  border-bottom-color:var(--edge);
+}
+[data-theme="light"] .qk :is(.player-handle,.loss-label,.table-note,.table-mode,.level-heading,.level-total,
+  .home-footer,.home-footer>span:last-child,.network-build,.art-signature,.move-history summary,.latest-move,
+  .player-quip,.join-row input::placeholder,.server-compatibility,.dialog-body>p) {color:var(--muted)}
+[data-theme="light"] .qk :is(.intro-caption,.home-intro h1 em,.mode-mark,.level-heading strong,.turn-label) {color:var(--accent)}
+[data-theme="light"] .qk .game-title button.connection {color:#82452a}
+[data-theme="light"] .qk .game-title button.connection-live {color:#305f47}
+[data-theme="light"] .qk :is(.secondary,.icon-button,.game-header .icon-button,.brand-seal,.join-row input,.invite-field) {
+  background:var(--linen); border-color:var(--edge); color:var(--text);
+}
+[data-theme="light"] .qk :is(.secondary,.icon-button):hover:not(:disabled) {background:var(--panel)}
+[data-theme="light"] .qk .primary {background:#3c624d;border-color:#325442;color:#fffaf0;box-shadow:none}
+[data-theme="light"] .qk :is(.table-resign,.danger-button,.status-check h2,.status-check p) {color:#7b392e}
+[data-theme="light"] .qk .amateur-toggle[aria-pressed="true"] {background:#8d2628;border-color:#8d2628;color:#fff3ed}
+[data-theme="light"] .qk .board-stage>.table-score {background:var(--linen);border-color:var(--edge)}
+[data-theme="light"] .qk .mobile-table .status-your-turn,
+[data-theme="light"] .qk.mobile-table .game-status.status-your-turn {background:#e2eadc}
+[data-theme="light"] .qk.mobile-table .game-status.status-your-turn h2 {color:#254632}
+[data-theme="light"] .qk.mobile-table .game-status.status-your-turn .state-dot {background:#35624a}
+[data-theme="light"] :is(.qk-dialog,.qk .table-sheet) {
+  background:var(--surface);border-color:var(--edge);box-shadow:0 16px 65px #42372945;
+}
+[data-theme="light"] .qk-dialog::backdrop {background:#29251b55}
+[data-theme="light"] .qk-dialog :is(.dialog-body>p,.dialog-body label,.audio-controls>small,.audio-controls>p,.build-label) {
+  color:var(--muted);
+}
+[data-theme="light"] .qk-dialog :is(.secondary,.icon-button,.invite-field) {background:var(--linen);border-color:var(--edge);color:var(--text)}
+[data-theme="light"] .qk-dialog .primary {background:#3c624d;border-color:#325442;color:#fffaf0;box-shadow:none}
+[data-theme="light"] .qk-dialog .danger-button {color:#7b392e}
+[data-theme="light"] :is(.qk,.qk-dialog) .settings-note {color:var(--muted)!important}
+[data-theme="light"] .qk-dialog :is(.preference-row,.notification-setting,.dialog-head) {border-color:var(--edge)}
+[data-theme="light"] :is(.qk,.qk-dialog) :is(button,input,select,summary,a):focus-visible {outline-color:#35624a}
+.qk .square:focus-visible {outline:2px solid #fff9df;outline-offset:-3px;box-shadow:inset 0 0 0 5px #203628;z-index:7}
+
+/* Bigger targets, not bigger icons; keep the eight-by-eight board and rows unchanged. */
+.qk-dialog .dialog-head .icon-button {inline-size:44px;block-size:44px;flex-shrink:0}
+.qk-dialog .preference-row select {min-block-size:44px}
+.qk-dialog .audio-controls > input {min-block-size:44px}
+.qk .level-range {min-block-size:44px}
+.qk .game-title button.connection {min-block-size:44px}
+.qk .table-toolbar > button {min-inline-size:44px;min-block-size:44px}
+.qk-toast button {min-inline-size:44px;min-block-size:44px}
+.qk-toast .ui-icon {margin-inline:auto}

@@ -343,3 +343,50 @@ test('clean table keeps scores, trays and invite but omits account and lifetime 
  await expect(btn(page,'Create live game')).toBeVisible();
  await expect(page.getByRole('button',{name:/Account \(optional\)|Sign in|Log in|Create Account/i})).toHaveCount(0);
 });
+
+for(const role of ['white','black']) test('keyboard board uses one tab stop and keeps row boundaries for '+role,async({page})=>{
+ await page.setViewportSize({width:393,height:873});
+ const f=await table(page,{role,moves:role==='white'?[]:['e4']});
+ const board=page.locator('.board-stage > .board-frame .board');
+ await expect(board).toHaveAccessibleDescription(/arrow keys.*Enter or Space/i);
+ const first=role==='white'?'a8':'h1', end=role==='white'?'h8':'a1';
+ await expect(board.locator('button[tabindex="0"]')).toHaveCount(1);
+ await expect(sq(page,first)).toHaveAttribute('tabindex','0');
+ await sq(page,first).focus();
+ await page.keyboard.press('ArrowLeft');
+ await expect(sq(page,first)).toBeFocused();
+ await page.keyboard.press('End');
+ await expect(sq(page,end)).toBeFocused();
+ await page.keyboard.press('ArrowRight');
+ await expect(sq(page,end)).toBeFocused();
+ await expect(board.locator('button[tabindex="0"]')).toHaveCount(1);
+ await expect(sq(page,end)).toHaveAttribute('tabindex','0');
+ await page.keyboard.press('Tab');
+ await expect(board.locator('button:focus')).toHaveCount(0);
+ expect(f.errors).toEqual([]);
+});
+test('keyboard board lets the player select and move, and describes move destinations',async({page})=>{
+ await page.setViewportSize({width:320,height:568});
+ const f=await table(page,{role:'white',moves:[]});
+ await sq(page,'e2').focus();
+ await page.keyboard.press('Enter');
+ await expect(sq(page,'e2')).toHaveAttribute('aria-pressed','true');
+ await expect(sq(page,'e2')).toHaveAccessibleName(/e2, White pawn.*2 legal destinations/i);
+ await page.keyboard.press('ArrowUp');
+ await page.keyboard.press('ArrowUp');
+ await expect(sq(page,'e4')).toBeFocused();
+ await expect(sq(page,'e4')).toHaveAccessibleName(/e4, empty.*legal destination/i);
+ await page.keyboard.press('Space');
+ await expect(sq(page,'e4')).toHaveAttribute('data-piece','wp');
+ expect(f.writes).toHaveLength(1);expect(f.errors).toEqual([]);
+});
+test('keyboard board can be explored without moves by spectators',async({page})=>{
+ const f=await table(page,{role:'spectator',moves:[]});
+ const board=page.locator('.board-stage > .board-frame .board');
+ await expect(board).toHaveAccessibleDescription(/read-only board/i);
+ await sq(page,'e2').focus();
+ await page.keyboard.press('ArrowUp');
+ await expect(sq(page,'e3')).toBeFocused();
+ await page.keyboard.press('Enter');
+ expect(f.writes).toHaveLength(0);expect(f.errors).toEqual([]);
+});

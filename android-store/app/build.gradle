@@ -38,8 +38,8 @@ android {
             }
             applicationId forestInstall ? 'com.andrefiker.quietknight.forest' : (emeraldInstall ? 'com.andrefiker.quietknight.emerald' : 'com.andrefiker.quietknight.appfarm.studio')
 
-            versionCode forestInstall ? 53 : (emeraldInstall ? 50 : 16)
-            versionName forestInstall ? '1.6.22' : (emeraldInstall ? '1.6.19' : '1.1.11')
+            versionCode forestInstall ? 54 : (emeraldInstall ? 50 : 16)
+            versionName forestInstall ? '1.6.23' : (emeraldInstall ? '1.6.19' : '1.1.11')
             resValue 'string', 'app_name', forestInstall ? 'Quiet Knight Forest' : (emeraldInstall ? 'Quiet Knight Emerald' : 'Quiet Knight')
             buildConfigField 'String', 'SOURCE_COMMIT', '"' + (System.getenv('GITHUB_SHA') ?: 'local-unverified') + '"'
             buildConfigField 'String', 'HOME_URL', '"https://quiet-knight-server-production.up.railway.app/assets/quiet-knight/index.html"'

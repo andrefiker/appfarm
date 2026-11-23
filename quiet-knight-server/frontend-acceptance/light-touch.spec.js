@@ -1,0 +1,43 @@
+import {test, expect} from '@playwright/test';
+const url = process.env.QK_FRONTEND_URL || 'http://127.0.0.1:3000/';
+test.skip(!/^http:\/\/(127\.0\.0\.1|localhost):/.test(url),'isolated candidate only');
+const sq = (page,s) => page.locator('.board-stage .board [data-square="'+s+'"]');
+const target = async locator => {
+  await expect(locator).toBeVisible();
+  const box = await locator.boundingBox();
+  expect(box.height).toBeGreaterThanOrEqual(44);
+  expect(box.width).toBeGreaterThanOrEqual(44);
+};
+
+test('appearance follows settings into play, persists on reload, and does not change Forest board art', async ({page})=>{
+  await page.setViewportSize({width:393,height:873});
+  await page.route('**/capabilities',r=>r.fulfill({json:{protocol:2,new_games:'untimed',guest_play:true,variants:['standard']}}));
+  await page.goto(url);
+  await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
+  await target(page.locator('input.level-range'));
+  const dark = await page.locator('body').evaluate(el=>getComputedStyle(el).backgroundColor);
+  await page.getByRole('button',{name:'Open settings',exact:true}).click();
+  const appearance = page.getByRole('combobox',{name:'Appearance'});
+  await target(appearance);
+  await appearance.selectOption('light');
+  await expect(page.locator('html')).toHaveAttribute('data-theme','light');
+  await expect(page.locator('body')).toHaveCSS('background-color','rgb(245, 240, 229)');
+  expect(dark).not.toBe('rgb(245, 240, 229)');
+  const close = page.locator('dialog[open] .dialog-head .icon-button');
+  await target(close);
+  await close.click();
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-theme','light');
+  await page.getByRole('button',{name:/Play White/}).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme','light');
+  await expect(sq(page,'a1')).toHaveCSS('background-color','rgb(64, 93, 76)');
+  await expect(sq(page,'a2')).toHaveCSS('background-color','rgb(229, 216, 201)');
+  await expect(sq(page,'a1').locator('.sculptor-piece')).toBeVisible();
+  await page.setViewportSize({width:320,height:568});
+  await expect(page.locator('.board-stage .board [data-square]')).toHaveCount(64);
+  expect(await page.locator('body').evaluate(el=>el.scrollWidth)).toBeLessThanOrEqual(320);
+  await page.setViewportSize({width:873,height:393});
+  await expect(page.locator('.board-stage .board [data-square]')).toHaveCount(64);
+  expect((await sq(page,'h8').boundingBox()).y).toBeGreaterThanOrEqual(0);
+  expect((await page.locator('.board-stage .board').boundingBox()).height).toBeLessThanOrEqual(393);
+});

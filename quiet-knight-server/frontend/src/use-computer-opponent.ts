@@ -1,6 +1,7 @@
 import {useEffect,useState} from 'react';
 import type {Dispatch,SetStateAction} from 'react';
 import {buildGame} from './computer';
+import {forgivingMove,practiceErrorRate} from './computer-difficulty';
 import type {LocalMove} from './computer';
 import {engineSearch,selectStyle,ENGINE_NAME} from './offline-engine';
 import type {Style} from './offline-engine';
@@ -11,6 +12,12 @@ export function useComputerOpponent(active:boolean,moves:LocalMove[],level:numbe
  const{style='balanced',think=250}=settings;
  useEffect(()=>{if(!active||!visible)return;let retired=false;let fallback:Worker|undefined;const controller=new AbortController(),fen=buildGame(moves).fen();
  const apply=(uci:string)=>{if(retired)return;const game=buildGame(moves),made=game.move({from:uci.slice(0,2),to:uci.slice(2,4),promotion:uci[4]});setMoves(previous=>buildGame(previous).fen()===fen?[...previous,{from:made.from,to:made.to,promotion:made.promotion,san:made.san}]:previous);};
- setEngine(ENGINE_NAME);void engineSearch(fen,{level,style,ms:think,signal:controller.signal}).then(lines=>{const pos=positionFromFen(fen);apply(style==='balanced'&&lines.engineMove?lines.engineMove:selectStyle(lines,style,m=>moveFeatures(pos,m),level).move);}).catch(error=>{if(retired||error?.name==='AbortError')return;setEngine('Quiet Knight Mini 1.0 · local fallback');setMessage('Offline Stockfish could not load. Quiet Knight Mini is playing this move.');try{fallback=new Worker(new URL('./computer-worker.ts',import.meta.url),{type:'module'});fallback.onmessage=e=>{const move=e.data?.move;if(move&&!retired)apply(move.from+move.to+(move.promotion||''));fallback?.terminate();};fallback.onerror=()=>{fallback?.terminate();setEngine('Unavailable · position saved');setMessage('No offline engine is available. Your position is saved; reopen the table to retry.');};fallback.postMessage({moves,level});}catch{setEngine('Unavailable · position saved');setMessage('No offline engine is available. Your position is saved; reopen the table to retry.');}});
+ setEngine(ENGINE_NAME);
+ const practice=practiceErrorRate(level)?forgivingMove(buildGame(moves).moves({verbose:true}),level):null;
+ if(practice){
+  const timer=setTimeout(()=>apply(practice.from+practice.to+(practice.promotion||'')),Math.min(180,think));
+  return()=>{retired=true;clearTimeout(timer);controller.abort();};
+ }
+ void engineSearch(fen,{level,style,ms:think,signal:controller.signal}).then(lines=>{const pos=positionFromFen(fen);apply(style==='balanced'&&lines.engineMove?lines.engineMove:selectStyle(lines,style,m=>moveFeatures(pos,m),level).move);}).catch(error=>{if(retired||error?.name==='AbortError')return;setEngine('Quiet Knight Mini 1.0 · local fallback');setMessage('Offline Stockfish could not load. Quiet Knight Mini is playing this move.');try{fallback=new Worker(new URL('./computer-worker.ts',import.meta.url),{type:'module'});fallback.onmessage=e=>{const move=e.data?.move;if(move&&!retired)apply(move.from+move.to+(move.promotion||''));fallback?.terminate();};fallback.onerror=()=>{fallback?.terminate();setEngine('Unavailable · position saved');setMessage('No offline engine is available. Your position is saved; reopen the table to retry.');};fallback.postMessage({moves,level});}catch{setEngine('Unavailable · position saved');setMessage('No offline engine is available. Your position is saved; reopen the table to retry.');}});
  return()=>{retired=true;controller.abort();fallback?.terminate();};},[active,visible,moves,level,setMoves,setMessage,style,think]);return engine;
 }

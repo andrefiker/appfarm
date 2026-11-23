@@ -1,10 +1,10 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {Chess} from 'chess.js';
-import {threatenedSquares} from '../src/amateur-threats.ts';
+import {threatenedSquares, threatenedSquaresForBothSides} from '../src/amateur-threats.ts';
 
 test('the starting position has no attacked occupied squares',()=>assert.deepEqual(threatenedSquares(new Chess(),'w'),[]));
-test('each side only sees its own attacked pawn, not empty squares or defended allies',()=>{
+test('single-color lookup excludes the other side, empty squares and defended allies',()=>{
  const game=new Chess();for(const m of ['e4','d5'])game.move(m);
  assert.deepEqual(threatenedSquares(game,'w'),['e4']);
  assert.deepEqual(threatenedSquares(game,'b'),['d5']);
@@ -21,4 +21,16 @@ test('en passant marks the capturable pawn on its actual square',()=>{
  const game=new Chess();for(const m of ['e4','a6','e5','d5'])game.move(m);
  assert.ok(threatenedSquares(game,'b').includes('d5'));
  assert.ok(!threatenedSquares(game,'w').includes('d5'));
+});
+
+test('Amateur Mode marks both sides and updates after a capture',()=>{
+ const game=new Chess();for(const m of ['e4','d5'])game.move(m);
+ assert.deepEqual(threatenedSquaresForBothSides(game).sort(),['d5','e4']);
+ game.move('exd5');
+ assert.deepEqual(threatenedSquaresForBothSides(game),['d5']);
+});
+test('both-side lookup preserves en passant on the capturable pawn',()=>{
+ const game=new Chess();for(const m of ['e4','a6','e5','d5'])game.move(m);
+ assert.ok(threatenedSquaresForBothSides(game).includes('d5'));
+ assert.deepEqual(threatenedSquaresForBothSides(new Chess()),[]);
 });

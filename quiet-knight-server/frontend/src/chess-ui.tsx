@@ -650,7 +650,7 @@ export function GameSurface(p: GameSurfaceProps) {
   );
   return (
     <main
-      className={`qk game-shell mobile-table${p.zen ? " zen-table" : ""}${p.idle ? " quiet-idle" : ""}`}
+      className={`qk game-shell mobile-table${p.online ? " online-table" : ""}${p.zen ? " zen-table" : ""}${p.idle ? " quiet-idle" : ""}`}
     >
       <header className={p.online && p.code ? "game-header has-copy-invite" : "game-header"}>
         <button

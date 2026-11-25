@@ -26,3 +26,5 @@ assert.match(mod.exports.markup, /aria-label="Copy game link"/);
 assert.doesNotMatch(mod.exports.markup, /Lifetime-marker/);
 
 assert.match(mod.exports.markup, /aria-label="Material advantage">White \+5/);
+
+assert.match(mod.exports.markup, /<main class="qk game-shell mobile-table online-table/);

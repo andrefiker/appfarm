@@ -148,3 +148,14 @@ body[data-battery=true] .qk *,body[data-battery=true] .qk *::before,body[data-ba
 /* Keep the reason readable even when the two parts wrap on a narrow phone. */
 .mobile-table .table-below>.lifetime-score-status:not(.game-status):not(.main-game-actions){flex-wrap:wrap;gap:2px 8px;text-align:center}
 .mobile-table .table-below>.lifetime-score-status small{font-size:12px;white-space:normal;line-height:1.25}
+/* Keep the invite board full-width while connection and draw notices come and go. */
+@media (max-width:600px) and (orientation:portrait) {
+  body:has(.mobile-table.online-table){overflow:auto}
+  .mobile-table.online-table.game-shell{
+    height:auto;min-height:100dvh;grid-template-rows:auto minmax(min-content,1fr);
+  }
+  .mobile-table.online-table .game-layout{
+    height:auto;grid-template-rows:minmax(min-content,1fr) auto;
+  }
+  .mobile-table.online-table .board-stage>.board-frame{width:100%}
+}
